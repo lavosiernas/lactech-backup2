@@ -1,11 +1,4 @@
-// =====================================================
-// CORREÇÃO DE AUTENTICAÇÃO SUPABASE - LACTECH
-// Este arquivo resolve o problema de AuthSessionMissingError
-// =====================================================
 
-/**
- * Sincronizar autenticação local com Supabase
- */
 async function syncAuthenticationWithSupabase() {
     try {
         // Verificar se há dados de usuário no localStorage
