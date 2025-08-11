@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Funcionário - Sistema Leiteiro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="supabase_config_fixed.js"></script>
+    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="gradient-mesh antialiased">
+
+    <!-- Header -->
+    <header class="gradient-forest shadow-xl sticky top-0 z-40 border-b border-forest-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-white tracking-tight">PAINEL DO FUNCIONÁRIO</h1>
+                        <p class="text-xs text-white" id="farmNameHeader">Carregando fazenda...</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-1">
+                    <button class="nav-item active relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="dashboard">
+                        Dashboard
+                    </button>
+                    <button class="nav-item relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="register">
+                        Registrar
+                    </button>
+                    <button class="nav-item relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="history">
+                        Histórico
+                    </button>
+                </nav>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="openProfileModal()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all">
+                        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden">
+                            <img id="headerProfilePhoto" src="" alt="Foto de Perfil" class="w-full h-full object-cover rounded-full hidden">
+                            <svg id="headerProfileIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-left hidden sm:block">
+                            <div class="text-sm font-semibold" id="employeeName">Funcionário</div>
+                            <div class="text-xs text-forest-200">Funcionário</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content">
+            <!-- Welcome Section -->
+            <div class="gradient-forest rounded-2xl p-6 mb-6 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold mb-2">Olá, <span id="employeeWelcome">Funcionário</span>!</h2>
+                            <p class="text-forest-200 text-base font-medium mb-3">Registre a produção diária de leite</p>
+                            <div class="flex items-center space-x-4">
+                                <div class="text-xs font-medium">Última atualização: <span id="currentDateTime">Agora</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="data-card rounded-2xl p-4 text-center">
+                    <div class="w-12 h-12 gradient-forest rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                    </div>
+                    <div class="text-xl font-bold text-slate-900 mb-1" id="todayVolume">0.0 L</div>
+                    <div class="text-xs text-slate-500 font-medium">Hoje</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Volume registrado</div>
+                </div>
+                
+                <div class="data-card rounded-2xl p-4 text-center">
+                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-xl font-bold text-slate-900 mb-1" id="weekAverage">0.0 L</div>
+                    <div class="text-xs text-slate-500 font-medium">Média Semanal</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Últimos 7 dias</div>
+                </div>
+                
+                <div class="data-card rounded-2xl p-4 text-center">
+                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-xl font-bold text-slate-900 mb-1" id="todayRecords">0</div>
+                    <div class="text-xs text-slate-500 font-medium">Registros</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Hoje</div>
+                </div>
+                
+                <div class="data-card rounded-2xl p-4 text-center">
+                    <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                    <div class="text-xl font-bold text-slate-900 mb-1" id="bestDay">0.0 L</div>
+                    <div class="text-xs text-slate-500 font-medium">Melhor Dia</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Este mês</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Recent Activity -->
+                <div class="data-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-900">Atividades Recentes</h3>
+                    </div>
+                    <div class="space-y-3" id="activityList">
+                        <div class="text-center py-8">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-500 text-sm">Carregando atividades...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Production Chart -->
+                <div class="data-card rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Produção dos Últimos 7 Dias</h3>
+                    <div class="h-32 relative">
+                        <canvas id="productionChart" width="400" height="128"></canvas>
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!-- Register Tab -->
+        <div id="register-tab" class="tab-content hidden">
+            <!-- Header profissional -->
+            <div class="bg-white rounded-lg p-6 mb-6 shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="bg-gray-100 p-3 rounded-lg mr-4">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Registrar Produção</h2>
+                            <p class="text-gray-600 text-sm">Preencha os dados da produção de leite</p>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Formulário principal -->
+            <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                    <form id="productionForm" class="space-y-6">
+                    <!-- Grid de campos -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Volume -->
+                        <div>
+                            <label for="volume" class="block text-sm font-medium text-gray-700 mb-2">
+                                Volume (Litros) *
+                            </label>
+                            <div class="relative">
+                                <input type="number" step="0.1" min="0" max="1000" id="volume" name="volume" required
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white" 
+                                       placeholder="0.0">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">L</span>
+                            </div>
+                            </div>
+                            </div>
+
+                        <!-- Turno -->
+                        <div>
+                            <label for="shift" class="block text-sm font-medium text-gray-700 mb-2">
+                                Turno *
+                            </label>
+                            <select id="shift" name="shift" required
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white">
+                                <option value="">Selecione o turno</option>
+                                    <option value="manha">Manhã</option>
+                                    <option value="tarde">Tarde</option>
+                                    <option value="noite">Noite</option>
+                                </select>
+                            </div>
+
+                        <!-- Data -->
+                        <div>
+                            <label for="productionDate" class="block text-sm font-medium text-gray-700 mb-2">
+                                Data da Produção *
+                            </label>
+                            <input type="date" id="productionDate" name="productionDate" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white">
+                        </div>
+
+                        <!-- Temperatura -->
+                        <div>
+                            <label for="temperature" class="block text-sm font-medium text-gray-700 mb-2">
+                                Temperatura (°C)
+                            </label>
+                            <div class="relative">
+                                <input type="number" step="0.1" min="0" max="50" id="temperature" name="temperature"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white" 
+                                       placeholder="0.0">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">°C</span>
+                        </div>
+                                </div>
+                        </div>
+                                </div>
+
+                    <!-- Observações -->
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            Observações
+                        </label>
+                        <textarea id="notes" name="notes" rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white resize-none" 
+                                  placeholder="Adicione observações sobre a produção..."></textarea>
+                        </div>
+
+                    <!-- Botões -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200">
+                        <button type="button" onclick="resetForm()" 
+                                class="w-full sm:w-auto px-6 py-3 border border-red-300 text-red-700 font-medium rounded-md hover:bg-red-50 transition-colors flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            Limpar
+                        </button>
+                        
+                        <button type="submit" 
+                                class="w-full sm:w-auto px-8 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors">
+                                Registrar Produção
+                            </button>
+                        </div>
+                    </form>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history-tab" class="tab-content hidden">
+                <div class="data-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">Histórico de Produções</h2>
+                    <div class="flex items-center space-x-2">
+                        <input type="date" id="filterDate" class="px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                        <button onclick="filterHistory()" class="px-4 py-2 bg-forest-500 text-white rounded-lg text-sm hover:bg-forest-600">
+                            Filtrar
+                            </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-slate-200">
+                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Data</th>
+                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Turno</th>
+                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Volume (L)</th>
+                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Temperatura</th>
+                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                    Carregando histórico...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 gradient-forest border-t border-forest-800 px-4 py-2 z-50">
+        <div class="flex items-center justify-around">
+            <button class="nav-item-mobile active flex flex-col items-center py-2" data-tab="dashboard">
+                <svg class="w-5 h-5 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                </svg>
+                <span class="text-xs text-white">Dashboard</span>
+            </button>
+            <button class="nav-item-mobile flex flex-col items-center py-2" data-tab="register">
+                <svg class="w-5 h-5 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span class="text-xs text-white">Registrar</span>
+            </button>
+            <button class="nav-item-mobile flex flex-col items-center py-2" data-tab="history">
+                <svg class="w-5 h-5 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-xs text-white">Histórico</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Modal de Perfil do Funcionário -->
+    <div id="profileModal" class="fullscreen-modal">
+        <div class="modal-content">
+            <!-- Header do Modal -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Perfil do Funcionário</h2>
+                    <button onclick="closeProfileModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Conteúdo do Perfil -->
+            <div class="p-6 space-y-6">
+                <!-- Header do Perfil -->
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <!-- Foto do usuário -->
+                            <img id="modalProfilePhoto" src="" alt="Foto de Perfil" class="w-16 h-16 object-cover rounded-2xl shadow-lg hidden">
+                            <!-- Ícone padrão -->
+                            <div id="modalProfileIcon" class="w-16 h-16 gradient-forest rounded-2xl flex items-center justify-center shadow-lg">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900" id="profileName">Carregando...</h2>
+                            <p class="text-slate-600 text-base">Funcionário</p>
+                            <p class="text-sm text-slate-500" id="profileFarmName">Carregando...</p>
+                        </div>
+                    </div>
+                        <div>
+                        <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="uploadPhoto(this)">
+                        <button onclick="document.getElementById('photoUpload').click()" class="px-4 py-2 bg-forest-500 text-white rounded-lg text-sm hover:bg-forest-600">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Alterar Foto
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Informações Pessoais -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-lg font-semibold text-gray-900">Informações Pessoais</h4>
+                        <button id="editProfileBtn" onclick="toggleProfileEdit()" class="px-4 py-2 text-sm bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-lg transition-all">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Editar
+                        </button>
+                    </div>
+                    
+                    <!-- Modo Visualização -->
+                    <div id="profileViewMode" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 mb-1">Nome Completo</label>
+                            <p class="text-gray-900 font-semibold text-base" id="profileFullName">Carregando...</p>
+                                </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 mb-1">Email</label>
+                            <p class="text-gray-900 font-semibold text-base" id="profileEmail2">Carregando...</p>
+                            </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 mb-1">WhatsApp</label>
+                            <p class="text-gray-900 font-semibold text-base" id="profileWhatsApp">Não informado</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-800 mb-1">Cargo</label>
+                            <p class="text-gray-900 font-semibold text-base">Funcionário</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Modo Edição -->
+                    <div id="profileEditMode" class="hidden">
+                        <form id="updateProfileForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-2">Nome Completo</label>
+                                    <input type="text" id="editProfileName" name="name" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="Digite seu nome completo">
+                                        </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-2">Email</label>
+                                    <input type="email" id="editProfileEmail" name="email" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-gray-100 text-gray-500" readonly placeholder="Email não pode ser alterado">
+                                    </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-2">WhatsApp</label>
+                                    <input type="tel" id="editProfileWhatsApp" name="whatsapp" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="(00) 00000-0000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-2">Cargo</label>
+                                    <input type="text" value="Funcionário" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-gray-100 text-gray-500" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-3 pt-4">
+                                <button type="button" onclick="cancelProfileEdit()" class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Salvar Alterações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Alterar Senha -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Alterar Senha</h4>
+                    <form id="changePasswordForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Senha Atual</label>
+                            <input type="password" required name="current_password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="Digite sua senha atual">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Nova Senha</label>
+                                <input type="password" required name="new_password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="Nova senha">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Confirmar Nova Senha</label>
+                                <input type="password" required name="confirm_password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="Confirme a nova senha">
+                            </div>
+                        </div>
+                        <button type="submit" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                            Alterar Senha
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Sair do Sistema -->
+                <div class="bg-white rounded-2xl p-6 border border-red-200">
+                    <h4 class="text-lg font-semibold text-red-900 mb-4">Zona de Perigo</h4>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h5 class="font-medium text-red-900">Sair do Sistema</h5>
+                            <p class="text-sm text-red-600">Encerrar sua sessão atual</p>
+                        </div>
+                        <button onclick="logout()" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('=== FUNCIONÁRIO COMPLETO INICIADO ===');
+        
+        // Global variables
+        let currentUser = null;
+        let currentFarmId = null;
+        let currentFarmName = null;
+        let allProductionHistory = [];
+        
+        // Função para log debug
+        function log(message) {
+            console.log(`[FUNCIONÁRIO] ${message}`);
+        }
+
+        log('Script carregado!');
+
+        // ==================== TAB NAVIGATION ====================
+        function initTabNavigation() {
+            log('Inicializando navegação por abas...');
+            
+            // Desktop navigation
+            document.querySelectorAll('.nav-item').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    switchTab(tab);
+                });
+            });
+            
+            // Mobile navigation
+            document.querySelectorAll('.nav-item-mobile').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    switchTab(tab);
+                });
+            });
+        }
+
+        function switchTab(tab) {
+            log(`Mudando para aba: ${tab}`);
+            
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected tab
+            const targetTab = document.getElementById(tab + '-tab');
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+            
+            // Update desktop navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-tab') === tab) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Update mobile navigation
+            document.querySelectorAll('.nav-item-mobile').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-tab') === tab) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Load tab-specific data
+            if (tab === 'history') {
+                loadHistory();
+            }
+        }
+
+        // ==================== PROFILE FUNCTIONS ====================
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.add('show');
+            loadProfileData();
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('show');
+        }
+
+        function toggleProfileEdit() {
+            const viewMode = document.getElementById('profileViewMode');
+            const editMode = document.getElementById('profileEditMode');
+            const editBtn = document.getElementById('editProfileBtn');
+            
+            if (editMode.classList.contains('hidden')) {
+                // Entrar em modo de edição
+                viewMode.classList.add('hidden');
+                editMode.classList.remove('hidden');
+                editBtn.innerHTML = `
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancelar
+                `;
+                editBtn.onclick = cancelProfileEdit;
+                
+                // Preencher campos de edição
+                document.getElementById('editProfileName').value = currentUser.name || '';
+                document.getElementById('editProfileEmail').value = currentUser.email || '';
+                document.getElementById('editProfileWhatsApp').value = currentUser.whatsapp || '';
+            }
+        }
+
+        function cancelProfileEdit() {
+            const viewMode = document.getElementById('profileViewMode');
+            const editMode = document.getElementById('profileEditMode');
+            const editBtn = document.getElementById('editProfileBtn');
+            
+            viewMode.classList.remove('hidden');
+            editMode.classList.add('hidden');
+            editBtn.innerHTML = `
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Editar
+            `;
+            editBtn.onclick = toggleProfileEdit;
+        }
+
+        async function loadProfileData() {
+            if (currentUser) {
+                // Atualizar todos os elementos do modal
+                document.getElementById('profileName').textContent = currentUser.name || 'Nome não informado';
+                document.getElementById('profileFarmName').textContent = currentFarmName || 'Fazenda não informada';
+                document.getElementById('profileFullName').textContent = currentUser.name || 'Nome não informado';
+                document.getElementById('profileEmail2').textContent = currentUser.email || 'Email não informado';
+                
+                // Buscar dados extras do usuário (WhatsApp) se existir
+                try {
+                    const { data: userData } = await supabase
+                    .from('users')
+                        .select('whatsapp')
+                        .eq('id', currentUser.id)
+                    .single();
+                
+                    if (userData && userData.whatsapp) {
+                        document.getElementById('profileWhatsApp').textContent = userData.whatsapp;
+                        currentUser.whatsapp = userData.whatsapp;
+                }
+            } catch (error) {
+                    log('Erro ao carregar WhatsApp: ' + error.message);
+                }
+                
+                // Load profile photo
+                await loadProfilePhoto();
+            }
+        }
+
+        async function loadProfilePhoto() {
+            try {
+                // Verificar se o usuário está logado
+                if (!currentUser || !currentUser.id) {
+                    log('Usuário não logado, pulando carregamento de foto');
+                    return;
+                }
+                
+                log('Tentando carregar foto de perfil para usuário: ' + currentUser.id);
+                
+                // Buscar dados atualizados do usuário incluindo a foto
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('profile_photo_url')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (userError) {
+                    log('Erro ao buscar dados do usuário: ' + userError.message);
+                    return;
+                }
+                
+                // Verificar se há URL da foto
+                if (!userData.profile_photo_url || userData.profile_photo_url.trim() === '') {
+                    log('Usuário não possui foto de perfil');
+                    return;
+                }
+                
+                log('URL da foto encontrada: ' + userData.profile_photo_url);
+                
+                // Update all profile images
+                const headerPhoto = document.getElementById('headerProfilePhoto');
+                const modalPhoto = document.getElementById('modalProfilePhoto');
+                const headerIcon = document.getElementById('headerProfileIcon');
+                const modalIcon = document.getElementById('modalProfileIcon');
+                
+                if (headerPhoto && headerIcon) {
+                    headerPhoto.src = userData.profile_photo_url + '?t=' + Date.now();
+                        headerPhoto.classList.remove('hidden');
+                        headerIcon.classList.add('hidden');
+                    
+                    // Adicionar tratamento de erro para a imagem
+                    headerPhoto.onerror = function() {
+                        log('Erro ao carregar foto no header, usando ícone');
+                        headerPhoto.style.display = 'none';
+                        headerIcon.classList.remove('hidden');
+                    };
+                    
+                    headerPhoto.onload = function() {
+                        log('Foto carregada com sucesso no header');
+                        headerIcon.classList.add('hidden');
+                    };
+                }
+                
+                if (modalPhoto && modalIcon) {
+                    modalPhoto.src = userData.profile_photo_url + '?t=' + Date.now();
+                        modalPhoto.classList.remove('hidden');
+                        modalIcon.classList.add('hidden');
+                    
+                    // Adicionar tratamento de erro para a imagem
+                    modalPhoto.onerror = function() {
+                        log('Erro ao carregar foto no modal, usando ícone');
+                        modalPhoto.style.display = 'none';
+                        modalIcon.classList.remove('hidden');
+                    };
+                    
+                    modalPhoto.onload = function() {
+                        log('Foto carregada com sucesso no modal');
+                        modalIcon.classList.add('hidden');
+                    };
+                }
+                
+                log('Foto de perfil carregada com sucesso');
+                
+            } catch (error) {
+                log('Erro geral ao carregar foto de perfil: ' + error.message);
+                // Não mostrar erro para o usuário, apenas usar ícone padrão
+            }
+        }
+
+        async function uploadPhoto(input) {
+            if (!input.files || !input.files[0]) return;
+            
+            const file = input.files[0];
+            
+            // Validate file type and size
+            if (!file.type.startsWith('image/')) {
+                showNotification('Por favor, selecione apenas arquivos de imagem.', 'error');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                showNotification('A imagem deve ter no máximo 5MB.', 'error');
+                return;
+            }
+            
+            try {
+                log('Fazendo upload da foto...');
+                
+                // Verificar se o usuário está logado
+                if (!currentUser || !currentUser.id) {
+                    showNotification('Erro: Usuário não autenticado', 'error');
+                    return;
+                }
+                
+                // Buscar farm_id do usuário
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (userError || !userData?.farm_id) {
+                    showNotification('Erro: Dados do usuário não encontrados', 'error');
+                    return;
+                }
+                
+                // Criar nome único para o arquivo
+                const fileExt = file.name.split('.').pop();
+                const timestamp = Date.now();
+                const randomId = Math.random().toString(36).substr(2, 9);
+                const fileName = `user_${currentUser.id}_${timestamp}_${randomId}.${fileExt}`;
+                const filePath = `farm_${userData.farm_id}/${fileName}`;
+                
+                log('Fazendo upload para: ' + filePath);
+                
+                // Upload to storage
+                const { data, error } = await supabase.storage
+                    .from('profile-photos')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+                
+                if (error) {
+                    // Se o erro for relacionado ao bucket não existir
+                    if (error.message.includes('bucket') || error.message.includes('not found')) {
+                        log('Bucket profile-photos não encontrado');
+                        showNotification('Erro: Armazenamento de fotos não configurado. Entre em contato com o administrador.', 'error');
+                        return;
+                    }
+                    throw error;
+                }
+                
+                // Gerar URL pública
+                const { data: { publicUrl } } = supabase.storage
+                    .from('profile-photos')
+                    .getPublicUrl(filePath);
+                
+                log('URL pública gerada: ' + publicUrl);
+                
+                // Salvar URL no banco de dados
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({ profile_photo_url: publicUrl })
+                    .eq('id', currentUser.id);
+                
+                if (updateError) {
+                    log('Erro ao salvar URL no banco: ' + updateError.message);
+                    showNotification('Erro ao salvar foto no perfil', 'error');
+                    return;
+                }
+                
+                log('Foto enviada e salva com sucesso!');
+                showNotification('Foto enviada com sucesso!', 'success');
+                await loadProfilePhoto();
+
+            } catch (error) {
+                log('Erro no upload: ' + error.message);
+                showNotification('Erro ao fazer upload da foto: ' + error.message, 'error');
+            }
+        }
+
+        async function handleUpdateProfile(event) {
+            event.preventDefault();
+            log('Atualizando perfil...');
+            
+            try {
+                const formData = new FormData(event.target);
+                const name = formData.get('name');
+                const whatsapp = formData.get('whatsapp');
+                
+                // Atualizar dados do usuário
+                const { error } = await supabase
+                    .from('users')
+                    .update({
+                        name: name,
+                        whatsapp: whatsapp
+                    })
+                    .eq('id', currentUser.id);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // Atualizar variáveis locais
+                currentUser.name = name;
+                currentUser.whatsapp = whatsapp;
+                
+                // Atualizar display
+                const firstName = name.split(' ')[0];
+                document.getElementById('employeeName').textContent = firstName;
+                document.getElementById('employeeWelcome').textContent = firstName;
+                
+                // Recarregar dados do modal
+                await loadProfileData();
+                
+                // Voltar para modo de visualização
+                cancelProfileEdit();
+                
+                log('Perfil atualizado com sucesso!');
+                alert('Perfil atualizado com sucesso!');
+
+            } catch (error) {
+                log('ERRO ao atualizar perfil: ' + error.message);
+                alert('Erro ao atualizar perfil: ' + error.message);
+            }
+        }
+
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            log('Alterando senha...');
+            
+            try {
+                const formData = new FormData(event.target);
+            const currentPassword = formData.get('current_password');
+            const newPassword = formData.get('new_password');
+            const confirmPassword = formData.get('confirm_password');
+
+                // Validar senhas
+            if (newPassword !== confirmPassword) {
+                    alert('As senhas não coincidem!');
+                return;
+            }
+
+                if (newPassword.length < 6) {
+                    alert('A nova senha deve ter pelo menos 6 caracteres!');
+                    return;
+                }
+                
+                // Alterar senha no Supabase
+                const { error } = await supabase.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (error) {
+                    throw error;
+                }
+                
+                log('Senha alterada com sucesso!');
+                alert('Senha alterada com sucesso!');
+                
+                // Limpar formulário
+                event.target.reset();
+
+            } catch (error) {
+                log('ERRO ao alterar senha: ' + error.message);
+                alert('Erro ao alterar senha: ' + error.message);
+            }
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            } catch (error) {
+                log('Erro ao fazer logout: ' + error.message);
+            }
+        }
+
+        // ==================== DATA LOADING ====================
+        async function carregarDados() {
+            log('Iniciando carregamento de dados...');
+            
+            try {
+                // Verificar usuário
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                
+                if (userError) {
+                    log('ERRO na autenticação: ' + userError.message);
+                    return;
+                }
+
+                if (!user) {
+                    log('Usuário não autenticado - redirecionando...');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                currentUser = user;
+                log('Usuário autenticado: ' + user.email);
+                
+                // Buscar dados do usuário incluindo status de bloqueio
+                const { data: userData, error: userDataError } = await supabase
+                    .from('users')
+                    .select('name, farm_id, profile_photo_url, is_active')
+                    .eq('id', user.id)
+                    .single();
+
+                if (userDataError) {
+                    log('ERRO ao buscar dados do usuário: ' + userDataError.message);
+                    return;
+                }
+                
+                // Verificar se o usuário está bloqueado
+                if (userData.is_active === false) {
+                    log('Usuário bloqueado - redirecionando para página de bloqueio');
+                    window.location.href = 'acesso-bloqueado.html';
+                    return;
+                }
+                
+                currentFarmId = userData.farm_id;
+                currentUser.name = userData.name;
+                log('Dados do usuário: ' + JSON.stringify(userData));
+                
+                // Buscar nome da fazenda
+                const { data: farmData, error: farmError } = await supabase
+                    .from('farms')
+                    .select('name')
+                    .eq('id', userData.farm_id)
+                    .single();
+                
+                if (farmData && !farmError) {
+                    currentFarmName = farmData.name;
+                    document.getElementById('farmNameHeader').textContent = farmData.name;
+                    log('Nome da fazenda: ' + farmData.name);
+                } else {
+                    log('Erro ao buscar fazenda: ' + (farmError?.message || 'Não encontrada'));
+                }
+                
+                // Atualizar nome
+                const nomeElement = document.getElementById('employeeName');
+                const welcomeElement = document.getElementById('employeeWelcome');
+                
+                if (userData.name) {
+                    const firstName = userData.name.split(' ')[0];
+                    if (nomeElement) nomeElement.textContent = firstName;
+                    if (welcomeElement) welcomeElement.textContent = firstName;
+                    log('Nome atualizado: ' + firstName);
+                }
+                
+                // Carregar dados do dashboard
+                await loadDashboardIndicators();
+                await loadRecentActivity();
+                await loadProductionChart();
+                
+                // Carregar histórico
+                await loadHistory();
+                
+                // Carregar foto de perfil
+                await loadProfilePhoto();
+                
+                // Atualizar data/hora
+                updateDateTime();
+                
+                // Definir data atual no formulário
+                setCurrentDate();
+                
+                log('Carregamento de dados concluído com SUCESSO!');
+
+            } catch (error) {
+                log('ERRO GERAL: ' + error.message);
+                console.error('Erro completo:', error);
+            }
+        }
+
+        async function loadDashboardIndicators() {
+            log('Carregando indicadores do dashboard...');
+            
+            try {
+                const hoje = new Date().toISOString().split('T')[0];
+                
+                // Volume de hoje
+                const { data: producaoHoje } = await supabase
+                    .from('milk_production')
+                    .select('volume_liters')
+                    .eq('farm_id', currentFarmId)
+                    .eq('production_date', hoje);
+                
+                let volumeHoje = 0;
+                let registrosHoje = 0;
+                
+                if (producaoHoje) {
+                    volumeHoje = producaoHoje.reduce((sum, item) => sum + parseFloat(item.volume_liters || 0), 0);
+                    registrosHoje = producaoHoje.length;
+                }
+                
+                // Média semanal (últimos 7 dias)
+                const seteDiasAtras = new Date();
+                seteDiasAtras.setDate(seteDiasAtras.getDate() - 6);
+                
+                const { data: producaoSemana } = await supabase
+                    .from('milk_production')
+                    .select('volume_liters, production_date')
+                    .eq('farm_id', currentFarmId)
+                    .gte('production_date', seteDiasAtras.toISOString().split('T')[0]);
+                
+                let mediaSemana = 0;
+                if (producaoSemana && producaoSemana.length > 0) {
+                    // Agrupar por data para média diária
+                    const volumesPorDia = {};
+                    producaoSemana.forEach(item => {
+                        if (!volumesPorDia[item.production_date]) {
+                            volumesPorDia[item.production_date] = 0;
+                        }
+                        volumesPorDia[item.production_date] += parseFloat(item.volume_liters || 0);
+                    });
+                    
+                    const totalDias = Object.keys(volumesPorDia).length;
+                    const totalVolume = Object.values(volumesPorDia).reduce((sum, vol) => sum + vol, 0);
+                    mediaSemana = totalDias > 0 ? totalVolume / totalDias : 0;
+                }
+                
+                // Melhor dia do mês
+                const inicioMes = new Date();
+                inicioMes.setDate(1);
+                
+                const { data: producaoMes } = await supabase
+                    .from('milk_production')
+                    .select('volume_liters, production_date')
+                    .eq('farm_id', currentFarmId)
+                    .gte('production_date', inicioMes.toISOString().split('T')[0]);
+                
+                let melhorDia = 0;
+                if (producaoMes) {
+                    const volumesPorDia = {};
+                    producaoMes.forEach(item => {
+                        if (!volumesPorDia[item.production_date]) {
+                            volumesPorDia[item.production_date] = 0;
+                        }
+                        volumesPorDia[item.production_date] += parseFloat(item.volume_liters || 0);
+                    });
+                    melhorDia = Math.max(...Object.values(volumesPorDia), 0);
+                }
+                
+                // Atualizar elementos
+                document.getElementById('todayVolume').textContent = volumeHoje.toFixed(1) + ' L';
+                document.getElementById('todayRecords').textContent = registrosHoje;
+                document.getElementById('weekAverage').textContent = mediaSemana.toFixed(1) + ' L';
+                document.getElementById('bestDay').textContent = melhorDia.toFixed(1) + ' L';
+                
+                log('Indicadores atualizados');
+                
+            } catch (error) {
+                log('ERRO ao carregar indicadores: ' + error.message);
+            }
+        }
+
+        async function loadRecentActivity() {
+            log('Carregando atividades recentes...');
+            
+            try {
+                const { data: atividades } = await supabase
+                    .from('milk_production')
+                    .select('volume_liters, production_date, shift, created_at')
+                    .eq('farm_id', currentFarmId)
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+                
+                const activityList = document.getElementById('activityList');
+                if (activityList) {
+                    if (!atividades || atividades.length === 0) {
+                        activityList.innerHTML = `
+                            <div class="text-center py-8">
+                                <p class="text-gray-500 text-sm">Nenhuma atividade recente</p>
+                                <p class="text-gray-400 text-xs">Registre dados para ver o histórico</p>
+                    </div>
+                `;
+                    } else {
+                        activityList.innerHTML = atividades.map(ativ => {
+                            const data = new Date(ativ.created_at);
+                            const tempo = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                            const turno = {
+                    'manha': 'Manhã',
+                    'tarde': 'Tarde',
+                    'noite': 'Noite'
+                            }[ativ.shift] || ativ.shift;
+                
+                return `
+                                <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                            <div>
+                                        <p class="text-sm font-medium text-gray-900">${ativ.volume_liters}L - ${turno}</p>
+                                        <p class="text-xs text-gray-500">${tempo}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+                    }
+                    log('Atividades carregadas');
+                }
+                
+            } catch (error) {
+                log('ERRO ao carregar atividades: ' + error.message);
+            }
+        }
+
+        async function loadProductionChart() {
+            log('Carregando gráfico de produção...');
+            
+            try {
+                const seteDiasAtras = new Date();
+                seteDiasAtras.setDate(seteDiasAtras.getDate() - 6);
+                
+                const { data: dadosGrafico } = await supabase
+                    .from('milk_production')
+                    .select('volume_liters, production_date')
+                    .eq('farm_id', currentFarmId)
+                    .gte('production_date', seteDiasAtras.toISOString().split('T')[0])
+                    .order('production_date', { ascending: true });
+                
+                // Processar dados
+                const ultimosSeteDias = [];
+                const volumesPorDia = {};
+                
+                for (let i = 6; i >= 0; i--) {
+                    const data = new Date();
+                    data.setDate(data.getDate() - i);
+                    const dataString = data.toISOString().split('T')[0];
+                    ultimosSeteDias.push({
+                        data: dataString,
+                        label: data.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit' })
+                    });
+                    volumesPorDia[dataString] = 0;
+                }
+                
+                if (dadosGrafico) {
+                    dadosGrafico.forEach(item => {
+                        if (volumesPorDia.hasOwnProperty(item.production_date)) {
+                            volumesPorDia[item.production_date] += parseFloat(item.volume_liters || 0);
+                        }
+                    });
+                }
+                
+                const labels = ultimosSeteDias.map(dia => dia.label);
+                const volumes = ultimosSeteDias.map(dia => volumesPorDia[dia.data]);
+                
+                // Criar gráfico
+                const ctx = document.getElementById('productionChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Volume (L)',
+                                data: volumes,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                                    ticks: { font: { size: 10 } }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { font: { size: 10 } }
+                                }
+                            }
+                        }
+                    });
+                    log('Gráfico criado!');
+                }
+                
+            } catch (error) {
+                log('ERRO ao carregar gráfico: ' + error.message);
+            }
+        }
+
+        // ==================== FORM FUNCTIONS ====================
+        function setCurrentDate() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('productionDate');
+            if (dateInput) {
+                dateInput.value = today;
+            }
+        }
+
+        async function resetForm() {
+            // Mostrar confirmação antes de limpar
+            const confirmed = await showConfirmDialog('Tem certeza que deseja limpar o formulário? Todos os dados serão perdidos.', 'clear');
+            if (confirmed) {
+                document.getElementById('productionForm').reset();
+                setCurrentDate();
+                showNotification('Formulário limpo com sucesso!', 'success');
+            }
+        }
+
+        async function registerProduction(event) {
+            event.preventDefault();
+            log('Registrando produção...');
+            
+            try {
+                // Validar se o usuário está logado
+                if (!currentUser || !currentUser.id) {
+                    showNotification('Erro: Usuário não autenticado', 'error');
+                    return;
+                }
+                
+                // Validar se farm_id está disponível
+                if (!currentFarmId) {
+                    showNotification('Erro: ID da fazenda não encontrado', 'error');
+                    return;
+                }
+                
+                const formData = new FormData(event.target);
+                
+                // Validações dos campos
+                const volume = parseFloat(formData.get('volume'));
+                const shift = formData.get('shift');
+                const productionDate = formData.get('productionDate');
+                
+                if (!volume || volume <= 0) {
+                    showNotification('Por favor, insira um volume válido', 'error');
+                    return;
+                }
+                
+                if (!shift) {
+                    showNotification('Por favor, selecione um turno', 'error');
+                    return;
+                }
+                
+                if (!productionDate) {
+                    showNotification('Por favor, selecione uma data', 'error');
+                    return;
+                }
+                
+                const productionData = {
+                    farm_id: currentFarmId,
+                    user_id: currentUser.id,
+                    volume_liters: volume,
+                    shift: shift,
+                    production_date: productionDate,
+                    temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
+                    observations: formData.get('notes') || null
+                };
+                
+                log('Dados para inserir: ' + JSON.stringify(productionData));
+                
+                const { data, error } = await supabase
+                    .from('milk_production')
+                    .insert([productionData])
+                    .select();
+                
+                if (error) {
+                    log('ERRO ao registrar: ' + error.message);
+                    log('Detalhes do erro: ' + JSON.stringify(error));
+                    showNotification('Erro ao registrar produção: ' + error.message, 'error');
+                    return;
+                }
+                
+                log('Produção registrada com sucesso!');
+                showNotification('Produção registrada com sucesso!', 'success');
+                
+                // Reset form and reload data
+                resetForm();
+                await loadDashboardIndicators();
+                await loadRecentActivity();
+                await loadProductionChart();
+                
+                // Switch to dashboard
+                switchTab('dashboard');
+                
+            } catch (error) {
+                log('ERRO GERAL no registro: ' + error.message);
+                log('Stack trace: ' + error.stack);
+                showNotification('Erro ao registrar produção: ' + error.message, 'error');
+            }
+        }
+
+        // ==================== HISTORY FUNCTIONS ====================
+        async function loadHistory() {
+            log('Carregando histórico...');
+            
+            try {
+                // Verificar se farm_id está disponível
+                if (!currentFarmId) {
+                    log('ERRO: currentFarmId não está disponível');
+                    showNotification('Erro: ID da fazenda não encontrado', 'error');
+                    return;
+                }
+                
+                log('Buscando histórico para farm_id: ' + currentFarmId);
+                
+                const { data: historico, error } = await supabase
+                    .from('milk_production')
+                    .select('*')
+                    .eq('farm_id', currentFarmId)
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+                
+                if (error) {
+                    log('ERRO na consulta: ' + error.message);
+                    showNotification('Erro ao carregar histórico: ' + error.message, 'error');
+                    return;
+                }
+                
+                allProductionHistory = historico || [];
+                log('Histórico carregado: ' + allProductionHistory.length + ' registros');
+                
+                displayHistory(allProductionHistory);
+                
+            } catch (error) {
+                log('ERRO ao carregar histórico: ' + error.message);
+                showNotification('Erro ao carregar histórico: ' + error.message, 'error');
+            }
+        }
+
+        function displayHistory(historico) {
+            const tbody = document.getElementById('historyTableBody');
+            if (tbody) {
+                if (!historico || historico.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-gray-500">
+                                Nenhum registro encontrado
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    tbody.innerHTML = historico.map(item => {
+                        const data = new Date(item.production_date).toLocaleDateString('pt-BR');
+                        const turno = {
+                            'manha': 'Manhã',
+                            'tarde': 'Tarde',
+                            'noite': 'Noite'
+                        }[item.shift] || item.shift;
+                        
+                        return `
+                            <tr class="border-b border-slate-100">
+                                <td class="py-3 px-4">${data}</td>
+                                <td class="py-3 px-4">${turno}</td>
+                                <td class="py-3 px-4">${item.volume_liters} L</td>
+                                <td class="py-3 px-4">${item.temperature ? item.temperature + '°C' : '-'}</td>
+                                <td class="py-3 px-4">
+                                    <button onclick="deleteProduction('${item.id}')" class="text-red-500 hover:text-red-700 text-sm flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Excluir
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        async function filterHistory() {
+            try {
+                log('Filtrando histórico...');
+                
+                const filterDateElement = document.getElementById('filterDate');
+                if (!filterDateElement) {
+                    log('ERRO: Elemento filterDate não encontrado');
+                    showNotification('Erro ao filtrar', 'error');
+                    return;
+                }
+                
+                const filterDate = filterDateElement.value;
+                log('Data do filtro: ' + filterDate);
+                
+                if (!filterDate) {
+                    log('Nenhuma data selecionada, exibindo todos os registros');
+                    displayHistory(allProductionHistory);
+                    return;
+                }
+                
+                // Verificar se allProductionHistory tem dados
+                if (!allProductionHistory || allProductionHistory.length === 0) {
+                    log('Aviso: allProductionHistory está vazio, recarregando dados...');
+                    await loadHistory();
+                    return;
+                }
+                
+                const filtered = allProductionHistory.filter(item => item.production_date === filterDate);
+                log('Registros filtrados: ' + filtered.length + ' de ' + allProductionHistory.length);
+                
+                displayHistory(filtered);
+                
+            } catch (error) {
+                log('ERRO ao filtrar histórico: ' + error.message);
+                showNotification('Erro ao filtrar: ' + error.message, 'error');
+            }
+        }
+
+
+
+        async function deleteProduction(id) {
+            const confirmed = await showConfirmDialog('Tem certeza que deseja excluir este registro?', 'delete');
+            if (!confirmed) {
+                return;
+            }
+    
+            try {
+                log(`Excluindo registro: ${id}`);
+                
+                const { error } = await supabase
+                    .from('milk_production')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                log('Registro excluído com sucesso!');
+                showNotification('Registro excluído com sucesso!', 'success');
+                
+                // Reload data
+                await loadHistory();
+                await loadDashboardIndicators();
+                await loadRecentActivity();
+                await loadProductionChart();
+        
+                } catch (error) {
+                log('ERRO ao excluir: ' + error.message);
+                showNotification('Erro ao excluir registro: ' + error.message, 'error');
+            }
+        }
+
+        // Função para mostrar diálogo de confirmação estilizado
+        function showConfirmDialog(message, type = 'delete') {
+            return new Promise((resolve) => {
+                // Criar overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                overlay.id = 'confirmDialog';
+                
+                // Determinar ícone e cores baseado no tipo
+                let iconBg, iconColor, title, confirmText, confirmBg;
+                if (type === 'delete') {
+                    iconBg = 'bg-red-100';
+                    iconColor = 'text-red-600';
+                    title = 'Confirmar Exclusão';
+                    confirmText = 'Excluir';
+                    confirmBg = 'bg-red-600 hover:bg-red-700';
+                } else {
+                    iconBg = 'bg-yellow-100';
+                    iconColor = 'text-yellow-600';
+                    title = 'Confirmar Limpeza';
+                    confirmText = 'Limpar';
+                    confirmBg = 'bg-yellow-600 hover:bg-yellow-700';
+                }
+                
+                // Criar modal
+                const modal = document.createElement('div');
+                modal.className = 'bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0';
+                
+                modal.innerHTML = `
+                    <div class="p-6">
+                        <!-- Ícone de alerta -->
+                        <div class="flex items-center justify-center mb-4">
+                            <div class="${iconBg} p-3 rounded-full">
+                                <svg class="w-8 h-8 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Título -->
+                        <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">
+                            ${title}
+                        </h3>
+                        
+                        <!-- Mensagem -->
+                        <p class="text-gray-600 text-center mb-6">
+                            ${message}
+                        </p>
+                        
+                        <!-- Botões -->
+                        <div class="flex space-x-3">
+                            <button id="confirmCancel" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition-colors">
+                                Cancelar
+                            </button>
+                            <button id="confirmAction" class="flex-1 px-4 py-2 ${confirmBg} text-white font-medium rounded-md transition-colors">
+                                ${confirmText}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                
+                // Animar entrada
+                requestAnimationFrame(() => {
+                    modal.style.transform = 'scale(1)';
+                    modal.style.opacity = '1';
+                });
+                
+                // Event listeners
+                document.getElementById('confirmCancel').addEventListener('click', () => {
+                    closeConfirmDialog();
+                    resolve(false);
+                });
+                
+                document.getElementById('confirmAction').addEventListener('click', () => {
+                    closeConfirmDialog();
+                    resolve(true);
+                });
+                
+                // Fechar ao clicar no overlay
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        closeConfirmDialog();
+                        resolve(false);
+                    }
+                });
+            });
+        }
+        
+        function closeConfirmDialog() {
+            const dialog = document.getElementById('confirmDialog');
+            if (dialog) {
+                const modal = dialog.querySelector('div');
+                modal.style.transform = 'scale(0.95)';
+                modal.style.opacity = '0';
+                setTimeout(() => {
+                    dialog.remove();
+                }, 300);
+            }
+        }
+
+        // Função para mostrar notificações
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-xl shadow-2xl z-50 max-w-sm transform transition-all duration-300 border-l-4`;
+            
+            // Definir cores baseadas no tipo
+            let bgColor, textColor, borderColor, icon;
+            switch(type) {
+                case 'error':
+                    bgColor = 'bg-red-50';
+                    textColor = 'text-red-800';
+                    borderColor = 'border-red-500';
+                    icon = '❌';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-50';
+                    textColor = 'text-yellow-800';
+                    borderColor = 'border-yellow-500';
+                    icon = '⚠️';
+                    break;
+                case 'success':
+                    bgColor = 'bg-green-50';
+                    textColor = 'text-green-800';
+                    borderColor = 'border-green-500';
+                    icon = '✅';
+                    break;
+                default:
+                    bgColor = 'bg-blue-50';
+                    textColor = 'text-blue-800';
+                    borderColor = 'border-blue-500';
+                    icon = 'ℹ️';
+            }
+            
+            notification.className += ` ${bgColor} ${textColor} ${borderColor}`;
+            
+            // Criar conteúdo
+            notification.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <span class="text-lg flex-shrink-0">${icon}</span>
+                    <div class="flex-1">
+                        <p class="font-medium text-sm">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            // Adicionar animação de entrada
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Animar entrada
+            requestAnimationFrame(() => {
+                notification.style.transform = 'translateX(0)';
+                notification.style.opacity = '1';
+            });
+            
+            // Remove after 5 seconds with animation
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.transform = 'translateX(100%)';
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+
+
+        // ==================== UTILITY FUNCTIONS ====================
+        
+
+        
+        // Função para testar conexão com Supabase
+        async function testSupabaseConnection() {
+            try {
+                log('Testando conexão com Supabase...');
+                
+                // Teste simples de conexão
+                const { data, error } = await supabase
+                    .from('milk_production')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    log('ERRO na conexão Supabase: ' + error.message);
+                    showNotification('Erro de conexão: ' + error.message, 'error');
+                    return false;
+                }
+                
+                log('Conexão Supabase OK');
+                return true;
+        
+    } catch (error) {
+                log('ERRO ao testar conexão: ' + error.message);
+                showNotification('Erro ao conectar com o servidor', 'error');
+                return false;
+            }
+        }
+        
+        function updateDateTime() {
+            const agora = new Date();
+            const dataHora = agora.toLocaleString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const dateTimeElement = document.getElementById('currentDateTime');
+            if (dateTimeElement) {
+                dateTimeElement.textContent = dataHora;
+            }
+        }
+
+        // Update time every minute
+        setInterval(updateDateTime, 60000);
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOM carregado - inicializando...');
+            
+            // Verificar se Supabase está disponível
+            if (typeof supabase === 'undefined') {
+                log('ERRO: Supabase não está disponível!');
+                showNotification('Erro: Supabase não está carregado', 'error');
+            return;
+        }
+        
+            log('Supabase disponível, inicializando...');
+            
+            // Initialize tab navigation
+            initTabNavigation();
+            
+            // Set up form handlers
+            const productionForm = document.getElementById('productionForm');
+            if (productionForm) {
+                productionForm.addEventListener('submit', registerProduction);
+                log('Formulário de produção configurado');
+            } else {
+                log('ERRO: Formulário de produção não encontrado');
+            }
+            
+            // Testar conexão com Supabase
+            testSupabaseConnection().then(connected => {
+                if (connected) {
+                    log('Sistema inicializado com sucesso');
+                } else {
+                    log('Falha na inicialização - problemas de conexão');
+                }
+            });
+            
+            const updateProfileForm = document.getElementById('updateProfileForm');
+            if (updateProfileForm) {
+                updateProfileForm.addEventListener('submit', handleUpdateProfile);
+            }
+            
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            if (changePasswordForm) {
+                changePasswordForm.addEventListener('submit', handleChangePassword);
+            }
+            
+            // Load data
+            setTimeout(function() {
+                log('Timeout concluído - carregando dados...');
+                carregarDados();
+            }, 500);
+        });
+
+        log('=== SCRIPT FUNCIONÁRIO COMPLETO CARREGADO ===');
+    </script>
+</body>
+</html>

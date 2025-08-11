@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Loja de Apps</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        header { background-color: #4285f4; color: white; padding: 20px; text-align: center; }
+        .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
+        .app-card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 10px; text-align: center; cursor: pointer; }
+        .app-card img { width: 100px; height: 100px; border-radius: 20%; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 8px; padding: 20px; max-width: 80%; text-align: center; }
+        .close { position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer; color: white; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Loja de Apps - Estilo Play Store</h1>
+    </header>
+    <div class="app-grid">
+        <div class="app-card" onclick="openModal('lactech')">
+            <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMwMDdiZmYiLz4KICA8dGV4dCB4PSI1MCIgeT0iNTUiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5MYWN0ZWNoPC90ZXh0Pgo8L3N2Zz4=" alt="Lactech Icon">
+            <h3>Lactech</h3>
+            <p>App para gerenciamento de fazendas leiteiras</p>
+        </div>
+    </div>
+    <div id="modal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <h2 id="app-title"></h2>
+            <img id="app-image" src="" alt="App Image" style="width: 200px; height: 200px;">
+            <p id="app-description"></p>
+            <div id="app-screenshots">
+                <!-- Placeholders for screenshots -->
+                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWUiLz4KICA8dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1zaXplPSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iZ3JheSI+U2NyZWVuc2hvdDwvdGV4dD4KPC9zdmc+" alt="Screenshot 1" style="width: 150px;">
+                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWUiLz4KICA8dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1zaXplPSIzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iZ3JheSI+U2NyZWVuc2hvdDwvdGV4dD4KPC9zdmc+" alt="Screenshot 2" style="width: 150px;">
+            </div>
+        </div>
+    </div>
+    <script>
+        function openModal(app) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('app-title');
+            const image = document.getElementById('app-image');
+            const description = document.getElementById('app-description');
+            if (app === 'lactech') {
+                title.textContent = 'Lactech';
+                image.src = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMwMDdiZmYiLz4KICA8dGV4dCB4PSI1MCIgeT0iNTUiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj5MYWN0ZWNoPC90ZXh0Pgo8L3N2Zz4=';
+                description.textContent = 'Lactech é um aplicativo inovador para gerenciamento de produções leiteiras, com recursos para rastreamento de animais, produção de leite e mais. Desenvolvido para fazendas modernas.';
+            }
+            modal.style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

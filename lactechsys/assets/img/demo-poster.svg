@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#f3f4f6"/>
+  <rect x="440" y="260" width="400" height="200" rx="20" fill="#22c55e" opacity="0.1"/>
+  <text x="640" y="380" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#4b5563">Clique para assistir</text>
+</svg>
