@@ -37,6 +37,7 @@
     <script src="pwa-manager.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <link href="assets/css/dark-theme-fixes.css" rel="stylesheet">
 </head>
 <body class="gradient-mesh antialiased">
 
@@ -1786,34 +1787,55 @@
 
         log('=== SCRIPT FUNCIONÁRIO COMPLETO CARREGADO ===');
         
-        // PWA Installation Handler
+                    // App Version Display
         document.addEventListener('DOMContentLoaded', function() {
-            // Adiciona botão de instalação PWA se disponível
-            if (window.pwaManager && window.pwaManager.deferredPrompt) {
-                const installButton = document.createElement('button');
-                installButton.id = 'pwa-install-btn';
-                                   installButton.className = 'fixed top-4 right-4 z-50 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-200';
-                installButton.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
-                    Instalar App
-                `;
-                
-                installButton.addEventListener('click', () => {
-                    window.pwaManager.installApp();
+            // Adiciona versão do app no perfil do usuário
+            const appVersion = '1.0.0';
+            
+            // Função para adicionar versão em elementos de perfil
+            function addVersionToProfile() {
+                const profileElements = document.querySelectorAll('.user-profile, .profile-info, .user-info');
+                profileElements.forEach(element => {
+                    if (!element.querySelector('.app-version')) {
+                        const versionDiv = document.createElement('div');
+                        versionDiv.className = 'app-version text-xs text-gray-500 mt-2';
+                        versionDiv.innerHTML = `App v${appVersion}`;
+                        element.appendChild(versionDiv);
+                    }
                 });
                 
-                document.body.appendChild(installButton);
+                // Adicionar no footer se existir
+                const footer = document.querySelector('footer, .footer');
+                if (footer && !footer.querySelector('.app-version')) {
+                    const versionDiv = document.createElement('div');
+                    versionDiv.className = 'app-version text-xs text-gray-500 text-center mt-4';
+                    versionDiv.innerHTML = `LacTech v${appVersion}`;
+                    footer.appendChild(versionDiv);
+                }
             }
             
-            // Adiciona link para página de instalação
-            const installLink = document.createElement('a');
-            installLink.href = '/install-pwa.html';
-                           installLink.className = 'fixed top-4 left-4 z-50 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-lg text-sm transition-all duration-200';
-            installLink.innerHTML = '📱 PWA';
+            // Função para adicionar versão no modal de perfil
+            function addVersionToProfileModal() {
+                const profileModal = document.getElementById('profileModal');
+                if (profileModal && !profileModal.querySelector('.app-version')) {
+                    const versionDiv = document.createElement('div');
+                    versionDiv.className = 'app-version text-xs text-gray-500 text-center mt-4 p-4 border-t border-gray-200';
+                    versionDiv.innerHTML = `LacTech v${appVersion}`;
+                    profileModal.querySelector('.modal-content').appendChild(versionDiv);
+                }
+            }
             
-            document.body.appendChild(installLink);
+            // Executar após carregamento
+            setTimeout(addVersionToProfile, 1000);
+            
+            // Adicionar versão quando o modal de perfil for aberto
+            const originalOpenProfileModal = window.openProfileModal;
+            window.openProfileModal = function() {
+                if (originalOpenProfileModal) {
+                    originalOpenProfileModal();
+                }
+                setTimeout(addVersionToProfileModal, 100);
+            };
         });
     </script>
 </body>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conexão - LacTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_config_fixed.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">🔧 Teste de Conexão - LacTech</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Teste de Autenticação -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">🔐 Teste de Autenticação</h2>
+                    <div id="authStatus" class="mb-4">
+                        <div class="animate-pulse bg-gray-200 h-4 rounded"></div>
+                    </div>
+                    <button onclick="testAuth()" class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors">
+                        Testar Autenticação
+                    </button>
+                </div>
+
+                <!-- Teste de Conexão com Banco -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">🗄️ Teste de Banco de Dados</h2>
+                    <div id="dbStatus" class="mb-4">
+                        <div class="animate-pulse bg-gray-200 h-4 rounded"></div>
+                    </div>
+                    <button onclick="testDatabase()" class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition-colors">
+                        Testar Banco
+                    </button>
+                </div>
+
+                <!-- Teste de Tabelas -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">📊 Teste de Tabelas</h2>
+                    <div id="tablesStatus" class="mb-4">
+                        <div class="animate-pulse bg-gray-200 h-4 rounded"></div>
+                    </div>
+                    <button onclick="testTables()" class="w-full bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 transition-colors">
+                        Testar Tabelas
+                    </button>
+                </div>
+
+                <!-- Teste de Funções RPC -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">⚙️ Teste de Funções RPC</h2>
+                    <div id="rpcStatus" class="mb-4">
+                        <div class="animate-pulse bg-gray-200 h-4 rounded"></div>
+                    </div>
+                    <button onclick="testRPC()" class="w-full bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-600 transition-colors">
+                        Testar RPC
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resultados Detalhados -->
+            <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">📋 Resultados Detalhados</h2>
+                <div id="results" class="space-y-4">
+                    <div class="text-gray-500 text-center">Clique nos botões acima para executar os testes</div>
+                </div>
+            </div>
+
+            <!-- Links para Páginas -->
+            <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">🔗 Links para Páginas</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="index.html" class="bg-blue-100 text-blue-700 py-3 px-4 rounded-lg text-center hover:bg-blue-200 transition-colors">
+                        🏠 Index
+                    </a>
+                    <a href="login.html" class="bg-green-100 text-green-700 py-3 px-4 rounded-lg text-center hover:bg-green-200 transition-colors">
+                        🔐 Login
+                    </a>
+                    <a href="gerente.html" class="bg-purple-100 text-purple-700 py-3 px-4 rounded-lg text-center hover:bg-purple-200 transition-colors">
+                        👨‍💼 Gerente
+                    </a>
+                    <a href="funcionario.html" class="bg-orange-100 text-orange-700 py-3 px-4 rounded-lg text-center hover:bg-orange-200 transition-colors">
+                        👷 Funcionário
+                    </a>
+                    <a href="veterinario.html" class="bg-red-100 text-red-700 py-3 px-4 rounded-lg text-center hover:bg-red-200 transition-colors">
+                        🐄 Veterinário
+                    </a>
+                    <a href="proprietario.html" class="bg-indigo-100 text-indigo-700 py-3 px-4 rounded-lg text-center hover:bg-indigo-200 transition-colors">
+                        👑 Proprietário
+                    </a>
+                    <a href="PrimeiroAcesso.html" class="bg-yellow-100 text-yellow-700 py-3 px-4 rounded-lg text-center hover:bg-yellow-200 transition-colors">
+                        🆕 Primeiro Acesso
+                    </a>
+                    <a href="install-pwa.html" class="bg-pink-100 text-pink-700 py-3 px-4 rounded-lg text-center hover:bg-pink-200 transition-colors">
+                        📱 PWA
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para adicionar resultado
+        function addResult(title, status, message, details = null) {
+            const resultsDiv = document.getElementById('results');
+            const statusColor = status === 'success' ? 'text-green-600' : status === 'error' ? 'text-red-600' : 'text-yellow-600';
+            const statusIcon = status === 'success' ? '✅' : status === 'error' ? '❌' : '⚠️';
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'border-l-4 border-gray-200 pl-4 py-2';
+            resultDiv.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <h3 class="font-semibold text-gray-800">${title}</h3>
+                    <span class="${statusColor} font-semibold">${statusIcon} ${status.toUpperCase()}</span>
+                </div>
+                <p class="text-gray-600 mt-1">${message}</p>
+                ${details ? `<pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-x-auto">${JSON.stringify(details, null, 2)}</pre>` : ''}
+            `;
+            
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        // Teste de Autenticação
+        async function testAuth() {
+            const statusDiv = document.getElementById('authStatus');
+            statusDiv.innerHTML = '<div class="text-blue-600">Testando...</div>';
+            
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    statusDiv.innerHTML = '<div class="text-red-600">❌ Erro na autenticação</div>';
+                    addResult('Autenticação', 'error', 'Erro ao verificar autenticação', error);
+                    return;
+                }
+                
+                if (user) {
+                    statusDiv.innerHTML = '<div class="text-green-600">✅ Usuário autenticado</div>';
+                    addResult('Autenticação', 'success', `Usuário logado: ${user.email}`, {
+                        id: user.id,
+                        email: user.email,
+                        created_at: user.created_at
+                    });
+                } else {
+                    statusDiv.innerHTML = '<div class="text-yellow-600">⚠️ Nenhum usuário logado</div>';
+                    addResult('Autenticação', 'warning', 'Nenhum usuário autenticado');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="text-red-600">❌ Erro no teste</div>';
+                addResult('Autenticação', 'error', 'Erro inesperado', error);
+            }
+        }
+
+        // Teste de Banco de Dados
+        async function testDatabase() {
+            const statusDiv = document.getElementById('dbStatus');
+            statusDiv.innerHTML = '<div class="text-blue-600">Testando...</div>';
+            
+            try {
+                // Testar conexão básica
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    statusDiv.innerHTML = '<div class="text-red-600">❌ Erro na conexão</div>';
+                    addResult('Conexão com Banco', 'error', 'Erro ao conectar com banco de dados', error);
+                    return;
+                }
+                
+                statusDiv.innerHTML = '<div class="text-green-600">✅ Conexão OK</div>';
+                addResult('Conexão com Banco', 'success', 'Conexão com banco de dados estabelecida');
+                
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="text-red-600">❌ Erro no teste</div>';
+                addResult('Conexão com Banco', 'error', 'Erro inesperado', error);
+            }
+        }
+
+        // Teste de Tabelas
+        async function testTables() {
+            const statusDiv = document.getElementById('tablesStatus');
+            statusDiv.innerHTML = '<div class="text-blue-600">Testando...</div>';
+            
+            const tables = ['users', 'farms', 'milk_production', 'quality_tests', 'financial_records'];
+            let successCount = 0;
+            let errorCount = 0;
+            const results = {};
+            
+            for (const table of tables) {
+                try {
+                    const { data, error } = await supabase
+                        .from(table)
+                        .select('count')
+                        .limit(1);
+                    
+                    if (error) {
+                        errorCount++;
+                        results[table] = { status: 'error', error: error.message };
+                    } else {
+                        successCount++;
+                        results[table] = { status: 'success' };
+                    }
+                } catch (error) {
+                    errorCount++;
+                    results[table] = { status: 'error', error: error.message };
+                }
+            }
+            
+            if (errorCount === 0) {
+                statusDiv.innerHTML = '<div class="text-green-600">✅ Todas as tabelas OK</div>';
+                addResult('Tabelas', 'success', `Todas as ${tables.length} tabelas estão acessíveis`);
+            } else {
+                statusDiv.innerHTML = `<div class="text-yellow-600">⚠️ ${successCount} OK, ${errorCount} com erro</div>`;
+                addResult('Tabelas', 'warning', `${successCount} tabelas OK, ${errorCount} com erro`, results);
+            }
+        }
+
+        // Teste de Funções RPC
+        async function testRPC() {
+            const statusDiv = document.getElementById('rpcStatus');
+            statusDiv.innerHTML = '<div class="text-blue-600">Testando...</div>';
+            
+            try {
+                // Testar função get_user_profile
+                const { data, error } = await supabase.rpc('get_user_profile');
+                
+                if (error) {
+                    statusDiv.innerHTML = '<div class="text-red-600">❌ Erro nas funções RPC</div>';
+                    addResult('Funções RPC', 'error', 'Erro ao executar função RPC', error);
+                    return;
+                }
+                
+                statusDiv.innerHTML = '<div class="text-green-600">✅ Funções RPC OK</div>';
+                addResult('Funções RPC', 'success', 'Função get_user_profile executada com sucesso', data);
+                
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="text-red-600">❌ Erro no teste</div>';
+                addResult('Funções RPC', 'error', 'Erro inesperado', error);
+            }
+        }
+
+        // Executar testes automáticos ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                testAuth();
+                testDatabase();
+                testTables();
+                testRPC();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

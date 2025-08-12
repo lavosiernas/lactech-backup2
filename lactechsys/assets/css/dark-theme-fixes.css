@@ -1,0 +1,79 @@
+/* Correções para o tema escuro */
+
+/* Corrigir hover branco no tema escuro */
+.dark .hover\:bg-gray-100:hover {
+    background-color: #374151 !important; /* gray-700 */
+}
+
+.dark .hover\:bg-white:hover {
+    background-color: #374151 !important; /* gray-700 */
+}
+
+.dark .hover\:text-gray-900:hover {
+    color: #f9fafb !important; /* gray-100 */
+}
+
+/* Corrigir duplicação da logo da fazenda */
+.dark .farm-logo {
+    display: block !important;
+}
+
+.dark .farm-logo + .farm-logo {
+    display: none !important;
+}
+
+/* Corrigir duplicação do ícone de upload no modo escuro */
+.dark button svg + svg {
+    display: none !important;
+}
+
+.dark .upload-icon {
+    display: block !important;
+}
+
+.dark .upload-icon + .upload-icon {
+    display: none !important;
+}
+
+/* Corrigir hover branco no tema escuro para botões de upload */
+.dark button:hover svg {
+    color: #f9fafb !important;
+}
+
+.dark .hover\:bg-blue-600:hover svg,
+.dark .hover\:bg-blue-700:hover svg {
+    color: #ffffff !important;
+}
+
+/* Corrigir problemas nos relatórios */
+.report-container .farm-logo {
+    max-width: 200px;
+    height: auto;
+    margin: 0 auto 20px;
+}
+
+.report-container .system-logo {
+    max-width: 150px;
+    height: auto;
+    margin: 0 auto 15px;
+}
+
+/* Corrigir cores do tema escuro nos relatórios */
+.dark .report-container {
+    background-color: #1f2937;
+    color: #f9fafb;
+}
+
+.dark .report-container table {
+    background-color: #374151;
+    color: #f9fafb;
+}
+
+.dark .report-container th {
+    background-color: #4b5563;
+    color: #f9fafb;
+}
+
+.dark .report-container td {
+    border-color: #6b7280;
+}
