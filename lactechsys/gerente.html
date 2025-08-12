@@ -571,9 +571,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <div class="text-xl font-bold text-slate-900 mb-1" id="lastCollection">--:--</div>
+                        <div class="text-lg font-bold text-slate-900 mb-1" id="lastCollection">--/--/---- - --:--</div>
                     <div class="text-xs text-slate-500 font-medium">Última Coleta</div>
-                    <div class="text-xs text-slate-600 font-semibold mt-1">Horário</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Data e Hora</div>
                     </div>
                 </div>
 
@@ -1295,61 +1295,44 @@
                 </div>
 
             <!-- Botões de Exportação - Design Responsivo -->
+            <!-- Botões de Exportação - Design Simples -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <!-- PDF -->
-                <button onclick="exportPDFReport()" class="group relative overflow-hidden bg-gradient-to-br from-red-500 via-red-600 to-rose-700 text-white rounded-xl sm:rounded-2xl p-6 sm:p-4 lg:p-5 hover:from-red-600 hover:via-red-700 hover:to-rose-800 transition-all duration-500 shadow-lg hover:shadow-red-glow transform hover:-translate-y-1 hover:scale-102 border border-red-400/30">
-                    <!-- Animated Background -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div class="relative flex flex-col items-center space-y-2 sm:space-y-3">
-                        <div class="p-3 sm:p-2.5 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-md group-hover:bg-white/30 transition-all duration-300 group-hover:scale-105">
-                            <svg class="w-7 h-7 sm:w-6 sm:h-6 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-center space-y-2 sm:space-y-1">
-                            <h4 class="text-base sm:text-base font-bold tracking-wide group-hover:scale-105 transition-transform duration-300">Exportar PDF</h4>
-                            <p class="text-sm sm:text-xs opacity-90 font-medium">Relatório completo formatado</p>
-                            <div class="w-8 sm:w-10 h-0.5 bg-white/50 mx-auto rounded-full group-hover:w-10 sm:group-hover:w-12 transition-all duration-300"></div>
+                <button onclick="exportPDFReport()" class="bg-red-600 hover:bg-red-700 text-white rounded-lg p-4 transition-colors duration-200 shadow-md">
+                    <div class="flex flex-col items-center space-y-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div class="text-center">
+                            <h4 class="font-bold">Exportar PDF</h4>
+                            <p class="text-sm opacity-90">Relatório completo formatado</p>
                         </div>
                     </div>
                 </button>
                 
                 <!-- Excel -->
-                <button onclick="exportExcelReport()" class="group relative overflow-hidden bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700 text-white rounded-xl sm:rounded-2xl p-6 sm:p-4 lg:p-5 hover:from-emerald-600 hover:via-green-700 hover:to-teal-800 transition-all duration-500 shadow-lg hover:shadow-green-glow transform hover:-translate-y-1 hover:scale-102 border border-green-400/30">
-                    <!-- Animated Background -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div class="relative flex flex-col items-center space-y-2 sm:space-y-3">
-                        <div class="p-3 sm:p-2.5 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-md group-hover:bg-white/30 transition-all duration-300 group-hover:scale-105">
-                            <svg class="w-7 h-7 sm:w-6 sm:h-6 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-center space-y-2 sm:space-y-1">
-                            <h4 class="text-base sm:text-base font-bold tracking-wide group-hover:scale-105 transition-transform duration-300">Exportar Excel</h4>
-                            <p class="text-sm sm:text-xs opacity-90 font-medium">Planilha para análise</p>
-                            <div class="w-8 sm:w-10 h-0.5 bg-white/50 mx-auto rounded-full group-hover:w-10 sm:group-hover:w-12 transition-all duration-300"></div>
+                <button onclick="exportExcelReport()" class="bg-green-600 hover:bg-green-700 text-white rounded-lg p-4 transition-colors duration-200 shadow-md">
+                    <div class="flex flex-col items-center space-y-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div class="text-center">
+                            <h4 class="font-bold">Exportar Excel</h4>
+                            <p class="text-sm opacity-90">Planilha para análise</p>
                         </div>
                     </div>
                 </button>
                 
                 <!-- Prévia -->
-                <button onclick="previewReportTab()" class="group relative overflow-hidden bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-700 text-white rounded-xl sm:rounded-2xl p-6 sm:p-4 lg:p-5 hover:from-violet-600 hover:via-purple-700 hover:to-indigo-800 transition-all duration-500 shadow-lg hover:shadow-purple-glow transform hover:-translate-y-1 hover:scale-102 border border-purple-400/30">
-                    <!-- Animated Background -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div class="relative flex flex-col items-center space-y-2 sm:space-y-3">
-                        <div class="p-3 sm:p-2.5 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-md group-hover:bg-white/30 transition-all duration-300 group-hover:scale-105">
-                            <svg class="w-7 h-7 sm:w-6 sm:h-6 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="animation-duration: 2s;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-center space-y-2 sm:space-y-1">
-                            <h4 class="text-base sm:text-base font-bold tracking-wide group-hover:scale-105 transition-transform duration-300">Visualizar Prévia</h4>
-                            <p class="text-sm sm:text-xs opacity-90 font-medium">Amostra do relatório</p>
-                            <div class="w-8 sm:w-10 h-0.5 bg-white/50 mx-auto rounded-full group-hover:w-10 sm:group-hover:w-12 transition-all duration-300"></div>
+                <button onclick="previewReportTab()" class="bg-purple-600 hover:bg-purple-700 text-white rounded-lg p-4 transition-colors duration-200 shadow-md">
+                    <div class="flex flex-col items-center space-y-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        <div class="text-center">
+                            <h4 class="font-bold">Visualizar Prévia</h4>
+                            <p class="text-sm opacity-90">Amostra do relatório</p>
                         </div>
                     </div>
                 </button>
@@ -2925,14 +2908,14 @@ async function loadDashboardData() {
                     const avgQuality = totalScore / validTests;
                     document.getElementById('qualityAverage').textContent = `${Math.round(avgQuality)}%`;
                 } else {
-                    document.getElementById('qualityAverage').textContent = '0%';
+                    document.getElementById('qualityAverage').textContent = '--%';
                 }
             } else {
-                document.getElementById('qualityAverage').textContent = '0%';
+                document.getElementById('qualityAverage').textContent = '--%';
             }
         } catch (error) {
-            console.log('Quality tests table not available');
-            document.getElementById('qualityAverage').textContent = '0%';
+            console.log('Quality tests table not available or no data');
+            document.getElementById('qualityAverage').textContent = '--%';
         }
 
         // Load financial data - handle if table doesn't exist
@@ -3037,11 +3020,29 @@ async function loadVolumeData() {
         document.getElementById('volumeWeekAvg').textContent = `${weekAvg.toFixed(0)} L`;
         document.getElementById('volumeGrowth').textContent = `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
         
-        const now = new Date();
-        document.getElementById('lastCollection').textContent = now.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
+        // Buscar a última coleta real do banco de dados
+        const { data: lastCollectionData, error: lastCollectionError } = await supabase
+            .from('milk_production')
+            .select('created_at')
+            .eq('farm_id', volumeUserData.farm_id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (!lastCollectionError && lastCollectionData && lastCollectionData.length > 0) {
+            const lastCollectionTime = new Date(lastCollectionData[0].created_at);
+            const dateStr = lastCollectionTime.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+            const timeStr = lastCollectionTime.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('lastCollection').textContent = `${dateStr} - ${timeStr}`;
+        } else {
+            document.getElementById('lastCollection').textContent = '--/--/---- - --:--';
+        }
         
     } catch (error) {
         console.error('Error loading volume data:', error);
@@ -8693,22 +8694,46 @@ async function loadReportTabSettings() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data, error } = await supabase
+        // Buscar dados do usuário incluindo farm_id
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('report_farm_name, report_farm_logo_base64')
+            .select('report_farm_name, report_farm_logo_base64, farm_id')
             .eq('id', user.id)
             .single();
 
-        if (data) {
-            reportTabSettings.farmName = data.report_farm_name || '';
-            reportTabSettings.farmLogo = data.report_farm_logo_base64;
-            
-            // Atualizar campos
-            document.getElementById('reportFarmNameTab').value = reportTabSettings.farmName;
-            updateFarmLogoPreviewTab(reportTabSettings.farmLogo);
+        if (userError) throw userError;
+
+        // Se não tem nome da fazenda configurado, buscar do banco
+        let farmName = userData.report_farm_name;
+        if (!farmName && userData.farm_id) {
+            const { data: farmData, error: farmError } = await supabase
+                .from('farms')
+                .select('name')
+                .eq('id', userData.farm_id)
+                .single();
+
+            if (!farmError && farmData) {
+                farmName = farmData.name;
+            }
         }
+
+        // Se ainda não tem nome, usar padrão
+        if (!farmName) {
+            farmName = 'Fazenda';
+        }
+
+        reportTabSettings.farmName = farmName;
+        reportTabSettings.farmLogo = userData.report_farm_logo_base64;
+        
+        // Atualizar campos
+        document.getElementById('reportFarmNameTab').value = farmName;
+        updateFarmLogoPreviewTab(reportTabSettings.farmLogo);
+        
+        console.log('Nome da fazenda carregado:', farmName);
     } catch (error) {
         console.error('Erro ao carregar configurações:', error);
+        // Em caso de erro, usar nome padrão
+        document.getElementById('reportFarmNameTab').value = 'Fazenda';
     }
 }
 
@@ -8971,12 +8996,12 @@ async function exportExcelReport() {
         const mediaVolume = dadosExcel.length > 0 ? totalVolume / dadosExcel.length : 0;
         const totalRegistros = dadosExcel.length;
 
-        // Criar dados para Excel com design melhorado
+        // Criar dados para Excel com design limpo
         const excelData = [
             // Cabeçalho Principal
             [`RELATÓRIO DE PRODUÇÃO DE LEITE - ${farmName.toUpperCase()}`],
             [''],
-            ['📊 INFORMAÇÕES DO RELATÓRIO'],
+            ['INFORMAÇÕES DO RELATÓRIO'],
             ['Período:', `${dataInicio} até ${dataFim}`],
             ['Data de Geração:', dataGeracao],
             ['Total de Registros:', totalRegistros],
@@ -8984,15 +9009,15 @@ async function exportExcelReport() {
             ['Média por Registro:', `${mediaVolume.toFixed(2)} L`],
             [''],
             // Cabeçalho da Tabela
-            ['📅 Data', '👤 Funcionário', '🕐 Turno', '🥛 Volume (L)', '🌡️ Temperatura (°C)', '📝 Observações', '⏰ Registro']
+            ['Data', 'Funcionário', 'Turno', 'Volume (L)', 'Temperatura (°C)', 'Observações', 'Data/Hora Registro']
         ];
 
         dadosExcel.forEach(item => {
             const data = new Date(item.production_date).toLocaleDateString('pt-BR');
             const turno = {
-                'manha': '🌅 Manhã',
-                'tarde': '☀️ Tarde', 
-                'noite': '🌙 Noite'
+                'manha': 'Manhã',
+                'tarde': 'Tarde', 
+                'noite': 'Noite'
             }[item.shift] || item.shift;
             const dataHora = new Date(item.created_at).toLocaleString('pt-BR');
 

@@ -40,45 +40,64 @@ async function loadFarmLogo() {
       return null
     }
 
-    const { data: userData, error: userError } = await supabase
+    // Primeiro, verificar se o usuário atual tem logo configurada
+    const { data: currentUserData, error: currentUserError } = await supabase
       .from('users')
-      .select('farm_id')
+      .select('report_farm_logo_base64, report_farm_name, farm_id')
       .eq('id', currentUser.id)
       .single()
 
-    if (userError || !userData?.farm_id) {
-      console.error("Erro ao obter farm_id:", userError)
+    if (currentUserError) {
+      console.error("Erro ao obter dados do usuário atual:", currentUserError)
       return null
     }
 
-    // Buscar configurações do gerente da fazenda
+    // Se o usuário atual tem logo, usar ela
+    if (currentUserData?.report_farm_logo_base64) {
+      console.log("Logo da fazenda carregada do usuário atual com sucesso")
+      console.log("Tamanho da logo:", currentUserData.report_farm_logo_base64.length)
+      
+      // Atualizar o nome da fazenda se disponível
+      if (currentUserData.report_farm_name && window.reportSettings) {
+        window.reportSettings.farmName = currentUserData.report_farm_name
+      }
+      
+      return currentUserData.report_farm_logo_base64
+    }
+
+    // Se não tem farm_id, não pode buscar configurações do gerente
+    if (!currentUserData?.farm_id) {
+      console.log("Usuário não tem farm_id associado")
+      return null
+    }
+
+    // Buscar configurações do gerente da fazenda como fallback
     const { data: managerData, error: managerError } = await supabase
       .from('users')
       .select('report_farm_logo_base64, report_farm_name')
-      .eq('farm_id', userData.farm_id)
+      .eq('farm_id', currentUserData.farm_id)
       .eq('role', 'gerente')
       .not('report_farm_logo_base64', 'is', null)
       .maybeSingle()
 
     if (managerError) {
-      console.log("Nenhuma configuração de gerente encontrada:", managerError)
+      console.log("Erro ao buscar configurações do gerente:", managerError)
       return null
     }
 
     if (managerData?.report_farm_logo_base64) {
-      farmLogoBase64 = managerData.report_farm_logo_base64
       console.log("Logo da fazenda carregada do gerente com sucesso")
-      console.log("Tamanho da logo:", farmLogoBase64.length)
+      console.log("Tamanho da logo:", managerData.report_farm_logo_base64.length)
       
       // Também atualizar o nome da fazenda se disponível
       if (managerData.report_farm_name && window.reportSettings) {
         window.reportSettings.farmName = managerData.report_farm_name
       }
       
-      return farmLogoBase64
+      return managerData.report_farm_logo_base64
     }
 
-    console.log("Nenhuma logo da fazenda encontrada nas configurações do gerente")
+    console.log("Nenhuma logo da fazenda encontrada nas configurações do usuário ou do gerente")
     return null
   } catch (error) {
     console.error("Erro ao carregar logo da fazenda:", error)

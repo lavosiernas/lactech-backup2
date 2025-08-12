@@ -9,7 +9,6 @@ window.reportSettings = {
     farmLogo: null
 };
 
-// Load manager's report settings for the farm
 async function loadManagerReportSettings() {
     try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -26,7 +25,6 @@ async function loadManagerReportSettings() {
             return;
         }
 
-        // Buscar configurações do gerente da fazenda
         const { data: managerData, error: managerError } = await supabase
             .from('users')
             .select('report_farm_logo_base64, report_farm_name')
