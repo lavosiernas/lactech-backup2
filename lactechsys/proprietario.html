@@ -4,6 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Proprietário - Sistema Leiteiro</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Painel do Proprietário - Sistema completo para gestão de produção leiteira, controle de qualidade e relatórios">
+    <meta name="theme-color" content="#166534">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LacTech Proprietário">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#166534">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,6 +37,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config_fixed.js"></script>
     <script src="auth_fix.js"></script>
+    <script src="pwa-manager.js"></script>
     <script>
         // Aguardar configuração do Supabase antes de carregar fix_data_sync_complete.js
         document.addEventListener('DOMContentLoaded', function() {
@@ -21,7 +48,6 @@
             }, 1000);
         });
     </script>
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <script>
@@ -2155,6 +2181,36 @@
                 window.location.href = 'index.html';
             }
         }
+        
+        // PWA Installation Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adiciona botão de instalação PWA se disponível
+            if (window.pwaManager && window.pwaManager.deferredPrompt) {
+                const installButton = document.createElement('button');
+                installButton.id = 'pwa-install-btn';
+                                   installButton.className = 'fixed top-4 right-4 z-50 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-200';
+                installButton.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    Instalar App
+                `;
+                
+                installButton.addEventListener('click', () => {
+                    window.pwaManager.installApp();
+                });
+                
+                document.body.appendChild(installButton);
+            }
+            
+            // Adiciona link para página de instalação
+            const installLink = document.createElement('a');
+            installLink.href = '/install-pwa.html';
+                           installLink.className = 'fixed top-4 left-4 z-50 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-lg text-sm transition-all duration-200';
+            installLink.innerHTML = '📱 PWA';
+            
+            document.body.appendChild(installLink);
+        });
     </script>
 </body>
 </html>

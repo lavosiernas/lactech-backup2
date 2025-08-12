@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+    <msapplication>
+        <tile>
+            <square70x70logo src="https://i.postimg.cc/vmrkgDcB/lactech.png"/>
+            <square150x150logo src="https://i.postimg.cc/vmrkgDcB/lactech.png"/>
+            <square310x310logo src="https://i.postimg.cc/vmrkgDcB/lactech.png"/>
+            <TileColor>#166534</TileColor>
+        </tile>
+    </msapplication>
+</browserconfig>

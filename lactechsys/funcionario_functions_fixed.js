@@ -48,7 +48,6 @@ async function loadManagerReportSettings() {
     }
 }
 
-// Load recent activity - CORRIGIDO para usar farm_id
 async function loadRecentActivity() {
     console.log('[DEBUG] loadRecentActivity() iniciado...');
     try {
@@ -60,7 +59,6 @@ async function loadRecentActivity() {
 
         console.log('[DEBUG] Usuário autenticado:', user.email);
 
-        // Primeiro obter farm_id do usuário
         const { data: userData, error: userError } = await supabase
             .from('users')
             .select('farm_id')

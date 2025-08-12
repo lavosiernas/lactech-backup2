@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PWA - LacTech</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Teste das funcionalidades PWA do LacTech">
+    <meta name="theme-color" content="#166534">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pwa-manager.js"></script>
+    
+    <style>
+        .test-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #cbd5e1;
+        }
+        
+        .status-success { color: #059669; }
+        .status-error { color: #dc2626; }
+        .status-warning { color: #d97706; }
+        .status-info { color: #2563eb; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="LacTech" class="w-16 h-16 mx-auto mb-4 rounded-lg">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Teste PWA - LacTech</h1>
+            <p class="text-gray-600">Verificação das funcionalidades Progressive Web App</p>
+        </div>
+
+        <!-- Test Results -->
+        <div class="max-w-4xl mx-auto space-y-6">
+            
+            <!-- PWA Basics -->
+            <div class="test-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">🔧 Funcionalidades Básicas</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <span>Service Worker</span>
+                        <span id="sw-status" class="font-semibold">Verificando...</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <span>Manifest</span>
+                        <span id="manifest-status" class="font-semibold">Verificando...</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <span>HTTPS</span>
+                        <span id="https-status" class="font-semibold">Verificando...</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <span>Instalação</span>
+                        <span id="install-status" class="font-semibold">Verificando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cache Status -->
+            <div class="test-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">💾 Status do Cache</h2>
+                <div id="cache-status" class="space-y-2">
+                    <div class="text-center text-gray-500">Verificando cache...</div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="test-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">🔔 Notificações</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <span>Permissão</span>
+                        <span id="notification-status" class="font-semibold">Verificando...</span>
+                    </div>
+                    <button id="test-notification" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg disabled:opacity-50" disabled>
+                        Testar Notificação
+                    </button>
+                </div>
+            </div>
+
+            <!-- Device Info -->
+            <div class="test-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📱 Informações do Dispositivo</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-3 bg-white rounded-lg">
+                        <div class="text-sm text-gray-600">Navegador</div>
+                        <div id="browser-info" class="font-semibold">-</div>
+                    </div>
+                    <div class="p-3 bg-white rounded-lg">
+                        <div class="text-sm text-gray-600">Sistema</div>
+                        <div id="os-info" class="font-semibold">-</div>
+                    </div>
+                    <div class="p-3 bg-white rounded-lg">
+                        <div class="text-sm text-gray-600">Display Mode</div>
+                        <div id="display-mode" class="font-semibold">-</div>
+                    </div>
+                    <div class="p-3 bg-white rounded-lg">
+                        <div class="text-sm text-gray-600">Conexão</div>
+                        <div id="connection-status" class="font-semibold">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance -->
+            <div class="test-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">⚡ Performance</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-3 bg-white rounded-lg text-center">
+                        <div class="text-sm text-gray-600">Tempo de Carregamento</div>
+                        <div id="load-time" class="font-semibold text-lg">-</div>
+                    </div>
+                    <div class="p-3 bg-white rounded-lg text-center">
+                        <div class="text-sm text-gray-600">Memória</div>
+                        <div id="memory-usage" class="font-semibold text-lg">-</div>
+                    </div>
+                    <div class="p-3 bg-white rounded-lg text-center">
+                        <div class="text-sm text-gray-600">Bateria</div>
+                        <div id="battery-level" class="font-semibold text-lg">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="test-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">🛠️ Ações</h2>
+                <div class="flex flex-wrap gap-4">
+                    <button id="clear-cache" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                        Limpar Cache
+                    </button>
+                    <button id="update-sw" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                        Atualizar SW
+                    </button>
+                    <button id="request-permission" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                        Solicitar Permissão
+                    </button>
+                    <button id="install-app" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+                        Instalar App
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="test-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📊 Resumo dos Testes</h2>
+                <div id="test-summary" class="space-y-2">
+                    <div class="text-center text-gray-500">Executando testes...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-500 text-sm">
+            <p>LacTech PWA Test Suite v1.0.0</p>
+            <a href="/" class="text-green-600 hover:text-green-700 mt-2 inline-block">← Voltar ao app</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startTime = performance.now();
+            
+            // Test PWA Basics
+            testPWABasics();
+            
+            // Test Cache
+            testCache();
+            
+            // Test Notifications
+            testNotifications();
+            
+            // Get Device Info
+            getDeviceInfo();
+            
+            // Test Performance
+            testPerformance();
+            
+            // Setup Action Buttons
+            setupActions();
+            
+            // Update load time
+            setTimeout(() => {
+                const loadTime = ((performance.now() - startTime) / 1000).toFixed(2);
+                document.getElementById('load-time').textContent = `${loadTime}s`;
+            }, 100);
+        });
+
+        function testPWABasics() {
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                document.getElementById('sw-status').textContent = '✅ Suportado';
+                document.getElementById('sw-status').className = 'font-semibold status-success';
+            } else {
+                document.getElementById('sw-status').textContent = '❌ Não suportado';
+                document.getElementById('sw-status').className = 'font-semibold status-error';
+            }
+
+            // Manifest
+            fetch('/manifest.json')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('manifest-status').textContent = '✅ Carregado';
+                        document.getElementById('manifest-status').className = 'font-semibold status-success';
+                    } else {
+                        throw new Error('Manifest not found');
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('manifest-status').textContent = '❌ Erro';
+                    document.getElementById('manifest-status').className = 'font-semibold status-error';
+                });
+
+            // HTTPS
+            if (location.protocol === 'https:' || location.hostname === 'localhost') {
+                document.getElementById('https-status').textContent = '✅ Seguro';
+                document.getElementById('https-status').className = 'font-semibold status-success';
+            } else {
+                document.getElementById('https-status').textContent = '⚠️ HTTP';
+                document.getElementById('https-status').className = 'font-semibold status-warning';
+            }
+
+            // Installation
+            if (window.pwaManager && window.pwaManager.deferredPrompt) {
+                document.getElementById('install-status').textContent = '✅ Disponível';
+                document.getElementById('install-status').className = 'font-semibold status-success';
+            } else {
+                document.getElementById('install-status').textContent = 'ℹ️ Não disponível';
+                document.getElementById('install-status').className = 'font-semibold status-info';
+            }
+        }
+
+        async function testCache() {
+            const cacheStatus = document.getElementById('cache-status');
+            
+            if ('caches' in window) {
+                try {
+                    const cacheNames = await caches.keys();
+                    const cacheList = cacheNames.map(name => 
+                        `<div class="flex items-center justify-between p-2 bg-white rounded">
+                            <span>${name}</span>
+                            <span class="text-green-600">✅ Ativo</span>
+                        </div>`
+                    ).join('');
+                    
+                    cacheStatus.innerHTML = cacheList || '<div class="text-gray-500">Nenhum cache encontrado</div>';
+                } catch (error) {
+                    cacheStatus.innerHTML = '<div class="text-red-600">Erro ao verificar cache</div>';
+                }
+            } else {
+                cacheStatus.innerHTML = '<div class="text-red-600">Cache API não suportada</div>';
+            }
+        }
+
+        function testNotifications() {
+            const notificationStatus = document.getElementById('notification-status');
+            const testButton = document.getElementById('test-notification');
+            
+            if ('Notification' in window) {
+                switch (Notification.permission) {
+                    case 'granted':
+                        notificationStatus.textContent = '✅ Concedida';
+                        notificationStatus.className = 'font-semibold status-success';
+                        testButton.disabled = false;
+                        break;
+                    case 'denied':
+                        notificationStatus.textContent = '❌ Negada';
+                        notificationStatus.className = 'font-semibold status-error';
+                        break;
+                    default:
+                        notificationStatus.textContent = 'ℹ️ Não solicitada';
+                        notificationStatus.className = 'font-semibold status-info';
+                        break;
+                }
+            } else {
+                notificationStatus.textContent = '❌ Não suportado';
+                notificationStatus.className = 'font-semibold status-error';
+            }
+        }
+
+        function getDeviceInfo() {
+            // Browser
+            const userAgent = navigator.userAgent;
+            let browser = 'Desconhecido';
+            if (userAgent.includes('Chrome')) browser = 'Chrome';
+            else if (userAgent.includes('Firefox')) browser = 'Firefox';
+            else if (userAgent.includes('Safari')) browser = 'Safari';
+            else if (userAgent.includes('Edge')) browser = 'Edge';
+            document.getElementById('browser-info').textContent = browser;
+
+            // OS
+            let os = 'Desconhecido';
+            if (userAgent.includes('Windows')) os = 'Windows';
+            else if (userAgent.includes('Mac')) os = 'macOS';
+            else if (userAgent.includes('Linux')) os = 'Linux';
+            else if (userAgent.includes('Android')) os = 'Android';
+            else if (userAgent.includes('iOS')) os = 'iOS';
+            document.getElementById('os-info').textContent = os;
+
+            // Display Mode
+            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+                document.getElementById('display-mode').textContent = '📱 Standalone';
+            } else {
+                document.getElementById('display-mode').textContent = '🌐 Browser';
+            }
+
+            // Connection
+            if ('connection' in navigator) {
+                const connection = navigator.connection;
+                document.getElementById('connection-status').textContent = connection.effectiveType || 'Desconhecido';
+            } else {
+                document.getElementById('connection-status').textContent = 'Desconhecido';
+            }
+        }
+
+        function testPerformance() {
+            // Memory
+            if ('memory' in performance) {
+                const memory = performance.memory;
+                const usedMB = Math.round(memory.usedJSHeapSize / 1024 / 1024);
+                document.getElementById('memory-usage').textContent = `${usedMB}MB`;
+            } else {
+                document.getElementById('memory-usage').textContent = 'N/A';
+            }
+
+            // Battery
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(battery => {
+                    const level = Math.round(battery.level * 100);
+                    document.getElementById('battery-level').textContent = `${level}%`;
+                });
+            } else {
+                document.getElementById('battery-level').textContent = 'N/A';
+            }
+        }
+
+        function setupActions() {
+            // Clear Cache
+            document.getElementById('clear-cache').addEventListener('click', async () => {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    alert('Cache limpo com sucesso!');
+                    testCache();
+                }
+            });
+
+            // Update Service Worker
+            document.getElementById('update-sw').addEventListener('click', () => {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistration().then(registration => {
+                        if (registration) {
+                            registration.update();
+                            alert('Service Worker atualizado!');
+                        }
+                    });
+                }
+            });
+
+            // Request Permission
+            document.getElementById('request-permission').addEventListener('click', async () => {
+                if ('Notification' in window) {
+                    const permission = await Notification.requestPermission();
+                    testNotifications();
+                    alert(`Permissão: ${permission}`);
+                }
+            });
+
+            // Install App
+            document.getElementById('install-app').addEventListener('click', () => {
+                if (window.pwaManager && window.pwaManager.deferredPrompt) {
+                    window.pwaManager.installApp();
+                } else {
+                    alert('Instalação não disponível no momento');
+                }
+            });
+
+            // Test Notification
+            document.getElementById('test-notification').addEventListener('click', () => {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Teste PWA', {
+                        body: 'Esta é uma notificação de teste do LacTech PWA!',
+                        icon: 'https://i.postimg.cc/vmrkgDcB/lactech.png'
+                    });
+                }
+            });
+        }
+
+        // Update summary
+        setTimeout(() => {
+            const summary = document.getElementById('test-summary');
+            const tests = document.querySelectorAll('[id$="-status"]');
+            let passed = 0;
+            let total = tests.length;
+
+            tests.forEach(test => {
+                if (test.textContent.includes('✅')) passed++;
+            });
+
+            summary.innerHTML = `
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-800">${passed}/${total}</div>
+                    <div class="text-gray-600">Testes passaram</div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        ${passed === total ? '🎉 PWA funcionando perfeitamente!' : '⚠️ Alguns testes falharam'}
+                    </div>
+                </div>
+            `;
+        }, 2000);
+    </script>
+</body>
+</html>
