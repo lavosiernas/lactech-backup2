@@ -152,3 +152,4 @@ Para verificar se a correção funcionou:
 - Todas as propriedades de background e border foram explicitamente definidas como preto puro
 - Foram incluídos seletores para todos os tipos de input e containers possíveis
 - **NENHUMA** cor cinza (`#6b7280`, `#9ca3af`) deve aparecer nos inputs
+
