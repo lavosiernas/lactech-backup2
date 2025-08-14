@@ -9,6 +9,7 @@
     <script src="supabase_config_fixed.js"></script>
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="assets/css/dark-theme-fixes.css" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -98,7 +99,7 @@
     <!-- Header -->
     <header class="gradient-forest shadow-xl">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-center h-16">
+            <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
                         <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,6 +111,16 @@
                         <p class="text-xs text-forest-200">Sistema de Controle Leiteiro</p>
                     </div>
                 </div>
+                
+                <!-- Botão de Tema Escuro -->
+                <button id="themeToggle" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+                    <svg id="sunIcon" class="w-5 h-5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <svg id="moonIcon" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </header>
@@ -746,10 +757,7 @@
             updateStepIndicator(4);
             updateSummary();
             
-            // Auto-redirect after 3 seconds
-            setTimeout(() => {
-                redirectToDashboard();
-            }, 3000);
+            // Removido auto-redirect automático - usuário deve clicar no botão manualmente
         }
 
         function updateStepIndicator(currentStep) {
@@ -1052,14 +1060,65 @@
         // Initialize masks when page loads
         document.addEventListener('DOMContentLoaded', setupInputMasks);
 
-        // Check if user is already logged in
-        document.addEventListener('DOMContentLoaded', async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                // User is already logged in, redirect to dashboard
-                window.location.href = '/dashboard';
+        // =====================================================
+        // CONTROLE DO TEMA ESCURO
+        // =====================================================
+        
+        function initTheme() {
+            const html = document.documentElement;
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            
+            // Verificar tema salvo ou preferência do sistema
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Aplicar tema inicial
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                html.classList.add('dark');
+                body.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                html.classList.remove('dark');
+                body.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
             }
-        });
+            
+            // Event listener para alternar tema
+            themeToggle.addEventListener('click', () => {
+                if (html.classList.contains('dark')) {
+                    // Mudar para tema claro
+                    html.classList.remove('dark');
+                    body.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                } else {
+                    // Mudar para tema escuro
+                    html.classList.add('dark');
+                    body.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Inicializar tema quando a página carregar
+        document.addEventListener('DOMContentLoaded', initTheme);
+
+        // Check if user is already logged in - DISABLED FOR FIRST ACCESS PAGE
+        // document.addEventListener('DOMContentLoaded', async () => {
+        //     const { data: { user } } = await supabase.auth.getUser();
+        //     if (user) {
+        //         // User is already logged in, redirect to dashboard
+        //         window.location.href = '/dashboard';
+        //     }
+        // });
     </script>
 
 </body>

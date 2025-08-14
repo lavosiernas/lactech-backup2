@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Dados dos Relatórios - LacTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_config_fixed.js"></script>
+    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">🔍 Teste de Dados dos Relatórios</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Teste de Autenticação -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h2 class="text-lg font-semibold text-blue-800 mb-3">1. Status de Autenticação</h2>
+                    <div id="authStatus" class="text-sm text-blue-700">
+                        Verificando...
+                    </div>
+                </div>
+
+                <!-- Teste de Farm ID -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h2 class="text-lg font-semibold text-green-800 mb-3">2. Farm ID do Usuário</h2>
+                    <div id="farmIdStatus" class="text-sm text-green-700">
+                        Verificando...
+                    </div>
+                </div>
+
+                <!-- Teste de Dados de Produção -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h2 class="text-lg font-semibold text-yellow-800 mb-3">3. Dados de Produção</h2>
+                    <div id="productionStatus" class="text-sm text-yellow-700">
+                        Verificando...
+                    </div>
+                    <div id="productionData" class="mt-3 text-xs bg-white p-2 rounded border max-h-40 overflow-y-auto">
+                        <!-- Dados serão inseridos aqui -->
+                    </div>
+                </div>
+
+                <!-- Teste de Dados de Qualidade -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <h2 class="text-lg font-semibold text-purple-800 mb-3">4. Dados de Qualidade</h2>
+                    <div id="qualityStatus" class="text-sm text-purple-700">
+                        Verificando...
+                    </div>
+                    <div id="qualityData" class="mt-3 text-xs bg-white p-2 rounded border max-h-40 overflow-y-auto">
+                        <!-- Dados serão inseridos aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Teste -->
+            <div class="mt-8 space-y-4">
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="testAuth()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        🔐 Testar Autenticação
+                    </button>
+                    <button onclick="testFarmId()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                        🏠 Testar Farm ID
+                    </button>
+                    <button onclick="testProductionData()" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                        📊 Testar Dados de Produção
+                    </button>
+                    <button onclick="testQualityData()" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                        🧪 Testar Dados de Qualidade
+                    </button>
+                    <button onclick="testAll()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                        🔄 Testar Tudo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resultados Detalhados -->
+            <div class="mt-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">📋 Resultados Detalhados</h2>
+                <div id="detailedResults" class="bg-gray-100 p-4 rounded-lg text-sm font-mono">
+                    Clique em "Testar Tudo" para ver os resultados detalhados...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentFarmId = null;
+
+        // Função para testar autenticação
+        async function testAuth() {
+            const statusDiv = document.getElementById('authStatus');
+            const resultsDiv = document.getElementById('detailedResults');
+            
+            try {
+                statusDiv.innerHTML = '🔍 Verificando...';
+                
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    statusDiv.innerHTML = '❌ Erro na autenticação: ' + error.message;
+                    resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro de autenticação: ${error.message}</div>`;
+                    return;
+                }
+                
+                if (!user) {
+                    statusDiv.innerHTML = '❌ Usuário não autenticado';
+                    resultsDiv.innerHTML += '<div class="text-red-600">❌ Usuário não autenticado</div>';
+                    return;
+                }
+                
+                currentUser = user;
+                statusDiv.innerHTML = `✅ Autenticado: ${user.email}`;
+                resultsDiv.innerHTML += `<div class="text-green-600">✅ Usuário autenticado: ${user.email}</div>`;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Erro: ' + error.message;
+                resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro geral: ${error.message}</div>`;
+            }
+        }
+
+        // Função para testar Farm ID
+        async function testFarmId() {
+            const statusDiv = document.getElementById('farmIdStatus');
+            const resultsDiv = document.getElementById('detailedResults');
+            
+            if (!currentUser) {
+                statusDiv.innerHTML = '❌ Usuário não autenticado';
+                return;
+            }
+            
+            try {
+                statusDiv.innerHTML = '🔍 Verificando Farm ID...';
+                
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('farm_id, name, role')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (error) {
+                    statusDiv.innerHTML = '❌ Erro ao buscar Farm ID: ' + error.message;
+                    resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro ao buscar Farm ID: ${error.message}</div>`;
+                    return;
+                }
+                
+                if (!userData || !userData.farm_id) {
+                    statusDiv.innerHTML = '❌ Farm ID não encontrado';
+                    resultsDiv.innerHTML += '<div class="text-red-600">❌ Farm ID não encontrado</div>';
+                    return;
+                }
+                
+                currentFarmId = userData.farm_id;
+                statusDiv.innerHTML = `✅ Farm ID: ${userData.farm_id}<br>👤 Nome: ${userData.name}<br>🔑 Role: ${userData.role}`;
+                resultsDiv.innerHTML += `<div class="text-green-600">✅ Farm ID encontrado: ${userData.farm_id} | Nome: ${userData.name} | Role: ${userData.role}</div>`;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Erro: ' + error.message;
+                resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro ao buscar Farm ID: ${error.message}</div>`;
+            }
+        }
+
+        // Função para testar dados de produção
+        async function testProductionData() {
+            const statusDiv = document.getElementById('productionStatus');
+            const dataDiv = document.getElementById('productionData');
+            const resultsDiv = document.getElementById('detailedResults');
+            
+            if (!currentFarmId) {
+                statusDiv.innerHTML = '❌ Farm ID não disponível';
+                return;
+            }
+            
+            try {
+                statusDiv.innerHTML = '🔍 Buscando dados de produção...';
+                
+                const { data: productionData, error } = await supabase
+                    .from('milk_production')
+                    .select(`
+                        id,
+                        production_date,
+                        volume_liters,
+                        shift,
+                        temperature,
+                        observations,
+                        created_at,
+                        users(name)
+                    `)
+                    .eq('farm_id', currentFarmId)
+                    .order('production_date', { ascending: false })
+                    .limit(10);
+                
+                if (error) {
+                    statusDiv.innerHTML = '❌ Erro ao buscar dados: ' + error.message;
+                    resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro ao buscar produção: ${error.message}</div>`;
+                    return;
+                }
+                
+                if (!productionData || productionData.length === 0) {
+                    statusDiv.innerHTML = '⚠️ Nenhum dado de produção encontrado';
+                    dataDiv.innerHTML = '<em>Nenhum registro encontrado</em>';
+                    resultsDiv.innerHTML += '<div class="text-yellow-600">⚠️ Nenhum dado de produção encontrado</div>';
+                    return;
+                }
+                
+                const totalVolume = productionData.reduce((sum, record) => sum + (parseFloat(record.volume_liters) || 0), 0);
+                statusDiv.innerHTML = `✅ ${productionData.length} registros encontrados<br>📊 Volume total: ${totalVolume.toFixed(2)} L`;
+                
+                // Mostrar dados detalhados
+                dataDiv.innerHTML = productionData.map(record => `
+                    <div class="border-b border-gray-200 py-1">
+                        <strong>${record.production_date}</strong> | 
+                        ${record.volume_liters}L | 
+                        ${record.shift} | 
+                        ${record.users?.name || 'N/A'}
+                    </div>
+                `).join('');
+                
+                resultsDiv.innerHTML += `<div class="text-green-600">✅ ${productionData.length} registros de produção encontrados | Volume total: ${totalVolume.toFixed(2)}L</div>`;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Erro: ' + error.message;
+                resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro ao buscar produção: ${error.message}</div>`;
+            }
+        }
+
+        // Função para testar dados de qualidade
+        async function testQualityData() {
+            const statusDiv = document.getElementById('qualityStatus');
+            const dataDiv = document.getElementById('qualityData');
+            const resultsDiv = document.getElementById('detailedResults');
+            
+            if (!currentFarmId) {
+                statusDiv.innerHTML = '❌ Farm ID não disponível';
+                return;
+            }
+            
+            try {
+                statusDiv.innerHTML = '🔍 Buscando dados de qualidade...';
+                
+                const { data: qualityData, error } = await supabase
+                    .from('quality_tests')
+                    .select(`
+                        id,
+                        test_date,
+                        fat_percentage,
+                        protein_percentage,
+                        scc,
+                        cbt,
+                        created_at
+                    `)
+                    .eq('farm_id', currentFarmId)
+                    .order('test_date', { ascending: false })
+                    .limit(10);
+                
+                if (error) {
+                    statusDiv.innerHTML = '❌ Erro ao buscar dados: ' + error.message;
+                    resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro ao buscar qualidade: ${error.message}</div>`;
+                    return;
+                }
+                
+                if (!qualityData || qualityData.length === 0) {
+                    statusDiv.innerHTML = '⚠️ Nenhum dado de qualidade encontrado';
+                    dataDiv.innerHTML = '<em>Nenhum registro encontrado</em>';
+                    resultsDiv.innerHTML += '<div class="text-yellow-600">⚠️ Nenhum dado de qualidade encontrado</div>';
+                    return;
+                }
+                
+                const avgFat = qualityData.reduce((sum, record) => sum + (parseFloat(record.fat_percentage) || 0), 0) / qualityData.length;
+                const avgProtein = qualityData.reduce((sum, record) => sum + (parseFloat(record.protein_percentage) || 0), 0) / qualityData.length;
+                
+                statusDiv.innerHTML = `✅ ${qualityData.length} registros encontrados<br>🧈 Gordura média: ${avgFat.toFixed(2)}%<br>🥛 Proteína média: ${avgProtein.toFixed(2)}%`;
+                
+                // Mostrar dados detalhados
+                dataDiv.innerHTML = qualityData.map(record => `
+                    <div class="border-b border-gray-200 py-1">
+                        <strong>${record.test_date}</strong> | 
+                        Gordura: ${record.fat_percentage}% | 
+                        Proteína: ${record.protein_percentage}% | 
+                        CCS: ${record.scc || 'N/A'}
+                    </div>
+                `).join('');
+                
+                resultsDiv.innerHTML += `<div class="text-green-600">✅ ${qualityData.length} registros de qualidade encontrados | Gordura média: ${avgFat.toFixed(2)}% | Proteína média: ${avgProtein.toFixed(2)}%</div>`;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Erro: ' + error.message;
+                resultsDiv.innerHTML += `<div class="text-red-600">❌ Erro ao buscar qualidade: ${error.message}</div>`;
+            }
+        }
+
+        // Função para testar tudo
+        async function testAll() {
+            document.getElementById('detailedResults').innerHTML = '<div class="text-blue-600">🔄 Iniciando testes completos...</div>';
+            
+            await testAuth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testFarmId();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testProductionData();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testQualityData();
+            
+            document.getElementById('detailedResults').innerHTML += '<div class="text-green-600 font-bold mt-4">✅ Todos os testes concluídos!</div>';
+        }
+
+        // Executar teste inicial quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            testAuth();
+        });
+    </script>
+</body>
+</html>

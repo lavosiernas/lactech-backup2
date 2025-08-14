@@ -122,8 +122,8 @@ async function generateVolumePDF(data, isPreview = false) {
     console.log("- window.reportSettings:", window.reportSettings)
 
     const today = new Date().toLocaleDateString("pt-BR")
-    const totalVolume = 0 // Volume não está disponível em financial_records
-    const avgVolume = totalVolume / data.length || 0
+    const totalVolume = data.reduce((sum, record) => sum + (parseFloat(record.volume_liters) || 0), 0)
+    const avgVolume = data.length > 0 ? totalVolume / data.length : 0
 
     // Criar novo documento PDF usando a sintaxe correta do jsPDF 2.x
     const { jsPDF } = window.jspdf
@@ -218,8 +218,8 @@ async function generateVolumePDF(data, isPreview = false) {
       xPosition = margin
       const rowData = [
         new Date(record.production_date).toLocaleDateString("pt-BR"),
-        record.production_time || "",
-        '0.00', // Volume não disponível
+        record.created_at ? new Date(record.created_at).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' }) : "",
+        (parseFloat(record.volume_liters) || 0).toFixed(2),
         record.shift || "",
         record.observations || "",
       ]

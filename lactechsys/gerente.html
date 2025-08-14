@@ -1067,7 +1067,8 @@
     </nav>
     <!-- Reports Tab -->
     <div id="reports-tab" class="tab-content hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="px-4 sm:px-6 lg:px-8 py-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Configurações de Relatórios -->
             <div class="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 border border-slate-200 shadow-lg">
                 <!-- Header da Seção -->
@@ -1373,6 +1374,8 @@
                 
                 <!-- Espaço adicional para rolagem -->
                 <div class="h-32"></div>
+            </div>
+        </div>
     <!-- Modal de Adicionar Usuário -->
     <div id="addUserModal" class="fullscreen-modal">
         <div class="modal-content">
@@ -8757,6 +8760,11 @@ async function loadReportTabSettings() {
         document.getElementById('reportFarmNameTab').value = farmName;
         updateFarmLogoPreviewTab(reportTabSettings.farmLogo);
         
+        // Corrigir duplicação da logo
+        setTimeout(() => {
+            fixLogoDuplication();
+        }, 100);
+        
         console.log('Nome da fazenda carregado:', farmName);
     } catch (error) {
         console.error('Erro ao carregar configurações:', error);
@@ -8803,11 +8811,110 @@ function updateFarmLogoPreviewTab(base64Logo) {
         preview.classList.remove('hidden');
         placeholder.classList.add('hidden');
         removeBtn.classList.remove('hidden');
+        
+        // Forçar ocultação do placeholder via CSS
+        placeholder.style.display = 'none';
+        placeholder.style.visibility = 'hidden';
+        placeholder.style.opacity = '0';
+        placeholder.style.position = 'absolute';
+        placeholder.style.zIndex = '-1';
+        placeholder.style.pointerEvents = 'none';
+        placeholder.style.width = '0';
+        placeholder.style.height = '0';
+        placeholder.style.overflow = 'hidden';
+        
+        // Garantir que o botão remover seja visível
+        removeBtn.style.display = 'flex';
+        removeBtn.style.visibility = 'visible';
+        removeBtn.style.opacity = '1';
+        removeBtn.style.position = 'relative';
+        removeBtn.style.zIndex = 'auto';
+        removeBtn.style.pointerEvents = 'auto';
+        removeBtn.style.width = 'auto';
+        removeBtn.style.height = 'auto';
+        removeBtn.style.overflow = 'visible';
     } else {
         image.src = '';
         preview.classList.add('hidden');
         placeholder.classList.remove('hidden');
         removeBtn.classList.add('hidden');
+        
+        // Forçar exibição do placeholder via CSS
+        placeholder.style.display = 'flex';
+        placeholder.style.visibility = 'visible';
+        placeholder.style.opacity = '1';
+        placeholder.style.position = 'relative';
+        placeholder.style.zIndex = 'auto';
+        placeholder.style.pointerEvents = 'auto';
+        placeholder.style.width = 'auto';
+        placeholder.style.height = 'auto';
+        placeholder.style.overflow = 'visible';
+        
+        // Forçar ocultação completa do botão remover via CSS
+        removeBtn.style.display = 'none';
+        removeBtn.style.visibility = 'hidden';
+        removeBtn.style.opacity = '0';
+        removeBtn.style.position = 'absolute';
+        removeBtn.style.zIndex = '-1';
+        removeBtn.style.pointerEvents = 'none';
+        removeBtn.style.width = '0';
+        removeBtn.style.height = '0';
+        removeBtn.style.overflow = 'hidden';
+    }
+}
+
+// Função para corrigir duplicação da logo na inicialização
+function fixLogoDuplication() {
+    const preview = document.getElementById('farmLogoPreviewTab');
+    const placeholder = document.getElementById('farmLogoPlaceholderTab');
+    const removeBtn = document.getElementById('removeFarmLogoTab');
+    
+    if (preview && placeholder && removeBtn) {
+        if (preview.classList.contains('hidden')) {
+            // Se preview está oculta, mostrar placeholder e ocultar botão remover
+            placeholder.style.display = 'flex';
+            placeholder.style.visibility = 'visible';
+            placeholder.style.opacity = '1';
+            placeholder.style.position = 'relative';
+            placeholder.style.zIndex = 'auto';
+            placeholder.style.pointerEvents = 'auto';
+            placeholder.style.width = 'auto';
+            placeholder.style.height = 'auto';
+            placeholder.style.overflow = 'visible';
+            
+            // Ocultar botão remover completamente
+            removeBtn.style.display = 'none';
+            removeBtn.style.visibility = 'hidden';
+            removeBtn.style.opacity = '0';
+            removeBtn.style.position = 'absolute';
+            removeBtn.style.zIndex = '-1';
+            removeBtn.style.pointerEvents = 'none';
+            removeBtn.style.width = '0';
+            removeBtn.style.height = '0';
+            removeBtn.style.overflow = 'hidden';
+        } else {
+            // Se preview está visível, ocultar placeholder e mostrar botão remover
+            placeholder.style.display = 'none';
+            placeholder.style.visibility = 'hidden';
+            placeholder.style.opacity = '0';
+            placeholder.style.position = 'absolute';
+            placeholder.style.zIndex = '-1';
+            placeholder.style.pointerEvents = 'none';
+            placeholder.style.width = '0';
+            placeholder.style.height = '0';
+            placeholder.style.overflow = 'hidden';
+            
+            // Mostrar botão remover
+            removeBtn.style.display = 'flex';
+            removeBtn.style.visibility = 'visible';
+            removeBtn.style.opacity = '1';
+            removeBtn.style.position = 'relative';
+            removeBtn.style.zIndex = 'auto';
+            removeBtn.style.pointerEvents = 'auto';
+            removeBtn.style.width = 'auto';
+            removeBtn.style.height = 'auto';
+            removeBtn.style.overflow = 'visible';
+        }
     }
 }
 

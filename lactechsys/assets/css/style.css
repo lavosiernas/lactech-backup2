@@ -757,8 +757,8 @@ main {
 .dark .form-floating input,
 .dark .form-floating select,
 .dark .form-floating textarea {
-    background: #111111 !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: #000000 !important; /* PRETO PURO */
+    border: 1px solid #000000 !important; /* PRETO PURO */
     color: #ffffff !important;
 }
 
@@ -1235,8 +1235,8 @@ main {
 .dark input[type="date"],
 .dark input[type="text"],
 .dark select {
-    background-color: #111111 !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
+    background-color: #000000 !important; /* PRETO PURO */
+    border-color: #000000 !important; /* PRETO PURO */
     color: #ffffff !important;
 }
 
