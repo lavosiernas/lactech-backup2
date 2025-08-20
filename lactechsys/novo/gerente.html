@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Gerente - Sistema Leiteiro</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Painel do Gerente - Sistema completo para gestão de produção leiteira, controle de qualidade e relatórios">
+    <meta name="theme-color" content="#166534">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LacTech Gerente">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#166534">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/console-guard.js"></script>
+    <script src="pwa-manager.js"></script>
+    <script src="lactech-core.js"></script>
+    
+    <!-- CSS Files -->
+    <link href="assets/css/dark-theme-fixes.css" rel="stylesheet">
+    
+    <script>
+        function getChartTheme(isDark) {
+            return {
+                gridColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                tickColor: isDark ? '#e5e7eb' : '#475569',
+                lineBorder: isDark ? '#34d399' : '#369e36',
+                lineFill: isDark ? 'rgba(52, 211, 153, 0.15)' : 'rgba(54, 158, 54, 0.1)',
+                barColor: isDark ? '#60a5fa' : '#2563eb'
+            };
+        }
+
+        function applyChartTheme() {
+            try {
+                const isDark = document.documentElement.classList.contains('dark');
+                const t = getChartTheme(isDark);
+                const charts = [window.volumeChart, window.dashboardWeeklyChart, window.temperatureChart, window.qualityChart, window.weeklyVolumeChart, window.dailyVolumeChart, window.qualityTrendChart, window.qualityDistributionChart, window.paymentsChart, window.weeklySummaryChart, window.monthlyVolumeChart].filter(Boolean);
+
+                charts.forEach((ch) => {
+                    try {
+                        if (ch.config.type === 'line') {
+                            ch.data.datasets.forEach(ds => {
+                                ds.borderColor = t.lineBorder;
+                                ds.backgroundColor = t.lineFill;
+                            });
+                        }
+                        if (ch.config.type === 'bar') {
+                            ch.data.datasets.forEach(ds => {
+                                ds.backgroundColor = t.barColor;
+                            });
+                        }
+                        if (ch.options && ch.options.scales) {
+                            Object.values(ch.options.scales).forEach(scale => {
+                                if (!scale.grid) scale.grid = {};
+                                if (!scale.ticks) scale.ticks = {};
+                                scale.grid.color = t.gridColor;
+                                scale.ticks.color = t.tickColor;
+                            });
+                        }
+                        if (ch.options && ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
+                            ch.options.plugins.legend.labels.color = t.tickColor;
+                        }
+                        ch.update('none');
+                    } catch (_) {}
+                });
+            } catch (_) {}
+        }
+    </script>
+    
+    <!-- Minimized CSS animations -->
+    <style>
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        .btn-shimmer { position: relative; overflow: hidden; }
+        .btn-shimmer::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent); transition: left 0.6s ease-in-out; }
+        .btn-shimmer:hover::before { left: 100%; }
+        .glass-effect { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .shadow-red-glow { box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3); }
+        .shadow-green-glow { box-shadow: 0 10px 40px rgba(34, 197, 94, 0.3); }
+        .shadow-purple-glow { box-shadow: 0 10px 40px rgba(147, 51, 234, 0.3); }
+        .floating-particles::before, .floating-particles::after { content: ''; position: absolute; width: 4px; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 50%; animation: float 3s ease-in-out infinite; }
+        .floating-particles::before { top: 20%; right: 15%; animation-delay: -1s; }
+        .floating-particles::after { bottom: 25%; left: 10%; animation-delay: -2s; }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        (function(){
+            var nativeAlert = window.alert;
+            window.alert = function(message){
+                try {
+                    var msg = String(message);
+                    if (typeof showNotification === 'function') {
+                        showNotification(msg, 'warning');
+                        return;
+                    }
+                    if (console && console.warn) console.warn('ALERT:', msg);
+                    var host = (window.location && window.location.hostname) || '';
+                    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') {
+                        nativeAlert(msg);
+                    }
+                } catch(_){}
+            };
+        })();
+
+        (function() {
+            'use strict';
+            function destroyModals() {
+                const deleteModal = document.getElementById('deleteUserModal');
+                const photoModal = document.getElementById('photoChoiceModal');
+                if (deleteModal) deleteModal.remove();
+                if (photoModal) photoModal.remove();
+                if (typeof userToDelete !== 'undefined') userToDelete = null;
+                document.body.style.overflow = 'auto';
+                document.body.style.position = 'static';
+                document.body.style.pointerEvents = 'auto';
+            }
+            destroyModals();
+            setInterval(destroyModals, 100);
+            window.deleteUser = function() { return false; };
+            window.closePhotoChoiceModal = function() { const photoModal = document.getElementById('photoChoiceModal'); if (photoModal) photoModal.remove(); };
+            window.choosePhotoSource = function() { const photoModal = document.getElementById('photoChoiceModal'); if (photoModal) photoModal.remove(); };
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const script = document.createElement('script');
+                script.src = 'fix_data_sync_complete.js';
+                document.head.appendChild(script);
+            }, 1000);
+        });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="assets/js/pdf-generator.js"></script>
+    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <style>
+        #photoChoiceModal.show #modalContent { transform: scale(1); opacity: 1; } 
+        button:focus { outline: none; } 
+        .focus-visible:focus { --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: rgba(134, 209, 134, 0.5); --tw-ring-offset-width: 2px; } 
+        .bg-forest-100 { background-color: #f0f9f0; } 
+        :root { --forest-300: #86d186; }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'forest': {
+                            50: '#f0f9f0', 100: '#dcf2dc', 200: '#bce5bc', 300: '#8dd18d',
+                            400: '#5bb85b', 500: '#369e36', 600: '#2a7f2a', 700: '#236523',
+                            800: '#1f511f', 900: '#1a431a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="gradient-mesh antialiased transition-colors duration-300" id="mainBody">
+
+
+    <script>
+        async function checkAuthentication() {
+            return await window.authFix.checkAuthenticationFixed();
+        }
+
+        async function startBlockWatcher(intervalMs = 15000) {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+                const check = async () => {
+                    try {
+                        const { data } = await supabase.from('users').select('is_active').eq('id', user.id).single();
+                        if (data && data.is_active === false) {
+                            window.location.href = 'acesso-bloqueado.html';
+                        }
+                    } catch (_) {}
+                };
+                await check();
+                setInterval(check, intervalMs);
+            } catch (_) {}
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const deleteModal = document.getElementById('deleteUserModal');
+            if (deleteModal && !deleteModal.classList.contains('hidden')) {
+                deleteModal.classList.add('hidden');
+            }
+            
+            if (deleteModal) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const target = mutation.target;
+                            if (!target.classList.contains('hidden')) {
+                                if (!userToDelete) {
+                                    target.classList.add('hidden');
+                                }
+                            }
+                        }
+                    });
+                });
+                observer.observe(deleteModal, { attributes: true, attributeFilter: ['class'] });
+            }
+            
+            let protectionCount = 0;
+            const protectionInterval = setInterval(function() {
+                if (protectionCount >= 50) {
+                    clearInterval(protectionInterval);
+                    return;
+                }
+                
+                const modal = document.getElementById('deleteUserModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    if (!userToDelete || !userToDelete.id) {
+                        modal.classList.add('hidden');
+                        modal.style.display = 'none';
+                        modal.style.visibility = 'hidden';
+                        modal.style.opacity = '0';
+                        modal.style.pointerEvents = 'none';
+                    }
+                }
+                protectionCount++;
+            }, 100);
+            
+            if (typeof userToDelete !== 'undefined') {
+                userToDelete = null;
+            }
+            
+            const isAuthenticated = await checkAuthentication();
+            if (!isAuthenticated) {
+                return;
+            }
+            
+            initializeTheme();
+            initializeCharts();
+            await initializePage();
+            setupEventListeners();
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            startBlockWatcher(15000);
+        });
+
+        async function initializePage() {
+            try {
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError || !user) {
+                    showNotification('Erro de autenticação. Redirecionando para login...', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    return;
+                }
+                
+                const { data: userData, error: userError } = await supabase.from('users').select('is_active').eq('id', user.id).single();
+                    
+                if (userError) {
+                    console.error('Error checking user status:', userError);
+                } else if (!userData.is_active) {
+                    window.location.href = 'acesso-bloqueado.html';
+                    return;
+                }
+                
+                try { await setFarmName(); } catch (error) { console.error('Error setting farm name:', error); }
+                try { await setManagerName(); } catch (error) { console.error('Error setting manager name:', error); }
+                try { await loadUserProfile(); } catch (error) { console.error('Error loading user profile:', error); }
+                
+            } catch (error) {
+                console.error('Error in initializePage:', error);
+            }
+        }
+
+        function showSuccessModal(title, message) {
+            const modal = document.createElement('div');
+            modal.id = 'successModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[10000] backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">${title}</h3>
+                        <p class="text-sm text-gray-600">${message}</p>
+                    </div>
+                </div>
+            `;
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeSuccessModal();
+                }
+            });
+            
+            document.body.appendChild(modal);
+            
+            requestAnimationFrame(() => {
+                const content = document.getElementById('modalContent');
+                if (content) {
+                    content.style.transform = 'scale(1)';
+                    content.style.opacity = '1';
+                }
+            });
+            
+            setTimeout(() => {
+                closeSuccessModal();
+            }, 4000);
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) {
+                const content = document.getElementById('modalContent');
+                if (content) {
+                    content.style.transform = 'scale(0.95)';
+                    content.style.opacity = '0';
+                }
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        async function getManagerName() {
+            try {
+                const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        if (user.name) {
+                            return user.name;
+                        }
+                    } catch (error) {
+                        console.error('Error parsing session data:', error);
+                    }
+                }
+                
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    return authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Gerente';
+                }
+
+                const { data, error } = await supabase.from('users').select('name').eq('email', user.email).single();
+                
+                if (error && error.code === 'PGRST116') {
+                    return user.user_metadata?.name || user.email?.split('@')[0] || 'Gerente';
+                }
+                
+                if (error) {
+                    console.error('Error in getManagerName:', error);
+                    return 'Gerente';
+                }
+                return data?.name || 'Gerente';
+            } catch (error) {
+                console.error('Error fetching manager name:', error);
+                return 'Gerente';
+            }
+        }
+
+        async function setFarmName() {
+            const farmName = await getFarmName();
+            document.getElementById('farmNameHeader').textContent = farmName;
+        }
+
+        function extractFormalName(fullName) {
+            if (!fullName || typeof fullName !== 'string') {
+                return 'Gerente';
+            }
+            
+            const names = fullName.trim().split(/\s+/);
+            
+            if (names.length === 1) {
+                return names[0];
+            }
+            
+            if (names.length === 2) {
+                return names[1];
+            }
+            
+            const skipWords = ['da', 'de', 'do', 'das', 'dos', 'di', 'del', 'della', 'delle', 'delli'];
+            
+            let formalName = '';
+            let nameCount = 0;
+            
+            for (let i = 0; i < names.length; i++) {
+                const name = names[i].toLowerCase();
+                
+                if (skipWords.includes(name)) {
+                    continue;
+                }
+                
+                nameCount++;
+                
+                if (nameCount === 2) {
+                    formalName = names[i];
+                    break;
+                }
+            }
+            
+            if (!formalName && names.length >= 2) {
+                formalName = names[1];
+            }
+            
+            if (!formalName) {
+                formalName = names[0];
+            }
+            
+            return formalName.charAt(0).toUpperCase() + formalName.slice(1).toLowerCase();
+        }
+
+        async function setManagerName() {
+            const managerName = await getManagerName();
+            const farmName = await getFarmName();
+            
+            const finalManagerName = managerName || 'Gerente';
+            const finalFarmName = farmName || 'Minha Fazenda';
+            
+            const formalName = extractFormalName(finalManagerName);
+            
+            const elements = ['profileName', 'profileFullName'];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = finalManagerName;
+                }
+            });
+            
+            const headerElement = document.getElementById('managerName');
+            const welcomeElement = document.getElementById('managerWelcome');
+            if (headerElement) {
+                headerElement.textContent = formalName;
+            }
+            if (welcomeElement) {
+                welcomeElement.textContent = formalName;
+            }
+            
+            document.getElementById('profileFarmName').textContent = finalFarmName;
+        }
+
+        async function loadUserProfile() {
+            try {
+                const whatsappElement = document.getElementById('profileWhatsApp');
+                
+                if (!whatsappElement) {
+                    return;
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+            }
+        }
+
+        async function loadVolumeData() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('User not authenticated');
+
+                const { data: volumeUserData, error: userError } = await supabase.from('users').select('farm_id').eq('email', user.email).single();
+                
+                if (userError) {
+                    console.warn('Error fetching user data for volume:', userError);
+                    throw userError;
+                }
+
+                const today = new Date().toISOString().split('T')[0];
+                const { data: todayData, error: todayError } = await supabase.from('milk_production').select('volume_liters').eq('farm_id', volumeUserData.farm_id).gte('production_date', today).lte('production_date', today);
+
+                if (todayError) {
+                    console.warn('Error fetching today data:', todayError);
+                }
+
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                const { data: weekData, error: weekError } = await supabase.from('milk_production').select('volume_liters').eq('farm_id', volumeUserData.farm_id).gte('production_date', weekAgo.toISOString().split('T')[0]);
+
+                if (weekError) {
+                    console.warn('Error fetching week data:', weekError);
+                }
+
+                const todayVolume = todayData?.reduce((sum, record) => sum + (record.volume_liters || 0), 0) || 0;
+                const weekAvg = weekData?.length > 0 ? weekData.reduce((sum, record) => sum + (record.volume_liters || 0), 0) / weekData.length : 0;
+                const growth = weekAvg > 0 ? ((todayVolume - weekAvg) / weekAvg * 100) : 0;
+                
+                document.getElementById('volumeToday').textContent = `${todayVolume.toFixed(0)} L`;
+                document.getElementById('volumeWeekAvg').textContent = `${weekAvg.toFixed(0)} L`;
+                document.getElementById('volumeGrowth').textContent = `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
+                
+                const { data: lastCollectionData, error: lastCollectionError } = await supabase.from('milk_production').select('created_at').eq('farm_id', volumeUserData.farm_id).order('created_at', { ascending: false }).limit(1);
+
+                if (!lastCollectionError && lastCollectionData && lastCollectionData.length > 0) {
+                    const lastCollectionTime = new Date(lastCollectionData[0].created_at);
+                    const dateStr = lastCollectionTime.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const timeStr = lastCollectionTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    document.getElementById('lastCollection').textContent = `${dateStr} - ${timeStr}`;
+                } else {
+                    document.getElementById('lastCollection').textContent = '--/--/---- - --:--';
+                }
+                
+            } catch (error) {
+                console.error('Error loading volume data:', error);
+                document.getElementById('volumeToday').textContent = '0 L';
+                document.getElementById('volumeWeekAvg').textContent = '0 L';
+                document.getElementById('volumeGrowth').textContent = '0%';
+                document.getElementById('lastCollection').textContent = '--:--';
+            }
+        }
+
+        async function loadQualityData() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    throw new Error('User not authenticated');
+                }
+
+                const { data: qualityUserData, error: userError } = await supabase.from('users').select('farm_id').eq('email', user.email).single();
+                
+                if (userError) {
+                    console.warn('Error fetching user data for quality:', userError);
+                    throw userError;
+                }
+
+                const { data: qualityData, error } = await supabase.from('quality_tests').select('fat_percentage, protein_percentage, scc, cbt, test_date').eq('farm_id', qualityUserData.farm_id).not('fat_percentage', 'is', null).not('protein_percentage', 'is', null).order('test_date', { ascending: false }).limit(30);
+
+                if (error) {
+                    console.warn('Error fetching quality data:', error);
+                    throw error;
+                }
+
+                if (qualityData && qualityData.length > 0) {
+                    const validQualityData = qualityData.filter(record => record.fat_percentage && record.protein_percentage && !isNaN(record.fat_percentage) && !isNaN(record.protein_percentage));
+                    
+                    if (validQualityData.length === 0) {
+                        document.getElementById('fatContent').textContent = '--';
+                        document.getElementById('proteinContent').textContent = '--';
+                        document.getElementById('sccCount').textContent = '--';
+                        document.getElementById('tbc').textContent = '--';
+                        document.getElementById('qualityAverage').textContent = '--%';
+                        updateQualityCharts([]);
+                        return;
+                    }
+                    
+                    const avgFat = validQualityData.reduce((sum, record) => sum + (record.fat_percentage || 0), 0) / validQualityData.length;
+                    const avgProtein = validQualityData.reduce((sum, record) => sum + (record.protein_percentage || 0), 0) / validQualityData.length;
+                    const avgSCC = validQualityData.reduce((sum, record) => sum + (record.scc || 0), 0) / validQualityData.length;
+                    const avgTBC = validQualityData.reduce((sum, record) => sum + (record.cbt || 0), 0) / validQualityData.length;
+                    
+                    let totalScore = 0;
+                    let validTests = 0;
+                    
+                    validQualityData.forEach(record => {
+                        if (record.fat_percentage && record.protein_percentage) {
+                            let fatScore = 0;
+                            if (record.fat_percentage >= 3.0 && record.fat_percentage <= 4.5) {
+                                fatScore = 100;
+                            } else if (record.fat_percentage >= 2.5 && record.fat_percentage < 3.0) {
+                                fatScore = 70;
+                            } else if (record.fat_percentage > 4.5) {
+                                fatScore = 80;
+                            } else {
+                                fatScore = Math.max(0, (record.fat_percentage / 2.5) * 70);
+                            }
+                            
+                            let proteinScore = 0;
+                            if (record.protein_percentage >= 3.0 && record.protein_percentage <= 3.8) {
+                                proteinScore = 100;
+                            } else if (record.protein_percentage >= 2.7 && record.protein_percentage < 3.0) {
+                                proteinScore = 70;
+                            } else if (record.protein_percentage > 3.8) {
+                                proteinScore = 80;
+                            } else {
+                                proteinScore = Math.max(0, (record.protein_percentage / 2.7) * 70);
+                            }
+                            
+                            const testScore = (fatScore + proteinScore) / 2;
+                            totalScore += testScore;
+                            validTests++;
+                        }
+                    });
+                    
+                    const avgQuality = validTests > 0 ? totalScore / validTests : 0;
+                    
+                    document.getElementById('fatContent').textContent = avgFat.toFixed(2) + '%';
+                    document.getElementById('proteinContent').textContent = avgProtein.toFixed(2) + '%';
+                    document.getElementById('sccCount').textContent = Math.round(avgSCC).toLocaleString();
+                    document.getElementById('tbc').textContent = Math.round(avgTBC).toLocaleString();
+                    document.getElementById('qualityAverage').textContent = avgQuality.toFixed(1) + '%';
+                    
+                    updateQualityCharts(validQualityData);
+                } else {
+                    document.getElementById('fatContent').textContent = '--';
+                    document.getElementById('proteinContent').textContent = '--';
+                    document.getElementById('sccCount').textContent = '--';
+                    document.getElementById('tbc').textContent = '--';
+                    document.getElementById('qualityAverage').textContent = '--%';
+                    updateQualityCharts([]);
+                }
+            } catch (error) {
+                console.error('Error loading quality data:', error);
+                document.getElementById('fatContent').textContent = '--';
+                document.getElementById('proteinContent').textContent = '--';
+                document.getElementById('sccCount').textContent = '--';
+                document.getElementById('tbc').textContent = '--';
+                document.getElementById('qualityAverage').textContent = '--%';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const appVersion = '1.0.0';
+            
+            function addVersionToProfile() {
+                const profileElements = document.querySelectorAll('.user-profile, .profile-info, .user-info');
+                profileElements.forEach(element => {
+                    if (!element.querySelector('.app-version')) {
+                        const versionDiv = document.createElement('div');
+                        versionDiv.className = 'app-version text-xs text-gray-500 mt-2';
+                        versionDiv.innerHTML = `App v${appVersion}`;
+                        element.appendChild(versionDiv);
+                    }
+                });
+                
+                const footer = document.querySelector('footer, .footer');
+                if (footer && !footer.querySelector('.app-version')) {
+                    const versionDiv = document.createElement('div');
+                    versionDiv.className = 'app-version text-xs text-gray-500 text-center mt-4';
+                    versionDiv.innerHTML = `LacTech v${appVersion}`;
+                    footer.appendChild(versionDiv);
+                }
+            }
+            
+            function addVersionToProfileModal() {
+                const profileModal = document.getElementById('profileModal');
+                if (profileModal && !profileModal.querySelector('.app-version')) {
+                    const versionDiv = document.createElement('div');
+                    versionDiv.className = 'app-version text-xs text-gray-500 text-center mt-4 p-4 border-t border-gray-200';
+                    versionDiv.innerHTML = `LacTech v${appVersion}`;
+                    profileModal.querySelector('.modal-content').appendChild(versionDiv);
+                }
+            }
+            
+            setTimeout(addVersionToProfile, 1000);
+            
+            const originalOpenProfileModal = window.openProfileModal;
+            window.openProfileModal = function() {
+                if (originalOpenProfileModal) {
+                    originalOpenProfileModal();
+                }
+                setTimeout(addVersionToProfileModal, 100);
+            };
+        });
+    </script>
+</body>
+</html>

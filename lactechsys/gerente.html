@@ -34,6 +34,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/js/console-guard.js"></script>
     <script src="pwa-manager.js"></script>
+    <script src="lactech-core.js"></script>
     
     <!-- CSS Files -->
     <link href="assets/css/dark-theme-fixes.css" rel="stylesheet">
@@ -186,9 +187,6 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase_config_fixed.js"></script>
-    <script src="auth_fix.js"></script>
-    <script src="modal_fix_complete.js"></script>
     <script>
         // Non-blocking alert shim routed to showNotification when available
         (function(){
@@ -9298,7 +9296,6 @@ async function exportPDFReport() {
 
         if (!userData?.farm_id) return;
 
-        // Buscar dados
         let query = supabase
             .from('milk_production')
             .select(`
