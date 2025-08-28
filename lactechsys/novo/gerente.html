@@ -138,7 +138,7 @@
                 document.body.style.pointerEvents = 'auto';
             }
             destroyModals();
-            setInterval(destroyModals, 100);
+            // Removed setInterval(destroyModals, 100) - was causing modal interference
             window.deleteUser = function() { return false; };
             window.closePhotoChoiceModal = function() { const photoModal = document.getElementById('photoChoiceModal'); if (photoModal) photoModal.remove(); };
             window.choosePhotoSource = function() { const photoModal = document.getElementById('photoChoiceModal'); if (photoModal) photoModal.remove(); };

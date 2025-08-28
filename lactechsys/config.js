@@ -15,7 +15,7 @@ async function waitForSupabase() {
             if (window.supabase) {
                 resolve(window.supabase);
             } else {
-                setTimeout(checkSupabase, 100);
+                setTimeout(checkSupabase, 50);
             }
         };
         checkSupabase();
@@ -75,9 +75,6 @@ async function initializeSupabase() {
     // Manter compatibilidade
     window.LacTech = window.LacTechAPI;
     
-    console.log('✅ LacTech API Unificada criada com novas configurações');
-    console.log('🔗 URL:', SUPABASE_URL);
-    console.log('📧 SEM CONFIRMAÇÃO DE EMAIL - Acesso direto habilitado');
     window.dispatchEvent(new CustomEvent('lactechapi-ready'));
 }
 
@@ -96,6 +93,12 @@ window.waitForAPI = () => {
 
 // Função global para obter cliente Supabase
 window.getSupabaseClient = () => {
+    // First try to return the existing client from LacTechAPI
+    if (window.LacTechAPI && window.LacTechAPI.supabase) {
+        return window.LacTechAPI.supabase;
+    }
+    
+    // Fallback: create new client if Supabase library is loaded
     if (!window.supabase) {
         throw new Error('Supabase library not loaded');
     }

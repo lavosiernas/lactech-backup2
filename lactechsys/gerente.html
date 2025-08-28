@@ -30,8 +30,8 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- Tailwind CSS Local -->
-    <link href="assets/css/tailwind.css" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -216,11 +216,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        /* Animações para o modal */ 
-        #photoChoiceModal.show #modalContent { 
-            transform: scale(1); 
-            opacity: 1; 
-        } 
+
+        
+
         
         /* Efeito de foco nos botões */ 
         button:focus { 
@@ -245,8 +243,51 @@
         :root {
             --forest-300: #86d186;
         }
+        
+        /* Animações da Câmera */
+        @keyframes focusPulse {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        @keyframes focusSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .focus-pulse {
+            animation: focusPulse 2s ease-in-out infinite;
+        }
+        
+        .focus-success {
+            animation: focusSuccess 0.5s ease-in-out;
+        }
+        
+        /* Estilos da câmera */
+        .camera-overlay {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .camera-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .camera-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Modal de Foto */
+        #photoModal.show #photoModalContent {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+
     </style>
     <script>
+        
         tailwind.config = {
             theme: {
                 extend: {
@@ -1396,7 +1437,7 @@
                             <button type="button" onclick="closeAddUserModal()" class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all">
                                 Cancelar
                             </button>
-                            <button type="submit" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                            <button type="submit" id="createUserBtn" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -1520,44 +1561,129 @@
                 </div>
             </div>
         </div>
+        </div>
+
+
+
+    <!-- Modal de Escolha de Foto Novo -->
+    <div id="photoChoiceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[10000]">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
+            <div class="text-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Adicionar Foto</h3>
+                <p class="text-gray-600 text-sm">Escolha como adicionar a foto do funcionário</p>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="selectFromGallery()" class="w-full p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Galeria</span>
+                </button>
+                
+                <button onclick="takePhoto()" class="w-full p-4 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0118.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span>Câmera</span>
+                </button>
+            </div>
+            
+            <button onclick="closePhotoChoiceModal()" class="w-full mt-4 p-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+                Cancelar
+            </button>
+        </div>
     </div>
 
-    <!-- Modal de Escolha de Fonte da Foto - REMOVIDO TEMPORARIAMENTE --> 
-    <!-- <div id="photoChoiceModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[10000] hidden backdrop-blur-sm"> 
-        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all duration-300 scale-95 opacity-0" id="modalContent"> 
-            <div class="text-center mb-8"> 
-                <div class="w-16 h-16 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4"> 
-                    <svg class="w-8 h-8 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path> 
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path> 
-                    </svg> 
-                </div> 
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Escolher fonte da foto</h3> 
-                <p class="text-sm text-gray-500">Selecione de onde deseja obter sua foto</p> 
-            </div> 
-    
-            <div class="space-y-4 mb-6"> 
-                <button onclick="choosePhotoSource('camera')" class="group w-full px-6 py-4 bg-forest-600 text-white rounded-xl hover:bg-forest-700 transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg flex items-center justify-center space-x-3 font-medium"> 
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path> 
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path> 
-                    </svg> 
-                    <span>Abrir Câmera</span> 
-                </button> 
-                
-                <button onclick="choosePhotoSource('gallery')" class="group w-full px-6 py-4 bg-forest-600 text-white rounded-xl hover:bg-forest-700 transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg flex items-center justify-center space-x-3 font-medium"> 
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path> 
-                    </svg> 
-                    <span>Abrir Galeria</span> 
-                </button> 
-            </div> 
-    
-            <button onclick="closePhotoChoiceModal()" class="w-full px-6 py-3 border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"> 
-                Cancelar 
-            </button> 
-        </div> 
-    </div> -->
+    <!-- Modal da Câmera -->
+    <div id="cameraModal" class="fixed inset-0 bg-black z-[10001] hidden">
+        <div class="relative w-full h-full bg-black overflow-hidden">
+            <!-- Header Minimalista -->
+            <div class="absolute top-0 left-0 right-0 z-20 p-6">
+                <div class="flex items-center justify-between">
+                    <!-- Logo LacTech -->
+                    <div class="flex items-center space-x-3">
+                        <img src="assets/img/lactech-logo.png" alt="LacTech" class="w-8 h-8 rounded-lg">
+                        <div class="text-white">
+                            <div class="text-sm font-semibold">LacTech</div>
+                            <div class="text-xs opacity-70">Verificação Facial</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botão Fechar -->
+                    <button onclick="closeCamera()" class="p-2 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-all">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video da Câmera -->
+            <video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline></video>
+            
+            <!-- Overlay de Verificação Facial -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <!-- Círculo de Foco Principal -->
+                <div id="focusCircle" class="relative">
+                    <!-- Círculo Externo Animado -->
+                    <div class="w-80 h-80 border-2 border-white/40 rounded-full flex items-center justify-center animate-pulse">
+                        <!-- Círculo Interno -->
+                        <div class="w-72 h-72 border-2 border-white/60 rounded-full flex items-center justify-center">
+                            <!-- Círculo de Foco -->
+                            <div class="w-64 h-64 border-3 border-white/80 rounded-full flex items-center justify-center">
+                                <!-- Indicador de Foco -->
+                                <div id="focusIndicator" class="w-56 h-56 border-2 border-green-400 rounded-full flex items-center justify-center opacity-0 transition-opacity duration-500">
+                                    <div class="w-48 h-48 border border-green-300 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Instruções -->
+                    <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 text-center">
+                        <div id="focusText" class="text-white text-lg font-medium mb-2">Posicione o rosto no centro</div>
+                        <div id="focusTimer" class="text-white/70 text-sm hidden">Focando em <span id="timerCount">3</span>s...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles Minimalistas -->
+            <div class="absolute bottom-0 left-0 right-0 z-20 p-8">
+                <div class="flex items-center justify-center space-x-12">
+                    <!-- Botão Trocar Câmera -->
+                    <button onclick="switchCamera()" class="p-4 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-all">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- Botão de Captura -->
+                    <button id="captureBtn" onclick="startFaceVerification()" class="p-6 bg-white rounded-full hover:bg-gray-100 transition-all shadow-2xl transform hover:scale-105">
+                        <div class="w-20 h-20 border-4 border-gray-200 rounded-full flex items-center justify-center">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <!-- Botão Cancelar -->
+                    <button onclick="closeCamera()" class="p-4 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-all">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas para Captura -->
+            <canvas id="cameraCanvas" class="hidden"></canvas>
+        </div>
+    </div>
 
 <!-- Modal de Perfil do Gerente -->
     <div id="profileModal" class="fullscreen-modal">
@@ -1847,10 +1973,7 @@
                 }
             }
             
-            const supabase = window.supabase.createClient(
-                'https://meczbqmehtolwhactdsv.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-            );
+            const supabase = await getSupabaseClient();
             
             // Verificar autenticação do Supabase
             const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -1876,10 +1999,7 @@
             try {
                 if (!window.supabase) return;
                 
-                const supabase = window.supabase.createClient(
-                    'https://meczbqmehtolwhactdsv.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-                );
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
@@ -1910,6 +2030,13 @@
         initializeCharts(); // Initialize charts before loading data
         await initializePage();
         setupEventListeners();
+        
+        // Garantir que o modal de foto esteja fechado na inicialização
+        const photoModal = document.getElementById('photoChoiceModal');
+        if (photoModal) {
+            photoModal.classList.remove('show');
+        }
+        
         updateDateTime();
         setInterval(updateDateTime, 60000); // Update every minute
         // Iniciar verificação de bloqueio durante a sessão
@@ -1941,6 +2068,14 @@ async function getSupabaseClient() {
             throw new Error('Supabase não disponível');
         }
     }
+    
+    // Criar cliente uma única vez
+    window.supabaseClient = window.supabase.createClient(
+        'https://meczbqmehtolwhactdsv.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
+    );
+    
+    return window.supabaseClient;
     
     window.supabaseClient = window.supabase.createClient(
         'https://meczbqmehtolwhactdsv.supabase.co',
@@ -2792,10 +2927,7 @@ async function loadDashboardData() {
         }
     }
     
-    const supabase = window.supabase.createClient(
-        'https://meczbqmehtolwhactdsv.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-    );
+    const supabase = await getSupabaseClient();
     
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -2884,7 +3016,7 @@ async function loadDashboardData() {
                 .from('financial_records')
                 .select('amount, type')
                 .eq('farm_id', userData.farm_id)
-                .eq('type', 'despesa')
+                .eq('type', 'expense')
                 .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
 
             if (!financialError && financialData && financialData.length > 0) {
@@ -2939,10 +3071,7 @@ async function loadVolumeData() {
         }
     }
     
-    const supabase = window.supabase.createClient(
-        'https://meczbqmehtolwhactdsv.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-    );
+    const supabase = await getSupabaseClient();
     
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -3040,10 +3169,7 @@ async function loadQualityData() {
             }
         }
         
-        const supabase = window.supabase.createClient(
-            'https://meczbqmehtolwhactdsv.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-        );
+        const supabase = await getSupabaseClient();
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -3217,10 +3343,7 @@ async function loadPaymentsData() {
         }
     }
     
-    const supabase = window.supabase.createClient(
-        'https://meczbqmehtolwhactdsv.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-    );
+    const supabase = await getSupabaseClient();
     
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -3242,7 +3365,7 @@ async function loadPaymentsData() {
             .from('financial_records')
             .select('amount, type, record_date, created_at, description')
             .eq('farm_id', userData.farm_id)
-            .eq('type', 'receita')
+            .eq('type', 'income')
             .order('created_at', { ascending: false });
 
         if (salesError) {
@@ -3296,10 +3419,7 @@ async function loadUsersData() {
             }
         }
         
-        const supabase = window.supabase.createClient(
-            'https://meczbqmehtolwhactdsv.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-        );
+        const supabase = await getSupabaseClient();
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
@@ -3376,11 +3496,6 @@ async function loadWeeklyVolumeChart() {
                 return;
             }
         }
-        
-        const supabase = window.supabase.createClient(
-            'https://meczbqmehtolwhactdsv.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-        );
         
         const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -3487,21 +3602,22 @@ async function loadDailyVolumeChart() {
 
         // Group by shift
         const shiftVolumes = {
-            'manha': 0,
-            'tarde': 0,
-            'noite': 0
+            'morning': 0,
+            'afternoon': 0,
+            'evening': 0,
+            'night': 0
         };
 
         if (volumeData) {
             volumeData.forEach(record => {
-                if (shiftVolumes.hasOwnProperty(record.shift)) {
-                    shiftVolumes[record.shift] += record.volume_liters || 0;
+                if (shiftVolumes.hasOwnProperty(record.milking_type)) {
+                    shiftVolumes[record.milking_type] += record.volume_liters || 0;
                 }
             });
         }
 
-        const labels = ['Manhã', 'Tarde', 'Noite'];
-        const data = [shiftVolumes.manha, shiftVolumes.tarde, shiftVolumes.noite];
+        const labels = ['Manhã', 'Tarde', 'Noite', 'Madrugada'];
+        const data = [shiftVolumes.morning, shiftVolumes.afternoon, shiftVolumes.evening, shiftVolumes.night];
 
         // Update chart
         if (window.dailyVolumeChart) {
@@ -4387,52 +4503,368 @@ function previewEditProfilePhoto(input) {
     }
 }
 
-let currentMode = '';
 
-function openPhotoChoiceModal(mode) {
-    currentMode = mode;
-    const modal = document.getElementById('photoChoiceModal');
-    modal.classList.remove('hidden');
-    
-    // Pequeno delay para permitir a transição
-    setTimeout(() => {
-        modal.classList.add('show');
-    }, 10);
+
+// Variáveis globais para câmera
+let currentPhotoMode = '';
+
+// Função para verificar se é mobile
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 }
 
-function closePhotoChoiceModal() {
-    const modal = document.getElementById('photoChoiceModal');
-    modal.classList.remove('show');
-    
-    // Aguarda a animação terminar antes de esconder
-    setTimeout(() => {
-        modal.classList.add('hidden');
-        currentMode = '';
-    }, 300);
-}
 
-function choosePhotoSource(source) {
-    let inputId = currentMode === 'add' ? 'profilePhotoInput' : 'editProfilePhoto';
-    let input = document.getElementById(inputId);
+
+// Funções da Câmera - REFORMULADAS
+let cameraStream = null;
+let isCameraOpen = false;
+
+async function openCamera() {
+    console.log('🔍 Tentando abrir câmera...');
     
-    if (source === 'camera') {
-        input.setAttribute('capture', 'environment');
-    } else {
-        input.removeAttribute('capture');
+    // Verificar se é mobile
+    if (!isMobile()) {
+        alert('A funcionalidade de câmera está disponível apenas em dispositivos móveis.');
+        return;
     }
     
-    input.click();
+    // Verificar se já está aberta
+    if (isCameraOpen) {
+        console.log('⚠️ Câmera já está aberta');
+        return;
+    }
+    
+    try {
+        const modal = document.getElementById('cameraModal');
+        const video = document.getElementById('cameraVideo');
+        
+        if (!modal || !video) {
+            console.error('❌ Modal ou vídeo não encontrado');
+            return;
+        }
+        
+        console.log('✅ Elementos encontrados, abrindo modal...');
+        
+        // Fechar modal de escolha de foto
+        closePhotoChoiceModal();
+        
+        // Abrir modal da câmera
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        isCameraOpen = true;
+        
+        console.log('✅ Modal aberto, iniciando câmera...');
+        
+        // Resetar estado da verificação facial
+        resetFaceVerification();
+        
+        // Iniciar câmera
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
+        });
+        
+        cameraStream = stream;
+        video.srcObject = stream;
+        
+        console.log('✅ Câmera iniciada com sucesso');
+        
+    } catch (error) {
+        console.error('❌ Erro ao acessar câmera:', error);
+        alert('Não foi possível acessar a câmera. Verifique as permissões.');
+        closeCamera();
+    }
+}
+
+function closeCamera() {
+    console.log('🔍 Fechando câmera...');
+    
+    const modal = document.getElementById('cameraModal');
+    
+    if (!modal) {
+        console.error('❌ Modal não encontrado');
+        return;
+    }
+    
+    // Parar stream da câmera
+    if (cameraStream) {
+        console.log('🛑 Parando stream da câmera...');
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    
+    // Fechar modal
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    isCameraOpen = false;
+    
+    console.log('✅ Câmera fechada com sucesso');
+}
+
+async function switchCamera() {
+    console.log('🔄 Trocando câmera...');
+    
+    if (!cameraStream) {
+        console.error('❌ Nenhum stream ativo');
+        return;
+    }
+    
+    try {
+        const video = document.getElementById('cameraVideo');
+        const currentFacingMode = cameraStream.getVideoTracks()[0]?.getSettings().facingMode;
+        const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        
+        console.log(`🔄 Mudando de ${currentFacingMode} para ${newFacingMode}`);
+        
+        // Parar stream atual
+        cameraStream.getTracks().forEach(track => track.stop());
+        
+        // Iniciar nova câmera
+        const newStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: newFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
+        });
+        
+        cameraStream = newStream;
+        video.srcObject = newStream;
+        
+        console.log('✅ Câmera trocada com sucesso');
+        
+    } catch (error) {
+        console.error('❌ Erro ao trocar câmera:', error);
+    }
+}
+
+// Função para resetar verificação facial
+function resetFaceVerification() {
+    const focusText = document.getElementById('focusText');
+    const focusTimer = document.getElementById('focusTimer');
+    const focusIndicator = document.getElementById('focusIndicator');
+    const captureBtn = document.getElementById('captureBtn');
+    
+    if (focusText) focusText.textContent = 'Posicione o rosto no centro';
+    if (focusTimer) focusTimer.classList.add('hidden');
+    if (focusIndicator) {
+        focusIndicator.classList.add('opacity-0');
+        focusIndicator.classList.remove('focus-success');
+    }
+    if (captureBtn) {
+        captureBtn.disabled = false;
+        captureBtn.style.opacity = '1';
+    }
+}
+
+// Função para iniciar verificação facial
+function startFaceVerification() {
+    console.log('🔍 Iniciando verificação facial...');
+    
+    const focusText = document.getElementById('focusText');
+    const focusTimer = document.getElementById('focusTimer');
+    const timerCount = document.getElementById('timerCount');
+    const focusIndicator = document.getElementById('focusIndicator');
+    const captureBtn = document.getElementById('captureBtn');
+    
+    if (!focusText || !focusTimer || !timerCount || !focusIndicator || !captureBtn) {
+        console.error('❌ Elementos de foco não encontrados');
+        return;
+    }
+    
+    // Desabilitar botão durante verificação
+    captureBtn.disabled = true;
+    captureBtn.style.opacity = '0.5';
+    
+    // Mostrar timer
+    focusText.textContent = 'Mantenha o rosto no centro';
+    focusTimer.classList.remove('hidden');
+    
+    // Timer de 3 segundos
+    let countdown = 3;
+    timerCount.textContent = countdown;
+    
+    const timer = setInterval(() => {
+        countdown--;
+        timerCount.textContent = countdown;
+        
+        if (countdown <= 0) {
+            clearInterval(timer);
+            
+            // Mostrar indicador de foco
+            focusIndicator.classList.remove('opacity-0');
+            focusIndicator.classList.add('focus-success');
+            
+            // Capturar foto após 0.5s
+            setTimeout(() => {
+                capturePhoto();
+            }, 500);
+        }
+    }, 1000);
+}
+
+function capturePhoto() {
+    console.log('📸 Capturando foto...');
+    
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('cameraCanvas');
+    
+    if (!video || !canvas) {
+        console.error('❌ Vídeo ou canvas não encontrado');
+        return;
+    }
+    
+    const context = canvas.getContext('2d');
+    
+    // Configurar canvas
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Desenhar frame do vídeo no canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Converter para blob
+    canvas.toBlob((blob) => {
+        console.log('✅ Foto capturada, processando...');
+        
+        // Criar arquivo
+        const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+        
+        // Simular input file
+        const inputId = currentPhotoMode === 'add' ? 'profilePhotoInput' : 'editProfilePhoto';
+        const input = document.getElementById(inputId);
+        
+        if (input) {
+            // Criar DataTransfer para simular seleção de arquivo
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            input.files = dataTransfer.files;
+            
+            // Disparar evento change
+            const event = new Event('change', { bubbles: true });
+            input.dispatchEvent(event);
+            
+            console.log('✅ Foto processada e enviada para o input');
+        } else {
+            console.error('❌ Input não encontrado');
+        }
+        
+        // Fechar câmera
+        closeCamera();
+        
+    }, 'image/jpeg', 0.8);
+}
+
+// Função para abrir galeria
+function openGallery() {
+    const inputId = currentMode === 'add' ? 'profilePhotoInput' : 'editProfilePhoto';
+    const input = document.getElementById(inputId);
+    
+    if (input) {
+        input.removeAttribute('capture');
+        input.click();
+    }
+    
     closePhotoChoiceModal();
 }
 
-// Função para adicionar foto no cadastro de novo usuário
+// Funções para adicionar foto
 function addPhotoToNewUser() {
     openPhotoChoiceModal('add');
 }
 
-// Função para adicionar foto na edição de usuário
 function addPhotoToEditUser() {
     openPhotoChoiceModal('edit');
+}
+
+// Funções do novo modal de foto
+function openPhotoChoiceModal(mode) {
+    currentPhotoMode = mode;
+    
+    const modal = document.getElementById('photoChoiceModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+
+function closePhotoChoiceModal() {
+    const modal = document.getElementById('photoChoiceModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        currentPhotoMode = '';
+    }
+}
+
+function selectFromGallery() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (currentPhotoMode === 'add') {
+                    processPhotoForNewUser(e.target.result);
+                } else if (currentPhotoMode === 'edit') {
+                    processPhotoForEditUser(e.target.result);
+                }
+                closePhotoChoiceModal();
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+}
+
+function processPhotoForNewUser(photoData) {
+    // Simular o input file para o novo usuário
+    const input = document.getElementById('profilePhotoInput');
+    if (input) {
+        // Criar um arquivo a partir da foto
+        fetch(photoData)
+            .then(res => res.blob())
+            .then(blob => {
+                const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+                
+                // Disparar evento change
+                const event = new Event('change', { bubbles: true });
+                input.dispatchEvent(event);
+            });
+    }
+}
+
+function processPhotoForEditUser(photoData) {
+    // Simular o input file para edição de usuário
+    const input = document.getElementById('editProfilePhoto');
+    if (input) {
+        // Criar um arquivo a partir da foto
+        fetch(photoData)
+            .then(res => res.blob())
+            .then(blob => {
+                const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+                
+                // Disparar evento change
+                const event = new Event('change', { bubbles: true });
+                input.dispatchEvent(event);
+            });
+    }
+}
+
+function takePhoto() {
+    closePhotoChoiceModal();
+    openCamera();
 }
 
 // Setup event listeners
@@ -4499,10 +4931,15 @@ function setupEventListeners() {
     }
 
     // Add user form submission
-    const addUserForm = document.getElementById('addUserForm');
-    if (addUserForm) {
-        addUserForm.addEventListener('submit', handleAddUser);
-    }
+            const addUserForm = document.getElementById('addUserFormModal');
+        if (addUserForm) {
+            console.log('🔍 Formulário encontrado, adicionando listener');
+            addUserForm.addEventListener('submit', handleAddUser);
+        } else {
+            console.error('❌ Formulário addUserFormModal não encontrado!');
+        }
+        
+
 
     // Update profile form submission
     const updateProfileForm = document.getElementById('updateProfileForm');
@@ -5149,10 +5586,7 @@ async function loadRecentActivities(farmId) {
             }
         }
         
-        const supabase = window.supabase.createClient(
-            'https://meczbqmehtolwhactdsv.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
-        );
+        const supabase = await getSupabaseClient();
         
         const { data: activities, error } = await supabase
             .from('volume_records')
@@ -5203,7 +5637,7 @@ async function loadRecentActivities(farmId) {
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">${activity.volume_liters}L - ${activity.milking_type}</p>
+                            <p class="text-sm font-medium text-gray-900">${activity.volume_liters}L - ${getMilkingTypeInPortuguese(activity.milking_type)}</p>
                             <p class="text-xs text-gray-500">${timeAgo} • por ${userName}</p>
                         </div>
                     </div>
@@ -5922,6 +6356,7 @@ function addVolumeRecord() {
                             <option value="manha">Manhã</option>
                             <option value="tarde">Tarde</option>
                             <option value="noite">Noite</option>
+                            <option value="madrugada">Madrugada</option>
                         </select>
                     </div>
                     <div>
@@ -6119,9 +6554,17 @@ async function handleAddVolume(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     
+    // Mapear valores do turno para inglês (conforme constraint da tabela)
+    const shiftMapping = {
+        'manha': 'morning',
+        'tarde': 'afternoon', 
+        'noite': 'evening',
+        'madrugada': 'night'
+    };
+    
     const volumeData = {
         production_date: formData.get('production_date'),
-        shift: formData.get('shift'),
+        shift: shiftMapping[formData.get('shift')] || formData.get('shift'),
         volume: parseFloat(formData.get('volume')),
         temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
         observations: formData.get('observations') || null
@@ -6247,7 +6690,7 @@ async function handleAddPayment(event) {
     
     const paymentData = {
         record_date: formData.get('due_date'), // Data do registro
-        type: 'receita', // Tipo de registro financeiro
+        type: 'income', // Tipo de registro financeiro (income = receita)
         amount: parseFloat(formData.get('amount')), // Valor
         description: `${formData.get('description')} - Tipo: ${formData.get('payment_type')}${formData.get('notes') ? ' - ' + formData.get('notes') : ''}`, // Descrição
         category: formData.get('payment_type') || 'venda_leite' // Categoria
@@ -6274,7 +6717,7 @@ async function handleAddPayment(event) {
             .insert({
                 ...paymentData,
                 farm_id: managerData.farm_id,
-                type: 'receita'
+                type: 'income'
             });
 
         if (paymentError) throw paymentError;
@@ -6323,7 +6766,7 @@ function openAddUserModal() {
 
 function closeAddUserModal() {
     document.getElementById('addUserModal').classList.remove('show');
-    document.getElementById('addUserForm').reset();
+    document.getElementById('addUserFormModal').reset();
     
     // Reset profile photo preview
     const preview = document.getElementById('profilePreview');
@@ -6535,7 +6978,7 @@ function showWhatsAppInstructions(phoneNumber, userName, message) {
         modal.id = 'whatsappInstructionsModal';
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
         modal.innerHTML = `
-            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4" onclick="event.stopPropagation()">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">📱 Enviar Credenciais via WhatsApp</h3>
                     <button onclick="closeWhatsAppInstructions()" class="text-gray-400 hover:text-gray-600">
@@ -6588,6 +7031,14 @@ function showWhatsAppInstructions(phoneNumber, userName, message) {
         `;
         document.body.appendChild(modal);
     }
+    
+    // Adicionar evento de clique no overlay para fechar
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeWhatsAppInstructions();
+        }
+    });
+    
     // Atualizar conteúdo do modal
     const phoneElement = modal.querySelector('strong');
     if (phoneElement) {
@@ -6596,6 +7047,15 @@ function showWhatsAppInstructions(phoneNumber, userName, message) {
     
     // Mostrar modal
     modal.style.display = 'flex';
+    
+    // Adicionar evento de tecla ESC para fechar
+    const handleEscape = function(e) {
+        if (e.key === 'Escape') {
+            closeWhatsAppInstructions();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
 }
 
 // Fechar modal de instruções
@@ -6603,6 +7063,8 @@ function closeWhatsAppInstructions() {
     const modal = document.getElementById('whatsappInstructionsModal');
     if (modal) {
         modal.style.display = 'none';
+        // Remover modal do DOM para evitar conflitos
+        modal.remove();
     }
 }
 
@@ -6631,7 +7093,9 @@ async function copyMessageAgain(encodedMessage) {
  * Valida dados, gera email automático e envia credenciais via WhatsApp
  */
 async function handleAddUser(e) {
+    console.log('🔍 handleAddUser chamada!');
     e.preventDefault();
+    console.log('🔍 Evento prevenido');
 
     
     const formData = new FormData(e.target);
@@ -6644,31 +7108,48 @@ async function handleAddUser(e) {
         photo_url: null
     };
     
-    // Pegar foto se for funcionário
+    // Pegar foto se for funcionário (temporariamente desabilitado para debug)
     const profilePhotoFile = formData.get('profilePhoto');
     if (userData.role === 'funcionario' && profilePhotoFile && profilePhotoFile.size > 0) {
-        try {
-            // Upload da foto
-            userData.photo_url = await uploadProfilePhoto(profilePhotoFile, 'temp');
-        } catch (error) {
-            console.error('Erro ao fazer upload da foto:', error);
-            showNotification('Erro ao fazer upload da foto', 'warning');
-        }
+        console.log('🔍 Foto detectada, mas upload desabilitado temporariamente');
+        // userData.photo_url = await uploadProfilePhoto(profilePhotoFile, 'temp');
     }
 
     try {
-        // Aguardar nova API estar pronta
-        if (typeof window.LacTechAPI === 'undefined') {
-    
-            await window.waitForLacTechAPINova();
-        }
+        console.log('🔍 Iniciando criação do usuário...');
+        const supabase = await getSupabaseClient();
+        console.log('🔍 Cliente Supabase obtido');
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        console.log('🔍 Usuário atual:', currentUser);
+        if (!currentUser) throw new Error('Usuário não autenticado');
+
+        // Get current user's farm_id
+        const { data: managerData, error: managerError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (managerError) throw managerError;
+        if (!managerData?.farm_id) throw new Error('Fazenda não encontrada');
         
         // Gerar email automaticamente
         const email = generateEmailFromName(userData.name);
-        userData.email = email;
         
-        // Criar usuário usando nova API
-        const result = await window.LacTechAPI.users.create(userData);
+        // Gerar senha temporária
+        const tempPassword = generateTempPassword();
+        
+        // Criar perfil do usuário usando função RPC para contornar RLS
+        const { data: result, error: profileError } = await supabase.rpc('create_farm_user', {
+            p_email: email,
+            p_name: userData.name,
+            p_whatsapp: userData.whatsapp,
+            p_role: userData.role,
+            p_farm_id: managerData.farm_id,
+            p_profile_photo_url: userData.photo_url
+        });
+        
+        if (profileError) throw profileError;
         
         if (!result.success) {
             throw new Error(result.error || 'Falha ao criar usuário');
@@ -6679,12 +7160,12 @@ async function handleAddUser(e) {
             userData.whatsapp, 
             userData.name, 
             email, 
-            result.data.temp_password
+            tempPassword
         );
         
         const successMessage = whatsappSent ? 
             `Usuário ${userData.name} criado com sucesso! Credenciais enviadas via WhatsApp.` : 
-            `Usuário ${userData.name} criado com sucesso! Senha: ${result.data.temp_password}`;
+            `Usuário ${userData.name} criado com sucesso! Senha: ${tempPassword}`;
             
         showNotification(successMessage, 'success');
         closeAddUserModal();
@@ -6767,7 +7248,7 @@ async function generatePaymentsReport() {
             .from('lactech_financial')
             .select('*')
             .eq('farm_id', userData.farm_id)
-            .eq('type', 'receita')
+            .eq('type', 'income')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -6944,6 +7425,47 @@ async function saveReportSettings() {
 document.addEventListener('DOMContentLoaded', function() {
     loadReportSettings();
 });
+
+// Função para traduzir milking_type de inglês para português
+function getMilkingTypeInPortuguese(milkingType) {
+    const translation = {
+        'morning': 'Manhã',
+        'afternoon': 'Tarde',
+        'evening': 'Noite',
+        'night': 'Madrugada'
+    };
+    return translation[milkingType] || milkingType;
+}
+
+// Função para traduzir type de financial_records de inglês para português
+function getFinancialTypeInPortuguese(type) {
+    const translation = {
+        'income': 'Receita',
+        'expense': 'Despesa'
+    };
+    return translation[type] || type;
+}
+
+// Função para gerar email a partir do nome
+function generateEmailFromName(name) {
+    const cleanName = name.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+        .replace(/[^a-z0-9]/g, '') // Remove caracteres especiais
+        .replace(/\s+/g, '.'); // Substitui espaços por pontos
+    
+    return `${cleanName}@lactech.com`;
+}
+
+// Função para gerar senha temporária
+function generateTempPassword() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+}
 
 // Função para prévia do relatório
 function previewReport() {
@@ -9391,6 +9913,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(addVersionToProfileModal, 100);
             };
         });
+        
+        // Garantir que os modais fiquem fechados na inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            const photoChoiceModal = document.getElementById('photoChoiceModal');
+            const cameraModal = document.getElementById('cameraModal');
+            
+            if (photoChoiceModal) {
+                photoChoiceModal.classList.add('hidden');
+                photoChoiceModal.classList.remove('flex');
+            }
+            
+            if (cameraModal) {
+                cameraModal.classList.add('hidden');
+                cameraModal.style.display = 'none';
+            }
+            
+            // Garantir que as variáveis estejam limpas
+            isCameraOpen = false;
+            cameraStream = null;
+            currentPhotoMode = '';
+        });
+        
+
 
     </script>
 </body>

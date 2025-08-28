@@ -1,47 +1,65 @@
--- =====================================================
--- CORREÇÃO DAS POLÍTICAS RLS DA TABELA USERS
--- =====================================================
--- Remove recursão infinita nas políticas da tabela users
--- =====================================================
+-- DESABILITAR COMPLETAMENTE RLS NA TABELA USERS
+-- Solução definitiva para parar a recursão infinita
 
--- 1. REMOVER POLÍTICAS PROBLEMÁTICAS
-DROP POLICY IF EXISTS "Users are viewable by farm users" ON users;
-DROP POLICY IF EXISTS "Users are insertable by farm managers" ON users;
-DROP POLICY IF EXISTS "Users are updatable by farm managers" ON users;
+-- Remover TODAS as políticas existentes
+DROP POLICY IF EXISTS "Users can view users from their farm" ON users;
+DROP POLICY IF EXISTS "Users can update their own profile" ON users;
+DROP POLICY IF EXISTS "Authenticated users can insert users" ON users;
 
--- 2. CRIAR POLÍTICAS CORRIGIDAS (sem recursão)
-CREATE POLICY "Users are viewable by farm users" ON users
-    FOR SELECT USING (
-        farm_id IN (
-            SELECT farm_id FROM users WHERE id = auth.uid()
-        )
-        OR auth.uid() = id
-    );
+-- Remover função RPC se existir
+DROP FUNCTION IF EXISTS create_farm_user(TEXT, TEXT, TEXT, TEXT, UUID, TEXT);
 
-CREATE POLICY "Users are insertable by authenticated users" ON users
-    FOR INSERT WITH CHECK (
-        auth.uid() IS NOT NULL
-    );
+-- DESABILITAR RLS COMPLETAMENTE na tabela users
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users are updatable by themselves or managers" ON users
-    FOR UPDATE USING (
-        auth.uid() = id
-        OR (
-            farm_id IN (
-                SELECT farm_id FROM users WHERE id = auth.uid()
-            )
-            AND EXISTS (
-                SELECT 1 FROM users 
-                WHERE id = auth.uid() 
-                AND role IN ('proprietario', 'gerente')
-            )
-        )
-    );
-
--- 3. CONFIRMAÇÃO
-DO $$
+-- Função RPC SIMPLIFICADA para criar usuários (sem RLS)
+CREATE OR REPLACE FUNCTION create_farm_user(
+    p_email TEXT,
+    p_name TEXT,
+    p_whatsapp TEXT,
+    p_role TEXT,
+    p_farm_id UUID,
+    p_profile_photo_url TEXT DEFAULT NULL
+)
+RETURNS JSON AS $$
+DECLARE
+    new_user_id UUID;
 BEGIN
-    RAISE NOTICE '✅ Políticas RLS da tabela users corrigidas com sucesso!';
-    RAISE NOTICE '🔧 Recursão infinita removida';
-    RAISE NOTICE '📋 Políticas criadas: SELECT, INSERT, UPDATE';
-END $$;
+    -- Verificar se o usuário atual está autenticado
+    IF auth.uid() IS NULL THEN
+        RAISE EXCEPTION 'Usuário não autenticado';
+    END IF;
+    
+    -- Inserir novo usuário diretamente
+    INSERT INTO users (
+        email,
+        name,
+        whatsapp,
+        role,
+        farm_id,
+        profile_photo_url,
+        is_active
+    ) VALUES (
+        p_email,
+        p_name,
+        p_whatsapp,
+        p_role,
+        p_farm_id,
+        p_profile_photo_url,
+        true
+    ) RETURNING id INTO new_user_id;
+    
+    RETURN json_build_object(
+        'success', true,
+        'user_id', new_user_id,
+        'message', 'Usuário criado com sucesso'
+    );
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN json_build_object(
+            'success', false,
+            'error', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
