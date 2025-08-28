@@ -6,10 +6,12 @@
     <title>Configuração da Fazenda - Sistema de Controle Leiteiro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase_config_fixed.js"></script>
+    <script src="config.js"></script>
+    <script src="assets/js/loading-screen.js"></script>
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/dark-theme-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
+    <link href="assets/css/loading-screen.css" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -101,10 +103,8 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012-2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6"></path>
-                        </svg>
+                    <div class="header-logo-container">
+                        <img src="assets/img/lactech-logo.png" alt="LacTech Logo" class="header-logo">
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-tight">CONFIGURAÇÃO INICIAL</h1>
@@ -231,8 +231,6 @@
                         </select>
                     </div>
                 </div>
-
-
 
                 <!-- Contato -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -472,7 +470,7 @@
                             <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            Você será redirecionado automaticamente em 3 segundos...
+                            Você será redirecionado automaticamente em <span id="redirectCountdown">3</span> segundos...
                         </p>
                     </div>
                     <ul class="space-y-2 text-sm text-blue-700">
@@ -540,12 +538,51 @@
     </main>
 
     <script>
-        // Supabase client is already initialized in supabase_config_fixed.js
-        // Using the global supabase instance from supabase_config_fixed.js
+        // Wait for Supabase to be available
+        function waitForSupabase() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max
+                
+                const checkSupabase = () => {
+                    attempts++;
+                    if (window.supabase && window.supabase.rpc) {
+                        resolve(window.supabase);
+                    } else if (attempts >= maxAttempts) {
+                        reject(new Error('Timeout: Supabase não foi inicializado em 5 segundos'));
+                    } else {
+                        setTimeout(checkSupabase, 100);
+                    }
+                };
+                checkSupabase();
+            });
+        }
 
+        // Initialize variables
         let farmData = {};
         let adminData = {};
         let isProcessing = false; // Flag para evitar múltiplas submissões
+        let supabaseClient = null;
+
+        // Initialize Supabase when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                console.log('🔄 Inicializando Supabase...');
+                supabaseClient = await waitForSupabase();
+                console.log('✅ Supabase client initialized successfully');
+                
+                // Test the connection
+                const { data, error } = await supabaseClient.from('users').select('count').limit(1);
+                if (error) {
+                    console.warn('⚠️ Supabase connection test failed:', error);
+                } else {
+                    console.log('✅ Supabase connection test successful');
+                }
+            } catch (error) {
+                console.error('❌ Error initializing Supabase:', error);
+                showError('Erro ao inicializar conexão com o banco de dados. Por favor, recarregue a página.');
+            }
+        });
 
         // Utility functions
         function showError(message) {
@@ -650,7 +687,10 @@
                 };
                 
                 // Check if farm with same name or CNPJ exists using secure RPC
-                const { data: exists, error } = await supabase
+                if (!supabaseClient) {
+                    throw new Error('Conexão com o banco de dados não inicializada');
+                }
+                const { data: exists, error } = await supabaseClient
                     .rpc('check_farm_exists', { p_name: farmData.name, p_cnpj: farmData.cnpj });
                 
                 if (error) throw error;
@@ -696,7 +736,10 @@
                 };
                 
                 // Check if user with same email exists using secure RPC
-                const { data: exists, error: userCheckError } = await supabase
+                if (!supabaseClient) {
+                    throw new Error('Conexão com o banco de dados não inicializada');
+                }
+                const { data: exists, error: userCheckError } = await supabaseClient
                     .rpc('check_user_exists', { p_email: adminData.email });
                 
                 if (userCheckError) {
@@ -748,6 +791,7 @@
         }
 
         function goToStep4() {
+            console.log('🎯 Entrando no Step 4...');
             document.getElementById('farmInfoStep').classList.add('hidden');
             document.getElementById('adminStep').classList.add('hidden');
             document.getElementById('confirmationStep').classList.add('hidden');
@@ -757,7 +801,9 @@
             updateStepIndicator(4);
             updateSummary();
             
-            // Removido auto-redirect automático - usuário deve clicar no botão manualmente
+            console.log('⏰ Iniciando contador regressivo...');
+            // Iniciar contador regressivo e redirecionamento automático
+            startRedirectCountdown();
         }
 
         function updateStepIndicator(currentStep) {
@@ -818,7 +864,11 @@
                 finalizeBtn.textContent = 'Criando conta...';
                 
                 // 1. Verificar se usuário já existe
-                const { data: existingUser, error: checkError } = await supabase
+                if (!supabaseClient) {
+                    throw new Error('Conexão com o banco de dados não inicializada');
+                }
+                
+                const { data: existingUser, error: checkError } = await supabaseClient
                     .from('users')
                     .select('id')
                     .eq('email', adminData.email)
@@ -828,7 +878,7 @@
                 
                 if (existingUser) {
                     // Usuário já existe, fazer login
-                    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                    const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
                         email: adminData.email,
                         password: adminData.password
                     });
@@ -840,7 +890,7 @@
                     authData = loginData;
                 } else {
                     // Criar nova conta
-                    const { data: signUpData, error: authError } = await supabase.auth.signUp({
+                    const { data: signUpData, error: authError } = await supabaseClient.auth.signUp({
                         email: adminData.email,
                         password: adminData.password
                     });
@@ -848,7 +898,7 @@
                     if (authError) {
                         if (authError.message.includes('User already registered')) {
                             // Se o usuário já existe no Auth mas não no banco, fazer login
-                            const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                            const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
                                 email: adminData.email,
                                 password: adminData.password
                             });
@@ -870,7 +920,7 @@
                 
                 // 2. Verificar novamente se a fazenda já existe
                 console.log('Verificando fazenda com dados:', { name: farmData.name, cnpj: farmData.cnpj });
-                const { data: farmExists, error: farmCheckError } = await supabase
+                const { data: farmExists, error: farmCheckError } = await supabaseClient
                     .rpc('check_farm_exists', { p_name: farmData.name, p_cnpj: farmData.cnpj });
                 
                 console.log('Resultado da verificação:', { farmExists, farmCheckError });
@@ -887,7 +937,7 @@
                 
                 // 3. Criar fazenda no banco de dados
                 console.log('Criando fazenda com dados:', farmData);
-                const { data: farmResult, error: farmError } = await supabase.rpc('create_initial_farm', {
+                const { data: farmResult, error: farmError } = await supabaseClient.rpc('create_initial_farm', {
                     p_name: farmData.name,
                     p_owner_name: farmData.owner_name,
                     p_cnpj: farmData.cnpj || '',
@@ -907,7 +957,7 @@
                 finalizeBtn.textContent = 'Configurando usuário...';
                 
                 // 4. Criar usuário no banco de dados
-                const { data: userResult, error: userError } = await supabase.rpc('create_initial_user', {
+                const { data: userResult, error: userError } = await supabaseClient.rpc('create_initial_user', {
                     p_user_id: authData.user.id,
                     p_farm_id: farmResult,
                     p_name: adminData.name,
@@ -923,7 +973,7 @@
                 finalizeBtn.textContent = 'Finalizando...';
                 
                 // 5. Marcar configuração como completa
-                const { error: setupError } = await supabase.rpc('complete_farm_setup', {
+                const { error: setupError } = await supabaseClient.rpc('complete_farm_setup', {
                     p_farm_id: farmResult
                 });
                 
@@ -932,7 +982,7 @@
                 }
                 
                 // 6. Fazer login automático
-                const { error: loginError } = await supabase.auth.signInWithPassword({
+                const { error: loginError } = await supabaseClient.auth.signInWithPassword({
                     email: adminData.email,
                     password: adminData.password
                 });
@@ -984,12 +1034,18 @@
         }
         
         function redirectToDashboard() {
+            console.log('🔄 Iniciando redirecionamento...');
+            console.log('📊 Dados do admin:', adminData);
+            
             // Redirect based on user role
             if (adminData.role === 'proprietario') {
+                console.log('👤 Redirecionando para proprietário');
                 window.location.href = 'proprietario.html';
             } else if (adminData.role === 'gerente') {
+                console.log('👤 Redirecionando para gerente');
                 window.location.href = 'gerente.html';
             } else {
+                console.log('⚠️ Role não definido, redirecionando para login');
                 // Fallback to login page
                 window.location.href = 'login.html';
             }
@@ -1110,6 +1166,32 @@
         
         // Inicializar tema quando a página carregar
         document.addEventListener('DOMContentLoaded', initTheme);
+
+        // Função para iniciar contador regressivo e redirecionamento automático
+        function startRedirectCountdown() {
+            console.log('⏰ Iniciando contador regressivo...');
+            let countdown = 3;
+            const countdownElement = document.getElementById('redirectCountdown');
+            
+            if (!countdownElement) {
+                console.warn('❌ Elemento de contador não encontrado');
+                return;
+            }
+            
+            console.log('✅ Elemento de contador encontrado:', countdownElement);
+            
+            const interval = setInterval(() => {
+                countdown--;
+                console.log('⏱️ Contador:', countdown);
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    console.log('🚀 Contador finalizado, iniciando redirecionamento...');
+                    clearInterval(interval);
+                    redirectToDashboard();
+                }
+            }, 1000);
+        }
 
         // Check if user is already logged in - DISABLED FOR FIRST ACCESS PAGE
         // document.addEventListener('DOMContentLoaded', async () => {

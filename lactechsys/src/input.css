@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Animações customizadas */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Efeito shimmer nos botões */
+.btn-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    transition: left 0.6s ease-in-out;
+}
+
+.btn-shimmer:hover::before {
+    left: 100%;
+}
+
+/* Efeito de vidro melhorado */
+.glass-effect {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Sombras coloridas personalizadas */
+.shadow-red-glow {
+    box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3);
+}
+
+.shadow-green-glow {
+    box-shadow: 0 10px 40px rgba(34, 197, 94, 0.3);
+}
+
+.shadow-purple-glow {
+    box-shadow: 0 10px 40px rgba(147, 51, 234, 0.3);
+}
+
+/* Efeito de partículas flutuantes */
+.floating-particles::before,
+.floating-particles::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: float 3s ease-in-out infinite;
+}
+
+.floating-particles::before {
+    top: 20%;
+    right: 15%;
+    animation-delay: -1s;
+}
+
+.floating-particles::after {
+    bottom: 25%;
+    left: 10%;
+    animation-delay: -2s;
+}

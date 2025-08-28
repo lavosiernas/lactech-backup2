@@ -1,91 +1,110 @@
-// LacTech - Configuração do Supabase
+// =====================================================
+// CONFIGURAÇÃO SUPABASE - LACTECH
+// =====================================================
+// Arquivo único com todas as funcionalidades
+// =====================================================
 
-// Credenciais do Supabase
-const SUPABASE_URL = 'https://kphrwlhoghgnijlijjuz.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwaHJ3bGhvZ2hnbmlqbGlqanV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NDEwMTIsImV4cCI6MjA3MTIxNzAxMn0.bxcC2NJPSWQ2yWSRLw9ypV_JwteGci6Rob9TDv93Gvg';
+// Configuração do Supabase
+const SUPABASE_URL = 'https://meczbqmehtolwhactdsv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s';
 
-// Inicialização do cliente Supabase
-const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Aguardar Supabase estar disponível
+async function waitForSupabase() {
+    return new Promise((resolve) => {
+        const checkSupabase = () => {
+            if (window.supabase) {
+                resolve(window.supabase);
+            } else {
+                setTimeout(checkSupabase, 100);
+            }
+        };
+        checkSupabase();
+    });
+}
 
-// Funções auxiliares para autenticação
-const auth = {
-    // Verificar se o usuário está autenticado
-    isAuthenticated: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        return !!user;
-    },
+// Inicializar Supabase e criar API
+async function initializeSupabase() {
+    const supabaseLib = await waitForSupabase();
+    const supabaseClient = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    getCurrentUser: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        return user;
-    },
+    // Criar API unificada
+    window.LacTechAPI = {
+        auth: {
+            getUser: () => supabaseClient.auth.getUser(),
+            getSession: () => supabaseClient.auth.getSession(),
+            signOut: () => supabaseClient.auth.signOut(),
+            signIn: (email, password) => supabaseClient.auth.signInWithPassword({ email, password }),
+            signUp: (email, password, data) => supabaseClient.auth.signUp({ email, password, data })
+        },
+        users: {
+            getFarmUsers: async () => {
+                try {
+                    const { data: { user } } = await supabaseClient.auth.getUser();
+                    if (!user) throw new Error('Usuário não autenticado');
+                    const { data: userData } = await supabaseClient
+                        .from('users')
+                        .select('farm_id')
+                        .eq('id', user.id)
+                        .single();
+                    if (!userData?.farm_id) throw new Error('Fazenda não encontrada');
+                    const { data, error } = await supabaseClient
+                        .from('users')
+                        .select('*')
+                        .eq('farm_id', userData.farm_id)
+                        .eq('is_active', true)
+                        .order('name');
+                    if (error) throw error;
+                    return { success: true, data };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            },
+            getProfile: async () => {
+                try {
+                    const { data, error } = await supabaseClient.rpc('get_user_profile');
+                    if (error) throw error;
+                    return { success: true, data: data[0] };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+        },
+        supabase: supabaseClient
+    };
     
-    getUserData: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return null;
-        
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-            
-        if (error) {
-            console.error('Erro ao obter dados do usuário:', error);
-            return null;
+    // Manter compatibilidade
+    window.LacTech = window.LacTechAPI;
+    
+    console.log('✅ LacTech API Unificada criada com novas configurações');
+    console.log('🔗 URL:', SUPABASE_URL);
+    console.log('📧 SEM CONFIRMAÇÃO DE EMAIL - Acesso direto habilitado');
+    window.dispatchEvent(new CustomEvent('lactechapi-ready'));
+}
+
+// Aguardar API estar disponível
+window.waitForAPI = () => {
+    return new Promise((resolve) => {
+        if (window.LacTechAPI) {
+            resolve(window.LacTechAPI);
+        } else {
+            window.addEventListener('lactechapi-ready', () => {
+                resolve(window.LacTechAPI);
+            });
         }
-        
-        return data;
-    },
-    
-    signOut: async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('Erro ao fazer logout:', error);
-            return false;
-        }
-        return true;
+    });
+};
+
+// Função global para obter cliente Supabase
+window.getSupabaseClient = () => {
+    if (!window.supabase) {
+        throw new Error('Supabase library not loaded');
     }
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 };
 
-// Funções auxiliares para notificações
-const notifications = {
-    // Obter notificações não lidas para o usuário atual
-    getUnread: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return [];
-        
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('is_read', false)
-            .order('created_at', { ascending: false });
-            
-        if (error) {
-            console.error('Erro ao obter notificações:', error);
-            return [];
-        }
-        
-        return data;
-    },
-    
-    // Marcar notificação como lida
-    markAsRead: async (notificationId) => {
-        const { error } = await supabase
-            .from('notifications')
-            .update({ is_read: true })
-            .eq('id', notificationId);
-            
-        return !error;
-    }
-};
-
-// Exportar as funções e variáveis
-window.lactech = {
-    supabase,
-    auth,
-    notifications,
-    SUPABASE_URL,
-    SUPABASE_KEY
-};
+// Inicializar apenas uma vez
+if (!window.LacTechAPI) {
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeSupabase().catch(console.error);
+    });
+}

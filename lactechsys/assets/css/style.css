@@ -1773,7 +1773,7 @@ header .text-forest-200 { color: #dcfce7; }
 
 .dark .theme-toggle-slider {
     transform: translateX(30px);
-    background: #1f2937;
+    background: #000000;
 }
 
 .dark .theme-toggle .sun-icon {

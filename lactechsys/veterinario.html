@@ -35,7 +35,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/pdf-generator.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase_config_fixed.js"></script>
+    <script src="assets/js/loading-screen.js"></script>
+    <script src="lactech-api-nova.js"></script>
     <script src="auth_fix.js"></script>
     <script src="pwa-manager.js"></script>
     <script>
@@ -50,7 +51,8 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="assets/css/dark-theme-fixes.css" rel="stylesheet">
+    <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
+    <link href="assets/css/loading-screen.css" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -74,10 +76,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
+                    <div class="header-logo-container">
+                        <img src="assets/img/lactech-logo.png" alt="LacTech Logo" class="header-logo">
                     </div>
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-tight">PAINEL VETERINÁRIO</h1>
