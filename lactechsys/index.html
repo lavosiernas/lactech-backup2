@@ -28,7 +28,7 @@
     <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+
     
     <!-- Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -278,6 +278,32 @@
         // Using the global supabase instance from supabase_config_fixed.js
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se há sessão ativa e redirecionar se necessário
+            const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    if (user && user.id) {
+                        console.log('🔐 Sessão ativa detectada, redirecionando...');
+                        // Redirecionar baseado no tipo de usuário
+                        const redirectMap = {
+                            'proprietario': 'proprietario.html',
+                            'gerente': 'gerente.html',
+                            'funcionario': 'funcionario.html',
+                            'veterinario': 'veterinario.html'
+                        };
+                        const redirectUrl = redirectMap[user.userType] || 'gerente.html';
+                        window.location.replace(redirectUrl);
+                        return;
+                    }
+                } catch (error) {
+                    console.log('❌ Erro ao verificar sessão:', error);
+                    // Limpar dados inválidos
+                    localStorage.removeItem('userData');
+                    sessionStorage.removeItem('userData');
+                }
+            }
+            
             // Verificar se setup foi concluído
             checkSetupStatus();
             

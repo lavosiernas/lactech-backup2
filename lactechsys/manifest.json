@@ -1,111 +1,103 @@
 {
-  "name": "LacTech - Sistema de Controle Leiteiro",
-  "short_name": "LacTech",
-  "description": "Sistema completo para gestão de produção leiteira, controle de qualidade e relatórios",
-  "start_url": "/",
+  "name": "Xandria Store",
+  "short_name": "Xandria Store",
+  "description": "Sistemas para o Agronegócio",
+  "start_url": "/xandria-store.html",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#166534",
+  "theme_color": "#01875f",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "pt-BR",
-  "categories": ["business", "productivity", "agriculture"],
+  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
+      "src": "/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
+      "src": "/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-      "sizes": "384x384",
-      "type": "image/png"
+      "purpose": "maskable any"
     }
   ],
   "shortcuts": [
     {
-      "name": "Produção de Leite",
-      "short_name": "Produção",
-      "description": "Registrar produção de leite",
-      "url": "/funcionario.html",
+      "name": "LacTech",
+      "short_name": "LacTech",
+      "description": "Abrir LacTech",
+      "url": "/xandria-store.html?app=lactech",
       "icons": [
         {
-          "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-          "sizes": "96x96"
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
         }
       ]
     },
     {
-      "name": "Relatórios",
-      "short_name": "Relatórios",
-      "description": "Visualizar relatórios",
-      "url": "/gerente.html",
+      "name": "AgroSmart",
+      "short_name": "AgroSmart",
+      "description": "Abrir AgroSmart",
+      "url": "/xandria-store.html?app=agrosmart",
       "icons": [
         {
-          "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Configurações",
-      "short_name": "Config",
-      "description": "Configurações do sistema",
-      "url": "/proprietario.html",
-      "icons": [
-        {
-          "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
-          "sizes": "96x96"
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
         }
       ]
     }
   ],
   "screenshots": [
     {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
+      "src": "/screenshot-wide.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "wide",
-      "label": "Dashboard do LacTech"
+      "form_factor": "wide"
     },
     {
-      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
+      "src": "/screenshot-narrow.png",
       "sizes": "750x1334",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Interface Mobile do LacTech"
+      "form_factor": "narrow"
     }
   ]
 }

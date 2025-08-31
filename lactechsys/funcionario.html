@@ -28,7 +28,7 @@
     <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -71,6 +71,16 @@
                 </nav>
 
                 <div class="flex items-center space-x-4">
+                    <!-- Botão de retorno à conta do gerente (apenas para contas secundárias) -->
+                    <div id="returnToManagerBtn" class="hidden">
+                        <button onclick="returnToManagerAccount()" class="flex items-center space-x-2 text-white hover:text-forest-200 p-2 rounded-lg transition-all bg-white bg-opacity-10 hover:bg-opacity-20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            <span class="text-sm font-medium">Voltar ao Gerente</span>
+                        </button>
+                    </div>
+                    
                     <button onclick="openProfileModal()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all">
                         <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden">
                             <img id="headerProfilePhoto" src="" alt="Foto de Perfil" class="w-full h-full object-cover rounded-full hidden">
@@ -1786,6 +1796,42 @@
         });
 
         log('=== SCRIPT FUNCIONÁRIO COMPLETO CARREGADO ===');
+        
+        // Função para retornar à conta do gerente
+        function returnToManagerAccount() {
+            const confirmed = confirm('Deseja retornar à sua conta de gerente?\n\nVocê será redirecionado para o painel do gerente.');
+            
+            if (confirmed) {
+                // Limpar dados da conta secundária
+                sessionStorage.removeItem('currentSecondaryAccount');
+                
+                // Redirecionar para o painel do gerente
+                window.location.href = 'gerente.html';
+            }
+        }
+        
+        // Verificar se é conta secundária e mostrar botão de retorno
+        function checkSecondaryAccount() {
+            const secondaryAccount = sessionStorage.getItem('currentSecondaryAccount');
+            const returnBtn = document.getElementById('returnToManagerBtn');
+            
+            if (secondaryAccount && returnBtn) {
+                try {
+                    const accountData = JSON.parse(secondaryAccount);
+                    if (accountData.isSecondary) {
+                        returnBtn.classList.remove('hidden');
+                        console.log('✅ Conta secundária detectada - botão de retorno ativado');
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar conta secundária:', error);
+                }
+            }
+        }
+        
+        // Executar verificação quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkSecondaryAccount, 1000);
+        });
         
                     // App Version Display
         document.addEventListener('DOMContentLoaded', function() {

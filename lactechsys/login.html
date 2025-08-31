@@ -570,11 +570,22 @@
 
         // Check if user is already logged in
         function checkExistingSession() {
+            console.log('🔍 Verificando sessão existente...');
+            
             const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
             
             if (userData) {
                 try {
                     const user = JSON.parse(userData);
+                    
+                    // Verificar se os dados são válidos
+                    if (!user || !user.id || !user.userType) {
+                        console.log('❌ Dados de sessão inválidos');
+                        localStorage.removeItem('userData');
+                        sessionStorage.removeItem('userData');
+                        return;
+                    }
+                    
                     const loginTime = new Date(user.loginTime);
                     const now = new Date();
                     const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
@@ -583,21 +594,25 @@
                     const maxHours = localStorage.getItem('userData') ? 24 : 8;
                     
                     if (hoursSinceLogin < maxHours) {
+                        console.log('✅ Sessão válida encontrada, redirecionando...');
                         // Session is still valid, redirect to appropriate page
                         const redirectUrl = getRedirectUrl(user.userType);
-                        window.location.href = redirectUrl;
+                        window.location.replace(redirectUrl);
                         return;
                     } else {
+                        console.log('⏰ Sessão expirada');
                         // Session expired, clear storage
                         localStorage.removeItem('userData');
                         sessionStorage.removeItem('userData');
                     }
                 } catch (error) {
-                    console.error('Error checking session:', error);
+                    console.error('❌ Erro ao verificar sessão:', error);
                     // Clear corrupted session data
                     localStorage.removeItem('userData');
                     sessionStorage.removeItem('userData');
                 }
+            } else {
+                console.log('ℹ️ Nenhuma sessão encontrada');
             }
         }
 
@@ -607,7 +622,7 @@
             try {
                 // Wait longer for config.js to load and initialize LacTechAPI
                 await new Promise(resolve => setTimeout(resolve, 800));
-                
+            
                 if (!supabaseClient) {
                     supabaseClient = await waitForSupabase();
                 }
