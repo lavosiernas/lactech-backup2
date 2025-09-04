@@ -27,32 +27,20 @@
     <link rel="apple-touch-icon" sizes="384x384" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     
-    <!-- PWA Manifest -->
-
-    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="config.js"></script>
+    <script src="assets/js/modal-system.js"></script>
+    <script src="vet.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="assets/js/pdf-generator.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/loading-screen.js"></script>
-    <script src="lactech-api-nova.js"></script>
-    <script src="auth_fix.js"></script>
+    
     <script src="pwa-manager.js"></script>
-    <script>
-        // Aguardar configuração do Supabase antes de carregar fix_data_sync_complete.js
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                const script = document.createElement('script');
-                script.src = 'fix_data_sync_complete.js';
-                document.head.appendChild(script);
-            }, 1000);
-        });
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
-    <link href="assets/css/loading-screen.css" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
@@ -105,9 +93,9 @@
                 </nav>
 
                 <div class="flex items-center space-x-4">
-                    <!-- Botão de retorno à conta do gerente (apenas para contas secundárias) -->
+                    <!-- Botão de retorno à conta do gerente -->
                     <div id="returnToManagerBtn" class="hidden">
-                        <button onclick="returnToManagerAccount()" class="flex items-center space-x-2 text-white hover:text-forest-200 p-2 rounded-lg transition-all bg-white bg-opacity-10 hover:bg-opacity-20">
+                        <button onclick="VetApp.returnToManagerAccount()" class="flex items-center space-x-2 text-white hover:text-forest-200 p-2 rounded-lg transition-all bg-white bg-opacity-10 hover:bg-opacity-20">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
@@ -115,7 +103,7 @@
                         </button>
                     </div>
                     
-                    <button onclick="openProfileModal()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all">
+                    <button onclick="VetApp.openProfileModal()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all">
                         <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -219,15 +207,19 @@
                     </div>
                     <form id="quickHealthForm" class="space-y-4">
                         <div class="form-floating">
-                            <input type="text" id="quickAnimalId" name="animal_id" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" " required>
-                            <label for="quickAnimalId" class="text-slate-600">ID do Animal</label>
+                            <select id="quickHealthAnimalSelect" name="animal_id" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required>
+                                <option value="">Selecione o animal...</option>
+                                <!-- Lista será preenchida dinamicamente -->
+                            </select>
+                            <label for="quickHealthAnimalSelect" class="text-slate-600">Animal (Brinco)</label>
                         </div>
                         <div class="form-floating">
                             <select id="quickHealthStatus" name="health_status" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required>
                                 <option value="">Selecione...</option>
-                                <option value="healthy">Saudável</option>
-                                <option value="warning">Atenção</option>
-                                <option value="critical">Crítico</option>
+                                <option value="Saudável">Saudável</option>
+                                <option value="Em Tratamento">Em Tratamento</option>
+                                <option value="Doente">Doente</option>
+                                <option value="Recuperando">Recuperando</option>
                             </select>
                             <label for="quickHealthStatus" class="text-slate-600">Status de Saúde</label>
                         </div>
@@ -235,7 +227,7 @@
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
-                            Registrar Status
+                            Registrar Status Rápido
                         </button>
                     </form>
                 </div>
@@ -244,7 +236,7 @@
                 <div class="data-card rounded-2xl p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-slate-900">Alertas Recentes</h3>
-                        <button onclick="showTab('animals')" class="text-forest-600 hover:text-forest-700 font-semibold text-sm">Ver Todos</button>
+                        <button onclick="VetApp.showTab('animals')" class="text-forest-600 hover:text-forest-700 font-semibold text-sm">Ver Todos</button>
                     </div>
                     <div class="space-y-3" id="recentAlerts">
                         <div class="text-center py-8">
@@ -294,7 +286,7 @@
                                 <option value="warning">Atenção</option>
                                 <option value="critical">Críticos</option>
                             </select>
-                            <button onclick="openAddAnimalModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="VetApp.openAddAnimalModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -315,7 +307,7 @@
                             </div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Nenhum Animal Cadastrado</h3>
                             <p class="text-gray-600 mb-4">Comece adicionando animais ao sistema</p>
-                            <button onclick="openAddAnimalModal()" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                            <button onclick="VetApp.openAddAnimalModal()" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -344,7 +336,7 @@
                                 <option value="completed">Concluídos</option>
                                 <option value="pending">Pendentes</option>
                             </select>
-                            <button onclick="openAddTreatmentModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="VetApp.openAddTreatmentModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -392,20 +384,20 @@
 
                             <!-- Start Date -->
                             <div class="form-floating">
-                                <input type="date" id="startDate" name="start_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required>
+                                <input type="date" id="startDate" name="treatment_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required>
                                 <label for="startDate" class="text-slate-600">Data de Início *</label>
                             </div>
 
                             <!-- End Date -->
                             <div class="form-floating">
-                                <input type="date" id="endDate" name="end_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none">
-                                <label for="endDate" class="text-slate-600">Data de Término</label>
+                                <input type="date" id="endDate" name="next_treatment_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none">
+                                <label for="endDate" class="text-slate-600">Próximo Tratamento</label>
                             </div>
                         </div>
 
                         <!-- Notes -->
                         <div class="form-floating">
-                            <textarea id="treatmentNotes" name="notes" rows="3" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none resize-none" placeholder=" "></textarea>
+                            <textarea id="treatmentNotes" name="observations" rows="3" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none resize-none" placeholder=" "></textarea>
                             <label for="treatmentNotes" class="text-slate-600">Observações</label>
                         </div>
 
@@ -417,7 +409,7 @@
                                 </svg>
                                 Registrar Tratamento
                             </button>
-                            <button type="button" onclick="resetTreatmentForm()" class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all">
+                            <button type="button" onclick="VetApp.resetTreatmentForm()" class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                 </svg>
@@ -463,7 +455,7 @@
                                 <option value="pending">Aguardando confirmação</option>
                                 <option value="failed">Não confirmada</option>
                             </select>
-                            <button onclick="openAddInseminationModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="VetApp.openAddInseminationModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -545,19 +537,19 @@
 
                             <!-- Bull ID -->
                             <div class="form-floating">
-                                <input type="text" id="bullId" name="bull_id" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" ">
+                                <input type="text" id="bullId" name="bull_identification" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" ">
                                 <label for="bullId" class="text-slate-600">ID do Touro</label>
                             </div>
 
                             <!-- Technician -->
                             <div class="form-floating">
-                                <input type="text" id="technician" name="technician" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" ">
+                                <input type="text" id="technician" name="technician_name" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" ">
                                 <label for="technician" class="text-slate-600">Técnico Responsável</label>
                             </div>
 
                             <!-- Heat Detection Method -->
                             <div class="form-floating">
-                                <select id="heatDetectionMethod" name="heat_detection_method" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none">
+                                <select id="heatDetectionMethod" name="technique_used" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none">
                                     <option value="">Selecione...</option>
                                     <option value="visual">Observação Visual</option>
                                     <option value="detector">Detector de Cio</option>
@@ -580,9 +572,9 @@
                                 <label for="bodyConditionScore" class="text-slate-600">Escore de Condição Corporal</label>
                             </div>
 
-                            <!-- Expected Birth Date (calculated automatically) -->
+                            <!-- Expected Birth Date -->
                             <div class="form-floating">
-                                <input type="date" id="expectedBirthDate" name="expected_birth_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl bg-slate-50" readonly>
+                                <input type="date" id="expectedBirthDate" name="expected_calving_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl bg-slate-50" readonly>
                                 <label for="expectedBirthDate" class="text-slate-600">Data Prevista de Parto (calculada)</label>
                             </div>
                         </div>
@@ -601,7 +593,7 @@
                                 </svg>
                                 Registrar Inseminação
                             </button>
-                            <button type="button" onclick="resetInseminationForm()" class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all">
+                            <button type="button" onclick="VetApp.resetInseminationForm()" class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                 </svg>
@@ -615,7 +607,7 @@
                 <div class="data-card rounded-2xl p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-slate-900">Histórico de Inseminações</h3>
-                        <button onclick="refreshInseminationsList()" class="text-forest-600 hover:text-forest-700 p-2 rounded-lg hover:bg-forest-50 transition-all">
+                        <button onclick="VetApp.refreshInseminationsList()" class="text-forest-600 hover:text-forest-700 p-2 rounded-lg hover:bg-forest-50 transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
@@ -658,23 +650,9 @@
                                 <label for="pregnancyStatus" class="text-slate-600">Status da Gravidez *</label>
                             </div>
 
-                            <!-- Confirmation Method -->
+                            <!-- Confirmation Date -->
                             <div class="form-floating">
-                                <select id="confirmationMethod" name="confirmation_method" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none">
-                                    <option value="">Selecione...</option>
-                                    <option value="ultrasound">Ultrassom</option>
-                                    <option value="palpation">Palpação Retal</option>
-                                    <option value="blood_test">Exame de Sangue</option>
-                                    <option value="visual">Observação Visual</option>
-                                </select>
-                                <label for="confirmationMethod" class="text-slate-600">Método de Confirmação</label>
-                            </div>
-                        </div>
-
-                        <!-- Confirmation Date -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="form-floating">
-                                <input type="date" id="confirmationDate" name="confirmation_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required>
+                                <input type="date" id="confirmationDate" name="pregnancy_confirmation_date" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required>
                                 <label for="confirmationDate" class="text-slate-600">Data da Confirmação *</label>
                             </div>
                         </div>
@@ -717,7 +695,7 @@
                         </div>
                         <h3 class="text-lg font-semibold text-slate-900 mb-2">Relatório de Saúde</h3>
                         <p class="text-slate-600 text-sm mb-4">Status geral do rebanho</p>
-                        <button onclick="generateHealthReport()" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                        <button onclick="VetApp.generateHealthReport()" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                             Gerar Relatório
                         </button>
                     </div>
@@ -731,7 +709,7 @@
                         </div>
                         <h3 class="text-lg font-semibold text-slate-900 mb-2">Relatório de Tratamentos</h3>
                         <p class="text-slate-600 text-sm mb-4">Histórico de medicações</p>
-                        <button onclick="generateTreatmentReport()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                        <button onclick="VetApp.generateTreatmentReport()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                             Gerar Relatório
                         </button>
                     </div>
@@ -745,7 +723,7 @@
                         </div>
                         <h3 class="text-lg font-semibold text-slate-900 mb-2">Relatório de Vacinação</h3>
                         <p class="text-slate-600 text-sm mb-4">Controle vacinal</p>
-                        <button onclick="generateVaccinationReport()" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                        <button onclick="VetApp.generateVaccinationReport()" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                             Gerar Relatório
                         </button>
                     </div>
@@ -806,18 +784,16 @@
     </nav>
 
     <!-- Modal de Perfil do Veterinário -->
-    <div id="profileModal" class="fullscreen-modal">
-        <div class="modal-content">
+    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <!-- Header do Modal -->
-            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-bold text-gray-900">Perfil do Veterinário</h2>
-                    <button onclick="closeProfileModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">Perfil do Veterinário</h2>
+                <button onclick="VetApp.closeProfileModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
             
             <!-- Conteúdo do Perfil -->
@@ -838,7 +814,7 @@
                     </div>
                 </div>
                 
-                <!-- Informações Profissionais (só para contas principais) -->
+                <!-- Informações Profissionais -->
                 <div id="professionalInfoSection" class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4">Informações Profissionais</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -865,7 +841,7 @@
                     </div>
                 </div>
                 
-                <!-- Alterar Senha (só para contas principais) -->
+                <!-- Alterar Senha -->
                 <div id="changePasswordSection" class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4">Alterar Senha</h4>
                     <form id="changePasswordForm" class="space-y-4">
@@ -889,7 +865,7 @@
                     </form>
                 </div>
                 
-                <!-- Conta Principal (só para contas secundárias) -->
+                <!-- Conta Principal -->
                 <div id="primaryAccountSection" class="bg-white rounded-2xl p-6 shadow-sm border border-blue-200" style="display: none;">
                     <h4 class="text-lg font-semibold text-blue-900 mb-4">Conta Principal</h4>
                     <div class="flex items-center justify-between">
@@ -897,7 +873,7 @@
                             <h5 class="font-medium text-blue-900">Retornar para Gerente</h5>
                             <p class="text-sm text-blue-600">Voltar para sua conta principal de gerente</p>
                         </div>
-                        <button id="switchToPrimaryBtn" onclick="switchToPrimaryAccount()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all">
+                        <button id="switchToPrimaryBtn" onclick="VetApp.switchToPrimaryAccount()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                             </svg>
@@ -906,7 +882,7 @@
                     </div>
                 </div>
                 
-                <!-- Sair do Sistema (só para contas principais) -->
+                <!-- Sair do Sistema -->
                 <div id="dangerZoneSection" class="bg-white rounded-2xl p-6 shadow-sm border border-red-200">
                     <h4 class="text-lg font-semibold text-red-900 mb-4">Zona de Perigo</h4>
                     <div class="flex items-center justify-between">
@@ -914,7 +890,7 @@
                             <h5 class="font-medium text-red-900">Sair do Sistema</h5>
                             <p class="text-sm text-red-600">Encerrar sua sessão atual</p>
                         </div>
-                        <button onclick="signOut()" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all">
+                        <button onclick="VetApp.signOut()" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                             </svg>
@@ -939,7 +915,7 @@
                     <p class="text-sm font-medium text-gray-900" id="toastMessage">Registro salvo com sucesso!</p>
                 </div>
                 <div class="ml-auto pl-3">
-                    <button onclick="hideNotification()" class="text-gray-400 hover:text-gray-600">
+                    <button onclick="VetApp.hideNotification()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -949,1737 +925,346 @@
         </div>
     </div>
 
-    <script>
-        // Supabase Configuration já está no arquivo supabase_config_fixed.js
-        // Usar a instância global do supabase
-
-        // Check authentication
-        async function checkAuthentication() {
-            // Usar a versão corrigida que sincroniza com Supabase
-            return await window.authFix.checkAuthenticationFixed();
-        }
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', async function() {
-            const isAuthenticated = await checkAuthentication();
-            if (!isAuthenticated) {
-                return; // Stop execution if not authenticated
-            }
-            await initializePage();
-            setupEventListeners();
-            setCurrentDate();
-        });
-
-        async function initializePage() {
-            // Verificar se o usuário está ativo
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    const { data: userData, error } = await supabase
-                        .from('users')
-                        .select('is_active')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    if (!error && userData && userData.is_active === false) {
-                        window.location.href = 'acesso-bloqueado.html';
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao verificar status do usuário:', error);
-            }
-            
-            await setFarmName();
-            await setVetName();
-            await loadDashboardData();
-            
-        }
-
-        // Function to get farm name from Supabase
-        async function getFarmName() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return 'Minha Fazenda';
-
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('farm_id')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (userError) throw userError;
-
-                const { data, error } = await supabase
-                    .from('farms')
-                    .select('name')
-                    .eq('id', userData.farm_id)
-                    .single();
-                
-                if (error) throw error;
-                return data?.name || user.user_metadata?.farm_name || 'Minha Fazenda';
-            } catch (error) {
-                console.error('Error fetching farm name:', error);
-                return 'Minha Fazenda';
-            }
-        }
-
-        // Function to get veterinarian name from Supabase
-        async function getVetName() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return { name: 'Veterinário', profile_photo_url: null };
-
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('name, profile_photo_url')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (error) throw error;
-                return {
-                    name: data?.name || user.user_metadata?.name || 'Veterinário',
-                    profile_photo_url: data?.profile_photo_url || null
-                };
-            } catch (error) {
-                console.error('Error fetching vet name:', error);
-                return { name: 'Veterinário', profile_photo_url: null };
-            }
-        }
-
-        // Function to set farm name in header
-        async function setFarmName() {
-            const farmName = await getFarmName();
-            document.getElementById('farmNameHeader').textContent = farmName;
-        }
-
-        // Function to extract formal name (second name)
-        function extractFormalName(fullName) {
-            if (!fullName || typeof fullName !== 'string') {
-                return 'Veterinário';
-            }
-            
-            // Remove extra spaces and split
-            const names = fullName.trim().split(/\s+/);
-            
-            // If only one name, return it
-            if (names.length === 1) {
-                return names[0];
-            }
-            
-            // If two names, return the second
-            if (names.length === 2) {
-                return names[1];
-            }
-            
-            // For 3 or more names, try to find the most formal name
-            // Skip common prefixes and find the second meaningful name
-            const skipWords = ['da', 'de', 'do', 'das', 'dos', 'di', 'del', 'della', 'delle', 'delli'];
-            
-            let formalName = '';
-            let nameCount = 0;
-            
-            for (let i = 0; i < names.length; i++) {
-                const name = names[i].toLowerCase();
-                
-                // Skip common prefixes
-                if (skipWords.includes(name)) {
-                    continue;
-                }
-                
-                // Count meaningful names
-                nameCount++;
-                
-                // Get the second meaningful name
-                if (nameCount === 2) {
-                    formalName = names[i];
-                    break;
-                }
-            }
-            
-            // If we didn't find a second meaningful name, use the second name overall
-            if (!formalName && names.length >= 2) {
-                formalName = names[1];
-            }
-            
-            // If still no formal name, use the first name
-            if (!formalName) {
-                formalName = names[0];
-            }
-            
-            // Capitalize first letter
-            return formalName.charAt(0).toUpperCase() + formalName.slice(1).toLowerCase();
-        }
-
-        // Function to set veterinarian name in profile
-        async function setVetName() {
-            const vetData = await getVetName();
-            const farmName = await getFarmName();
-            
-            // Extract formal name for welcome message
-            const formalName = extractFormalName(vetData.name);
-            
-            document.getElementById('vetName').textContent = formalName;
-            document.getElementById('vetWelcome').textContent = formalName;
-            document.getElementById('profileName').textContent = vetData.name;
-            document.getElementById('profileFullName').textContent = vetData.name;
-            document.getElementById('profileFarmName').textContent = farmName;
-            
-            // Update profile photo display
-            updateProfilePhotoDisplay(vetData.profile_photo_url);
-        }
-
-        // Function to update profile photo display
-        function updateProfilePhotoDisplay(photoUrl) {
-            try {
-                // Add timestamp to prevent cache issues
-                const photoUrlWithTimestamp = photoUrl ? photoUrl + '?t=' + Date.now() : null;
-                
-                // Update header profile photo
-                const headerPhoto = document.getElementById('headerProfilePhoto');
-                const headerIcon = document.getElementById('headerProfileIcon');
-                
-                if (headerPhoto && headerIcon) {
-                    if (photoUrlWithTimestamp) {
-                        headerPhoto.src = photoUrlWithTimestamp;
-                        headerPhoto.classList.remove('hidden');
-                        headerIcon.classList.add('hidden');
-                    } else {
-                        headerPhoto.classList.add('hidden');
-                        headerIcon.classList.remove('hidden');
-                    }
-                }
-                
-                // Update modal profile photo
-                const modalPhoto = document.getElementById('modalProfilePhoto');
-                const modalIcon = document.getElementById('modalProfileIcon');
-                
-                if (modalPhoto && modalIcon) {
-                    if (photoUrlWithTimestamp) {
-                        modalPhoto.src = photoUrlWithTimestamp;
-                        modalPhoto.classList.remove('hidden');
-                        modalIcon.classList.add('hidden');
-                    } else {
-                        modalPhoto.classList.add('hidden');
-                        modalIcon.classList.remove('hidden');
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao atualizar exibição da foto de perfil:', error);
-            }
-        }
-
-        // Load dashboard data from Supabase
-        async function loadDashboardData() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-
-                // Load animal health statistics
-                const { data: animalsData, error: animalsError } = await supabase
-                    .from('animals')
-                    .select('health_status');
-
-                if (!animalsError && animalsData) {
-                    const healthStats = animalsData.reduce((acc, animal) => {
-                        acc[animal.health_status] = (acc[animal.health_status] || 0) + 1;
-                        return acc;
-                    }, {});
-
-                    document.getElementById('healthyAnimals').textContent = healthStats.healthy || 0;
-                    document.getElementById('warningAnimals').textContent = healthStats.warning || 0;
-                    document.getElementById('criticalAnimals').textContent = healthStats.critical || 0;
-                }
-
-                // Load active treatments
-                const { data: treatmentsData, error: treatmentsError } = await supabase
-                    .from('treatments')
-                    .select('id')
-                    .eq('status', 'active');
-
-                if (!treatmentsError && treatmentsData) {
-                    document.getElementById('activeTreatments').textContent = treatmentsData.length;
-                }
-
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-            }
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Tab switching
-            const navItems = document.querySelectorAll('.nav-item, .mobile-nav-item');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            navItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    const targetTab = this.getAttribute('data-tab');
-                    
-                    // Remove active class from all nav items
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    
-                    // Add active class to clicked item
-                    this.classList.add('active');
-                    
-                    // Hide all tab contents
-                    tabContents.forEach(content => content.classList.add('hidden'));
-                    
-                    // Show target tab content
-                    document.getElementById(targetTab + '-tab').classList.remove('hidden');
-                });
-            });
-
-            // Form submissions
-            document.getElementById('quickHealthForm').addEventListener('submit', handleQuickHealth);
-            document.getElementById('treatmentForm').addEventListener('submit', handleTreatmentRegister);
-            document.getElementById('changePasswordForm').addEventListener('submit', handlePasswordChange);
-        }
-
-        // Handle quick health check form
-        async function handleQuickHealth(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const animalId = formData.get('animal_id');
-            const healthStatus = formData.get('health_status');
-
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                const { error } = await supabase
-                    .from('animal_health_records')
-                    .insert([{
-                        animal_id: animalId,
-                        health_status: healthStatus,
-                        veterinarian_id: user.id,
-                        recorded_at: new Date().toISOString()
-                    }]);
-
-                if (error) throw error;
-
-                showNotification('Status de saúde registrado com sucesso!', 'success');
-                e.target.reset();
-                await loadDashboardData();
-
-            } catch (error) {
-                console.error('Error saving health status:', error);
-                showNotification('Erro ao registrar status de saúde', 'error');
-            }
-        }
-
-        // Handle treatment register form
-        async function handleTreatmentRegister(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                const treatmentData = {
-                    animal_id: formData.get('animal_id'),
-                    treatment_type: formData.get('treatment_type'),
-                    medication: formData.get('medication') || null,
-                    dosage: formData.get('dosage') || null,
-                    start_date: formData.get('start_date'),
-                    end_date: formData.get('end_date') || null,
-                    notes: formData.get('notes') || null,
-                    veterinarian_id: user.id,
-                    status: 'active',
-                    created_at: new Date().toISOString()
-                };
-
-                const { error } = await supabase
-                    .from('treatments')
-                    .insert([treatmentData]);
-
-                if (error) throw error;
-
-                showNotification('Tratamento registrado com sucesso!', 'success');
-                e.target.reset();
-                setCurrentDate();
-                await loadDashboardData();
-
-            } catch (error) {
-                console.error('Error saving treatment:', error);
-                showNotification('Erro ao registrar tratamento', 'error');
-            }
-        }
-
-        // Handle password change
-        async function handlePasswordChange(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const currentPassword = formData.get('current_password');
-            const newPassword = formData.get('new_password');
-            const confirmPassword = formData.get('confirm_password');
-
-            if (newPassword !== confirmPassword) {
-                showNotification('As senhas não coincidem', 'error');
-                return;
-            }
-
-            try {
-                const { error } = await supabase.auth.updateUser({
-                    password: newPassword
-                });
-
-                if (error) throw error;
-
-                showNotification('Senha alterada com sucesso!', 'success');
-                e.target.reset();
-
-            } catch (error) {
-                console.error('Error changing password:', error);
-                showNotification('Erro ao alterar senha', 'error');
-            }
-        }
-
-        // Set current date in form
-        function setCurrentDate() {
-            const now = new Date();
-            const dateInput = document.getElementById('startDate');
-            
-            if (dateInput) {
-                dateInput.value = now.toISOString().split('T')[0];
-            }
-        }
-
-        // Reset treatment form
-        function resetTreatmentForm() {
-            document.getElementById('treatmentForm').reset();
-            setCurrentDate();
-        }
-
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const toast = document.getElementById('notificationToast');
-            const messageElement = document.getElementById('toastMessage');
-            const iconElement = toast.querySelector('svg');
-            
-            messageElement.textContent = message;
-            
-            // Update icon and colors based on type
-            if (type === 'error') {
-                iconElement.classList.remove('text-green-400');
-                iconElement.classList.add('text-red-400');
-                iconElement.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>';
-            } else {
-                iconElement.classList.remove('text-red-400');
-                iconElement.classList.add('text-green-400');
-                iconElement.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
-            }
-            
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 5000);
-        }
-
-        // Hide notification
-        function hideNotification() {
-            document.getElementById('notificationToast').classList.remove('show');
-        }
-
-        // Profile modal functions
-        function openProfileModal() {
-            document.getElementById('profileModal').classList.add('show');
-        }
-
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.remove('show');
-        }
-
-        // Show specific tab
-        function showTab(tabName) {
-            const navItems = document.querySelectorAll('.nav-item, .mobile-nav-item');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            // Remove active class from all nav items
-            navItems.forEach(nav => nav.classList.remove('active'));
-            
-            // Add active class to target nav item
-            const targetNav = document.querySelector(`[data-tab="${tabName}"]`);
-            if (targetNav) {
-                targetNav.classList.add('active');
-            }
-            
-            // Hide all tab contents
-            tabContents.forEach(content => content.classList.add('hidden'));
-            
-            // Show target tab content
-            document.getElementById(tabName + '-tab').classList.remove('hidden');
-        }
-
-        // FIXED MODAL FUNCTIONS - COMPACT AND RESPONSIVE
-        function openAddAnimalModal() {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
-                    <!-- Modal Header -->
-                    <div class="bg-gradient-to-r from-forest-600 to-forest-700 px-6 py-4 text-white rounded-t-2xl flex-shrink-0">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold">Adicionar Animal</h3>
-                                    <p class="text-forest-100 text-xs">Cadastre um novo animal</p>
-                                </div>
-                            </div>
-                            <button onclick="closeAnimalModal()" class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center hover:bg-opacity-30 transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
+    <!-- Modal Adicionar Animal -->
+    <div id="addAnimalModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-forest-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
                     </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-6 overflow-y-auto flex-1">
-                        <form id="animalForm" onsubmit="handleAddAnimal(event)" class="space-y-4">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="sm:col-span-2">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome do Animal *</label>
-                                    <input type="text" name="name" required 
-                                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all text-sm" 
-                                           placeholder="Ex: Mimosa, Estrela">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Raça *</label>
-                                    <select name="breed" required 
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all text-sm">
-                                        <option value="">Selecione</option>
-                                        <option value="Holstein">Holstein</option>
-                                        <option value="Jersey">Jersey</option>
-                                        <option value="Gir">Gir</option>
-                                        <option value="Girolando">Girolando</option>
-                                        <option value="Pardo Suíço">Pardo Suíço</option>
-                                        <option value="Nelore">Nelore</option>
-                                        <option value="Angus">Angus</option>
-                                        <option value="Mestiça">Mestiça</option>
-                                        <option value="Outra">Outra</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sexo *</label>
-                                    <select name="gender" required 
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all text-sm">
-                                        <option value="">Selecione</option>
-                                        <option value="female">Fêmea</option>
-                                        <option value="male">Macho</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Nascimento *</label>
-                                    <input type="date" name="birth_date" required 
-                                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status de Saúde *</label>
-                                    <select name="health_status" required 
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all text-sm">
-                                        <option value="healthy">Saudável</option>
-                                        <option value="warning">Atenção</option>
-                                        <option value="critical">Crítico</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Peso (kg)</label>
-                                    <input type="number" name="weight" step="0.1" min="0" 
-                                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all text-sm" 
-                                           placeholder="450.5">
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
-                                    <textarea name="notes" rows="3" 
-                                              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-all resize-none text-sm" 
-                                              placeholder="Observações sobre o animal..."></textarea>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-2xl flex-shrink-0">
-                        <button type="button" onclick="closeAnimalModal()" 
-                                class="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-all text-sm">
-                            Cancelar
-                        </button>
-                        <button type="submit" form="animalForm" 
-                                class="px-6 py-2 bg-gradient-to-r from-forest-600 to-forest-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm">
-                            Adicionar
-                        </button>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Adicionar Novo Animal</h3>
+                        <p class="text-sm text-gray-500">Preencha as informações do animal</p>
                     </div>
                 </div>
-            `;
+                <button onclick="VetApp.closeModal('addAnimalModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
             
-            modal.id = 'animalModal';
-            document.body.appendChild(modal);
-        }
-
-        function closeAnimalModal() {
-            const modal = document.getElementById('animalModal');
-            if (modal) {
-                modal.remove();
-            }
-        }
-
-        async function handleAddAnimal(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            
-            const animalData = {
-                name: formData.get('name'),
-                identification: formData.get('identification') || null, // Adicionado campo identification
-                animal_type: formData.get('animal_type') || 'vaca', // Adicionado campo animal_type
-                breed: formData.get('breed'),
-                birth_date: formData.get('birth_date'),
-                gender: formData.get('gender'),
-                health_status: formData.get('health_status'),
-                weight: formData.get('weight') ? parseFloat(formData.get('weight')) : null,
-                notes: formData.get('notes') || null,
-                is_active: true // Adicionado campo is_active
-            };
-
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                // Get current user's farm_id
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('farm_id')
-                    .eq('id', user.id)
-                    .single();
-
-                if (userError) throw userError;
-                if (!userData?.farm_id) throw new Error('Farm not found');
-
-                // Insert animal into database
-                const { error: animalError } = await supabase
-                    .from('animals')
-                    .insert({
-                        ...animalData,
-                        farm_id: userData.farm_id,
-                        created_at: new Date().toISOString()
-                    });
-
-                if (animalError) throw animalError;
-
-                showNotification('Animal adicionado com sucesso!', 'success');
-                closeAnimalModal();
-                
-                // Reload dashboard data
-                await loadDashboardData();
-                
-            } catch (error) {
-                console.error('Error adding animal:', error);
-                showNotification('Erro ao adicionar animal: ' + error.message, 'error');
-            }
-        }
-
-        function openAddTreatmentModal() {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-                    <!-- Modal Header -->
-                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white rounded-t-2xl flex-shrink-0">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold">Novo Tratamento</h3>
-                                    <p class="text-blue-100 text-xs">Registre um novo tratamento</p>
-                                </div>
-                            </div>
-                            <button onclick="closeTreatmentModal()" class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center hover:bg-opacity-30 transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
+            <!-- Form -->
+            <form id="addAnimalForm" class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Identificação *</label>
+                        <input type="text" required name="identification" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all" placeholder="Ex: Vaca-001">
                     </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-6 overflow-y-auto flex-1">
-                        <form id="treatmentModalForm" onsubmit="handleAddTreatment(event)" class="space-y-4">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="sm:col-span-2">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Animal *</label>
-                                    <select name="animal_id" required id="animalSelect" 
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm">
-                                        <option value="">Carregando animais...</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Tratamento *</label>
-                                    <select name="treatment_type" required 
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm">
-                                        <option value="">Selecione</option>
-                                        <option value="medication">Medicação</option>
-                                        <option value="vaccination">Vacinação</option>
-                                        <option value="surgery">Cirurgia</option>
-                                        <option value="therapy">Terapia</option>
-                                        <option value="preventive">Preventivo</option>
-                                        <option value="emergency">Emergência</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
-                                    <select name="status" required 
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm">
-                                        <option value="active">Ativo</option>
-                                        <option value="completed">Concluído</option>
-                                        <option value="suspended">Suspenso</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Medicação/Procedimento *</label>
-                                    <input type="text" name="medication" required 
-                                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" 
-                                           placeholder="Ex: Antibiótico, Vacina V10">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Dosagem</label>
-                                    <input type="text" name="dosage" 
-                                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" 
-                                           placeholder="Ex: 10ml, 2 comprimidos">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Início *</label>
-                                    <input type="date" name="start_date" required 
-                                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Fim</label>
-                                    <input type="date" name="end_date" 
-                                           class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm">
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
-                                    <textarea name="notes" rows="3" 
-                                              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-sm" 
-                                              placeholder="Observações sobre o tratamento..."></textarea>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-2xl flex-shrink-0">
-                        <button type="button" onclick="closeTreatmentModal()" 
-                                class="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-all text-sm">
-                            Cancelar
-                        </button>
-                        <button type="submit" form="treatmentModalForm" 
-                                class="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all text-sm">
-                            Registrar
-                        </button>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Nome</label>
+                        <input type="text" name="name" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all" placeholder="Nome do animal">
                     </div>
                 </div>
-            `;
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Raça</label>
+                        <input type="text" name="breed" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all" placeholder="Ex: Holandesa">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Data de Nascimento</label>
+                        <input type="date" name="birth_date" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Gênero *</label>
+                        <select required name="gender" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                            <option value="">Selecione...</option>
+                            <option value="Fêmea">Fêmea</option>
+                            <option value="Macho">Macho</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Peso (kg)</label>
+                        <input type="number" step="0.1" name="weight" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all" placeholder="0.0">
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Status de Saúde</label>
+                    <select name="health_status" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                        <option value="Saudável">Saudável</option>
+                        <option value="Em Tratamento">Em Tratamento</option>
+                        <option value="Doente">Doente</option>
+                        <option value="Recuperando">Recuperando</option>
+                    </select>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Observações</label>
+                    <textarea name="observations" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all resize-none" placeholder="Observações adicionais..."></textarea>
+                </div>
+                
+                <!-- Footer -->
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="VetApp.closeModal('addAnimalModal')" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Adicionar Animal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Tratamento -->
+    <div id="addTreatmentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Adicionar Novo Tratamento</h3>
+                        <p class="text-sm text-gray-500">Registre o tratamento do animal</p>
+                    </div>
+                </div>
+                <button onclick="VetApp.closeModal('addTreatmentModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
             
-            modal.id = 'treatmentModal';
-            document.body.appendChild(modal);
+            <!-- Form -->
+            <form id="addTreatmentForm" class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Animal *</label>
+                        <select required name="animal_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                            <option value="">Selecione o animal...</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Tipo de Tratamento *</label>
+                        <select required name="treatment_type" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                            <option value="">Selecione...</option>
+                            <option value="Medicamento">Medicamento</option>
+                            <option value="Vacina">Vacina</option>
+                            <option value="Cirurgia">Cirurgia</option>
+                            <option value="Exame">Exame</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Data de Início *</label>
+                        <input type="date" required name="start_date" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Data de Término</label>
+                        <input type="date" name="end_date" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Descrição *</label>
+                    <textarea required name="description" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all resize-none" placeholder="Descreva o tratamento..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Medicamentos</label>
+                        <input type="text" name="medications" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all" placeholder="Medicamentos utilizados">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Dosagem</label>
+                        <input type="text" name="dosage" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all" placeholder="Ex: 10ml 2x/dia">
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Observações</label>
+                    <textarea name="observations" rows="2" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all resize-none" placeholder="Observações adicionais..."></textarea>
+                </div>
+                
+                <!-- Footer -->
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="VetApp.closeModal('addTreatmentModal')" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Adicionar Tratamento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Inseminação -->
+    <div id="addInseminationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Nova Inseminação Artificial</h3>
+                        <p class="text-sm text-gray-500">Registre a inseminação do animal</p>
+                    </div>
+                </div>
+                <button onclick="VetApp.closeModal('addInseminationModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
             
-            // Set default start date to today
-            const today = new Date().toISOString().split('T')[0];
-            modal.querySelector('input[name="start_date"]').value = today;
+            <!-- Form -->
+            <form id="addInseminationForm" class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Animal *</label>
+                        <select required name="animal_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                            <option value="">Selecione o animal...</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Data da Inseminação *</label>
+                        <input type="date" required name="insemination_date" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Tipo de Sêmen</label>
+                        <select name="semen_type" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                            <option value="">Selecione...</option>
+                            <option value="Fresco">Fresco</option>
+                            <option value="Congelado">Congelado</option>
+                            <option value="Sexado">Sexado</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Raça do Touro</label>
+                        <input type="text" name="bull_breed" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all" placeholder="Ex: Holandês">
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Observações</label>
+                    <textarea name="observations" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all resize-none" placeholder="Observações sobre a inseminação..."></textarea>
+                </div>
+                
+                <!-- Footer -->
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="VetApp.closeModal('addInseminationModal')" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Registrar Inseminação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Status de Saúde -->
+    <div id="healthStatusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Registrar Status de Saúde</h3>
+                        <p class="text-sm text-gray-500">Avalie a saúde do animal</p>
+                    </div>
+                </div>
+                <button onclick="VetApp.closeModal('healthStatusModal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
             
-            // Load animals for selection
-            loadAnimalsForTreatment();
-        }
-
-        function closeTreatmentModal() {
-            const modal = document.getElementById('treatmentModal');
-            if (modal) {
-                modal.remove();
-            }
-        }
-
-        async function loadAnimalsForTreatment() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('farm_id')
-                    .eq('id', user.id)
-                    .single();
-
-                if (userError) throw userError;
-
-                const { data: animals, error } = await supabase
-                    .from('animals')
-                    .select('id, name, breed')
-                    .eq('farm_id', userData.farm_id)
-                    .order('name');
-
-                if (error) throw error;
-
-                const select = document.getElementById('animalSelect');
-                if (select) {
-                    select.innerHTML = '<option value="">Selecione um animal</option>';
-                    animals.forEach(animal => {
-                        const option = document.createElement('option');
-                        option.value = animal.id;
-                        option.textContent = `${animal.name} (${animal.breed})`;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading animals:', error);
-                const select = document.getElementById('animalSelect');
-                if (select) {
-                    select.innerHTML = '<option value="">Erro ao carregar animais</option>';
-                }
-            }
-        }
-
-        async function handleAddTreatment(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            
-            const treatmentData = {
-                animal_id: formData.get('animal_id'),
-                treatment_type: formData.get('treatment_type'),
-                medication_name: formData.get('medication'), // Corrigido: medication -> medication_name
-                dosage: formData.get('dosage') || null,
-                treatment_start_date: formData.get('start_date'), // Corrigido: start_date -> treatment_start_date
-                treatment_end_date: formData.get('end_date') || null, // Corrigido: end_date -> treatment_end_date
-                status: formData.get('status'),
-                notes: formData.get('notes') || null,
-                // Campos adicionais do esquema
-                administration_route: formData.get('administration_route') || null,
-                withdrawal_period_days: formData.get('withdrawal_period_days') ? parseInt(formData.get('withdrawal_period_days')) : null,
-                cost: formData.get('cost') ? parseFloat(formData.get('cost')) : null
-            };
-
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                // Get current user's farm_id
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('farm_id')
-                    .eq('id', user.id)
-                    .single();
-
-                if (userError) throw userError;
-                if (!userData?.farm_id) throw new Error('Farm not found');
-
-                // Insert treatment into database
-                const { error: treatmentError } = await supabase
-                    .from('treatments')
-                    .insert({
-                        ...treatmentData,
-                        veterinarian_id: user.id,
-                        farm_id: userData.farm_id, // Adicionado farm_id
-                        created_at: new Date().toISOString()
-                    });
-
-                if (treatmentError) throw treatmentError;
-
-                showNotification('Tratamento registrado com sucesso!', 'success');
-                closeTreatmentModal();
+            <!-- Form -->
+            <form id="healthStatusForm" class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Animal *</label>
+                        <select required name="animal_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                            <option value="">Selecione o animal...</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Data da Avaliação *</label>
+                        <input type="date" required name="assessment_date" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                    </div>
+                </div>
                 
-                // Reload dashboard data
-                await loadDashboardData();
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Status de Saúde *</label>
+                    <select required name="health_status" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all">
+                        <option value="">Selecione...</option>
+                        <option value="Saudável">Saudável</option>
+                        <option value="Em Tratamento">Em Tratamento</option>
+                        <option value="Doente">Doente</option>
+                        <option value="Recuperando">Recuperando</option>
+                        <option value="Crítico">Crítico</option>
+                    </select>
+                </div>
                 
-            } catch (error) {
-                console.error('Error adding treatment:', error);
-                showNotification('Erro ao registrar tratamento: ' + error.message, 'error');
-            }
-        }
-
-        // Report generation functions
-        async function generateHealthReport() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                // Buscar dados de saúde dos animais
-                const { data: healthData, error } = await supabase
-                    .from('animal_health_records')
-                    .select(`
-                        *,
-                        animals(name, breed, birth_date)
-                    `)
-                    .eq('veterinarian_id', user.id)
-                    .order('recorded_at', { ascending: false });
-
-                if (error) throw error;
-
-                // Gerar relatório em formato PDF
-                await generateHealthPDF(healthData);
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Sintomas</label>
+                    <textarea name="symptoms" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all resize-none" placeholder="Descreva os sintomas observados..."></textarea>
+                </div>
                 
-                showNotification('Relatório de Saúde gerado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error generating health report:', error);
-                showNotification('Erro ao gerar relatório de saúde', 'error');
-            }
-        }
-
-        async function generateTreatmentReport() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                // Buscar dados de tratamentos
-                const { data: treatmentData, error } = await supabase
-                    .from('treatments')
-                    .select(`
-                        *,
-                        animals(name, breed, birth_date)
-                    `)
-                    .eq('veterinarian_id', user.id)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                // Gerar relatório em formato PDF
-                await generateTreatmentPDF(treatmentData);
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Diagnóstico</label>
+                    <textarea name="diagnosis" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all resize-none" placeholder="Diagnóstico realizado..."></textarea>
+                </div>
                 
-                showNotification('Relatório de Tratamentos gerado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error generating treatment report:', error);
-                showNotification('Erro ao gerar relatório de tratamentos', 'error');
-            }
-        }
-
-        async function generateVaccinationReport() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                // Buscar dados de vacinação (tratamentos do tipo vacinação)
-                const { data: vaccinationData, error } = await supabase
-                    .from('treatments')
-                    .select(`
-                        *,
-                        animals(name, breed, birth_date)
-                    `)
-                    .eq('veterinarian_id', user.id)
-                    .eq('treatment_type', 'vaccination')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                // Gerar relatório em formato PDF
-                await generateVaccinationPDF(vaccinationData);
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Recomendações</label>
+                    <textarea name="recommendations" rows="2" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none transition-all resize-none" placeholder="Recomendações para o animal..."></textarea>
+                </div>
                 
-                showNotification('Relatório de Vacinação gerado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error generating vaccination report:', error);
-                showNotification('Erro ao gerar relatório de vacinação', 'error');
-            }
-        }
-
-        // Helper functions for PDF generation
-        async function generateHealthPDF(data) {
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                // Configurações
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const margin = 20;
-                let yPosition = margin;
-
-                // Título
-                doc.setFontSize(18);
-                doc.setFont('helvetica', 'bold');
-                const titleText = window.reportSettings?.farmName
-                    ? `RELATÓRIO DE SAÚDE ANIMAL - ${window.reportSettings.farmName}`
-                    : 'RELATÓRIO DE SAÚDE ANIMAL';
-                doc.text(titleText, margin, yPosition);
-                yPosition += 20;
-
-                // Data do relatório
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                const today = new Date().toLocaleDateString('pt-BR');
-                doc.text(`Relatório gerado em: ${today}`, margin, yPosition);
-                yPosition += 20;
-
-                // Cabeçalho da tabela
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'bold');
-                const headers = ['Data', 'Animal', 'Raça', 'Status', 'Observações'];
-                const colWidths = [25, 35, 30, 25, 75];
-                let xPosition = margin;
-
-                headers.forEach((header, index) => {
-                    doc.text(header, xPosition, yPosition);
-                    xPosition += colWidths[index];
-                });
-                yPosition += 8;
-
-                // Linha separadora
-                doc.line(margin, yPosition, pageWidth - margin, yPosition);
-                yPosition += 5;
-
-                // Dados da tabela
-                doc.setFont('helvetica', 'normal');
-                data.forEach((record) => {
-                    if (yPosition > pageHeight - 30) {
-                        doc.addPage();
-                        yPosition = margin;
-                    }
-
-                    xPosition = margin;
-                    const rowData = [
-                        new Date(record.recorded_at).toLocaleDateString('pt-BR'),
-                        record.animals?.name || 'N/A',
-                        record.animals?.breed || 'N/A',
-                        record.health_status || 'N/A',
-                        record.notes || 'N/A'
-                    ];
-
-                    rowData.forEach((cell, cellIndex) => {
-                        const cellText = String(cell).substring(0, 20); // Limitar texto
-                        doc.text(cellText, xPosition, yPosition);
-                        xPosition += colWidths[cellIndex];
-                    });
-                    yPosition += 6;
-                });
-
-                // Download do PDF
-                doc.save(`relatorio_saude_animais_${new Date().toISOString().split('T')[0]}.pdf`);
-            } catch (error) {
-                console.error('Erro ao gerar PDF de saúde:', error);
-                throw error;
-            }
-        }
-
-        async function generateTreatmentPDF(data) {
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                // Configurações
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const margin = 20;
-                let yPosition = margin;
-
-                // Título
-                doc.setFontSize(18);
-                doc.setFont('helvetica', 'bold');
-                const titleText = window.reportSettings?.farmName
-                    ? `RELATÓRIO DE TRATAMENTOS - ${window.reportSettings.farmName}`
-                    : 'RELATÓRIO DE TRATAMENTOS';
-                doc.text(titleText, margin, yPosition);
-                yPosition += 20;
-
-                // Data do relatório
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                const today = new Date().toLocaleDateString('pt-BR');
-                doc.text(`Relatório gerado em: ${today}`, margin, yPosition);
-                yPosition += 20;
-
-                // Cabeçalho da tabela
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'bold');
-                const headers = ['Início', 'Animal', 'Tipo', 'Medicação', 'Status'];
-                const colWidths = [25, 35, 35, 35, 25];
-                let xPosition = margin;
-
-                headers.forEach((header, index) => {
-                    doc.text(header, xPosition, yPosition);
-                    xPosition += colWidths[index];
-                });
-                yPosition += 8;
-
-                // Linha separadora
-                doc.line(margin, yPosition, pageWidth - margin, yPosition);
-                yPosition += 5;
-
-                // Dados da tabela
-                doc.setFont('helvetica', 'normal');
-                data.forEach((treatment) => {
-                    if (yPosition > pageHeight - 30) {
-                        doc.addPage();
-                        yPosition = margin;
-                    }
-
-                    xPosition = margin;
-                    const rowData = [
-                        new Date(treatment.start_date).toLocaleDateString('pt-BR'),
-                        treatment.animals?.name || 'N/A',
-                        treatment.treatment_type || 'N/A',
-                        treatment.medication || 'N/A',
-                        treatment.status || 'N/A'
-                    ];
-
-                    rowData.forEach((cell, cellIndex) => {
-                        const cellText = String(cell).substring(0, 15); // Limitar texto
-                        doc.text(cellText, xPosition, yPosition);
-                        xPosition += colWidths[cellIndex];
-                    });
-                    yPosition += 6;
-                });
-
-                // Download do PDF
-                doc.save(`relatorio_tratamentos_${new Date().toISOString().split('T')[0]}.pdf`);
-            } catch (error) {
-                console.error('Erro ao gerar PDF de tratamentos:', error);
-                throw error;
-            }
-        }
-
-        async function generateVaccinationPDF(data) {
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                // Configurações
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const margin = 20;
-                let yPosition = margin;
-
-                // Título
-                doc.setFontSize(18);
-                doc.setFont('helvetica', 'bold');
-                const titleText = window.reportSettings?.farmName
-                    ? `RELATÓRIO DE VACINAÇÃO - ${window.reportSettings.farmName}`
-                    : 'RELATÓRIO DE VACINAÇÃO';
-                doc.text(titleText, margin, yPosition);
-                yPosition += 20;
-
-                // Data do relatório
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                const today = new Date().toLocaleDateString('pt-BR');
-                doc.text(`Relatório gerado em: ${today}`, margin, yPosition);
-                yPosition += 20;
-
-                // Cabeçalho da tabela
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'bold');
-                const headers = ['Data', 'Animal', 'Raça', 'Vacina', 'Status'];
-                const colWidths = [25, 35, 30, 40, 25];
-                let xPosition = margin;
-
-                headers.forEach((header, index) => {
-                    doc.text(header, xPosition, yPosition);
-                    xPosition += colWidths[index];
-                });
-                yPosition += 8;
-
-                // Linha separadora
-                doc.line(margin, yPosition, pageWidth - margin, yPosition);
-                yPosition += 5;
-
-                // Dados da tabela
-                doc.setFont('helvetica', 'normal');
-                data.forEach((vaccination) => {
-                    if (yPosition > pageHeight - 30) {
-                        doc.addPage();
-                        yPosition = margin;
-                    }
-
-                    xPosition = margin;
-                    const rowData = [
-                        new Date(vaccination.start_date).toLocaleDateString('pt-BR'),
-                        vaccination.animals?.name || 'N/A',
-                        vaccination.animals?.breed || 'N/A',
-                        vaccination.medication || 'N/A',
-                        vaccination.status || 'N/A'
-                    ];
-
-                    rowData.forEach((cell, cellIndex) => {
-                        const cellText = String(cell).substring(0, 18); // Limitar texto
-                        doc.text(cellText, xPosition, yPosition);
-                        xPosition += colWidths[cellIndex];
-                    });
-                    yPosition += 6;
-                });
-
-                // Download do PDF
-                doc.save(`relatorio_vacinacao_${new Date().toISOString().split('T')[0]}.pdf`);
-            } catch (error) {
-                console.error('Erro ao gerar PDF de vacinação:', error);
-                throw error;
-            }
-        }
-
-
-
-        // Sign out function
-        async function signOut() {
-            if (confirm('Tem certeza que deseja sair?')) {
-                await supabase.auth.signOut();
-                window.location.href = 'index.html';
-            }
-        }
-
-        // FUNÇÕES PARA GERENCIAR CONTA SECUNDÁRIA (VERSÃO SIMPLES)
-
-        // Função simples para verificar se o usuário atual é uma conta secundária
-        async function checkIfSecondaryAccount() {
-            try {
-                const { data: { user }, error: authError } = await supabase.auth.getUser();
-                if (authError || !user) {
-                    return false;
-                }
-                
-                // Verificar se o email tem sufixo de conta secundária
-                const email = user.email.toLowerCase();
-                const secondarySuffixes = ['.func', '.vet', '.sec', '.secundaria'];
-                
-                for (const suffix of secondarySuffixes) {
-                    if (email.includes(suffix)) {
-                        return true;
-                    }
-                }
-                
-                // Verificar se o email contém palavras-chave de conta secundária
-                const secondaryKeywords = ['funcionario', 'veterinario', 'secundaria', 'auxiliar'];
-                for (const keyword of secondaryKeywords) {
-                    if (email.includes(keyword)) {
-                        return true;
-                    }
-                }
-                
-                return false;
-                
-            } catch (error) {
-                return false;
-            }
-        }
-
-        // Função para gerenciar a visibilidade das seções do perfil
-        async function manageProfileSections() {
-            try {
-                const isSecondary = await checkIfSecondaryAccount();
-                
-                // Elementos para contas principais
-                const professionalInfoSection = document.getElementById('professionalInfoSection');
-                const changePasswordSection = document.getElementById('changePasswordSection');
-                const dangerZoneSection = document.getElementById('dangerZoneSection');
-                
-                // Elementos para contas secundárias
-                const primaryAccountSection = document.getElementById('primaryAccountSection');
-                
-                if (isSecondary) {
-                    // Se é conta secundária, ocultar seções principais e mostrar seção de retorno
-                    if (professionalInfoSection) professionalInfoSection.style.display = 'none';
-                    if (changePasswordSection) changePasswordSection.style.display = 'none';
-                    if (dangerZoneSection) dangerZoneSection.style.display = 'none';
-                    if (primaryAccountSection) primaryAccountSection.style.display = 'block';
-                } else {
-                    // Se é conta principal, mostrar seções principais e ocultar seção de retorno
-                    if (professionalInfoSection) professionalInfoSection.style.display = 'block';
-                    if (changePasswordSection) changePasswordSection.style.display = 'block';
-                    if (dangerZoneSection) dangerZoneSection.style.display = 'block';
-                    if (primaryAccountSection) primaryAccountSection.style.display = 'none';
-                }
-                
-            } catch (error) {
-                // Silenciar erro
-            }
-        }
-
-        // Função simples para retornar para a conta principal
-        async function switchToPrimaryAccount() {
-            try {
-                const { data: { user }, error: authError } = await supabase.auth.getUser();
-                if (authError || !user) {
-                    alert('Usuário não autenticado');
-                    return;
-                }
-                
-                // Buscar a conta principal baseada no email
-                const email = user.email.toLowerCase();
-                let primaryEmail = email;
-                
-                // Remover sufixos de conta secundária
-                const secondarySuffixes = ['.func', '.vet', '.sec', '.secundaria'];
-                for (const suffix of secondarySuffixes) {
-                    if (primaryEmail.includes(suffix)) {
-                        primaryEmail = primaryEmail.replace(suffix, '');
-                        break;
-                    }
-                }
-                
-                // Buscar dados da conta principal
-                const { data: primaryAccount, error: primaryError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', primaryEmail)
-                    .single();
-                
-                if (primaryError || !primaryAccount) {
-                    alert('Erro ao carregar dados da conta principal. Verifique se a conta principal existe.');
-                    return;
-                }
-                
-                // Armazenar dados da conta secundária atual
-                const currentSession = {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    user_type: user.user_metadata?.role || 'veterinario',
-                    farm_id: user.user_metadata?.farm_id || '',
-                    farm_name: sessionStorage.getItem('farm_name') || ''
-                };
-                
-                // Armazenar dados da conta principal
-                const primarySession = {
-                    id: primaryAccount.id,
-                    email: primaryAccount.email,
-                    name: primaryAccount.name,
-                    user_type: primaryAccount.role,
-                    farm_id: primaryAccount.farm_id,
-                    farm_name: sessionStorage.getItem('farm_name') || ''
-                };
-                
-                // Salvar sessão atual para retorno posterior
-                sessionStorage.setItem('secondary_account', JSON.stringify(currentSession));
-                
-                // Definir nova sessão como conta principal
-                sessionStorage.setItem('user', JSON.stringify(primarySession));
-                
-                // Redirecionar para a página do gerente
-                window.location.href = 'gerente.html';
-                
-            } catch (error) {
-                alert('Ocorreu um erro ao retornar para a conta principal.');
-            }
-        }
-
-        // Modificar a função initializePage para incluir verificação de conta secundária
-        async function initializePageWithSecondaryCheck() {
-            try {
-                // Executar inicialização normal
-                await initializePage();
-                
-                // Gerenciar seções do perfil baseado no tipo de conta
-                await manageProfileSections();
-                
-            } catch (error) {
-                // Silenciar erro
-            }
-        }
-
-        // Substituir a função initializePage original
-        if (typeof window !== 'undefined') {
-            window.initializePage = initializePageWithSecondaryCheck;
-        }
-
-        // REMOÇÃO COMPLETA DE TODOS OS CONSOLE.LOGS PARA PROTEGER O BANCO
-        // Substituir console.log por função vazia para evitar sobrecarga
-        const originalConsoleLog = console.log;
-        const originalConsoleError = console.error;
-
-        console.log = function() {
-            // Não fazer nada - silenciar completamente
-        };
-
-        console.error = function() {
-            // Não fazer nada - silenciar completamente
-        };
-
-        // Função para restaurar console.log se necessário (para debug)
-        window.restoreConsoleLogs = function() {
-            console.log = originalConsoleLog;
-            console.error = originalConsoleError;
-        };
-
-        // Função para verificar se há muitas requisições
-        window.checkDatabaseRequests = function() {
-            // Monitorar requisições ao banco
-            const originalFetch = window.fetch;
-            let requestCount = 0;
-            
-            window.fetch = function(...args) {
-                requestCount++;
-                if (requestCount > 100) {
-                    console.warn('⚠️ Muitas requisições detectadas:', requestCount);
-                }
-                return originalFetch.apply(this, args);
-            };
-            
-            // Reset contador a cada 5 segundos
-            setInterval(() => {
-                requestCount = 0;
-            }, 5000);
-        };
-
-        // Ativar proteção contra muitas requisições
-        checkDatabaseRequests();
-
-        // ===== FUNÇÕES DE INSEMINAÇÃO ARTIFICIAL =====
-        
-        // Calcular data prevista de parto (280 dias após inseminação)
-        function calculateExpectedBirthDate(inseminationDate) {
-            if (!inseminationDate) return '';
-            const date = new Date(inseminationDate);
-            date.setDate(date.getDate() + 280); // Gestação bovina média: 280 dias
-            return date.toISOString().split('T')[0];
-        }
-
-        // Atualizar data prevista automaticamente
-        document.getElementById('inseminationDate')?.addEventListener('change', function() {
-            const expectedDate = calculateExpectedBirthDate(this.value);
-            document.getElementById('expectedBirthDate').value = expectedDate;
-        });
-
-        // Registrar nova inseminação
-        async function registerInsemination(formData) {
-            try {
-                const { data, error } = await supabase.rpc('register_artificial_insemination', {
-                    p_animal_id: formData.animal_id,
-                    p_insemination_date: formData.insemination_date,
-                    p_semen_batch: formData.semen_batch,
-                    p_bull_id: formData.bull_id || null,
-                    p_technician: formData.technician || null,
-                    p_heat_detection_method: formData.heat_detection_method || null,
-                    p_body_condition_score: formData.body_condition_score ? parseInt(formData.body_condition_score) : null,
-                    p_expected_birth_date: formData.expected_birth_date || null,
-                    p_observations: formData.observations || null
-                });
-
-                if (error) throw error;
-                
-                showNotification('Inseminação registrada com sucesso!', 'success');
-                document.getElementById('inseminationForm').reset();
-                await loadInseminationsList();
-                await loadInseminationStats();
-                await loadPendingInseminations();
-                
-                return data;
-            } catch (error) {
-                console.error('Erro ao registrar inseminação:', error);
-                showNotification('Erro ao registrar inseminação: ' + error.message, 'error');
-                throw error;
-            }
-        }
-
-        // Confirmar gravidez
-        async function confirmPregnancy(inseminationId, isConfirmed, confirmationMethod, confirmationDate) {
-            try {
-                const { data, error } = await supabase.rpc('confirm_pregnancy', {
-                    p_insemination_id: inseminationId,
-                    p_pregnancy_confirmed: isConfirmed,
-                    p_confirmation_method: confirmationMethod,
-                    p_confirmation_date: confirmationDate
-                });
-
-                if (error) throw error;
-                
-                showNotification('Status de gravidez atualizado com sucesso!', 'success');
-                document.getElementById('pregnancyConfirmationForm').reset();
-                await loadInseminationsList();
-                await loadInseminationStats();
-                await loadPendingInseminations();
-                
-                return data;
-            } catch (error) {
-                console.error('Erro ao confirmar gravidez:', error);
-                showNotification('Erro ao confirmar gravidez: ' + error.message, 'error');
-                throw error;
-            }
-        }
-
-        // Carregar lista de inseminações
-        async function loadInseminationsList() {
-            try {
-                const { data: inseminations, error } = await supabase
-                    .from('artificial_inseminations')
-                    .select(`
-                        *,
-                        animals(animal_id, breed)
-                    `)
-                    .order('insemination_date', { ascending: false });
-
-                if (error) throw error;
-
-                const container = document.getElementById('inseminationsList');
-                if (!container) return;
-
-                if (!inseminations || inseminations.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-12">
-                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Nenhuma Inseminação Registrada</h3>
-                            <p class="text-gray-600 mb-4">Registre inseminações para controlar o programa reprodutivo</p>
-                            <p class="text-gray-500 text-sm">Use o formulário acima para adicionar uma nova inseminação</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = inseminations.map(insemination => {
-                    const date = new Date(insemination.insemination_date).toLocaleDateString('pt-BR');
-                    const expectedBirth = insemination.expected_birth_date ? 
-                        new Date(insemination.expected_birth_date).toLocaleDateString('pt-BR') : 'N/A';
-                    
-                    const statusBadge = insemination.pregnancy_confirmed === true ? 
-                        '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Confirmada</span>' :
-                        insemination.pregnancy_confirmed === false ?
-                        '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Não Confirmada</span>' :
-                        '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Pendente</span>';
-
-                    return `
-                        <div class="border border-slate-200 rounded-xl p-4 hover:shadow-md transition-all">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h4 class="font-semibold text-slate-900">Animal: ${insemination.animal_id}</h4>
-                                        ${statusBadge}
-                                    </div>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-slate-600">
-                                        <div><strong>Data IA:</strong> ${date}</div>
-                                        <div><strong>Lote:</strong> ${insemination.semen_batch}</div>
-                                        <div><strong>Touro:</strong> ${insemination.bull_id || 'N/A'}</div>
-                                        <div><strong>Parto Prev.:</strong> ${expectedBirth}</div>
-                                    </div>
-                                    ${insemination.technician ? `<div class="text-sm text-slate-600 mt-1"><strong>Técnico:</strong> ${insemination.technician}</div>` : ''}
-                                    ${insemination.observations ? `<div class="text-sm text-slate-600 mt-1"><strong>Obs:</strong> ${insemination.observations}</div>` : ''}
-                                </div>
-                                <div class="flex gap-2">
-                                    ${insemination.pregnancy_confirmed === null ? `
-                                        <button onclick="quickConfirmPregnancy('${insemination.id}', true)" class="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-all">
-                                            Confirmar
-                                        </button>
-                                        <button onclick="quickConfirmPregnancy('${insemination.id}', false)" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-all">
-                                            Negar
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Erro ao carregar inseminações:', error);
-                showNotification('Erro ao carregar lista de inseminações', 'error');
-            }
-        }
-
-        // Carregar estatísticas de inseminação
-        async function loadInseminationStats() {
-            try {
-                const { data: inseminations, error } = await supabase
-                    .from('artificial_inseminations')
-                    .select('pregnancy_confirmed');
-
-                if (error) throw error;
-
-                const total = inseminations?.length || 0;
-                const confirmed = inseminations?.filter(i => i.pregnancy_confirmed === true).length || 0;
-                const pending = inseminations?.filter(i => i.pregnancy_confirmed === null).length || 0;
-                const successRate = total > 0 ? Math.round((confirmed / total) * 100) : 0;
-
-                document.getElementById('totalInseminations').textContent = total;
-                document.getElementById('confirmedPregnancies').textContent = confirmed;
-                document.getElementById('pendingConfirmations').textContent = pending;
-                document.getElementById('successRate').textContent = successRate + '%';
-
-            } catch (error) {
-                console.error('Erro ao carregar estatísticas:', error);
-            }
-        }
-
-        // Carregar inseminações pendentes para o select
-        async function loadPendingInseminations() {
-            try {
-                const { data: inseminations, error } = await supabase
-                    .from('artificial_inseminations')
-                    .select('id, animal_id, insemination_date, semen_batch')
-                    .is('pregnancy_confirmed', null)
-                    .order('insemination_date', { ascending: false });
-
-                if (error) throw error;
-
-                const select = document.getElementById('inseminationSelect');
-                if (!select) return;
-
-                select.innerHTML = '<option value="">Selecione uma inseminação...</option>';
-                
-                if (inseminations && inseminations.length > 0) {
-                    inseminations.forEach(insemination => {
-                        const date = new Date(insemination.insemination_date).toLocaleDateString('pt-BR');
-                        const option = document.createElement('option');
-                        option.value = insemination.id;
-                        option.textContent = `${insemination.animal_id} - ${date} - Lote: ${insemination.semen_batch}`;
-                        select.appendChild(option);
-                    });
-                }
-
-            } catch (error) {
-                console.error('Erro ao carregar inseminações pendentes:', error);
-            }
-        }
-
-        // Confirmação rápida de gravidez
-        async function quickConfirmPregnancy(inseminationId, isConfirmed) {
-            const today = new Date().toISOString().split('T')[0];
-            await confirmPregnancy(inseminationId, isConfirmed, 'visual', today);
-        }
-
-        // Resetar formulário de inseminação
-        function resetInseminationForm() {
-            document.getElementById('inseminationForm').reset();
-            document.getElementById('expectedBirthDate').value = '';
-        }
-
-        // Atualizar lista de inseminações
-        function refreshInseminationsList() {
-            loadInseminationsList();
-            loadInseminationStats();
-            loadPendingInseminations();
-        }
-
-        // Event listeners para formulários de inseminação
-        document.getElementById('inseminationForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData.entries());
-            await registerInsemination(data);
-        });
-
-        document.getElementById('pregnancyConfirmationForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData.entries());
-            
-            await confirmPregnancy(
-                data.insemination_id,
-                data.pregnancy_confirmed === 'true',
-                data.confirmation_method,
-                data.confirmation_date
-            );
-        });
-
-        // Carregar dados de inseminação quando a aba for ativada
-        document.addEventListener('DOMContentLoaded', function() {
-            // Adicionar listener para quando a aba de inseminação for ativada
-            const inseminationTab = document.querySelector('[data-tab="insemination"]');
-            if (inseminationTab) {
-                inseminationTab.addEventListener('click', function() {
-                    setTimeout(() => {
-                        loadInseminationsList();
-                        loadInseminationStats();
-                        loadPendingInseminations();
-                    }, 100);
-                });
-            }
-        });
-
-        console.log('✅ BANCO PROTEGIDO - CONSOLE.LOGS REMOVIDOS');
-        
-        // Função para retornar à conta do gerente
-        function returnToManagerAccount() {
-            const confirmed = confirm('Deseja retornar à sua conta de gerente?\n\nVocê será redirecionado para o painel do gerente.');
-            
-            if (confirmed) {
-                // Limpar dados da conta secundária
-                sessionStorage.removeItem('currentSecondaryAccount');
-                
-                // Redirecionar para o painel do gerente
-                window.location.href = 'gerente.html';
-            }
-        }
-        
-        // Verificar se é conta secundária e mostrar botão de retorno
-        function checkSecondaryAccount() {
-            const secondaryAccount = sessionStorage.getItem('currentSecondaryAccount');
-            const returnBtn = document.getElementById('returnToManagerBtn');
-            
-            if (secondaryAccount && returnBtn) {
-                try {
-                    const accountData = JSON.parse(secondaryAccount);
-                    if (accountData.isSecondary) {
-                        returnBtn.classList.remove('hidden');
-                        console.log('✅ Conta secundária detectada - botão de retorno ativado');
-                    }
-                } catch (error) {
-                    console.error('Erro ao verificar conta secundária:', error);
-                }
-            }
-        }
-        
-        // Executar verificação quando a página carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(checkSecondaryAccount, 1000);
-        });
-        
-                    // App Version Display
-        document.addEventListener('DOMContentLoaded', function() {
-            // Adiciona versão do app no perfil do usuário
-            const appVersion = '1.0.0';
-            
-            // Função para adicionar versão em elementos de perfil
-            function addVersionToProfile() {
-                const profileElements = document.querySelectorAll('.user-profile, .profile-info, .user-info');
-                profileElements.forEach(element => {
-                    if (!element.querySelector('.app-version')) {
-                        const versionDiv = document.createElement('div');
-                        versionDiv.className = 'app-version text-xs text-gray-500 mt-2';
-                        versionDiv.innerHTML = `App v${appVersion}`;
-                        element.appendChild(versionDiv);
-                    }
-                });
-                
-                // Adicionar no footer se existir
-                const footer = document.querySelector('footer, .footer');
-                if (footer && !footer.querySelector('.app-version')) {
-                    const versionDiv = document.createElement('div');
-                    versionDiv.className = 'app-version text-xs text-gray-500 text-center mt-4';
-                    versionDiv.innerHTML = `LacTech v${appVersion}`;
-                    footer.appendChild(versionDiv);
-                }
-            }
-            
-            // Função para adicionar versão no modal de perfil
-            function addVersionToProfileModal() {
-                const profileModal = document.getElementById('profileModal');
-                if (profileModal && !profileModal.querySelector('.app-version')) {
-                    const versionDiv = document.createElement('div');
-                    versionDiv.className = 'app-version text-xs text-gray-500 text-center mt-4 p-4 border-t border-gray-200';
-                    versionDiv.innerHTML = `LacTech v${appVersion}`;
-                    profileModal.querySelector('.modal-content').appendChild(versionDiv);
-                }
-            }
-            
-            // Executar após carregamento
-            setTimeout(addVersionToProfile, 1000);
-            
-            // Adicionar versão quando o modal de perfil for aberto
-            const originalOpenProfileModal = window.openProfileModal;
-            window.openProfileModal = function() {
-                if (originalOpenProfileModal) {
-                    originalOpenProfileModal();
-                }
-                setTimeout(addVersionToProfileModal, 100);
-            };
-        });
-    </script>
+                <!-- Footer -->
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="VetApp.closeModal('healthStatusModal')" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Registrar Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
-

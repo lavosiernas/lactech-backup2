@@ -31,11 +31,11 @@
 
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="config.js"></script>
     <script src="assets/js/loading-screen.js"></script>
-    <script src="lactech-api-nova.js"></script>
-    <script src="pwa-manager.js"></script>
+    <script src="api.js"></script>
+    <script src="assets/js/modal-system.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
@@ -54,6 +54,13 @@
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-tight">PAINEL DO FUNCIONÁRIO</h1>
                         <p class="text-xs text-white" id="farmNameHeader">Carregando fazenda...</p>
+                        <!-- Indicador de tempo real -->
+                        <div id="realtimeIndicator" class="hidden">
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-xs text-green-300">Tempo Real</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -171,6 +178,11 @@
                 <div class="data-card rounded-2xl p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-slate-900">Atividades Recentes</h3>
+                        <!-- Botão de teste para tempo real -->
+                        <button id="testRealtimeBtn" onclick="testRealtimeUpdate()" 
+                                class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-lg hover:bg-green-200 transition-all">
+                            🧪 Testar Tempo Real
+                        </button>
                     </div>
                     <div class="space-y-3" id="activityList">
                         <div class="text-center py-8">
@@ -233,18 +245,14 @@
                             </div>
                             </div>
 
-                        <!-- Turno -->
+                        <!-- Observações -->
                         <div>
-                            <label for="shift" class="block text-sm font-medium text-gray-700 mb-2">
-                                Turno *
+                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                                Observações
                             </label>
-                            <select id="shift" name="shift" required
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white">
-                                <option value="">Selecione o turno</option>
-                                    <option value="manha">Manhã</option>
-                                    <option value="tarde">Tarde</option>
-                                    <option value="noite">Noite</option>
-                                </select>
+                            <textarea id="notes" name="notes" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white"
+                                placeholder="Observações sobre a produção (opcional)"></textarea>
                             </div>
 
                         <!-- Data -->
@@ -270,16 +278,6 @@
                         </div>
                                 </div>
                         </div>
-                                </div>
-
-                    <!-- Observações -->
-                    <div>
-                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
-                            Observações
-                        </label>
-                        <textarea id="notes" name="notes" rows="3"
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-md focus:border-gray-500 focus:ring-1 focus:ring-gray-500 focus:outline-none bg-white resize-none" 
-                                  placeholder="Adicione observações sobre a produção..."></textarea>
                         </div>
 
                     <!-- Botões -->
@@ -319,15 +317,16 @@
                         <thead>
                             <tr class="border-b border-slate-200">
                                 <th class="text-left py-3 px-4 font-semibold text-slate-600">Data</th>
-                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Turno</th>
+                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Hora</th>
                                 <th class="text-left py-3 px-4 font-semibold text-slate-600">Volume (L)</th>
                                 <th class="text-left py-3 px-4 font-semibold text-slate-600">Temperatura</th>
+                                <th class="text-left py-3 px-4 font-semibold text-slate-600">Observações</th>
                                 <th class="text-left py-3 px-4 font-semibold text-slate-600">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody">
                             <tr>
-                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                <td colspan="6" class="text-center py-8 text-gray-500">
                                     Carregando histórico...
                                 </td>
                             </tr>
@@ -534,6 +533,19 @@
         let currentFarmName = null;
         let allProductionHistory = [];
         
+        // Função simples para criar cliente Supabase
+        function createSupabaseClient() {
+            // Usar configuração do config.js se disponível
+            if (typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined') {
+                return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            
+            // Fallback com configuração hardcoded
+            const supabaseUrl = 'https://tmaamwuyucaspqcrhuck.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0';
+            return window.supabase.createClient(supabaseUrl, supabaseKey);
+        }
+        
         // Função para log debug
         function log(message) {
             console.log(`[FUNCIONÁRIO] ${message}`);
@@ -658,6 +670,7 @@
                 
                 // Buscar dados extras do usuário (WhatsApp) se existir
                 try {
+                    const supabase = createSupabaseClient();
                     const { data: userData } = await supabase
                     .from('users')
                         .select('whatsapp')
@@ -686,6 +699,8 @@
                 }
                 
                 log('Tentando carregar foto de perfil para usuário: ' + currentUser.id);
+                
+                const supabase = createSupabaseClient();
                 
                 // Buscar dados atualizados do usuário incluindo a foto
                 const { data: userData, error: userError } = await supabase
@@ -776,6 +791,8 @@
             try {
                 log('Fazendo upload da foto...');
                 
+                const supabase = createSupabaseClient();
+                
                 // Verificar se o usuário está logado
                 if (!currentUser || !currentUser.id) {
                     showNotification('Erro: Usuário não autenticado', 'error');
@@ -855,6 +872,7 @@
             log('Atualizando perfil...');
             
             try {
+                const supabase = createSupabaseClient();
                 const formData = new FormData(event.target);
                 const name = formData.get('name');
                 const whatsapp = formData.get('whatsapp');
@@ -888,11 +906,11 @@
                 cancelProfileEdit();
                 
                 log('Perfil atualizado com sucesso!');
-                alert('Perfil atualizado com sucesso!');
+                window.showAlert('Perfil atualizado com sucesso!', { type: 'success', title: 'Sucesso!' });
 
             } catch (error) {
                 log('ERRO ao atualizar perfil: ' + error.message);
-                alert('Erro ao atualizar perfil: ' + error.message);
+                window.showAlert('Erro ao atualizar perfil: ' + error.message, { type: 'error', title: 'Erro!' });
             }
         }
 
@@ -901,6 +919,7 @@
             log('Alterando senha...');
             
             try {
+                const supabase = createSupabaseClient();
                 const formData = new FormData(event.target);
             const currentPassword = formData.get('current_password');
             const newPassword = formData.get('new_password');
@@ -908,12 +927,12 @@
 
                 // Validar senhas
             if (newPassword !== confirmPassword) {
-                    alert('As senhas não coincidem!');
+                    window.showAlert('As senhas não coincidem!', { type: 'error', title: 'Erro de Validação' });
                 return;
             }
 
                 if (newPassword.length < 6) {
-                    alert('A nova senha deve ter pelo menos 6 caracteres!');
+                    window.showAlert('A nova senha deve ter pelo menos 6 caracteres!', { type: 'error', title: 'Erro de Validação' });
                     return;
                 }
                 
@@ -927,23 +946,382 @@
                 }
                 
                 log('Senha alterada com sucesso!');
-                alert('Senha alterada com sucesso!');
+                window.showAlert('Senha alterada com sucesso!', { type: 'success', title: 'Sucesso!' });
                 
                 // Limpar formulário
                 event.target.reset();
 
             } catch (error) {
                 log('ERRO ao alterar senha: ' + error.message);
-                alert('Erro ao alterar senha: ' + error.message);
+                window.showAlert('Erro ao alterar senha: ' + error.message, { type: 'error', title: 'Erro!' });
+            }
+        }
+
+        // Função para limpar completamente a sessão
+        function clearUserSession() {
+            log('🧹 Limpando sessão do usuário...');
+            
+            // Limpar atualizações em tempo real
+            cleanupRealtimeUpdates();
+            
+            // Limpar dados locais
+            currentUser = null;
+            currentFarmId = null;
+            currentFarmName = null;
+            allProductionHistory = [];
+            
+            // Limpar localStorage
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userSession');
+            localStorage.removeItem('farmData');
+            
+            // Limpar sessionStorage
+            sessionStorage.removeItem('userData');
+            sessionStorage.removeItem('userSession');
+            sessionStorage.removeItem('farmData');
+            sessionStorage.removeItem('redirectCount');
+            
+            // Limpar cookies relacionados
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            log('✅ Sessão limpa com sucesso');
+        }
+
+        // Função para gerenciar redirecionamentos
+        function safeRedirect(url) {
+            const currentCount = parseInt(sessionStorage.getItem('redirectCount') || '0');
+            sessionStorage.setItem('redirectCount', (currentCount + 1).toString());
+            
+            log(`🔄 Redirecionando para ${url} (tentativa ${currentCount + 1})`);
+            window.location.replace(url);
+        }
+
+        // Função para testar atualizações em tempo real
+        async function testRealtimeUpdate() {
+            try {
+                log('🧪 Testando atualizações em tempo real...');
+                
+                const supabase = createSupabaseClient();
+                
+                // Criar um registro de teste
+                const testData = {
+                    farm_id: currentFarmId,
+                    volume_liters: Math.random() * 10 + 5, // Volume aleatório entre 5-15L
+                    production_date: new Date().toISOString().split('T')[0],
+                    temperature: Math.random() * 5 + 15, // Temperatura aleatória entre 15-20°C
+                    notes: 'Teste de tempo real - ' + new Date().toLocaleTimeString()
+                };
+                
+                const { data, error } = await supabase
+                    .from('volume_records')
+                    .insert([testData])
+                    .select();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                log('✅ Dados de teste inseridos:', data);
+                showNotification('Teste de tempo real executado! Verifique as atualizações automáticas.', 'success');
+                
+                // Remover o registro de teste após 5 segundos
+                setTimeout(async () => {
+                    try {
+                        if (data && data[0]) {
+                            await supabase
+                                .from('volume_records')
+                                .delete()
+                                .eq('id', data[0].id);
+                            
+                            log('🧹 Registro de teste removido');
+                        }
+                    } catch (deleteError) {
+                        log('❌ Erro ao remover registro de teste:', deleteError.message);
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                log('❌ Erro no teste de tempo real:', error.message);
+                showNotification('Erro no teste de tempo real: ' + error.message, 'error');
+            }
+        }
+
+        // ==================== REAL-TIME UPDATES ====================
+        let realtimeSubscriptions = [];
+
+        // Função para configurar atualizações em tempo real
+        function setupRealtimeUpdates() {
+            try {
+                log('🔌 Configurando atualizações em tempo real...');
+                
+                const supabase = createSupabaseClient();
+                
+                // 1. Escutar mudanças na tabela volume_records (produção)
+                const volumeSubscription = supabase
+                    .channel('volume_records_changes')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*', // INSERT, UPDATE, DELETE
+                            schema: 'public',
+                            table: 'volume_records',
+                            filter: `farm_id=eq.${currentFarmId}`
+                        },
+                        async (payload) => {
+                            log('📊 Mudança detectada em volume_records:', payload.eventType);
+                            
+                            // Atualizar apenas os componentes necessários
+                            switch (payload.eventType) {
+                                case 'INSERT':
+                                    await handleNewProduction(payload.new);
+                                    break;
+                                case 'UPDATE':
+                                    await handleProductionUpdate(payload.new, payload.old);
+                                    break;
+                                case 'DELETE':
+                                    await handleProductionDelete(payload.old);
+                                    break;
+                            }
+                        }
+                    )
+                    .subscribe();
+
+                // 2. Escutar mudanças na tabela users (perfil)
+                const userSubscription = supabase
+                    .channel('user_profile_changes')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'users',
+                            filter: `id=eq.${currentUser.id}`
+                        },
+                        async (payload) => {
+                            log('👤 Mudança detectada no perfil do usuário');
+                            await handleProfileUpdate(payload.new);
+                        }
+                    )
+                    .subscribe();
+
+                // 3. Escutar mudanças na tabela farms (nome da fazenda)
+                const farmSubscription = supabase
+                    .channel('farm_changes')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'farms',
+                            filter: `id=eq.${currentFarmId}`
+                        },
+                        async (payload) => {
+                            log('🏭 Mudança detectada na fazenda');
+                            await handleFarmUpdate(payload.new);
+                        }
+                    )
+                    .subscribe();
+
+                // Armazenar referências das subscriptions
+                realtimeSubscriptions = [
+                    volumeSubscription,
+                    userSubscription,
+                    farmSubscription
+                ];
+
+                log('✅ Atualizações em tempo real configuradas com sucesso!');
+                
+                // Mostrar indicador visual
+                const indicator = document.getElementById('realtimeIndicator');
+                if (indicator) {
+                    indicator.classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                log('❌ Erro ao configurar atualizações em tempo real:', error.message);
+            }
+        }
+
+        // Função para limpar todas as subscriptions
+        function cleanupRealtimeUpdates() {
+            try {
+                log('🧹 Limpando atualizações em tempo real...');
+                
+                realtimeSubscriptions.forEach(subscription => {
+                    if (subscription && subscription.unsubscribe) {
+                        subscription.unsubscribe();
+                    }
+                });
+                
+                realtimeSubscriptions = [];
+                
+                // Esconder indicador visual
+                const indicator = document.getElementById('realtimeIndicator');
+                if (indicator) {
+                    indicator.classList.add('hidden');
+                }
+                
+                log('✅ Atualizações em tempo real limpas');
+                
+            } catch (error) {
+                log('❌ Erro ao limpar atualizações em tempo real:', error.message);
+            }
+        }
+
+        // Handlers para mudanças em tempo real
+        async function handleNewProduction(newProduction) {
+            try {
+                log('🆕 Nova produção detectada:', newProduction);
+                
+                // Atualizar indicadores do dashboard
+                await loadDashboardIndicators();
+                
+                // Atualizar atividades recentes
+                await loadRecentActivity();
+                
+                // Atualizar gráfico de produção
+                await loadProductionChart();
+                
+                // Atualizar histórico se estiver na aba
+                if (document.getElementById('history-tab').classList.contains('hidden') === false) {
+                    await loadHistory();
+                }
+                
+                // Mostrar notificação
+                showNotification(`Nova produção registrada: ${newProduction.volume_liters}L`, 'success');
+                
+            } catch (error) {
+                log('❌ Erro ao processar nova produção:', error.message);
+            }
+        }
+
+        async function handleProductionUpdate(newProduction, oldProduction) {
+            try {
+                log('🔄 Produção atualizada:', { old: oldProduction, new: newProduction });
+                
+                // Atualizar indicadores do dashboard
+                await loadDashboardIndicators();
+                
+                // Atualizar atividades recentes
+                await loadRecentActivity();
+                
+                // Atualizar gráfico de produção
+                await loadProductionChart();
+                
+                // Atualizar histórico se estiver na aba
+                if (document.getElementById('history-tab').classList.contains('hidden') === false) {
+                    await loadHistory();
+                }
+                
+                // Mostrar notificação
+                showNotification('Produção atualizada com sucesso!', 'info');
+                
+            } catch (error) {
+                log('❌ Erro ao processar atualização de produção:', error.message);
+            }
+        }
+
+        async function handleProductionDelete(deletedProduction) {
+            try {
+                log('🗑️ Produção deletada:', deletedProduction);
+                
+                // Atualizar indicadores do dashboard
+                await loadDashboardIndicators();
+                
+                // Atualizar atividades recentes
+                await loadRecentActivity();
+                
+                // Atualizar gráfico de produção
+                await loadProductionChart();
+                
+                // Atualizar histórico se estiver na aba
+                if (document.getElementById('history-tab').classList.contains('hidden') === false) {
+                    await loadHistory();
+                }
+                
+                // Mostrar notificação
+                showNotification('Produção removida com sucesso!', 'info');
+                
+            } catch (error) {
+                log('❌ Erro ao processar remoção de produção:', error.message);
+            }
+        }
+
+        async function handleProfileUpdate(updatedUser) {
+            try {
+                log('👤 Perfil atualizado:', updatedUser);
+                
+                // Atualizar dados locais
+                if (updatedUser.name) {
+                    currentUser.name = updatedUser.name;
+                    
+                    // Atualizar elementos da interface
+                    const firstName = updatedUser.name.split(' ')[0];
+                    const employeeName = document.getElementById('employeeName');
+                    const employeeWelcome = document.getElementById('employeeWelcome');
+                    
+                    if (employeeName) employeeName.textContent = firstName;
+                    if (employeeWelcome) employeeWelcome.textContent = firstName;
+                }
+                
+                // Atualizar foto de perfil se mudou
+                if (updatedUser.profile_photo_url) {
+                    await loadProfilePhoto();
+                }
+                
+                // Mostrar notificação
+                showNotification('Perfil atualizado com sucesso!', 'success');
+                
+            } catch (error) {
+                log('❌ Erro ao processar atualização de perfil:', error.message);
+            }
+        }
+
+        async function handleFarmUpdate(updatedFarm) {
+            try {
+                log('🏭 Fazenda atualizada:', updatedFarm);
+                
+                // Atualizar dados locais
+                if (updatedFarm.name) {
+                    currentFarmName = updatedFarm.name;
+                    
+                    // Atualizar elementos da interface
+                    const farmNameHeader = document.getElementById('farmNameHeader');
+                    if (farmNameHeader) farmNameHeader.textContent = updatedFarm.name;
+                }
+                
+                // Mostrar notificação
+                showNotification('Dados da fazenda atualizados!', 'info');
+                
+            } catch (error) {
+                log('❌ Erro ao processar atualização da fazenda:', error.message);
             }
         }
 
         async function logout() {
             try {
+                log('🚪 Iniciando logout...');
+                
+                // Limpar atualizações em tempo real
+                cleanupRealtimeUpdates();
+                
+                // Limpar sessão
+                clearUserSession();
+                
+                // Fazer logout no Supabase
+                const supabase = createSupabaseClient();
                 await supabase.auth.signOut();
-                window.location.href = 'login.html';
+                
+                log('✅ Logout realizado com sucesso');
+                safeRedirect('login.html');
+                
             } catch (error) {
-                log('Erro ao fazer logout: ' + error.message);
+                log('❌ Erro no logout: ' + error.message);
+                cleanupRealtimeUpdates();
+                clearUserSession();
+                safeRedirect('login.html');
             }
         }
 
@@ -952,39 +1330,55 @@
             log('Iniciando carregamento de dados...');
             
             try {
+                // Criar cliente Supabase diretamente
+                const supabaseUrl = 'https://tmaamwuyucaspqcrhuck.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0';
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                
                 // Verificar usuário
                 const { data: { user }, error: userError } = await supabase.auth.getUser();
                 
-                if (userError) {
-                    log('ERRO na autenticação: ' + userError.message);
-                    return;
-                }
-
-                if (!user) {
-                    log('Usuário não autenticado - redirecionando...');
-                    window.location.href = 'login.html';
+                if (userError || !user) {
+                    log('❌ Usuário não autenticado no Supabase');
+                    // Limpar dados de sessão locais
+                    clearUserSession();
+                    
+                    showNotification('Sessão expirada. Redirecionando para login...', 'error');
+                    setTimeout(() => {
+                        safeRedirect('login.html');
+                    }, 2000);
                     return;
                 }
 
                 currentUser = user;
                 log('Usuário autenticado: ' + user.email);
                 
-                // Buscar dados do usuário incluindo status de bloqueio
+                // Verificar se o usuário existe na tabela users
                 const { data: userData, error: userDataError } = await supabase
                     .from('users')
                     .select('name, farm_id, profile_photo_url, is_active')
                     .eq('id', user.id)
                     .single();
 
-                if (userDataError) {
-                    log('ERRO ao buscar dados do usuário: ' + userDataError.message);
+                if (userDataError || !userData) {
+                    log('❌ Usuário não encontrado na tabela users');
+                    // Limpar dados de sessão locais
+                    clearUserSession();
+                    
+                    showNotification('Usuário não encontrado. Redirecionando para login...', 'error');
+                    setTimeout(() => {
+                        safeRedirect('login.html');
+                    }, 2000);
                     return;
                 }
                 
                 // Verificar se o usuário está bloqueado
-                if (userData.is_active === false) {
-                    log('Usuário bloqueado - redirecionando para página de bloqueio');
-                    window.location.href = 'acesso-bloqueado.html';
+                if (!userData.is_active) {
+                    log('❌ Usuário bloqueado');
+                    showNotification('Conta bloqueada. Redirecionando...', 'error');
+                    setTimeout(() => {
+                        safeRedirect('acesso-bloqueado.html');
+                    }, 2000);
                     return;
                 }
                 
@@ -1035,11 +1429,21 @@
                 // Definir data atual no formulário
                 setCurrentDate();
                 
-                log('Carregamento de dados concluído com SUCESSO!');
+                // Configurar atualizações em tempo real
+                setupRealtimeUpdates();
+                
+                log('✅ Carregamento de dados concluído com SUCESSO!');
 
             } catch (error) {
-                log('ERRO GERAL: ' + error.message);
+                log('❌ ERRO GERAL: ' + error.message);
                 console.error('Erro completo:', error);
+                
+                // Em caso de erro, limpar dados e redirecionar
+                clearUserSession();
+                
+                setTimeout(() => {
+                    safeRedirect('login.html');
+                }, 2000);
             }
         }
 
@@ -1047,11 +1451,12 @@
             log('Carregando indicadores do dashboard...');
             
             try {
+                const supabase = createSupabaseClient();
                 const hoje = new Date().toISOString().split('T')[0];
                 
                 // Volume de hoje
                 const { data: producaoHoje } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('volume_liters')
                     .eq('farm_id', currentFarmId)
                     .eq('production_date', hoje);
@@ -1069,7 +1474,7 @@
                 seteDiasAtras.setDate(seteDiasAtras.getDate() - 6);
                 
                 const { data: producaoSemana } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('volume_liters, production_date')
                     .eq('farm_id', currentFarmId)
                     .gte('production_date', seteDiasAtras.toISOString().split('T')[0]);
@@ -1095,7 +1500,7 @@
                 inicioMes.setDate(1);
                 
                 const { data: producaoMes } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('volume_liters, production_date')
                     .eq('farm_id', currentFarmId)
                     .gte('production_date', inicioMes.toISOString().split('T')[0]);
@@ -1129,9 +1534,10 @@
             log('Carregando atividades recentes...');
             
             try {
+                const supabase = createSupabaseClient();
                 const { data: atividades } = await supabase
-                    .from('milk_production')
-                    .select('volume_liters, production_date, shift, created_at')
+                    .from('volume_records')
+                    .select('volume_liters, production_date, created_at')
                     .eq('farm_id', currentFarmId)
                     .order('created_at', { ascending: false })
                     .limit(5);
@@ -1149,16 +1555,12 @@
                         activityList.innerHTML = atividades.map(ativ => {
                             const data = new Date(ativ.created_at);
                             const tempo = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                            const turno = {
-                    'manha': 'Manhã',
-                    'tarde': 'Tarde',
-                    'noite': 'Noite'
-                            }[ativ.shift] || ativ.shift;
+                            const dataProducao = new Date(ativ.production_date).toLocaleDateString('pt-BR');
                 
                 return `
                                 <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                             <div>
-                                        <p class="text-sm font-medium text-gray-900">${ativ.volume_liters}L - ${turno}</p>
+                                        <p class="text-sm font-medium text-gray-900">${ativ.volume_liters}L - ${dataProducao}</p>
                                         <p class="text-xs text-gray-500">${tempo}</p>
                         </div>
                     </div>
@@ -1177,11 +1579,12 @@
             log('Carregando gráfico de produção...');
             
             try {
+                const supabase = createSupabaseClient();
                 const seteDiasAtras = new Date();
                 seteDiasAtras.setDate(seteDiasAtras.getDate() - 6);
                 
                 const { data: dadosGrafico } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('volume_liters, production_date')
                     .eq('farm_id', currentFarmId)
                     .gte('production_date', seteDiasAtras.toISOString().split('T')[0])
@@ -1270,10 +1673,14 @@
             // Mostrar confirmação antes de limpar
             const confirmed = await showConfirmDialog('Tem certeza que deseja limpar o formulário? Todos os dados serão perdidos.', 'clear');
             if (confirmed) {
+                clearForm();
+            }
+        }
+
+        function clearForm() {
                 document.getElementById('productionForm').reset();
                 setCurrentDate();
                 showNotification('Formulário limpo com sucesso!', 'success');
-            }
         }
 
         async function registerProduction(event) {
@@ -1281,6 +1688,8 @@
             log('Registrando produção...');
             
             try {
+                const supabase = createSupabaseClient();
+                
                 // Validar se o usuário está logado
                 if (!currentUser || !currentUser.id) {
                     showNotification('Erro: Usuário não autenticado', 'error');
@@ -1297,16 +1706,10 @@
                 
                 // Validações dos campos
                 const volume = parseFloat(formData.get('volume'));
-                const shift = formData.get('shift');
                 const productionDate = formData.get('productionDate');
                 
                 if (!volume || volume <= 0) {
                     showNotification('Por favor, insira um volume válido', 'error');
-                    return;
-                }
-                
-                if (!shift) {
-                    showNotification('Por favor, selecione um turno', 'error');
                     return;
                 }
                 
@@ -1317,18 +1720,16 @@
                 
                 const productionData = {
                     farm_id: currentFarmId,
-                    user_id: currentUser.id,
                     volume_liters: volume,
-                    shift: shift,
                     production_date: productionDate,
                     temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
-                    observations: formData.get('notes') || null
+                    notes: formData.get('notes') || null
                 };
                 
                 log('Dados para inserir: ' + JSON.stringify(productionData));
                 
                 const { data, error } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .insert([productionData])
                     .select();
                 
@@ -1342,8 +1743,8 @@
                 log('Produção registrada com sucesso!');
                 showNotification('Produção registrada com sucesso!', 'success');
                 
-                // Reset form and reload data
-                resetForm();
+                // Clear form and reload data
+                clearForm();
                 await loadDashboardIndicators();
                 await loadRecentActivity();
                 await loadProductionChart();
@@ -1363,6 +1764,8 @@
             log('Carregando histórico...');
             
             try {
+                const supabase = createSupabaseClient();
+                
                 // Verificar se farm_id está disponível
                 if (!currentFarmId) {
                     log('ERRO: currentFarmId não está disponível');
@@ -1373,7 +1776,7 @@
                 log('Buscando histórico para farm_id: ' + currentFarmId);
                 
                 const { data: historico, error } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('*')
                     .eq('farm_id', currentFarmId)
                     .order('created_at', { ascending: false })
@@ -1410,18 +1813,15 @@
                 } else {
                     tbody.innerHTML = historico.map(item => {
                         const data = new Date(item.production_date).toLocaleDateString('pt-BR');
-                        const turno = {
-                            'manha': 'Manhã',
-                            'tarde': 'Tarde',
-                            'noite': 'Noite'
-                        }[item.shift] || item.shift;
+                        const hora = new Date(item.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                         
                         return `
                             <tr class="border-b border-slate-100">
                                 <td class="py-3 px-4">${data}</td>
-                                <td class="py-3 px-4">${turno}</td>
+                                <td class="py-3 px-4">${hora}</td>
                                 <td class="py-3 px-4">${item.volume_liters} L</td>
                                 <td class="py-3 px-4">${item.temperature ? item.temperature + '°C' : '-'}</td>
+                                <td class="py-3 px-4">${item.notes || '-'}</td>
                                 <td class="py-3 px-4">
                                     <button onclick="deleteProduction('${item.id}')" class="text-red-500 hover:text-red-700 text-sm flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1484,10 +1884,11 @@
             }
     
             try {
+                const supabase = createSupabaseClient();
                 log(`Excluindo registro: ${id}`);
                 
                 const { error } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .delete()
                     .eq('id', id);
                 
@@ -1702,9 +2103,14 @@
             try {
                 log('Testando conexão com Supabase...');
                 
+                // Criar cliente Supabase diretamente
+                const supabaseUrl = 'https://tmaamwuyucaspqcrhuck.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0';
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                
                 // Teste simples de conexão
                 const { data, error } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('count')
                     .limit(1);
                 
@@ -1745,22 +2151,66 @@
         setInterval(updateDateTime, 60000);
 
         // ==================== INITIALIZATION ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            log('DOM carregado - inicializando...');
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Flag para evitar múltiplas inicializações
+            if (window.pageInitialized) {
+                log('⚠️ Página já inicializada, ignorando...');
+                return;
+            }
             
-            // Verificar se Supabase está disponível
-            if (typeof supabase === 'undefined') {
-                log('ERRO: Supabase não está disponível!');
-                showNotification('Erro: Supabase não está carregado', 'error');
+            window.pageInitialized = true;
+            log('🚀 Inicializando página do funcionário...');
+            
+            // Verificar se não estamos em um loop de redirecionamento
+            const redirectCount = sessionStorage.getItem('redirectCount') || 0;
+            if (redirectCount > 3) {
+                log('❌ Muitas tentativas de redirecionamento, limpando sessão');
+                clearUserSession();
+                sessionStorage.removeItem('redirectCount');
+                safeRedirect('login.html');
             return;
         }
         
-            log('Supabase disponível, inicializando...');
+            try {
+                // Inicializar componentes
+                initTabNavigation();
+                setupFormHandlers();
+                
+                // Aguardar um pouco e carregar dados
+                setTimeout(async function() {
+                    log('Timeout concluído - carregando dados...');
+                    await carregarDados();
+                }, 2000);
+                
+            } catch (error) {
+                log('❌ ERRO na inicialização: ' + error.message);
+                showNotification('Erro ao inicializar sistema', 'error');
+            }
+        });
+        
+        async function initializeSystem() {
+            try {
+                log('Inicializando sistema...');
             
             // Initialize tab navigation
             initTabNavigation();
             
             // Set up form handlers
+                setupFormHandlers();
+                
+                // Aguardar um pouco e carregar dados
+                setTimeout(async function() {
+                    log('Timeout concluído - carregando dados...');
+                    await carregarDados();
+                }, 2000);
+                
+            } catch (error) {
+                log('❌ ERRO na inicialização: ' + error.message);
+                showNotification('Erro ao inicializar sistema', 'error');
+            }
+        }
+
+        function setupFormHandlers() {
             const productionForm = document.getElementById('productionForm');
             if (productionForm) {
                 productionForm.addEventListener('submit', registerProduction);
@@ -1768,15 +2218,6 @@
             } else {
                 log('ERRO: Formulário de produção não encontrado');
             }
-            
-            // Testar conexão com Supabase
-            testSupabaseConnection().then(connected => {
-                if (connected) {
-                    log('Sistema inicializado com sucesso');
-                } else {
-                    log('Falha na inicialização - problemas de conexão');
-                }
-            });
             
             const updateProfileForm = document.getElementById('updateProfileForm');
             if (updateProfileForm) {
@@ -1787,26 +2228,25 @@
             if (changePasswordForm) {
                 changePasswordForm.addEventListener('submit', handleChangePassword);
             }
-            
-            // Load data
-            setTimeout(function() {
-                log('Timeout concluído - carregando dados...');
-                carregarDados();
-            }, 500);
-        });
+        }
 
         log('=== SCRIPT FUNCIONÁRIO COMPLETO CARREGADO ===');
         
-        // Função para retornar à conta do gerente
-        function returnToManagerAccount() {
-            const confirmed = confirm('Deseja retornar à sua conta de gerente?\n\nVocê será redirecionado para o painel do gerente.');
+                  // Função para retornar à conta do gerente
+          async function returnToManagerAccount() {
+            const confirmed = await window.showConfirm('Deseja retornar à sua conta de gerente?\n\nVocê será redirecionado para o painel do gerente.', {
+            title: 'Retornar ao Gerente',
+            type: 'question',
+            confirmText: 'Sim, Retornar',
+            cancelText: 'Cancelar'
+        });
             
             if (confirmed) {
                 // Limpar dados da conta secundária
                 sessionStorage.removeItem('currentSecondaryAccount');
                 
                 // Redirecionar para o painel do gerente
-                window.location.href = 'gerente.html';
+                window.location.replace('gerente.html');
             }
         }
         

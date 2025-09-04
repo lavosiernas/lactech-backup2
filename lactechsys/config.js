@@ -5,8 +5,8 @@
 // =====================================================
 
 // Configuração do Supabase
-const SUPABASE_URL = 'https://meczbqmehtolwhactdsv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s';
+const SUPABASE_URL = 'https://tmaamwuyucaspqcrhuck.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0';
 
 // Aguardar Supabase estar disponível
 async function waitForSupabase() {

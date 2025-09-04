@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Modais - LacTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/modal-system.js"></script>
+    <style>
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">🧪 Teste do Sistema de Modais</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Teste de Alert -->
+                <div class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-3">📢 Teste de Alert</h3>
+                    <p class="text-blue-700 mb-4">Testa o modal de alerta simples</p>
+                    <button onclick="testAlert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                        Testar Alert
+                    </button>
+                </div>
+
+                <!-- Teste de Confirm -->
+                <div class="bg-green-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-lg font-semibold text-green-900 mb-3">❓ Teste de Confirm</h3>
+                    <p class="text-green-700 mb-4">Testa o modal de confirmação</p>
+                    <button onclick="testConfirm()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                        Testar Confirm
+                    </button>
+                </div>
+
+                <!-- Teste de Prompt -->
+                <div class="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                    <h3 class="text-lg font-semibold text-purple-900 mb-3">✏️ Teste de Prompt</h3>
+                    <p class="text-purple-700 mb-4">Testa o modal de input</p>
+                    <button onclick="testPrompt()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                        Testar Prompt
+                    </button>
+                </div>
+
+                <!-- Teste de Email Prompt -->
+                <div class="bg-orange-50 rounded-xl p-6 border border-orange-200">
+                    <h3 class="text-lg font-semibold text-orange-900 mb-3">📧 Teste de Email Prompt</h3>
+                    <p class="text-orange-700 mb-4">Testa o modal de email</p>
+                    <button onclick="testEmailPrompt()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                        Testar Email
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resultados dos Testes -->
+            <div class="mt-8 bg-gray-50 rounded-xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">📊 Resultados dos Testes</h3>
+                <div id="testResults" class="space-y-2">
+                    <p class="text-gray-600">Clique nos botões acima para testar os modais...</p>
+                </div>
+            </div>
+
+            <!-- Status do Sistema -->
+            <div class="mt-6 bg-gray-50 rounded-xl p-4">
+                <h4 class="font-semibold text-gray-900 mb-2">🔧 Status do Sistema</h4>
+                <div id="systemStatus" class="text-sm text-gray-600">
+                    Verificando...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar status do sistema
+        function checkSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            const functions = [
+                'showAlert',
+                'showConfirm', 
+                'showPrompt',
+                'showEmailPrompt',
+                'ModalSystem'
+            ];
+            
+            let available = 0;
+            functions.forEach(func => {
+                if (window[func]) available++;
+            });
+            
+            if (available === functions.length) {
+                statusDiv.innerHTML = '✅ Sistema de modais carregado com sucesso!';
+                statusDiv.className = 'text-sm text-green-600';
+            } else {
+                statusDiv.innerHTML = `⚠️ Sistema parcialmente carregado (${available}/${functions.length})`;
+                statusDiv.className = 'text-sm text-yellow-600';
+            }
+        }
+
+        // Teste de Alert
+        async function testAlert() {
+            try {
+                await window.showAlert('Este é um teste do modal de alerta!', {
+                    type: 'success',
+                    title: 'Teste de Alert',
+                    duration: 3000
+                });
+                addTestResult('✅ Alert funcionou perfeitamente!');
+            } catch (error) {
+                addTestResult('❌ Erro no Alert: ' + error.message);
+            }
+        }
+
+        // Teste de Confirm
+        async function testConfirm() {
+            try {
+                const result = await window.showConfirm('Deseja continuar com este teste?', {
+                    title: 'Teste de Confirm',
+                    type: 'question',
+                    confirmText: 'Sim, Continuar',
+                    cancelText: 'Não, Parar'
+                });
+                addTestResult(`✅ Confirm retornou: ${result ? 'true' : 'false'}`);
+            } catch (error) {
+                addTestResult('❌ Erro no Confirm: ' + error.message);
+            }
+        }
+
+        // Teste de Prompt
+        async function testPrompt() {
+            try {
+                const result = await window.showPrompt('Digite seu nome:', 'João', {
+                    title: 'Teste de Prompt',
+                    placeholder: 'Digite aqui...',
+                    confirmText: 'Confirmar',
+                    cancelText: 'Cancelar'
+                });
+                addTestResult(`✅ Prompt retornou: "${result}"`);
+            } catch (error) {
+                addTestResult('❌ Erro no Prompt: ' + error.message);
+            }
+        }
+
+        // Teste de Email Prompt
+        async function testEmailPrompt() {
+            try {
+                const result = await window.showEmailPrompt('Digite seu email para teste:', {
+                    title: 'Teste de Email',
+                    confirmText: 'Enviar',
+                    cancelText: 'Cancelar'
+                });
+                addTestResult(`✅ Email Prompt retornou: "${result}"`);
+            } catch (error) {
+                addTestResult('❌ Erro no Email Prompt: ' + error.message);
+            }
+        }
+
+        // Adicionar resultado do teste
+        function addTestResult(message) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultP = document.createElement('p');
+            resultP.className = 'text-sm';
+            resultP.innerHTML = message;
+            resultsDiv.appendChild(resultP);
+            
+            // Manter apenas os últimos 10 resultados
+            const results = resultsDiv.querySelectorAll('p');
+            if (results.length > 10) {
+                results[0].remove();
+            }
+        }
+
+        // Verificar status quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkSystemStatus, 500);
+        });
+
+        // Verificar status a cada 2 segundos
+        setInterval(checkSystemStatus, 2000);
+    </script>
+</body>
+</html>

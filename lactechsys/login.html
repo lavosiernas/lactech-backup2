@@ -6,7 +6,8 @@
     <title>Login - LacTech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="config.js" defer></script>
+    <script src="config.js"></script>
+    <script src="assets/js/modal-system.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css">
@@ -225,8 +226,8 @@
         function initializeSupabaseClient() {
             if (window.supabase && window.supabase.createClient) {
                 return window.supabase.createClient(
-                    'https://meczbqmehtolwhactdsv.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3picW1laHRvbHdoYWN0ZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNDYyNDYsImV4cCI6MjA3MTcyMjI0Nn0.Intdd5D6g-l3H2iv7xAqfMFGEMYAU2cYFoHuZyvXc9s'
+                    'https://tmaamwuyucaspqcrhuck.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0'
                 );
             }
             return null;
@@ -550,21 +551,50 @@
 
         // Forgot password functionality
         async function showForgotPassword() {
-            const email = prompt('Digite seu email para recuperar a senha:');
-            if (email) {
-                try {
+            try {
+                // Aguardar o sistema de modais estar disponível
+                if (!window.showEmailPrompt) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                const email = await window.showEmailPrompt('Digite seu email para receber o link de recuperação de senha:', {
+                    title: 'Recuperar Senha',
+                    confirmText: 'Enviar Email',
+                    cancelText: 'Cancelar'
+                });
+                
+                if (email) {
                     // Ensure Supabase is ready
                     if (!supabaseClient || !supabaseClient.auth) {
                         supabaseClient = await waitForSupabase();
                     }
                     
-                    const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+                    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                        redirectTo: `${window.location.origin}/reset-password.html`
+                    });
+                    
                     if (error) throw error;
                     
-                    alert('Se este email estiver cadastrado, você receberá instruções para redefinir sua senha.');
-                } catch (error) {
-                    alert('Erro ao enviar email de recuperação. Tente novamente.');
+                    await window.showAlert('Email de recuperação enviado! Verifique sua caixa de entrada.', {
+                        type: 'success',
+                        title: 'Email Enviado!',
+                        duration: 3000
+                    });
                 }
+            } catch (error) {
+                console.error('Erro na recuperação:', error);
+                
+                let errorMessage = 'Erro ao enviar email de recuperação.';
+                if (error.message.includes('User not found')) {
+                    errorMessage = 'Email não encontrado no sistema.';
+                } else if (error.message.includes('Too many requests')) {
+                    errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
+                }
+                
+                await window.showAlert(errorMessage, {
+                    type: 'error',
+                    title: 'Erro na Recuperação'
+                });
             }
         }
 
@@ -626,7 +656,7 @@
                 if (!supabaseClient) {
                     supabaseClient = await waitForSupabase();
                 }
-                checkExistingSession();
+            checkExistingSession();
             } catch (error) {
                 console.error('Error initializing page:', error);
             }

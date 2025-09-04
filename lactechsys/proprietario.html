@@ -34,11 +34,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/pdf-generator.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
     <script src="assets/js/loading-screen.js"></script>
     <script src="lactech-api-nova.js"></script>
     <script src="auth_fix.js"></script>
     <script src="pwa-manager.js"></script>
+    <script src="config.js" defer></script>
+    <script src="assets/js/modal-system.js"></script>
     <script>
         // Aguardar configuração do Supabase antes de carregar fix_data_sync_complete.js
         document.addEventListener('DOMContentLoaded', function() {
@@ -1083,7 +1085,7 @@
 
                 // Load production data
                 const { data: productionData, error: productionError } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('volume_liters')
                     .gte('production_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
@@ -1744,7 +1746,7 @@
 
                 // Buscar dados de produção para calcular receita
                 const { data: productionData, error: productionError } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select('*')
                     .order('production_date', { ascending: false });
 
@@ -1767,7 +1769,7 @@
 
                 // Buscar dados de produção
                 const { data: productionData, error: productionError } = await supabase
-                    .from('milk_production')
+                    .from('volume_records')
                     .select(`
                         *,
                         users(name, email)
@@ -2024,7 +2026,7 @@
 
                     // Buscar dados de produção
                     const { data: productionData, error: productionError } = await supabase
-                        .from('milk_production')
+                        .from('volume_records')
                         .select(`
                             *,
                             users(name, email)
@@ -2132,7 +2134,7 @@
 
                             // 2. Deletar produção de leite
                             const { error: productionError } = await supabase
-                                .from('milk_production')
+                                .from('volume_records')
                                 .delete()
                                 .eq('farm_id', userData.farm_id);
 

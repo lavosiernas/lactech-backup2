@@ -542,14 +542,29 @@
         function waitForSupabase() {
             return new Promise((resolve, reject) => {
                 let attempts = 0;
-                const maxAttempts = 50; // 5 seconds max
+                const maxAttempts = 100; // 10 seconds max
                 
                 const checkSupabase = () => {
                     attempts++;
-                    if (window.supabase && window.supabase.rpc) {
-                        resolve(window.supabase);
+                    console.log(`🔄 Tentativa ${attempts}: Verificando Supabase...`);
+                    console.log('window.supabase:', window.supabase);
+                    console.log('window.supabase.createClient:', window.supabase?.createClient);
+                    console.log('SUPABASE_URL:', typeof SUPABASE_URL !== 'undefined' ? 'Definido' : 'Não definido');
+                    console.log('SUPABASE_ANON_KEY:', typeof SUPABASE_ANON_KEY !== 'undefined' ? 'Definido' : 'Não definido');
+                    
+                    // Verificar se o Supabase está disponível
+                    if (window.supabase && window.supabase.createClient) {
+                        console.log('✅ Supabase disponível, criando cliente...');
+                        // Criar cliente Supabase usando as configurações do config.js
+                        const supabaseUrl = typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'https://tmaamwuyucaspqcrhuck.supabase.co';
+                        const supabaseKey = typeof SUPABASE_ANON_KEY !== 'undefined' ? SUPABASE_ANON_KEY : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0';
+                        
+                        const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+                        console.log('✅ Cliente Supabase criado com sucesso');
+                        resolve(client);
                     } else if (attempts >= maxAttempts) {
-                        reject(new Error('Timeout: Supabase não foi inicializado em 5 segundos'));
+                        console.error('❌ Timeout: Supabase não foi inicializado');
+                        reject(new Error('Timeout: Supabase não foi inicializado em 10 segundos'));
                     } else {
                         setTimeout(checkSupabase, 100);
                     }
@@ -568,6 +583,17 @@
         document.addEventListener('DOMContentLoaded', async function() {
             try {
                 console.log('🔄 Inicializando Supabase...');
+                
+                // Aguardar um pouco para garantir que o config.js seja carregado
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Verificar se as configurações estão disponíveis
+                if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
+                    console.warn('⚠️ Configurações do Supabase não encontradas, usando fallback');
+                } else {
+                    console.log('✅ Configurações do Supabase carregadas');
+                }
+                
                 supabaseClient = await waitForSupabase();
                 console.log('✅ Supabase client initialized successfully');
                 

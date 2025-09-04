@@ -19,19 +19,67 @@ CREATE OR REPLACE FUNCTION create_farm_user(
     p_whatsapp TEXT,
     p_role TEXT,
     p_farm_id UUID,
-    p_profile_photo_url TEXT DEFAULT NULL
+    p_profile_photo_url TEXT DEFAULT NULL,
+    p_password TEXT DEFAULT NULL
 )
 RETURNS JSON AS $$
 DECLARE
     new_user_id UUID;
+    auth_user_id UUID;
 BEGIN
     -- Verificar se o usuário atual está autenticado
     IF auth.uid() IS NULL THEN
         RAISE EXCEPTION 'Usuário não autenticado';
     END IF;
     
-    -- Inserir novo usuário diretamente
+    -- Criar usuário no Supabase Auth primeiro
+    IF p_password IS NOT NULL THEN
+        -- Usar a senha fornecida
+        INSERT INTO auth.users (
+            instance_id,
+            id,
+            aud,
+            role,
+            email,
+            encrypted_password,
+            email_confirmed_at,
+            recovery_sent_at,
+            last_sign_in_at,
+            raw_app_meta_data,
+            raw_user_meta_data,
+            created_at,
+            updated_at,
+            confirmation_token,
+            email_change,
+            email_change_token_new,
+            recovery_token
+        ) VALUES (
+            (SELECT id FROM auth.instances LIMIT 1),
+            gen_random_uuid(),
+            'authenticated',
+            'authenticated',
+            p_email,
+            crypt(p_password, gen_salt('bf')),
+            NOW(),
+            NULL,
+            NULL,
+            '{"provider":"email","providers":["email"]}',
+            '{"name":"' || p_name || '"}',
+            NOW(),
+            NOW(),
+            '',
+            '',
+            '',
+            ''
+        ) RETURNING id INTO auth_user_id;
+    ELSE
+        -- Gerar senha temporária se não fornecida
+        auth_user_id := gen_random_uuid();
+    END IF;
+    
+    -- Inserir novo usuário na tabela users
     INSERT INTO users (
+        id,
         email,
         name,
         whatsapp,
@@ -40,6 +88,7 @@ BEGIN
         profile_photo_url,
         is_active
     ) VALUES (
+        auth_user_id,
         p_email,
         p_name,
         p_whatsapp,
