@@ -104,7 +104,7 @@
                         <input type="checkbox" name="remember" class="w-4 h-4 text-forest-600 border-slate-300 rounded focus:ring-forest-500">
                         <span class="ml-2 text-sm text-slate-600">Lembrar de mim</span>
                     </label>
-                    <a href="#" onclick="showForgotPassword()" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
+                    <a href="#" onclick="showForgotPassword(); return false;" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                 </div>
 
                 <button type="submit" id="loginBtn" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
@@ -197,7 +197,7 @@
                             <input type="checkbox" name="remember" class="w-4 h-4 text-forest-600 border-slate-300 rounded focus:ring-forest-500">
                             <span class="ml-2 text-sm text-slate-600">Lembrar de mim</span>
                         </label>
-                        <a href="#" onclick="showForgotPassword()" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
+                        <a href="#" onclick="showForgotPassword(); return false;" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                     </div>
 
                     <button type="submit" id="loginBtnDesktop" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
@@ -371,15 +371,9 @@
         // Authenticate user with direct database login
         async function authenticateUser(email, password) {
             try {
-                // Debug: check what we have
-                console.log('Debug - supabaseClient:', supabaseClient);
-                console.log('Debug - window.supabase:', window.supabase);
-                
                 // Ensure Supabase is ready
                 if (!supabaseClient || !supabaseClient.auth) {
-                    console.log('Debug - Initializing Supabase client...');
                     supabaseClient = await waitForSupabase();
-                    console.log('Debug - After waitForSupabase:', supabaseClient);
                 }
                 
                 // Verify client is valid
@@ -549,59 +543,41 @@
             }
         }
 
-        // Forgot password functionality
-        async function showForgotPassword() {
-            try {
-                // Aguardar o sistema de modais estar disponível
-                if (!window.showEmailPrompt) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
-                
-                const email = await window.showEmailPrompt('Digite seu email para receber o link de recuperação de senha:', {
-                    title: 'Recuperar Senha',
-                    confirmText: 'Enviar Email',
-                    cancelText: 'Cancelar'
-                });
-                
-                if (email) {
-                    // Ensure Supabase is ready
-                    if (!supabaseClient || !supabaseClient.auth) {
-                        supabaseClient = await waitForSupabase();
-                    }
-                    
-                    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                        redirectTo: `${window.location.origin}/reset-password.html`
-                    });
-                    
-                    if (error) throw error;
-                    
-                    await window.showAlert('Email de recuperação enviado! Verifique sua caixa de entrada.', {
-                        type: 'success',
-                        title: 'Email Enviado!',
-                        duration: 3000
-                    });
-                }
-            } catch (error) {
-                console.error('Erro na recuperação:', error);
-                
-                let errorMessage = 'Erro ao enviar email de recuperação.';
-                if (error.message.includes('User not found')) {
-                    errorMessage = 'Email não encontrado no sistema.';
-                } else if (error.message.includes('Too many requests')) {
-                    errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
-                }
-                
-                await window.showAlert(errorMessage, {
-                    type: 'error',
-                    title: 'Erro na Recuperação'
-                });
+        // Forgot password functionality - redirect to recovery request page
+        function showForgotPassword() {
+            console.log('🔍 Iniciando processo de recuperação de senha...');
+            
+            // Get the email from the login form - tentar múltiplos seletores
+            let emailInput = document.querySelector('input[type="email"]');
+            
+            // Se não encontrar, tentar por name
+            if (!emailInput) {
+                emailInput = document.querySelector('input[name="email"]');
+            }
+            
+            // Se ainda não encontrar, tentar por placeholder
+            if (!emailInput) {
+                emailInput = document.querySelector('input[placeholder*="email"]');
+            }
+            
+            console.log('📧 Campo de email encontrado:', emailInput);
+            
+            const email = emailInput ? emailInput.value.trim() : '';
+            console.log('📧 Email capturado:', email);
+            
+            // Redirect to the password recovery request page with email parameter
+            if (email) {
+                const url = `solicitar-alteracao-senha.html?email=${encodeURIComponent(email)}`;
+                console.log('🔗 Redirecionando para:', url);
+                window.location.href = url;
+            } else {
+                console.log('🔗 Redirecionando sem email');
+                window.location.href = 'solicitar-alteracao-senha.html';
             }
         }
 
         // Check if user is already logged in
         function checkExistingSession() {
-            console.log('🔍 Verificando sessão existente...');
-            
             const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
             
             if (userData) {
@@ -610,7 +586,6 @@
                     
                     // Verificar se os dados são válidos
                     if (!user || !user.id || !user.userType) {
-                        console.log('❌ Dados de sessão inválidos');
                         localStorage.removeItem('userData');
                         sessionStorage.removeItem('userData');
                         return;
@@ -624,25 +599,20 @@
                     const maxHours = localStorage.getItem('userData') ? 24 : 8;
                     
                     if (hoursSinceLogin < maxHours) {
-                        console.log('✅ Sessão válida encontrada, redirecionando...');
                         // Session is still valid, redirect to appropriate page
                         const redirectUrl = getRedirectUrl(user.userType);
                         window.location.replace(redirectUrl);
                         return;
                     } else {
-                        console.log('⏰ Sessão expirada');
                         // Session expired, clear storage
                         localStorage.removeItem('userData');
                         sessionStorage.removeItem('userData');
                     }
                 } catch (error) {
-                    console.error('❌ Erro ao verificar sessão:', error);
                     // Clear corrupted session data
                     localStorage.removeItem('userData');
                     sessionStorage.removeItem('userData');
                 }
-            } else {
-                console.log('ℹ️ Nenhuma sessão encontrada');
             }
         }
 
@@ -656,6 +626,10 @@
                 if (!supabaseClient) {
                     supabaseClient = await waitForSupabase();
                 }
+                
+                // Check if user is already logged in
+                checkExistingSession();
+                
             checkExistingSession();
             } catch (error) {
                 console.error('Error initializing page:', error);
