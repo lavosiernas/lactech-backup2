@@ -47,6 +47,81 @@ main {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); 
 }
 
+/* ===================================================== */
+/* ESTILOS DO HEADER - REPLICADOS DO FUNCIONÁRIO */
+/* ===================================================== */
+
+/* Garantir que a logo seja exibida corretamente */
+.header-logo {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Container da logo no header */
+.header-logo-container {
+    width: 40px !important;
+    height: 40px !important;
+    background-color: white !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Forçar exibição da logo em todos os casos */
+.header-logo-container img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain !important;
+}
+
+/* Responsividade para o header */
+@media (max-width: 640px) {
+    .header-logo-container {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    .header-logo {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .header-logo-container img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-logo-container {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .header-logo {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    
+    .header-logo-container img {
+        width: 24px !important;
+        height: 24px !important;
+    }
+}
+
 .data-card {
     background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
     border: 1px solid rgba(226, 232, 240, 0.8);
@@ -1631,6 +1706,79 @@ header .text-forest-200 { color: #dcfce7; }
 /* Garantir que o gradient-forest funcione no modo escuro */
 .dark .gradient-forest {
     background: linear-gradient(135deg, #1a431a 0%, #236523 50%, #2a7f2a 100%) !important;
+}
+
+/* ===================================================== */
+/* ESTILOS DO HEADER NO MODO ESCURO - REPLICADOS DO FUNCIONÁRIO */
+/* ===================================================== */
+
+/* Modo escuro - manter fundo branco para a logo */
+.dark .header-logo-container {
+    background-color: white !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.dark .header-logo {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.dark .header-logo-container img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain !important;
+}
+
+/* Responsividade do header no modo escuro */
+@media (max-width: 640px) {
+    .dark .header-logo-container {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    .dark .header-logo {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .dark .header-logo-container img {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .dark .header-logo-container {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .dark .header-logo {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    
+    .dark .header-logo-container img {
+        width: 24px !important;
+        height: 24px !important;
+    }
 }
 
 /* Garantir que o border-forest-800 funcione no modo escuro */

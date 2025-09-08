@@ -206,13 +206,73 @@
                     <div class="password-input-container">
                         <input type="password" id="newPassword" name="newPassword" required 
                                class="w-full px-4 py-3 pr-12 input-field rounded-xl bg-white" 
-                               placeholder="Digite sua nova senha">
+                               placeholder="Digite sua nova senha"
+                               oninput="validatePasswordInRealTime(this.value)">
                         <button type="button" class="password-toggle" onclick="togglePassword('newPassword')">
                             <svg id="newPassword-eye" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                             </svg>
                         </button>
+                    </div>
+                    
+                    <!-- Indicador de força da senha -->
+                    <div id="passwordStrengthIndicator" class="mt-2 hidden">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="text-sm text-gray-600">Força da senha:</span>
+                            <div class="flex space-x-1">
+                                <div class="w-3 h-2 bg-gray-300 rounded"></div>
+                                <div class="w-3 h-2 bg-gray-300 rounded"></div>
+                                <div class="w-3 h-2 bg-gray-300 rounded"></div>
+                                <div class="w-3 h-2 bg-gray-300 rounded"></div>
+                                <div class="w-3 h-2 bg-gray-300 rounded"></div>
+                            </div>
+                            <span id="passwordStrengthText" class="text-sm font-medium"></span>
+                        </div>
+                        
+                        <!-- Requisitos da senha -->
+                        <div id="passwordRequirements" class="text-xs space-y-1">
+                            <div class="flex items-center space-x-2">
+                                <span id="req-length" class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-white hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                                <span>Pelo menos 8 caracteres</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span id="req-uppercase" class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-white hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                                <span>Uma letra maiúscula</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span id="req-lowercase" class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-white hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                                <span>Uma letra minúscula</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span id="req-numbers" class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-white hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                                <span>Um número</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span id="req-special" class="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-white hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </span>
+                                <span>Um caractere especial</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -339,6 +399,67 @@
             }
         }
 
+        // Validação em tempo real da senha
+        function validatePasswordInRealTime(password) {
+            const indicator = document.getElementById('passwordStrengthIndicator');
+            if (!indicator) return;
+            
+            if (password.length === 0) {
+                indicator.classList.add('hidden');
+                return;
+            }
+            
+            indicator.classList.remove('hidden');
+            
+            const validation = validatePasswordStrength(password);
+            const strengthBars = indicator.querySelectorAll('.w-3.h-2');
+            const strengthText = document.getElementById('passwordStrengthText');
+            
+            // Atualizar barras de força
+            strengthBars.forEach((bar, index) => {
+                bar.className = 'w-3 h-2 rounded';
+                if (index < validation.score) {
+                    if (validation.score <= 2) {
+                        bar.classList.add('bg-red-500');
+                    } else if (validation.score <= 4) {
+                        bar.classList.add('bg-yellow-500');
+                    } else {
+                        bar.classList.add('bg-green-500');
+                    }
+                } else {
+                    bar.classList.add('bg-gray-300');
+                }
+            });
+            
+            // Atualizar texto de força
+            const strengthLabels = ['Muito fraca', 'Fraca', 'Regular', 'Boa', 'Muito boa', 'Excelente', 'Perfeita'];
+            strengthText.textContent = strengthLabels[Math.min(validation.score, 6)];
+            
+            // Atualizar requisitos
+            const requirements = validation.requirements;
+            updateRequirement('req-length', requirements.length);
+            updateRequirement('req-uppercase', requirements.uppercase);
+            updateRequirement('req-lowercase', requirements.lowercase);
+            updateRequirement('req-numbers', requirements.numbers);
+            updateRequirement('req-special', requirements.special);
+        }
+        
+        function updateRequirement(elementId, isValid) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const icon = element.querySelector('svg');
+            if (isValid) {
+                element.classList.remove('border-gray-300');
+                element.classList.add('border-green-500', 'bg-green-500');
+                icon.classList.remove('hidden');
+            } else {
+                element.classList.remove('border-green-500', 'bg-green-500');
+                element.classList.add('border-gray-300');
+                icon.classList.add('hidden');
+            }
+        }
+
         // Enviar solicitação
         async function submitPasswordRequest(formData) {
             try {
@@ -356,8 +477,9 @@
                 }
                 
                 // Validar força da senha
-                if (newPassword.length < 6) {
-                    showNotification('A senha deve ter pelo menos 6 caracteres.', 'error');
+                const passwordValidation = validatePasswordStrength(newPassword);
+                if (!passwordValidation.isValid) {
+                    showNotification(passwordValidation.message, 'error');
                     return;
                 }
                 
@@ -374,6 +496,20 @@
                     showNotification('Email não encontrado no sistema.', 'error');
                     return;
                 }
+                
+                // Verificar rate limiting
+                const rateLimitCheck = checkRateLimit(usersData.id);
+                if (!rateLimitCheck.allowed) {
+                    showNotification(rateLimitCheck.message, 'error');
+                    return;
+                }
+                
+                // Log de auditoria
+                logAuditEvent('password_request_attempt', usersData.id, {
+                    email: email,
+                    reason: formData.get('reason'),
+                    passwordStrength: passwordValidation.score
+                });
                 
                 // Criar solicitação na tabela com a nova senha
                 // Primeiro, tentar com a coluna new_password
@@ -434,6 +570,13 @@
                 }
                 
                 showNotification('Solicitação enviada com sucesso! Aguarde a aprovação do gerente.', 'success');
+                
+                // Log de sucesso
+                logAuditEvent('password_request_success', usersData.id, {
+                    requestId: data.id,
+                    email: email,
+                    reason: formData.get('reason')
+                });
                 
                 // Limpar formulário
                 document.getElementById('passwordRequestForm').reset();
@@ -531,6 +674,142 @@
         function getUrlParameter(name) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(name);
+        }
+
+        // Validação robusta de senha
+        function validatePasswordStrength(password) {
+            const minLength = 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            const hasNoSpaces = !/\s/.test(password);
+            
+            const errors = [];
+            
+            if (password.length < minLength) {
+                errors.push(`pelo menos ${minLength} caracteres`);
+            }
+            if (!hasUpperCase) {
+                errors.push('uma letra maiúscula');
+            }
+            if (!hasLowerCase) {
+                errors.push('uma letra minúscula');
+            }
+            if (!hasNumbers) {
+                errors.push('um número');
+            }
+            if (!hasSpecialChar) {
+                errors.push('um caractere especial (!@#$%^&*)');
+            }
+            if (!hasNoSpaces) {
+                errors.push('não conter espaços');
+            }
+            
+            const isValid = errors.length === 0;
+            const message = isValid ? 'Senha válida' : `A senha deve conter: ${errors.join(', ')}.`;
+            
+            return {
+                isValid,
+                message,
+                score: calculatePasswordScore(password),
+                requirements: {
+                    length: password.length >= minLength,
+                    uppercase: hasUpperCase,
+                    lowercase: hasLowerCase,
+                    numbers: hasNumbers,
+                    special: hasSpecialChar,
+                    noSpaces: hasNoSpaces
+                }
+            };
+        }
+        
+        // Calcular pontuação da senha
+        function calculatePasswordScore(password) {
+            let score = 0;
+            
+            // Comprimento
+            if (password.length >= 8) score += 1;
+            if (password.length >= 12) score += 1;
+            if (password.length >= 16) score += 1;
+            
+            // Caracteres
+            if (/[a-z]/.test(password)) score += 1;
+            if (/[A-Z]/.test(password)) score += 1;
+            if (/\d/.test(password)) score += 1;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+            
+            return Math.min(score, 7); // Máximo 7 pontos
+        }
+        
+        // Rate limiting otimizado para solicitações
+        const requestRateLimit = new Map();
+        const MAX_REQUESTS_PER_HOUR = 3;
+        const RATE_LIMIT_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutos
+        
+        // Limpeza automática do rate limiting
+        setInterval(() => {
+            const now = Date.now();
+            const hourAgo = now - (60 * 60 * 1000);
+            
+            for (const [userId, requests] of requestRateLimit.entries()) {
+                const recentRequests = requests.filter(time => time > hourAgo);
+                if (recentRequests.length === 0) {
+                    requestRateLimit.delete(userId);
+                } else {
+                    requestRateLimit.set(userId, recentRequests);
+                }
+            }
+        }, RATE_LIMIT_CLEANUP_INTERVAL);
+        
+        function checkRateLimit(userId) {
+            const now = Date.now();
+            const hourAgo = now - (60 * 60 * 1000);
+            
+            if (!requestRateLimit.has(userId)) {
+                requestRateLimit.set(userId, []);
+            }
+            
+            const userRequests = requestRateLimit.get(userId);
+            const recentRequests = userRequests.filter(time => time > hourAgo);
+            
+            if (recentRequests.length >= MAX_REQUESTS_PER_HOUR) {
+                return {
+                    allowed: false,
+                    message: `Limite de ${MAX_REQUESTS_PER_HOUR} solicitações por hora atingido. Tente novamente mais tarde.`,
+                    nextAllowed: new Date(recentRequests[0] + (60 * 60 * 1000))
+                };
+            }
+            
+            recentRequests.push(now);
+            requestRateLimit.set(userId, recentRequests);
+            
+            return { allowed: true };
+        }
+        
+        // Logs de auditoria
+        function logAuditEvent(action, userId, details = {}) {
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                action,
+                userId,
+                ip: details.ip || 'unknown',
+                userAgent: navigator.userAgent,
+                details
+            };
+            
+            console.log(`[AUDIT] ${action} by ${userId}:`, logEntry);
+            
+            // Armazenar no localStorage para persistência
+            const auditLogs = JSON.parse(localStorage.getItem('audit_logs') || '[]');
+            auditLogs.push(logEntry);
+            
+            // Manter apenas os últimos 100 logs
+            if (auditLogs.length > 100) {
+                auditLogs.splice(0, auditLogs.length - 100);
+            }
+            
+            localStorage.setItem('audit_logs', JSON.stringify(auditLogs));
         }
 
         // Função para preencher email automaticamente
