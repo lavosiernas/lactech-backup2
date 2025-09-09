@@ -13,10 +13,9 @@
     <meta name="apple-mobile-web-app-title" content="Xandria Store">
     
     <!-- PWA Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png">
-    <link rel="apple-touch-icon" href="/icon-192x192.png">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/jjsq36Nf/lactechbranca-1.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/jjsq36Nf/lactechbranca-1.png">
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -221,6 +220,34 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
                         <span class="text-gray-900 dark:text-white">Apps instalados</span>
+                    </button>
+
+                    <button id="installPWAButton" onclick="installPWA()" class="w-full flex items-center space-x-3 p-3 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800 hidden">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                        </svg>
+                        <span class="text-gray-900 dark:text-white">Instalar App</span>
+                    </button>
+
+                    <button id="uninstallPWAButton" onclick="uninstallPWA()" class="w-full flex items-center space-x-3 p-3 rounded-xl text-left hover:bg-red-100 dark:hover:bg-red-900 hidden">
+                        <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"></path>
+                        </svg>
+                        <span class="text-red-600 dark:text-red-400">Desinstalar App</span>
+                    </button>
+
+                    <button id="updatePWAButton" onclick="updatePWA()" class="w-full flex items-center space-x-3 p-3 rounded-xl text-left hover:bg-yellow-100 dark:hover:bg-yellow-900 hidden">
+                        <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span class="text-yellow-600 dark:text-yellow-400">Atualizar App</span>
+                    </button>
+
+                    <button id="debugPWAButton" onclick="debugPWAStatus()" class="w-full flex items-center space-x-3 p-3 rounded-xl text-left hover:bg-blue-100 dark:hover:bg-blue-900">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <span class="text-blue-600 dark:text-blue-400">Debug PWA</span>
                     </button>
 
                     <button onclick="toggleTheme()" class="w-full flex items-center justify-between p-3 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -1533,6 +1560,285 @@
                // Atualizar perfil mesmo sem usuário logado
                updateProfileInfo();
            }
+
+           // ==================== SISTEMA DE INSTALAÇÃO PWA ====================
+           
+           let deferredPrompt;
+           const CURRENT_VERSION = '2.0.0';
+           
+           // Capturar o evento beforeinstallprompt
+           window.addEventListener('beforeinstallprompt', (e) => {
+               console.log('PWA pode ser instalada');
+               e.preventDefault();
+               deferredPrompt = e;
+               
+               // Verificar se já está instalado
+               checkPWAStatus();
+           });
+           
+           // Função para verificar status da PWA
+           async function checkPWAStatus() {
+               const isInstalled = await isPWAInstalled();
+               const installedVersion = localStorage.getItem('pwa_version');
+               const hasServiceWorker = await checkServiceWorker();
+               const isStandalone = isRunningAsPWA();
+               
+               console.log('PWA Status:', { 
+                   isInstalled, 
+                   installedVersion, 
+                   currentVersion: CURRENT_VERSION,
+                   hasServiceWorker,
+                   isStandalone,
+                   displayMode: window.matchMedia('(display-mode: standalone)').matches,
+                   standalone: window.navigator.standalone
+               });
+               
+               // Se está instalado (tem service worker ou dados de instalação)
+               if (isInstalled) {
+                   if (installedVersion !== CURRENT_VERSION) {
+                       // Versão diferente - mostrar botão de atualização
+                       showUpdateButton();
+                       showNotification(`Versão ${installedVersion || 'antiga'} detectada. Nova versão ${CURRENT_VERSION} disponível!`, 'warning');
+                   } else {
+                       // Versão atual - mostrar botão de desinstalação
+                       showUninstallButton();
+                   }
+               } else {
+                   // Não instalado - mostrar botão de instalação
+                   showInstallButton();
+               }
+           }
+           
+           // Função para verificar se tem service worker
+           async function checkServiceWorker() {
+               if ('serviceWorker' in navigator) {
+                   try {
+                       const registrations = await navigator.serviceWorker.getRegistrations();
+                       return registrations.length > 0;
+                   } catch (error) {
+                       console.error('Erro ao verificar service worker:', error);
+                       return false;
+                   }
+               }
+               return false;
+           }
+           
+           // Função para instalar a PWA
+           async function installPWA() {
+               if (!deferredPrompt) {
+                   showNotification('App já está instalado ou não pode ser instalado', 'info');
+                   return;
+               }
+               
+               // Mostrar o prompt de instalação
+               deferredPrompt.prompt();
+               
+               // Aguardar a resposta do usuário
+               const { outcome } = await deferredPrompt.userChoice;
+               
+               if (outcome === 'accepted') {
+                   console.log('Usuário aceitou a instalação');
+                   showNotification('App instalado com sucesso!', 'success');
+                   
+                   // Salvar versão instalada
+                   localStorage.setItem('pwa_version', CURRENT_VERSION);
+                   
+                   // Esconder botão de instalação
+                   hideAllPWAButtons();
+               } else {
+                   console.log('Usuário rejeitou a instalação');
+                   showNotification('Instalação cancelada', 'info');
+               }
+               
+               // Limpar a referência
+               deferredPrompt = null;
+           }
+           
+           // Função para desinstalar a PWA
+           async function uninstallPWA() {
+               if (confirm('Tem certeza que deseja desinstalar o app? Você precisará reinstalá-lo para usar novamente.')) {
+                   try {
+                       // Limpar dados locais
+                       localStorage.removeItem('pwa_version');
+                       localStorage.removeItem('installedApps');
+                       
+                       // Limpar cache do service worker
+                       if ('serviceWorker' in navigator) {
+                           const registrations = await navigator.serviceWorker.getRegistrations();
+                           for (let registration of registrations) {
+                               await registration.unregister();
+                           }
+                       }
+                       
+                       // Limpar cache
+                       if ('caches' in window) {
+                           const cacheNames = await caches.keys();
+                           await Promise.all(
+                               cacheNames.map(cacheName => caches.delete(cacheName))
+                           );
+                       }
+                       
+                       showNotification('App desinstalado com sucesso! Recarregue a página.', 'success');
+                       
+                       // Esconder botão de desinstalação
+                       hideAllPWAButtons();
+                       
+                       // Recarregar página após 2 segundos
+                       setTimeout(() => {
+                           window.location.reload();
+                       }, 2000);
+                       
+                   } catch (error) {
+                       console.error('Erro ao desinstalar:', error);
+                       showNotification('Erro ao desinstalar. Tente manualmente nas configurações do navegador.', 'error');
+                   }
+               }
+           }
+           
+           // Função para atualizar a PWA
+           async function updatePWA() {
+               if (confirm('Atualizar para a versão mais recente? Isso irá reinstalar o app.')) {
+                   try {
+                       // Desinstalar versão atual
+                       await uninstallPWA();
+                       
+                       // Aguardar um pouco e tentar instalar novamente
+                       setTimeout(() => {
+                           if (deferredPrompt) {
+                               installPWA();
+                           } else {
+                               showNotification('Recarregue a página e tente instalar novamente.', 'info');
+                           }
+                       }, 3000);
+                       
+                   } catch (error) {
+                       console.error('Erro ao atualizar:', error);
+                       showNotification('Erro ao atualizar. Tente desinstalar e reinstalar manualmente.', 'error');
+                   }
+               }
+           }
+           
+           // Funções para mostrar/esconder botões
+           function showInstallButton() {
+               hideAllPWAButtons();
+               const installButton = document.getElementById('installPWAButton');
+               if (installButton) {
+                   installButton.classList.remove('hidden');
+               }
+           }
+           
+           function showUninstallButton() {
+               hideAllPWAButtons();
+               const uninstallButton = document.getElementById('uninstallPWAButton');
+               if (uninstallButton) {
+                   uninstallButton.classList.remove('hidden');
+               }
+           }
+           
+           function showUpdateButton() {
+               hideAllPWAButtons();
+               const updateButton = document.getElementById('updatePWAButton');
+               if (updateButton) {
+                   updateButton.classList.remove('hidden');
+               }
+           }
+           
+           function hideAllPWAButtons() {
+               const buttons = ['installPWAButton', 'uninstallPWAButton', 'updatePWAButton'];
+               buttons.forEach(buttonId => {
+                   const button = document.getElementById(buttonId);
+                   if (button) {
+                       button.classList.add('hidden');
+                   }
+               });
+           }
+           
+           // Detectar se o app já está instalado
+           window.addEventListener('appinstalled', () => {
+               console.log('PWA foi instalada');
+               showNotification('App instalado com sucesso!', 'success');
+               
+               // Salvar versão instalada
+               localStorage.setItem('pwa_version', CURRENT_VERSION);
+               
+               // Verificar status
+               checkPWAStatus();
+           });
+           
+           // Verificar se está rodando como PWA
+           function isRunningAsPWA() {
+               return window.matchMedia('(display-mode: standalone)').matches || 
+                      window.navigator.standalone === true;
+           }
+           
+           // Verificar se PWA está instalada (mesmo que não esteja rodando)
+           async function isPWAInstalled() {
+               // Verificar se tem service worker
+               const hasServiceWorker = await checkServiceWorker();
+               
+               // Verificar se tem dados de instalação
+               const hasInstallData = localStorage.getItem('pwa_version') !== null;
+               
+               // Verificar se está em modo standalone
+               const isStandalone = isRunningAsPWA();
+               
+               // Verificar se tem deferredPrompt (indica que pode ser instalado)
+               const canInstall = deferredPrompt !== null;
+               
+               console.log('PWA Install Check:', {
+                   hasServiceWorker,
+                   hasInstallData,
+                   isStandalone,
+                   canInstall
+               });
+               
+               // Só considera instalado se estiver em modo standalone OU tiver dados de instalação
+               // Service worker sozinho não indica instalação (pode ser apenas cache)
+               return isStandalone || hasInstallData;
+           }
+           
+           // Função de debug para verificar status da PWA
+           async function debugPWAStatus() {
+               const isInstalled = await isPWAInstalled();
+               const installedVersion = localStorage.getItem('pwa_version');
+               const hasServiceWorker = await checkServiceWorker();
+               const isStandalone = isRunningAsPWA();
+               const displayMode = window.matchMedia('(display-mode: standalone)').matches;
+               const standalone = window.navigator.standalone;
+               
+               const debugInfo = {
+                   'PWA Instalada': isInstalled,
+                   'Versão Instalada': installedVersion || 'Nenhuma',
+                   'Versão Atual': CURRENT_VERSION,
+                   'Service Worker': hasServiceWorker,
+                   'Modo Standalone': isStandalone,
+                   'Display Mode': displayMode,
+                   'Navigator Standalone': standalone,
+                   'Deferred Prompt': deferredPrompt !== null,
+                   'Local Storage Keys': Object.keys(localStorage)
+               };
+               
+               console.log('=== DEBUG PWA STATUS ===');
+               console.table(debugInfo);
+               
+               let message = '=== DEBUG PWA STATUS ===\n\n';
+               for (const [key, value] of Object.entries(debugInfo)) {
+                   message += `${key}: ${value}\n`;
+               }
+               
+               alert(message);
+               
+               // Forçar verificação de status
+               checkPWAStatus();
+           }
+           
+           // Verificar status inicial
+           checkPWAStatus();
+           
+           // Verificar novamente após um delay para garantir detecção
+           setTimeout(() => {
+               checkPWAStatus();
+           }, 2000);
 
            // Variáveis para o modal de screenshot
            let currentScreenshots = [];

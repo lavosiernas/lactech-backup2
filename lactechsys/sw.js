@@ -1,19 +1,47 @@
-// Service Worker para Xandria Store
-const CACHE_NAME = 'xandria-store-v1';
+// Service Worker para LacTech
+const CACHE_NAME = 'lactech-v2.0.0';
+const APP_VERSION = '2.0.0';
 const urlsToCache = [
   '/',
   '/xandria-store.html',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap'
+  '/gerente.html',
+  '/funcionario.html',
+  '/veterinario.html',
+  '/login.html',
+  '/acesso-bloqueado.html',
+  'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap',
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://unpkg.com/@supabase/supabase-js@2'
 ];
 
 // Instalação do Service Worker
 self.addEventListener('install', (event) => {
+  console.log('Service Worker instalando versão:', APP_VERSION);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Cache aberto');
+        console.log('Cache aberto para versão:', APP_VERSION);
         return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        // Notificar sobre nova versão
+        self.registration.showNotification('LacTech Atualizado!', {
+          body: `Nova versão ${APP_VERSION} instalada com sucesso!`,
+          icon: 'assets/img/lactech-logo.png',
+          badge: 'assets/img/lactech-logo.png',
+          tag: 'version-update',
+          requireInteraction: true,
+          actions: [
+            {
+              action: 'open',
+              title: 'Abrir LacTech'
+            },
+            {
+              action: 'close',
+              title: 'Fechar'
+            }
+          ]
+        });
       })
   );
 });
@@ -34,9 +62,9 @@ self.addEventListener('push', (event) => {
   console.log('Push event recebido:', event);
   
   let options = {
-    body: 'Nova atualização disponível na Xandria Store!',
-    icon: '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+    body: 'Nova atualização disponível no LacTech!',
+    icon: 'assets/img/lactech-logo.png',
+    badge: 'assets/img/lactech-logo.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -45,13 +73,13 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'explore',
-        title: 'Ver apps',
-        icon: '/icon-192x192.png'
+        title: 'Abrir LacTech',
+        icon: 'assets/img/lactech-logo.png'
       },
       {
         action: 'close',
         title: 'Fechar',
-        icon: '/icon-192x192.png'
+        icon: 'assets/img/lactech-logo.png'
       }
     ]
   };
@@ -61,7 +89,7 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     options = {
       ...options,
-      title: data.title || 'Xandria Store',
+      title: data.title || 'LacTech',
       body: data.body || options.body,
       icon: data.icon || options.icon,
       badge: data.badge || options.badge,
@@ -73,7 +101,7 @@ self.addEventListener('push', (event) => {
   }
 
   event.waitUntil(
-    self.registration.showNotification('Xandria Store', options)
+    self.registration.showNotification('LacTech', options)
   );
 });
 
@@ -84,7 +112,7 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   if (event.action === 'explore') {
-    // Abrir a Xandria Store
+    // Abrir o LacTech
     event.waitUntil(
       clients.openWindow('/xandria-store.html')
     );
@@ -92,7 +120,7 @@ self.addEventListener('notificationclick', (event) => {
     // Apenas fechar a notificação
     return;
   } else {
-    // Clique padrão - abrir a Xandria Store
+    // Clique padrão - abrir o LacTech
     event.waitUntil(
       clients.openWindow('/xandria-store.html')
     );

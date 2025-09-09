@@ -274,6 +274,110 @@
     </div>
 
     <script>
+        // ==================== CACHE SYSTEM ====================
+        const CacheManager = {
+            cache: new Map(),
+            userData: null,
+            farmData: null,
+            lastUserFetch: 0,
+            lastFarmFetch: 0,
+            CACHE_DURATION: 5 * 60 * 1000, // 5 minutos
+            
+            // Cache de dados do usuário
+            async getUserData(forceRefresh = false) {
+                const now = Date.now();
+                if (!forceRefresh && this.userData && (now - this.lastUserFetch) < this.CACHE_DURATION) {
+                    console.log('📋 Usando dados do usuário do cache');
+                    return this.userData;
+                }
+                
+                console.log('🔄 Buscando dados do usuário no Supabase');
+                const supabase = createSupabaseClient();
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (user) {
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('id, name, email, role, farm_id, profile_photo')
+                        .eq('id', user.id)
+                        .single();
+                    
+                    this.userData = { ...user, ...userData };
+                    this.lastUserFetch = now;
+                    console.log('✅ Dados do usuário cacheados');
+                }
+                
+                return this.userData;
+            },
+            
+            // Cache de dados da fazenda
+            async getFarmData(forceRefresh = false) {
+                const now = Date.now();
+                if (!forceRefresh && this.farmData && (now - this.lastFarmFetch) < this.CACHE_DURATION) {
+                    console.log('📋 Usando dados da fazenda do cache');
+                    return this.farmData;
+                }
+                
+                console.log('🔄 Buscando dados da fazenda no Supabase');
+                const userData = await this.getUserData();
+                if (userData?.farm_id) {
+                    const supabase = createSupabaseClient();
+                    const { data: farmData } = await supabase
+                        .from('farms')
+                        .select('id, name, location')
+                        .eq('id', userData.farm_id)
+                        .single();
+                    
+                    this.farmData = farmData;
+                    this.lastFarmFetch = now;
+                    console.log('✅ Dados da fazenda cacheados');
+                }
+                
+                return this.farmData;
+            },
+            
+            // Cache genérico
+            set(key, data, ttl = this.CACHE_DURATION) {
+                this.cache.set(key, {
+                    data,
+                    timestamp: Date.now(),
+                    ttl
+                });
+            },
+            
+            get(key) {
+                const item = this.cache.get(key);
+                if (!item) return null;
+                
+                const now = Date.now();
+                if (now - item.timestamp > item.ttl) {
+                    this.cache.delete(key);
+                    return null;
+                }
+                
+                return item.data;
+            },
+            
+            // Limpar cache específico
+            clear(key) {
+                if (key) {
+                    this.cache.delete(key);
+                } else {
+                    this.cache.clear();
+                    this.userData = null;
+                    this.farmData = null;
+                }
+            },
+            
+            // Invalidar cache de dados críticos
+            invalidateUserData() {
+                this.userData = null;
+                this.farmData = null;
+                this.lastUserFetch = 0;
+                this.lastFarmFetch = 0;
+            }
+        };
+        
         // Supabase client is already initialized in supabase_config_fixed.js
         // Using the global supabase instance from supabase_config_fixed.js
 

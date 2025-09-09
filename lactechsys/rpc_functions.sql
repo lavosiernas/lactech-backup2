@@ -313,6 +313,68 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- 12. Criar usuário da fazenda (para contas secundárias)
+DROP FUNCTION IF EXISTS create_farm_user(UUID, TEXT, TEXT, TEXT, TEXT, UUID, TEXT);
+CREATE OR REPLACE FUNCTION create_farm_user(
+    p_user_id UUID,
+    p_email TEXT,
+    p_name TEXT,
+    p_whatsapp TEXT,
+    p_role TEXT,
+    p_farm_id UUID,
+    p_profile_photo_url TEXT DEFAULT NULL
+)
+RETURNS JSON AS $$
+DECLARE
+    result JSON;
+BEGIN
+    -- Inserir usuário na tabela users
+    INSERT INTO users (
+        id, 
+        farm_id, 
+        name, 
+        email, 
+        role, 
+        whatsapp, 
+        profile_photo_url,
+        is_active,
+        created_at,
+        updated_at
+    ) VALUES (
+        p_user_id,
+        p_farm_id,
+        p_name,
+        p_email,
+        p_role,
+        p_whatsapp,
+        p_profile_photo_url,
+        true,
+        NOW(),
+        NOW()
+    );
+    
+    -- Retornar sucesso
+    result := json_build_object(
+        'success', true,
+        'user_id', p_user_id,
+        'message', 'Usuário criado com sucesso'
+    );
+    
+    RETURN result;
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Retornar erro
+        result := json_build_object(
+            'success', false,
+            'error', SQLERRM,
+            'message', 'Erro ao criar usuário'
+        );
+        
+        RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- =====================================================
 -- CONFIRMAÇÃO DE CRIAÇÃO
 -- =====================================================
