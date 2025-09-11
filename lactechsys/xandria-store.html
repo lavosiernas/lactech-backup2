@@ -48,13 +48,7 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
         }
         
-                 .card-hover {
-             /* Sem hover effects */
-         }
         
-                          .splash-screen {
-             /* Sem animação */
-         }
          
          .xandria-logo {
              width: 120px;
@@ -76,7 +70,7 @@
              background: #000000;
          }
 
-                                   .profile-modal {
+         .profile-modal {
               position: fixed;
               top: 80px;
               right: 20px;
@@ -152,9 +146,6 @@
             background: rgba(156, 163, 175, 0.5);
         }
 
-                 .button-press {
-             /* Sem efeito de press */
-        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-play-dark text-gray-900 dark:text-white font-play transition-colors duration-300">
@@ -181,6 +172,12 @@
                      <div>
                          <h1 class="text-xl font-bold tracking-tight gradient-text">Xandria Store</h1>
                          <p class="text-xs text-gray-500 dark:text-gray-400 -mt-1">Sistemas Agro</p>
+                         <div id="detectedRoleIndicator" class="hidden flex items-center space-x-2 mt-1">
+                             <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Módulo: <span id="detectedRoleText"></span></span>
+                             <button onclick="openDetectedModule()" class="text-xs bg-green-600 text-white px-2 py-1 rounded-full hover:bg-green-700 transition-colors">
+                                 Abrir
+                             </button>
+                         </div>
                      </div>
                  </div>
                 <div class="flex items-center space-x-3">
@@ -220,6 +217,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
                         <span class="text-gray-900 dark:text-white">Apps instalados</span>
+                    </button>
+
+                    <button onclick="showModuleSelector()" class="w-full flex items-center space-x-3 p-3 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"></path>
+                        </svg>
+                        <span class="text-gray-900 dark:text-white">Selecionar Módulo</span>
                     </button>
 
                     <button id="installPWAButton" onclick="installPWA()" class="w-full flex items-center space-x-3 p-3 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800 hidden">
@@ -284,6 +288,62 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"></path>
                         </svg>
                         <span>Sair da conta</span>
+                    </button>
+                </div>
+                    </div>
+                </div>
+
+        <!-- Modal de Seleção de Módulo -->
+        <div id="moduleSelectorModal" class="profile-modal hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Selecionar Módulo</h3>
+                    <button onclick="document.getElementById('moduleSelectorModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="selectModule('gerente')" class="w-full flex items-center space-x-3 p-4 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                            G
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Gerente</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Painel administrativo completo</p>
+                        </div>
+                    </button>
+
+                    <button onclick="selectModule('funcionario')" class="w-full flex items-center space-x-3 p-4 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                            F
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Funcionário</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Controle de produção e atividades</p>
+                        </div>
+                    </button>
+
+                    <button onclick="selectModule('veterinario')" class="w-full flex items-center space-x-3 p-4 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                            V
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Veterinário</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Gestão de saúde animal</p>
+                        </div>
+                    </button>
+
+                    <button onclick="selectModule('proprietario')" class="w-full flex items-center space-x-3 p-4 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                            P
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Proprietário</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Visão geral e relatórios</p>
+                        </div>
                     </button>
                 </div>
                     </div>
@@ -784,6 +844,117 @@
            let isDarkMode = localStorage.getItem('theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
            let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
            let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+          
+          // Sistema de detecção de origem e redirecionamento automático
+          let currentRole = null;
+          let lastUsedRole = localStorage.getItem('lastUsedRole');
+          
+          // Detectar origem baseada na URL
+          function detectOrigin() {
+              const urlParams = new URLSearchParams(window.location.search);
+              const role = urlParams.get('role');
+              const from = urlParams.get('from');
+              
+              if (role) {
+                  currentRole = role;
+                  localStorage.setItem('lastUsedRole', role);
+                  return role;
+              }
+              
+              if (from) {
+                  // Mapear páginas para roles
+                  const pageToRole = {
+                      'gerente.html': 'gerente',
+                      'funcionario.html': 'funcionario',
+                      'veterinario.html': 'veterinario',
+                      'proprietario.html': 'proprietario'
+                  };
+                  
+                  const role = pageToRole[from];
+                  if (role) {
+                      currentRole = role;
+                      localStorage.setItem('lastUsedRole', role);
+                      return role;
+                  }
+              }
+              
+              return null;
+          }
+          
+          // Detectar origem e salvar role, mas NÃO redirecionar automaticamente
+          function detectAndSaveRole() {
+              const detectedRole = detectOrigin();
+              
+              if (detectedRole) {
+                  // Se detectou um role, salvar mas não redirecionar
+                  console.log('Role detectado:', detectedRole, '- Salvando mas mantendo na Xandria Store');
+                  
+                  // Mostrar indicador visual
+                  showDetectedRoleIndicator(detectedRole);
+                  
+                  return detectedRole;
+              }
+              
+              return null;
+          }
+          
+          // Mostrar indicador visual do módulo detectado
+          function showDetectedRoleIndicator(role) {
+              const indicator = document.getElementById('detectedRoleIndicator');
+              const roleText = document.getElementById('detectedRoleText');
+              
+              if (indicator && roleText) {
+                  const roleNames = {
+                      'gerente': 'Gerente',
+                      'funcionario': 'Funcionário',
+                      'veterinario': 'Veterinário',
+                      'proprietario': 'Proprietário'
+                  };
+                  
+                  roleText.textContent = roleNames[role] || role;
+                  indicator.classList.remove('hidden');
+              }
+          }
+          
+          // Redirecionar para módulo específico
+          function redirectToModule(role) {
+              const moduleUrls = {
+                  'gerente': '/gerente.html',
+                  'funcionario': '/funcionario.html',
+                  'veterinario': '/veterinario.html',
+                  'proprietario': '/proprietario.html'
+              };
+              
+              const url = moduleUrls[role];
+              if (url) {
+                  // Salvar o role atual
+                  localStorage.setItem('lastUsedRole', role);
+                  
+                  // Redirecionar
+                  window.location.href = url;
+              }
+          }
+          
+          // Função para mostrar menu de seleção de módulo
+          function showModuleSelector() {
+              const modal = document.getElementById('moduleSelectorModal');
+              if (modal) {
+                  modal.classList.remove('hidden');
+              }
+          }
+          
+          // Função para selecionar módulo manualmente
+          function selectModule(role) {
+              redirectToModule(role);
+          }
+          
+          // Função para abrir o módulo detectado
+          function openDetectedModule() {
+              const detectedRole = localStorage.getItem('lastUsedRole');
+              if (detectedRole) {
+                  redirectToModule(detectedRole);
+              }
+          }
            
            // Carregar apps instalados do usuário específico
            let installedApps = [];
@@ -887,6 +1058,9 @@
                    setTimeout(() => {
                        document.getElementById('splashScreen').style.display = 'none';
                        document.getElementById('mainApp').classList.remove('hidden');
+                       
+                       // Detectar e salvar role, mas manter na Xandria Store
+                       detectAndSaveRole();
                    }, 3000);
                }
 
@@ -1626,32 +1800,92 @@
            // Função para instalar a PWA
            async function installPWA() {
                if (!deferredPrompt) {
-                   showNotification('App já está instalado ou não pode ser instalado', 'info');
+                   showNotification('App já está instalado ou não pode ser instalado', 'error');
                    return;
                }
                
-               // Mostrar o prompt de instalação
-               deferredPrompt.prompt();
-               
-               // Aguardar a resposta do usuário
-               const { outcome } = await deferredPrompt.userChoice;
-               
-               if (outcome === 'accepted') {
-                   console.log('Usuário aceitou a instalação');
-                   showNotification('App instalado com sucesso!', 'success');
+               try {
+                   // Mostrar o prompt de instalação
+                   deferredPrompt.prompt();
                    
-                   // Salvar versão instalada
-                   localStorage.setItem('pwa_version', CURRENT_VERSION);
+                   // Aguardar a resposta do usuário
+                   const { outcome } = await deferredPrompt.userChoice;
                    
-                   // Esconder botão de instalação
-                   hideAllPWAButtons();
-               } else {
-                   console.log('Usuário rejeitou a instalação');
-                   showNotification('Instalação cancelada', 'info');
+                   if (outcome === 'accepted') {
+                       console.log('Usuário aceitou a instalação');
+                       
+                       // Aguardar um pouco para verificar se realmente instalou
+                       setTimeout(async () => {
+                           const isReallyInstalled = await checkRealInstallation();
+                           
+                           if (isReallyInstalled) {
+                               showNotification('App instalado com sucesso!', 'success');
+                               
+                               // Salvar versão instalada com dados de segurança
+                               const installData = {
+                                   version: CURRENT_VERSION,
+                                   timestamp: Date.now(),
+                                   userInfo: getCurrentUserInfo(),
+                                   url: window.location.href
+                               };
+                               localStorage.setItem('pwa_version', JSON.stringify(installData));
+                               
+                               // Esconder botão de instalação
+                               hideAllPWAButtons();
+                           } else {
+                               showNotification('Erro: App não foi instalado corretamente', 'error');
+                               console.error('Instalação falhou - app não detectado');
+                           }
+                       }, 2000);
+                       
+                   } else {
+                       console.log('Usuário rejeitou a instalação');
+                       showNotification('Instalação cancelada', 'info');
+                   }
+                   
+               } catch (error) {
+                   console.error('Erro durante instalação:', error);
+                   showNotification('Erro durante instalação: ' + error.message, 'error');
                }
                
                // Limpar a referência
                deferredPrompt = null;
+           }
+           
+           // Verificar se realmente instalou
+           async function checkRealInstallation() {
+               // Verificar se está em modo standalone
+               const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+               
+               // Verificar se tem service worker ativo
+               const hasServiceWorker = 'serviceWorker' in navigator && 
+                   await navigator.serviceWorker.getRegistration() !== null;
+               
+               // Verificar se tem dados de instalação
+               const hasInstallData = localStorage.getItem('pwa_version') !== null;
+               
+               console.log('Verificação de instalação real:', {
+                   isStandalone,
+                   hasServiceWorker,
+                   hasInstallData
+               });
+               
+               // Considera instalado se estiver em modo standalone
+               return isStandalone;
+           }
+           
+           // Obter informações do usuário atual para segurança
+           function getCurrentUserInfo() {
+               const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+               const urlParams = new URLSearchParams(window.location.search);
+               
+               return {
+                   role: urlParams.get('role') || 'unknown',
+                   userId: currentUser?.id || 'unknown',
+                   userName: currentUser?.name || 'unknown',
+                   farmId: currentUser?.farm_id || 'unknown',
+                   timestamp: Date.now()
+               };
            }
            
            // Função para desinstalar a PWA
@@ -1773,28 +2007,26 @@
            
            // Verificar se PWA está instalada (mesmo que não esteja rodando)
            async function isPWAInstalled() {
-               // Verificar se tem service worker
+               // Verificar se está em modo standalone (mais confiável)
+               const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+               
+               // Verificar se tem dados de instalação válidos
+               const installData = localStorage.getItem('pwa_version');
+               const hasValidInstallData = installData && JSON.parse(installData).version === CURRENT_VERSION;
+               
+               // Verificar se tem service worker ativo
                const hasServiceWorker = await checkServiceWorker();
                
-               // Verificar se tem dados de instalação
-               const hasInstallData = localStorage.getItem('pwa_version') !== null;
-               
-               // Verificar se está em modo standalone
-               const isStandalone = isRunningAsPWA();
-               
-               // Verificar se tem deferredPrompt (indica que pode ser instalado)
-               const canInstall = deferredPrompt !== null;
-               
                console.log('PWA Install Check:', {
-                   hasServiceWorker,
-                   hasInstallData,
                    isStandalone,
-                   canInstall
+                   hasValidInstallData,
+                   hasServiceWorker,
+                   installData: installData ? JSON.parse(installData) : null
                });
                
-               // Só considera instalado se estiver em modo standalone OU tiver dados de instalação
-               // Service worker sozinho não indica instalação (pode ser apenas cache)
-               return isStandalone || hasInstallData;
+               // Considera instalado se estiver em modo standalone
+               // OU se tem dados de instalação válidos
+               return isStandalone || hasValidInstallData;
            }
            
            // Função de debug para verificar status da PWA

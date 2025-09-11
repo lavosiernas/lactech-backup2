@@ -1,0 +1,268 @@
+/* OFFLINE LOADING SYSTEM - LacTech */
+
+/* Container do loading offline */
+.offline-loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    backdrop-filter: blur(10px);
+}
+
+/* SVG do servidor */
+#svg_svg {
+    zoom: 0.3;
+    margin-bottom: 2rem;
+}
+
+/* Animações do SVG */
+.estrobo_animation {
+    animation:
+        floatAndBounce 4s infinite ease-in-out,
+        strobe 0.8s infinite;
+}
+
+.estrobo_animationV2 {
+    animation:
+        floatAndBounce 4s infinite ease-in-out,
+        strobev2 0.8s infinite;
+}
+
+#float_server {
+    animation: floatAndBounce 4s infinite ease-in-out;
+}
+
+@keyframes floatAndBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes strobe {
+    0%, 50%, 100% {
+        fill: #17e300;
+    }
+    25%, 75% {
+        fill: #17e300b4;
+    }
+}
+
+@keyframes strobev2 {
+    0%, 50%, 100% {
+        fill: rgb(255, 95, 74);
+    }
+    25%, 75% {
+        fill: rgb(16, 53, 115);
+    }
+}
+
+/* Animação dos gradientes */
+@keyframes animateGradient {
+    0% {
+        stop-color: #313f8773;
+    }
+    50% {
+        stop-color: #040d3a;
+    }
+    100% {
+        stop-color: #313f8773;
+    }
+}
+
+#paint13_linear_163_1030 stop {
+    animation: animateGradient 4s infinite alternate;
+}
+
+/* Texto do loading */
+.offline-loading-text {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.offline-loading-subtitle {
+    color: #a0a0a0;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Barra de progresso */
+.offline-progress-container {
+    width: 300px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.offline-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #27C6FD, #17e300);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease;
+    animation: progressGlow 2s infinite alternate;
+}
+
+@keyframes progressGlow {
+    0% {
+        box-shadow: 0 0 5px rgba(39, 198, 253, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(23, 227, 0, 0.8);
+    }
+}
+
+/* Contador de tempo */
+.offline-timer {
+    color: #27C6FD;
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* Status de conexão */
+.connection-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.connection-status.offline {
+    background: rgba(255, 95, 74, 0.9);
+    border-color: rgba(255, 95, 74, 0.3);
+}
+
+.connection-status.online {
+    background: rgba(23, 227, 0, 0.9);
+    border-color: rgba(23, 227, 0, 0.3);
+}
+
+.connection-status.syncing {
+    background: rgba(39, 198, 253, 0.9);
+    border-color: rgba(39, 198, 253, 0.3);
+}
+
+/* Indicador de status com ícone */
+.connection-status-icon {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+.connection-status.offline .connection-status-icon {
+    background: #ff5f4a;
+}
+
+.connection-status.online .connection-status-icon {
+    background: #17e300;
+}
+
+.connection-status.syncing .connection-status-icon {
+    background: #27C6FD;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .offline-loading-text {
+        font-size: 1.2rem;
+    }
+    
+    .offline-loading-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .offline-progress-container {
+        width: 250px;
+    }
+    
+    #svg_svg {
+        zoom: 0.25;
+    }
+    
+    .connection-status {
+        top: 10px;
+        right: 10px;
+        font-size: 0.8rem;
+        padding: 8px 12px;
+    }
+}
+
+/* Animações de entrada e saída */
+.offline-loading-container.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.offline-loading-container.fade-out {
+    animation: fadeOut 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+/* Modo escuro */
+.dark .offline-loading-container {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.dark .connection-status {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+}

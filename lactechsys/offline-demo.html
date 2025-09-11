@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LacTech - Demo Offline</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/js/offline-manager.js"></script>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    🚀 LacTech - Sistema Offline
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Demonstração do sistema de cache offline e sincronização
+                </p>
+                
+                <!-- Status de Conexão -->
+                <div class="mt-4">
+                    <div id="connectionStatus" class="flex items-center space-x-2">
+                        <!-- Status será preenchido pelo Offline Manager -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas do Cache -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        📊 Itens no Cache
+                    </h3>
+                    <p id="cacheItems" class="text-2xl font-bold text-blue-600">0</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        🔄 Fila de Sincronização
+                    </h3>
+                    <p id="syncItems" class="text-2xl font-bold text-orange-600">0</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        🌐 Status da Conexão
+                    </h3>
+                    <p id="connectionStatusText" class="text-2xl font-bold text-green-600">Online</p>
+                </div>
+            </div>
+
+            <!-- Controles de Teste -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    🧪 Testes do Sistema Offline
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Teste 1: Salvar Dados -->
+                    <div class="space-y-3">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Salvar Dados de Produção</h3>
+                        <button onclick="testSaveProductionData()" 
+                                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            📝 Salvar Dados de Produção
+                        </button>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Simula o salvamento de dados de produção de leite
+                        </p>
+                    </div>
+                    
+                    <!-- Teste 2: Carregar Dados -->
+                    <div class="space-y-3">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Carregar Dados do Cache</h3>
+                        <button onclick="testLoadCachedData()" 
+                                class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            📖 Carregar Dados do Cache
+                        </button>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Carrega dados salvos no cache local
+                        </p>
+                    </div>
+                    
+                    <!-- Teste 3: Simular Offline -->
+                    <div class="space-y-3">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Simular Modo Offline</h3>
+                        <button onclick="testOfflineMode()" 
+                                class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            📱 Ativar Modo Offline
+                        </button>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Simula perda de conexão com a internet
+                        </p>
+                    </div>
+                    
+                    <!-- Teste 4: Sincronizar -->
+                    <div class="space-y-3">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Sincronizar Dados</h3>
+                        <button onclick="testSyncData()" 
+                                class="w-full bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            🔄 Sincronizar Dados
+                        </button>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Força sincronização de dados pendentes
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log de Atividades -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    📋 Log de Atividades
+                </h2>
+                <div id="activityLog" class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto">
+                    <p class="text-gray-600 dark:text-gray-400">Aguardando atividades...</p>
+                </div>
+                <button onclick="clearLog()" 
+                        class="mt-4 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                    🗑️ Limpar Log
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funções de teste
+        function testSaveProductionData() {
+            const productionData = {
+                farm_id: 'demo-farm-123',
+                user_id: 'demo-user-456',
+                production_date: new Date().toISOString().split('T')[0],
+                milking_type: 'manha',
+                volume_liters: Math.floor(Math.random() * 50) + 20,
+                temperature: Math.floor(Math.random() * 5) + 35,
+                timestamp: Date.now()
+            };
+            
+            if (window.offlineManager) {
+                window.offlineManager.saveData('volume_record', productionData, false);
+                logActivity('✅ Dados de produção salvos no cache e fila de sincronização');
+                updateStats();
+            } else {
+                logActivity('❌ Offline Manager não disponível');
+            }
+        }
+        
+        function testLoadCachedData() {
+            if (window.offlineManager) {
+                const cachedData = window.offlineManager.getFromCache('volume_record');
+                if (cachedData) {
+                    logActivity('📖 Dados carregados do cache: ' + JSON.stringify(cachedData, null, 2));
+                } else {
+                    logActivity('⚠️ Nenhum dado encontrado no cache');
+                }
+            } else {
+                logActivity('❌ Offline Manager não disponível');
+            }
+        }
+        
+        function testOfflineMode() {
+            if (window.offlineManager) {
+                // Simular modo offline
+                window.offlineManager.isOnline = false;
+                window.offlineManager.handleOffline();
+                logActivity('📱 Modo offline simulado ativado');
+                updateStats();
+            }
+        }
+        
+        function testSyncData() {
+            if (window.offlineManager) {
+                window.offlineManager.syncPendingData();
+                logActivity('🔄 Sincronização de dados iniciada');
+                updateStats();
+            }
+        }
+        
+        function updateStats() {
+            if (window.offlineManager) {
+                const stats = window.offlineManager.getCacheStats();
+                document.getElementById('cacheItems').textContent = stats.cacheItems;
+                document.getElementById('syncItems').textContent = stats.syncQueueItems;
+                document.getElementById('connectionStatusText').textContent = stats.isOnline ? 'Online' : 'Offline';
+            }
+        }
+        
+        function logActivity(message) {
+            const log = document.getElementById('activityLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'mb-2 p-2 bg-white dark:bg-gray-800 rounded border-l-4 border-blue-500';
+            logEntry.innerHTML = `
+                <div class="text-sm text-gray-500 dark:text-gray-400">${timestamp}</div>
+                <div class="text-gray-900 dark:text-white">${message}</div>
+            `;
+            
+            if (log.children.length === 1 && log.children[0].textContent.includes('Aguardando')) {
+                log.innerHTML = '';
+            }
+            
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('activityLog').innerHTML = '<p class="text-gray-600 dark:text-gray-400">Log limpo...</p>';
+        }
+        
+        // Atualizar estatísticas a cada 2 segundos
+        setInterval(updateStats, 2000);
+        
+        // Log inicial
+        setTimeout(() => {
+            logActivity('🚀 Sistema Offline Manager inicializado');
+            updateStats();
+        }, 1000);
+    </script>
+</body>
+</html>

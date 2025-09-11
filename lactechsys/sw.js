@@ -1,14 +1,22 @@
-// Service Worker para LacTech
-const CACHE_NAME = 'lactech-v2.0.0';
-const APP_VERSION = '2.0.0';
+// Service Worker para LacTech - Versão Offline
+const CACHE_NAME = 'lactech-offline-v2.0.1';
+const APP_VERSION = '2.0.1';
+const OFFLINE_CACHE = 'lactech-offline-data-v2.0.1';
+
 const urlsToCache = [
   '/',
   '/xandria-store.html',
   '/gerente.html',
   '/funcionario.html',
   '/veterinario.html',
+  '/proprietario.html',
   '/login.html',
   '/acesso-bloqueado.html',
+  '/assets/js/offline-manager.js',
+  '/assets/css/style.css',
+  '/assets/css/dark-theme-fixes.css',
+  '/assets/img/lactech-logo.png',
+  '/assets/img/xandria-preta.png',
   'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap',
   'https://cdn.jsdelivr.net/npm/chart.js',
   'https://unpkg.com/@supabase/supabase-js@2'
@@ -46,16 +54,102 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Interceptação de requisições
+// Interceptação de requisições - Estratégia Offline First
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Retorna do cache se disponível, senão busca da rede
-        return response || fetch(event.request);
-      })
-  );
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Estratégia para diferentes tipos de recursos
+  if (request.method === 'GET') {
+    event.respondWith(handleRequest(request));
+  } else if (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') {
+    // Para requisições de dados, usar estratégia Network First com fallback offline
+    event.respondWith(handleDataRequest(request));
+  }
 });
+
+// Manipular requisições GET (recursos estáticos)
+async function handleRequest(request) {
+  try {
+    // Cache First para recursos estáticos
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    // Se não estiver no cache, buscar da rede
+    const networkResponse = await fetch(request);
+    
+    // Cachear a resposta para uso futuro
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.log('Erro na requisição:', request.url, error);
+    
+    // Fallback para páginas HTML
+    if (request.destination === 'document') {
+      const fallbackResponse = await caches.match('/offline.html');
+      return fallbackResponse || new Response('Página não disponível offline', {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'text/html' }
+      });
+    }
+    
+    return new Response('Recurso não disponível offline', { status: 503 });
+  }
+}
+
+// Manipular requisições de dados (POST, PUT, DELETE)
+async function handleDataRequest(request) {
+  try {
+    // Network First para dados
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      // Notificar que a requisição foi bem-sucedida
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'DATA_SYNC_SUCCESS',
+            url: request.url,
+            method: request.method
+          });
+        });
+      });
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.log('Erro na requisição de dados:', request.url, error);
+    
+    // Em caso de erro, notificar para armazenar offline
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'DATA_SYNC_FAILED',
+          url: request.url,
+          method: request.method,
+          error: error.message
+        });
+      });
+    });
+    
+    // Retornar resposta de sucesso para não quebrar a interface
+    return new Response(JSON.stringify({ 
+      success: false, 
+      offline: true, 
+      message: 'Dados salvos localmente, serão sincronizados quando a conexão for restaurada' 
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
 
 // Gerenciamento de notificações push
 self.addEventListener('push', (event) => {
@@ -138,7 +232,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== OFFLINE_CACHE) {
             console.log('Deletando cache antigo:', cacheName);
             return caches.delete(cacheName);
           }
@@ -146,4 +240,47 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+});
+
+// Listener para mensagens do cliente
+self.addEventListener('message', (event) => {
+  const { type, data } = event.data;
+  
+  switch (type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+    case 'CACHE_DATA':
+      // Cachear dados offline
+      event.waitUntil(
+        caches.open(OFFLINE_CACHE).then(cache => {
+          return cache.put(data.url, new Response(JSON.stringify(data.data)));
+        })
+      );
+      break;
+    case 'GET_CACHED_DATA':
+      // Obter dados do cache
+      event.waitUntil(
+        caches.open(OFFLINE_CACHE).then(cache => {
+          return cache.match(data.url).then(response => {
+            if (response) {
+              return response.json().then(data => {
+                event.ports[0].postMessage({ success: true, data });
+              });
+            } else {
+              event.ports[0].postMessage({ success: false, data: null });
+            }
+          });
+        })
+      );
+      break;
+    case 'CLEAR_OFFLINE_CACHE':
+      // Limpar cache offline
+      event.waitUntil(
+        caches.delete(OFFLINE_CACHE).then(() => {
+          event.ports[0].postMessage({ success: true });
+        })
+      );
+      break;
+  }
 });

@@ -27,6 +27,8 @@
     <link rel="apple-touch-icon" sizes="384x384" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -35,12 +37,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/pdf-generator.js"></script>
     <script src="assets/js/modal-system.js"></script>
+    <script src="assets/js/offline-manager.js"></script>
+    <script src="assets/js/offline-loading.js"></script>
     
     <!-- CSS Files -->
     <link href="assets/css/loading-screen.css" rel="stylesheet">
+    <link href="assets/css/offline-loading.css" rel="stylesheet">
     
     <!-- Responsividade Customizada -->
     <style>
+        /* Gradiente de texto estilo Xandria Store */
+        .gradient-text {
+            background: linear-gradient(135deg, #01875f, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Card hover effect estilo Xandria Store */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dark .card-hover:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+        }
+        
         /* Responsividade para telas muito pequenas */
         @media (max-width: 360px) {
             .text-xs { font-size: 0.65rem !important; line-height: 0.9rem !important; }
@@ -821,6 +848,8 @@
                         <!-- Indicador de tempo real -->
                         <div id="realTimeIndicator" class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse hidden" title="Sistema de atualização automática ativo"></div>
                     </button>
+                    
+                    
                     
                     <button onclick="openProfileModal()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all">
                         <div class="relative w-8 h-8">
@@ -13005,36 +13034,13 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('App de Clima será implementado em breve!', 'info');
         }
         
-        // Abrir Xandria Store
-        async function openXandriaStore() {
-            try {
+        // Abrir Xandria Store (Modal PWA)
+        function openXandriaStore() {
+            console.log('🔧 DEBUG: openXandriaStore chamada - abrindo modal PWA');
+            console.log('🔧 DEBUG: Versão atual:', '2.0.1');
                 closeMoreModal();
-                
-                // Obter cliente Supabase
-                const supabase = await getSupabaseClient();
-                
-                // Obter informações do usuário atual do Supabase
-                const { data: { user }, error } = await supabase.auth.getUser();
-                
-                if (error || !user) {
-                    console.error('Erro ao obter usuário:', error);
-                    showNotification('Erro ao acessar Xandria Store. Faça login novamente.', 'error');
-                    return;
-                }
-                
-                // Buscar dados completos do usuário incluindo foto de perfil
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('name, profile_photo_url, role, farm_id')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (userError) {
-                    console.error('Erro ao buscar dados do usuário:', userError);
-                }
-                
-                // Marcar que o usuário está logado em um sistema Xandria
-                localStorage.setItem('isLoggedInToSystem', 'true');
+            openPWAModal();
+        }
                 
         // ==================== FUNÇÃO DE INVESTIGAÇÃO DE BLOQUEIOS ====================
         
@@ -13888,29 +13894,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 requestsModal.style.zIndex = '-1';
             }
         });
-                
-                // Salvar informações reais do usuário atual
-                const currentUser = {
-                    email: user.email,
-                    name: userData?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário LacTech',
-                    system: 'LacTech',
-                    id: user.id,
-                    role: userData?.role || user.user_metadata?.role || 'funcionario',
-                    farm_name: user.user_metadata?.farm_name || 'Fazenda',
-                    profile_photo_url: userData?.profile_photo_url || null
-                };
-                
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                localStorage.setItem('isLoggedIn', 'true');
-                
-                // Redirecionar para a Xandria Store
-                window.open('xandria-store.html', '_blank');
-                
-            } catch (error) {
-                console.error('Erro ao abrir Xandria Store:', error);
-                showNotification('Erro ao acessar Xandria Store. Tente novamente.', 'error');
-            }
-        }
         
         // Atualizar logo da Xandria Store baseada no tema
         function updateXandriaStoreIcon() {
@@ -17039,7 +17022,553 @@ Funcionalidades:
         window.encryptPassword = encryptPassword;
         window.decryptPassword = decryptPassword;
         
+        // ==================== SISTEMA PWA ====================
+        
+        let deferredPrompt;
+        const CURRENT_VERSION = '2.0.1';
+        
+        // Capturar o evento beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA pode ser instalada');
+            e.preventDefault();
+            deferredPrompt = e;
+            checkPWAStatus();
+        });
+        
+        // Função para verificar status da PWA
+        async function checkPWAStatus() {
+            const isInstalled = await isPWAInstalled();
+            const installedVersion = localStorage.getItem('pwa_version');
+            
+            console.log('PWA Status:', { 
+                isInstalled, 
+                installedVersion, 
+                currentVersion: CURRENT_VERSION,
+                displayMode: window.matchMedia('(display-mode: standalone)').matches
+            });
+            
+            if (isInstalled) {
+                showUninstallButton();
+            } else if (deferredPrompt) {
+                showInstallButton();
+            }
+        }
+        
+        // Verificar se PWA está instalada
+        async function isPWAInstalled() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const installData = localStorage.getItem('pwa_version');
+            const hasValidInstallData = installData && JSON.parse(installData).version === CURRENT_VERSION;
+            
+            return isStandalone || hasValidInstallData;
+        }
+        
+        // Função para instalar a PWA
+        async function installPWA() {
+            if (!deferredPrompt) {
+                showNotification('App já está instalado ou não pode ser instalado', 'error');
+                return;
+            }
+            
+            try {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('Usuário aceitou a instalação');
+                    
+                    setTimeout(async () => {
+                        const isReallyInstalled = await checkRealInstallation();
+                        
+                        if (isReallyInstalled) {
+                            showNotification('App instalado com sucesso!', 'success');
+                            
+                            const installData = {
+                                version: CURRENT_VERSION,
+                                timestamp: Date.now(),
+                                userInfo: getCurrentUserInfo(),
+                                url: window.location.href
+                            };
+                            localStorage.setItem('pwa_version', JSON.stringify(installData));
+                            
+                            showUninstallButton();
+                        } else {
+                            showNotification('Erro: App não foi instalado corretamente', 'error');
+                        }
+                    }, 2000);
+                    
+                } else {
+                    showNotification('Instalação cancelada', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Erro durante instalação:', error);
+                showNotification('Erro durante instalação: ' + error.message, 'error');
+            }
+            
+            deferredPrompt = null;
+        }
+        
+        // Verificar se realmente instalou
+        async function checkRealInstallation() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const hasServiceWorker = 'serviceWorker' in navigator && 
+                await navigator.serviceWorker.getRegistration() !== null;
+            
+            return isStandalone;
+        }
+        
+        // Obter informações do usuário atual
+        function getCurrentUserInfo() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            return {
+                role: 'gerente',
+                userId: currentUser?.id || 'unknown',
+                userName: currentUser?.name || 'unknown',
+                farmId: currentUser?.farm_id || 'unknown',
+                timestamp: Date.now()
+            };
+        }
+        
+        // Função para desinstalar a PWA
+        async function uninstallPWA() {
+            if (confirm('Tem certeza que deseja desinstalar o app?')) {
+                try {
+                    localStorage.removeItem('pwa_version');
+                    
+                    if ('serviceWorker' in navigator) {
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        for (let registration of registrations) {
+                            await registration.unregister();
+                        }
+                    }
+                    
+                    showNotification('App desinstalado com sucesso!', 'success');
+                    showInstallButton();
+                    
+                } catch (error) {
+                    console.error('Erro ao desinstalar:', error);
+                    showNotification('Erro ao desinstalar app', 'error');
+                }
+            }
+        }
+        
+        // Funções para mostrar/esconder botões
+        function showInstallButton() {
+            document.getElementById('pwaInstallButton')?.classList.remove('hidden');
+            document.getElementById('pwaUninstallButton')?.classList.add('hidden');
+        }
+        
+        function showUninstallButton() {
+            document.getElementById('pwaInstallButton')?.classList.add('hidden');
+            document.getElementById('pwaUninstallButton')?.classList.remove('hidden');
+        }
+        
+        // Detectar se o app já está instalado
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA foi instalada');
+            showUninstallButton();
+        });
+        
+        // Registrar service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registrado: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW falhou: ', registrationError);
+                    });
+            });
+        }
+        
+        // ==================== FUNÇÕES DO MODAL PWA ====================
+        
+        // Abrir modal PWA
+        function openPWAModal() {
+            console.log('🔧 DEBUG: openPWAModal chamada');
+            const modal = document.getElementById('pwaModal');
+            console.log('🔧 DEBUG: Modal encontrado:', modal);
+            modal.classList.remove('hidden');
+            updatePWAStatusInModal();
+            console.log('🔧 DEBUG: Modal PWA aberto com sucesso');
+        }
+        
+        // Fechar modal PWA
+        function closePWAModal() {
+            const modal = document.getElementById('pwaModal');
+            modal.classList.add('hidden');
+        }
+        
+        // Atualizar status PWA no modal
+        async function updatePWAStatusInModal() {
+            const statusDiv = document.getElementById('pwaStatus');
+            const installButton = document.getElementById('modalInstallButton');
+            const uninstallButton = document.getElementById('modalUninstallButton');
+            
+            const isInstalled = await isPWAInstalled();
+            const installData = localStorage.getItem('pwa_version');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            if (isInstalled) {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center space-x-3 p-4 bg-green-100 dark:bg-green-900/20 rounded-xl">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-800 dark:text-green-200">App Instalado</h4>
+                            <p class="text-green-600 dark:text-green-300 text-sm">LacTech está instalado e pronto para uso</p>
+                        </div>
+                    </div>
+                `;
+                installButton.classList.add('hidden');
+                uninstallButton.classList.remove('hidden');
+            } else if (deferredPrompt) {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center space-x-3 p-4 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-800 dark:text-blue-200">Pronto para Instalar</h4>
+                            <p class="text-blue-600 dark:text-blue-300 text-sm">Clique em "Instalar App" para adicionar à tela inicial</p>
+                        </div>
+                    </div>
+                `;
+                installButton.classList.remove('hidden');
+                uninstallButton.classList.add('hidden');
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center space-x-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                        <div class="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-gray-200">Instalação Indisponível</h4>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">Use o navegador para instalar o app</p>
+                        </div>
+                    </div>
+                `;
+                installButton.classList.add('hidden');
+                uninstallButton.classList.add('hidden');
+            }
+        }
+        
+        // Instalar PWA do modal
+        async function installPWAFromModal() {
+            await installPWA();
+            setTimeout(() => {
+                updatePWAStatusInModal();
+            }, 3000);
+        }
+        
+        // Desinstalar PWA do modal
+        async function uninstallPWAFromModal() {
+            await uninstallPWA();
+            setTimeout(() => {
+                updatePWAStatusInModal();
+            }, 1000);
+        }
+        
+        // Tornar funções PWA globais
+        window.installPWA = installPWA;
+        window.uninstallPWA = uninstallPWA;
+        window.openPWAModal = openPWAModal;
+        window.closePWAModal = closePWAModal;
+        window.installPWAFromModal = installPWAFromModal;
+        window.uninstallPWAFromModal = uninstallPWAFromModal;
+        
+        // ==================== INTEGRAÇÃO OFFLINE MANAGER ====================
+        
+        // Função para carregar dados de produção com cache offline
+        async function loadProductionDataWithCache(farmId, dateRange = 'week') {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return null;
+            }
+            
+            const cacheKey = `production_${farmId}_${dateRange}`;
+            
+            // Função para buscar dados online
+            const fetchOnlineData = async () => {
+                const supabase = createSupabaseClient();
+                let query = supabase
+                    .from('volume_records')
+                    .select('volume_liters, production_date, milking_type')
+                    .eq('farm_id', farmId);
+                
+                // Aplicar filtro de data
+                if (dateRange === 'today') {
+                    const today = new Date().toISOString().split('T')[0];
+                    query = query.eq('production_date', today);
+                } else if (dateRange === 'week') {
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    query = query.gte('production_date', weekAgo.toISOString().split('T')[0]);
+                } else if (dateRange === 'month') {
+                    const monthAgo = new Date();
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    query = query.gte('production_date', monthAgo.toISOString().split('T')[0]);
+                }
+                
+                const { data, error } = await query.order('production_date', { ascending: true });
+                
+                if (error) throw error;
+                return data;
+            };
+            
+            // Usar Offline Manager para obter dados
+            return await window.offlineManager.getData(cacheKey, fetchOnlineData);
+        }
+        
+        // Função para salvar dados de produção com sincronização
+        async function saveProductionDataWithSync(volumeData) {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return false;
+            }
+            
+            // Salvar usando Offline Manager
+            return await window.offlineManager.saveData('volume_record', volumeData, true);
+        }
+        
+        // Função para carregar dados do usuário com cache
+        async function loadUserDataWithCache() {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return null;
+            }
+            
+            const cacheKey = 'user_data';
+            
+            const fetchOnlineData = async () => {
+                const supabase = createSupabaseClient();
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) throw new Error('Usuário não autenticado');
+                
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (error) throw error;
+                return userData;
+            };
+            
+            return await window.offlineManager.getData(cacheKey, fetchOnlineData);
+        }
+        
+        // Função para carregar dados da fazenda com cache
+        async function loadFarmDataWithCache(farmId) {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return null;
+            }
+            
+            const cacheKey = `farm_data_${farmId}`;
+            
+            const fetchOnlineData = async () => {
+                const supabase = createSupabaseClient();
+                const { data: farmData, error } = await supabase
+                    .from('farms')
+                    .select('*')
+                    .eq('id', farmId)
+                    .single();
+                
+                if (error) throw error;
+                return farmData;
+            };
+            
+            return await window.offlineManager.getData(cacheKey, fetchOnlineData);
+        }
+        
+        // Listener para mensagens do Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                const { type, data } = event.data;
+                
+                switch (type) {
+                    case 'DATA_SYNC_SUCCESS':
+                        console.log('✅ Dados sincronizados com sucesso:', data);
+                        if (window.offlineManager) {
+                            window.offlineManager.showNotification('Dados sincronizados com sucesso!', 'success');
+                        }
+                        break;
+                    case 'DATA_SYNC_FAILED':
+                        console.log('⚠️ Falha na sincronização, salvando offline:', data);
+                        if (window.offlineManager) {
+                            window.offlineManager.addToSyncQueue('volume_record', data);
+                            window.offlineManager.showNotification('Dados salvos offline, serão sincronizados quando a conexão for restaurada.', 'info');
+                        }
+                        break;
+                }
+            });
+        }
+        
+        // Tornar funções offline globais
+        window.loadProductionDataWithCache = loadProductionDataWithCache;
+        window.saveProductionDataWithSync = saveProductionDataWithSync;
+        window.loadUserDataWithCache = loadUserDataWithCache;
+        window.loadFarmDataWithCache = loadFarmDataWithCache;
+        
         
     </script>
+
+    <!-- Modal PWA Full Screen - Estilo Xandria Store -->
+    <div id="pwaModal" class="fixed inset-0 bg-gray-50 dark:bg-play-dark z-[9999] hidden dark">
+        <div class="w-full h-full flex flex-col overflow-y-auto">
+            <!-- Header do Modal - Estilo Xandria Store -->
+            <header class="bg-white dark:bg-play-dark no-border sticky top-0 z-50 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 flex items-center justify-center">
+                            <img src="assets/img/xandria-preta.png" alt="LacTech" class="w-8 h-8">
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold tracking-tight text-black dark:text-white">LacTech - Gerente</h1>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 -mt-1">Sistema Agropecuário</p>
+                        </div>
+                    </div>
+                    <button onclick="closePWAModal()" class="w-10 h-10 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex items-center justify-center transition-colors">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Featured Banner -->
+            <div class="px-6 py-6">
+                <div class="max-w-4xl mx-auto">
+                    <div class="rounded-3xl overflow-hidden shadow-xl card-hover cursor-pointer">
+                        <img src="https://i.postimg.cc/7LcySj3K/agroneg-cio.png" alt="Banner LacTech" class="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conteúdo do Modal -->
+            <div class="flex-1 px-6 pb-6">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Status da Instalação - Layout Melhorado -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl p-6 mb-6 border border-green-200 dark:border-green-800">
+                        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                                </svg>
+                            </div>
+                            <div class="text-center sm:text-left">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Instalar App LacTech</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Acesso rápido ao sistema</p>
+                            </div>
+                        </div>
+                        
+                        <div id="pwaStatus" class="space-y-3">
+                            <!-- Status será preenchido dinamicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Informações do Sistema - Layout 2 Colunas -->
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <!-- Acesso Offline -->
+                        <div class="bg-white dark:bg-play-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 dark:text-white text-sm">Acesso Offline</h4>
+                                    <p class="text-gray-600 dark:text-gray-400 text-xs mt-1">Funcione sem internet</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acesso Rápido -->
+                        <div class="bg-white dark:bg-play-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 dark:text-white text-sm">Acesso Rápido</h4>
+                                    <p class="text-gray-600 dark:text-gray-400 text-xs mt-1">Da tela inicial</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interface Nativa -->
+                        <div class="bg-white dark:bg-play-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 dark:text-white text-sm">Interface Nativa</h4>
+                                    <p class="text-gray-600 dark:text-gray-400 text-xs mt-1">Experiência nativa</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Segurança -->
+                        <div class="bg-white dark:bg-play-card rounded-2xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 dark:text-white text-sm">Segurança</h4>
+                                    <p class="text-gray-600 dark:text-gray-400 text-xs mt-1">Dados protegidos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação - Layout Melhorado -->
+                    <div class="flex flex-col gap-3">
+                        <button id="modalInstallButton" onclick="installPWAFromModal()" class="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-lg hidden">
+                            <div class="flex items-center justify-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                                </svg>
+                                <span>Instalar App</span>
+                            </div>
+                        </button>
+                        
+                        <button id="modalUninstallButton" onclick="uninstallPWAFromModal()" class="w-full px-6 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg hidden">
+                            <div class="flex items-center justify-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"></path>
+                                </svg>
+                                <span>Desinstalar App</span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="closePWAModal()" class="w-full px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-600">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
