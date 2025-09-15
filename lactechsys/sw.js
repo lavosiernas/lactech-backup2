@@ -1,7 +1,7 @@
-// Service Worker para LacTech - Versão Offline
-const CACHE_NAME = 'lactech-offline-v2.0.1';
-const APP_VERSION = '2.0.1';
-const OFFLINE_CACHE = 'lactech-offline-data-v2.0.1';
+// Service Worker para LacTech - Versão Offline com Notificações
+const CACHE_NAME = 'lactech-offline-v2.0.2';
+const APP_VERSION = '2.0.2';
+const OFFLINE_CACHE = 'lactech-offline-data-v2.0.2';
 
 const urlsToCache = [
   '/',
@@ -282,5 +282,83 @@ self.addEventListener('message', (event) => {
         })
       );
       break;
+  }
+});
+
+// Notificações Push
+self.addEventListener('push', (event) => {
+  console.log('Push notification recebida:', event);
+  
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'LacTech', body: event.data.text() };
+    }
+  }
+  
+  const options = {
+    body: data.body || 'Nova notificação do LacTech',
+    icon: 'https://i.postimg.cc/vmrkgDcB/lactech.png',
+    badge: 'https://i.postimg.cc/vmrkgDcB/lactech.png',
+    tag: data.tag || 'lactech-notification',
+    requireInteraction: data.requireInteraction || false,
+    silent: data.silent || false,
+    data: data.data || {},
+    actions: data.actions || []
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'LacTech', options)
+  );
+});
+
+// Clique em notificação
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notificação clicada:', event);
+  
+  event.notification.close();
+  
+  const urlToOpen = event.notification.data.url || '/';
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Verificar se já existe uma janela aberta
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i];
+          if (client.url.includes(urlToOpen) && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        
+        // Abrir nova janela se não existir
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
+});
+
+// Fechar notificação
+self.addEventListener('notificationclose', (event) => {
+  console.log('Notificação fechada:', event);
+});
+
+// Background Sync para notificações offline
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'background-sync-notifications') {
+    event.waitUntil(
+      // Sincronizar notificações pendentes quando voltar online
+      fetch('/api/sync-notifications')
+        .then(response => response.json())
+        .then(data => {
+          console.log('Notificações sincronizadas:', data);
+        })
+        .catch(error => {
+          console.error('Erro ao sincronizar notificações:', error);
+        })
+    );
   }
 });

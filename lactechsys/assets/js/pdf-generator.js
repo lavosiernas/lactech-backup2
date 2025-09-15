@@ -33,6 +33,12 @@ async function loadSystemLogo() {
 // Carregar logo da fazenda do banco de dados (busca configurações do gerente)
 async function loadFarmLogo() {
   try {
+    // Primeiro, verificar se há configurações globais disponíveis
+    if (window.reportSettings?.farmLogo) {
+      console.log("Logo da fazenda carregada das configurações globais")
+      return window.reportSettings.farmLogo
+    }
+
     // Primeiro, obter o farm_id do usuário atual
     const { data: { user: currentUser } } = await supabase.auth.getUser()
     if (!currentUser) {
@@ -598,3 +604,9 @@ async function generatePaymentsPDF(data, isPreview = false) {
     window.showNotification("Erro ao gerar PDF: " + error.message, "error")
   }
 }
+
+/**
+ * Gera um relatório de funcionários e faz o download
+ * @param {Object} data - Dados do relatório (employees, production, period)
+ * @param {boolean} isPreview - Se é uma prévia
+ */

@@ -22,6 +22,23 @@ class OfflineLoadingSystem {
     }
 
     createLoadingContainer() {
+        // Aguardar o DOM estar pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.createLoadingContainer();
+            });
+            return;
+        }
+        
+        // Verificar se document.body existe
+        if (!document.body) {
+            console.warn('⚠️ document.body não está disponível, tentando novamente...');
+            setTimeout(() => {
+                this.createLoadingContainer();
+            }, 100);
+            return;
+        }
+        
         // Criar container do loading
         this.loadingContainer = document.createElement('div');
         this.loadingContainer.id = 'offlineLoadingContainer';
@@ -52,13 +69,35 @@ class OfflineLoadingSystem {
     }
 
     createConnectionStatus() {
+        // Aguardar o DOM estar pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.createConnectionStatus();
+            });
+            return;
+        }
+        
+        // Verificar se document.body existe
+        if (!document.body) {
+            console.warn('⚠️ document.body não está disponível para status, tentando novamente...');
+            setTimeout(() => {
+                this.createConnectionStatus();
+            }, 100);
+            return;
+        }
+        
         this.connectionStatus = document.createElement('div');
         this.connectionStatus.id = 'connectionStatusIndicator';
-        this.connectionStatus.className = 'connection-status offline';
+        this.connectionStatus.className = navigator.onLine ? 'connection-status online' : 'connection-status offline';
         this.connectionStatus.innerHTML = `
             <span class="connection-status-icon"></span>
-            <span class="connection-status-text">Offline</span>
+            <span class="connection-status-text">${navigator.onLine ? 'Online' : 'Offline'}</span>
         `;
+        
+        // Inicialmente oculto se estiver online
+        if (navigator.onLine) {
+            this.connectionStatus.style.display = 'none';
+        }
         
         document.body.appendChild(this.connectionStatus);
     }
@@ -149,25 +188,105 @@ class OfflineLoadingSystem {
         
         statusElement.className = `connection-status ${status}`;
         textElement.textContent = text;
+        
+        // Mostrar apenas quando offline
+        if (status === 'offline') {
+            statusElement.style.display = 'block';
+        } else {
+            statusElement.style.display = 'none';
+        }
     }
 
     handleOffline() {
-        this.updateConnectionStatus('offline', 'Offline');
+        // Mostrar mensagem temporária com ícone WiFi
+        this.showOfflineNotification();
+        
+        // Depois de 3 segundos, ocultar a mensagem e mostrar apenas o status
+        setTimeout(() => {
+            this.updateConnectionStatus('offline', 'Offline');
+        }, 3000);
+        
         console.log('📱 Modo offline detectado');
     }
 
     handleOnline() {
-        this.updateConnectionStatus('syncing', 'Sincronizando...');
         this.showLoading('Reconectando com o servidor online');
         
         // Simular sincronização por 6 segundos
         setTimeout(() => {
             this.hideLoading();
-            this.updateConnectionStatus('online', 'Online');
+            this.updateConnectionStatus('online', 'Online'); // Isso vai ocultar o status
             console.log('🌐 Conexão restaurada e dados sincronizados');
         }, this.loadingDuration);
     }
 
+    // Mostrar notificação temporária de offline
+    showOfflineNotification() {
+        // Criar notificação temporária
+        const notification = document.createElement('div');
+        notification.className = 'offline-notification';
+        notification.innerHTML = `
+            <div class="offline-notification-content">
+                <svg class="wifi-off-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728m0 0L12 12m-6.364 6.364a9 9 0 1112.728-12.728m-12.728 12.728L12 12m6.364-6.364L12 12"></path>
+                </svg>
+                <span>Conexão perdida - Modo offline ativado</span>
+            </div>
+        `;
+        
+        // Adicionar CSS inline para a notificação
+        const style = document.createElement('style');
+        style.textContent = `
+            .offline-notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(255, 95, 74, 0.95);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                font-size: 0.9rem;
+                font-weight: 500;
+                z-index: 10000;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 95, 74, 0.3);
+                box-shadow: 0 4px 20px rgba(255, 95, 74, 0.3);
+                animation: slideInRight 0.3s ease-out;
+            }
+            .offline-notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .wifi-off-icon {
+                width: 20px;
+                height: 20px;
+            }
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        
+        document.head.appendChild(style);
+        document.body.appendChild(notification);
+        
+        // Remover após 3 segundos
+        setTimeout(() => {
+            notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+                document.head.removeChild(style);
+            }, 300);
+        }, 3000);
+    }
+    
     // Método para forçar sincronização
     forceSync() {
         if (navigator.onLine) {
@@ -180,3 +299,12 @@ class OfflineLoadingSystem {
 
 // Instância global
 window.offlineLoadingSystem = new OfflineLoadingSystem();
+
+// Expor funções globalmente para compatibilidade
+window.showLoading = function(message = 'Carregando...') {
+    window.offlineLoadingSystem.showLoading(message);
+};
+
+window.hideLoading = function() {
+    window.offlineLoadingSystem.hideLoading();
+};

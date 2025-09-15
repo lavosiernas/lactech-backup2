@@ -1,0 +1,466 @@
+/**
+ * NATIVE NOTIFICATIONS - Sistema de Notificações Nativas
+ * Notificações que aparecem na tela de bloqueio e como cards
+ */
+
+/* Container de Notificações */
+.notification-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    pointer-events: none;
+    padding: 16px;
+}
+
+/* Card de Notificação */
+.notification-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.notification-card.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.notification-card.hide {
+    transform: translateY(-100px);
+    opacity: 0;
+}
+
+/* Header da Notificação */
+.notification-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.notification-icon.success {
+    background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.notification-icon.error {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+}
+
+.notification-icon.warning {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+}
+
+.notification-icon.info {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+}
+
+.notification-icon.weather {
+    background: linear-gradient(135deg, #06B6D4, #0891B2);
+}
+
+.notification-icon.system {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+}
+
+.notification-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1F2937;
+    flex: 1;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+/* Conteúdo da Notificação */
+.notification-content {
+    margin-bottom: 12px;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.notification-details {
+    font-size: 12px;
+    color: #6B7280;
+    line-height: 1.3;
+}
+
+/* Ações da Notificação */
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.notification-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notification-btn.primary {
+    background: #3B82F6;
+    color: white;
+}
+
+.notification-btn.primary:hover {
+    background: #2563EB;
+}
+
+.notification-btn.secondary {
+    background: #F3F4F6;
+    color: #374151;
+}
+
+.notification-btn.secondary:hover {
+    background: #E5E7EB;
+}
+
+.notification-btn.danger {
+    background: #EF4444;
+    color: white;
+}
+
+.notification-btn.danger:hover {
+    background: #DC2626;
+}
+
+/* Notificação de Clima Especial */
+.weather-notification {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(8, 145, 178, 0.1));
+    border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.weather-notification .notification-icon {
+    background: linear-gradient(135deg, #06B6D4, #0891B2);
+}
+
+.weather-notification .notification-title {
+    color: #0F766E;
+}
+
+.weather-notification .notification-message {
+    color: #134E4A;
+}
+
+/* Notificação de Sistema */
+.system-notification {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.system-notification .notification-icon {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+}
+
+.system-notification .notification-title {
+    color: #5B21B6;
+}
+
+.system-notification .notification-message {
+    color: #4C1D95;
+}
+
+/* Notificação de Sucesso */
+.success-notification {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.success-notification .notification-icon {
+    background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.success-notification .notification-title {
+    color: #047857;
+}
+
+.success-notification .notification-message {
+    color: #065F46;
+}
+
+/* Notificação de Erro */
+.error-notification {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.error-notification .notification-icon {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+}
+
+.error-notification .notification-title {
+    color: #B91C1C;
+}
+
+.error-notification .notification-message {
+    color: #991B1B;
+}
+
+/* Notificação de Aviso */
+.warning-notification {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.warning-notification .notification-icon {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+}
+
+.warning-notification .notification-title {
+    color: #B45309;
+}
+
+.warning-notification .notification-message {
+    color: #92400E;
+}
+
+/* Notificação de Informação */
+.info-notification {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.info-notification .notification-icon {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+}
+
+.info-notification .notification-title {
+    color: #1D4ED8;
+}
+
+.info-notification .notification-message {
+    color: #1E40AF;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    .notification-card {
+        background: rgba(31, 41, 55, 0.95);
+        border: 1px solid rgba(75, 85, 99, 0.2);
+    }
+    
+    .notification-title {
+        color: #F9FAFB;
+    }
+    
+    .notification-message {
+        color: #D1D5DB;
+    }
+    
+    .notification-details {
+        color: #9CA3AF;
+    }
+    
+    .notification-time {
+        color: #9CA3AF;
+    }
+    
+    .notification-btn.secondary {
+        background: #374151;
+        color: #D1D5DB;
+    }
+    
+    .notification-btn.secondary:hover {
+        background: #4B5563;
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .notification-container {
+        padding: 12px;
+    }
+    
+    .notification-card {
+        padding: 12px;
+        border-radius: 12px;
+    }
+    
+    .notification-header {
+        gap: 8px;
+    }
+    
+    .notification-icon {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+    
+    .notification-title {
+        font-size: 13px;
+    }
+    
+    .notification-message {
+        font-size: 13px;
+    }
+    
+    .notification-details {
+        font-size: 11px;
+    }
+    
+    .notification-time {
+        font-size: 11px;
+    }
+    
+    .notification-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+}
+
+/* Animações */
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutUp {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.notification-card.pulse {
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* Notificação Persistente */
+.notification-card.persistent {
+    border-left: 4px solid #3B82F6;
+}
+
+.notification-card.persistent .notification-icon {
+    animation: pulse 2s infinite;
+}
+
+/* Notificação com Badge */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #EF4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Notificação com Imagem */
+.notification-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+.notification-with-image {
+    display: flex;
+    align-items: flex-start;
+}
+
+.notification-with-image .notification-content {
+    flex: 1;
+}
+
+/* Notificação de Progresso */
+.notification-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.notification-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Notificação com Som */
+.notification-sound {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Notificação de Emergência */
+.notification-card.emergency {
+    border: 2px solid #EF4444;
+    animation: pulse 1s infinite;
+}
+
+.notification-card.emergency .notification-icon {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    animation: pulse 0.5s infinite;
+}
+

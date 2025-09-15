@@ -136,7 +136,7 @@
     font-family: 'Courier New', monospace;
 }
 
-/* Status de conexão */
+/* Status de conexão - só visível quando offline */
 .connection-status {
     position: fixed;
     top: 20px;
@@ -150,16 +150,19 @@
     z-index: 1000;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    display: none; /* Oculto por padrão */
 }
 
 .connection-status.offline {
     background: rgba(255, 95, 74, 0.9);
     border-color: rgba(255, 95, 74, 0.3);
+    display: block; /* Mostrar apenas quando offline */
 }
 
 .connection-status.online {
     background: rgba(23, 227, 0, 0.9);
     border-color: rgba(23, 227, 0, 0.3);
+    display: none; /* Não mostrar quando online */
 }
 
 .connection-status.syncing {
