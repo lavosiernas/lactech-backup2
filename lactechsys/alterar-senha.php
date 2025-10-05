@@ -303,7 +303,7 @@
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
             }
         }
 

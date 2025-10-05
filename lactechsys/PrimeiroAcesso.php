@@ -5,7 +5,6 @@ require_once 'includes/functions.php';
 
 $auth = new Auth();
 
-// Se já estiver logado, redirecionar para dashboard
 if ($auth->isLoggedIn()) {
     redirect(DASHBOARD_URL);
 }
@@ -13,7 +12,6 @@ if ($auth->isLoggedIn()) {
 $error = '';
 $success = '';
 
-// Processar configuração da fazenda
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $farmName = sanitizeInput($_POST['farm_name'] ?? '');
     $farmLocation = sanitizeInput($_POST['farm_location'] ?? '');
@@ -21,12 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($farmName) || empty($farmLocation)) {
         $error = 'Por favor, preencha todos os campos';
     } else {
-        // Aqui você pode adicionar a lógica para criar a fazenda
         $success = 'Fazenda configurada com sucesso!';
     }
 }
 
-// Verificar notificação
 $notification = getNotification();
 if ($notification) {
     if ($notification['type'] === 'success') {

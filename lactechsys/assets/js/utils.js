@@ -147,7 +147,7 @@ window.loadUserData = async function() {
         const { data: { user } } = await api.auth.getUser();
         
         if (!user) {
-            window.location.href = 'login.html';
+            window.location.href = 'login.php';
             return null;
         }
         
@@ -158,14 +158,14 @@ window.loadUserData = async function() {
             .single();
         
         if (!userData) {
-            window.location.href = 'login.html';
+            window.location.href = 'login.php';
             return null;
         }
         
         return userData;
     } catch (error) {
         console.error('Erro ao carregar dados do usuário:', error);
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
         return null;
     }
 };
@@ -215,10 +215,10 @@ window.logout = async function() {
     try {
         const api = await window.waitForAPI();
         await api.auth.signOut();
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
     } catch (error) {
         console.error('Erro ao fazer logout:', error);
-        window.location.href = 'login.html';
+        window.location.href = 'login.php';
     }
 };
 

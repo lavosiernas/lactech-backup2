@@ -4534,13 +4534,13 @@
                 await supabase.auth.signOut();
                 
                 log('✅ Logout realizado com sucesso');
-                safeRedirect('login.html');
+                safeRedirect('login.php');
                 
             } catch (error) {
                 log('❌ Erro no logout: ' + error.message);
                 cleanupRealtimeUpdates();
                 clearUserSession();
-                safeRedirect('login.html');
+                safeRedirect('login.php');
             }
         }
 
@@ -4562,7 +4562,7 @@
                     
                     showNotification('Sessão expirada. Redirecionando para login...', 'error');
                     setTimeout(() => {
-                        safeRedirect('login.html');
+                        safeRedirect('login.php');
                     }, 2000);
                     return;
                 }
@@ -4575,7 +4575,7 @@
                     log('❌ Usuário bloqueado');
                     showNotification('Conta bloqueada. Redirecionando...', 'error');
                     setTimeout(() => {
-                        safeRedirect('acesso-bloqueado.html');
+                        safeRedirect('acesso-bloqueado.php');
                     }, 2000);
                     return;
                 }
@@ -4637,7 +4637,7 @@
                 clearUserSession();
                 
                 setTimeout(() => {
-                    safeRedirect('login.html');
+                    safeRedirect('login.php');
                 }, 2000);
             }
         }
@@ -5623,7 +5623,7 @@
                 log('❌ Muitas tentativas de redirecionamento, limpando sessão');
                 clearUserSession();
                 sessionStorage.removeItem('redirectCount');
-                safeRedirect('login.html');
+                safeRedirect('login.php');
             return;
         }
         
@@ -6578,7 +6578,7 @@
                             </svg>
                             <span>Atualizar</span>
                         </button>
-                        <button onclick="window.open('solicitar-alteracao-senha.html', '_blank')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                        <button onclick="window.open('solicitar-alteracao-senha.php', '_blank')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -6605,7 +6605,7 @@
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Nenhuma solicitação encontrada</h3>
                     <p class="text-gray-500 mb-6">Você ainda não fez nenhuma solicitação de alteração de senha</p>
-                    <button onclick="window.open('solicitar-alteracao-senha.html', '_blank')" class="px-6 py-3 bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-lg transition-colors flex items-center space-x-2 mx-auto">
+                    <button onclick="window.open('solicitar-alteracao-senha.php', '_blank')" class="px-6 py-3 bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-lg transition-colors flex items-center space-x-2 mx-auto">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -7159,7 +7159,7 @@
                     // Fazer logout após 5 segundos
                     setTimeout(async () => {
                         await supabase.auth.signOut();
-                        window.location.href = 'login.html';
+                        window.location.href = 'login.php';
                     }, 5000);
                 }
                 

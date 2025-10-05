@@ -1810,9 +1810,9 @@ const VetApp = {
     if (confirmed) {
       try {
         await this.state.supabaseClient.auth.signOut()
-        window.location.href = "login.html"
+        window.location.href = "login.php"
       } catch (error) {
-        window.location.href = "login.html"
+        window.location.href = "login.php"
       }
     }
   },

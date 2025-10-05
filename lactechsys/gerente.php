@@ -3884,7 +3884,7 @@ async function initializePage() {
         if (authError || !user) {
             showNotification('Erro de autenticação. Redirecionando para login...', 'error');
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
             }, 2000);
             return;
         }
@@ -3901,7 +3901,7 @@ async function initializePage() {
         if (userError) {
         } else if (!userData.is_active) {
     
-            window.location.href = 'acesso-bloqueado.html';
+            window.location.href = 'acesso-bloqueado.php';
             return;
         }
         

@@ -71,3 +71,6 @@ if ($zip->open($zipFile) === TRUE) {
 echo "\nInstalação concluída!\n";
 echo "Agora você pode usar os relatórios em PDF.\n";
 ?>
+
+
+

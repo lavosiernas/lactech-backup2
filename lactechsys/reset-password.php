@@ -127,7 +127,7 @@
             </form>
 
             <div class="mt-8 text-center">
-                <button onclick="window.location.href='login.html'" class="text-forest-600 hover:text-forest-700 font-semibold">
+                <button onclick="window.location.href='login.php'" class="text-forest-600 hover:text-forest-700 font-semibold">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
@@ -217,7 +217,7 @@
                 </form>
 
                 <div class="mt-8 text-center">
-                    <button onclick="window.location.href='login.html'" class="text-forest-600 hover:text-forest-700 font-semibold">
+                    <button onclick="window.location.href='login.php'" class="text-forest-600 hover:text-forest-700 font-semibold">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                         </svg>
@@ -359,7 +359,7 @@
                 
                 // Redirect to login after 2 seconds
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = 'login.php';
                 }, 2000);
                 
             } catch (error) {

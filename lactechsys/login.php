@@ -220,7 +220,7 @@
             <div class="mt-8 text-center">
                 <p class="text-slate-600 text-sm">
                     Não tem uma conta? 
-                    <a href="register.html" class="text-forest-600 hover:text-forest-700 font-semibold">Criar conta</a>
+                    <a href="PrimeiroAcesso.php" class="text-forest-600 hover:text-forest-700 font-semibold">Criar conta</a>
                 </p>
                 <button onclick="window.location.href='index.php'" class="mt-4 text-slate-500 hover:text-slate-700 text-sm">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -313,7 +313,7 @@
                 <div class="mt-8 text-center">
                     <p class="text-slate-600 text-sm">
                         Não tem uma conta? 
-                        <a href="PrimeiroAcesso.html" class="text-forest-600 hover:text-forest-700 font-semibold">Criar conta</a>
+                        <a href="PrimeiroAcesso.php" class="text-forest-600 hover:text-forest-700 font-semibold">Criar conta</a>
                     </p>
                 </div>
             </div>
@@ -671,12 +671,12 @@
             
             // Redirect to the password recovery request page with email parameter
             if (email) {
-                const url = `solicitar-alteracao-senha.html?email=${encodeURIComponent(email)}`;
+                const url = `solicitar-alteracao-senha.php?email=${encodeURIComponent(email)}`;
                 console.log('🔗 Redirecionando para:', url);
                 window.location.href = url;
             } else {
                 console.log('🔗 Redirecionando sem email');
-                window.location.href = 'solicitar-alteracao-senha.html';
+                window.location.href = 'solicitar-alteracao-senha.php';
             }
         }
 

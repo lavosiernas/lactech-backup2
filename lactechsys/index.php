@@ -540,8 +540,8 @@
                 </div>
                 
                 <div class="flex items-center space-x-3">
-                    <a href="login.html" class="btn btn-secondary text-xs">Entrar</a>
-                     <a href="xandria-store.html" class="btn btn-primary text-xs">Xandria Store</a>
+                    <a href="inicio.php" class="btn btn-secondary text-xs">Entrar</a>
+                     <a href="xandria-store.php" class="btn btn-primary text-xs">Xandria Store</a>
                 </div>
                 
                 <!-- Mobile Menu -->
@@ -561,8 +561,8 @@
                 <a href="#demo" class="block text-gray-600 text-sm">Demo</a>
                 <a href="#pricing" class="block text-gray-600 text-sm">Preços</a>
                 <div class="pt-4 border-t border-gray-100 space-y-2">
-                    <a href="login.html" class="btn btn-secondary w-full text-xs">Entrar</a>
-                    <a href="xandria-store.html" class="btn btn-primary w-full text-xs">Xandria Store</a>
+                    <a href="inicio.php" class="btn btn-secondary w-full text-xs">Entrar</a>
+                    <a href="xandria-store.php" class="btn btn-primary w-full text-xs">Xandria Store</a>
                 </div>
             </div>
         </div>
@@ -968,7 +968,7 @@
                         </li>
                     </ul>
                     
-                    <button onclick="window.location.href='payment.html?plan=monthly'" 
+                    <button onclick="window.location.href='payment.php?plan=monthly'" 
                             class="btn btn-secondary w-full text-sm py-3 font-medium">
                         Assinar Mensal
                     </button>
@@ -1028,7 +1028,7 @@
                         </li>
                     </ul>
                     
-                    <button onclick="window.location.href='payment.html?plan=yearly'" 
+                    <button onclick="window.location.href='payment.php?plan=yearly'" 
                             class="btn btn-primary w-full text-sm py-3 font-medium">
                         Assinar Anual
                     </button>

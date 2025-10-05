@@ -1040,7 +1040,7 @@
                         .single();
                     
                     if (!error && userData && userData.is_active === false) {
-                        window.location.href = 'acesso-bloqueado.html';
+                        window.location.href = 'acesso-bloqueado.php';
                         return;
                     }
                 }

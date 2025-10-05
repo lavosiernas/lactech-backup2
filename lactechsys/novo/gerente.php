@@ -217,7 +217,7 @@ $rbac->requirePageAccess('gerente.php');
                     try {
                         const { data } = await supabase.from('users').select('is_active').eq('id', user.id).single();
                         if (data && data.is_active === false) {
-                            window.location.href = 'acesso-bloqueado.html';
+                            window.location.href = 'acesso-bloqueado.php';
                         }
                     } catch (_) {}
                 };
@@ -292,7 +292,7 @@ $rbac->requirePageAccess('gerente.php');
                 if (authError || !user) {
                     showNotification('Erro de autenticação. Redirecionando para login...', 'error');
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = 'login.php';
                     }, 2000);
                     return;
                 }
@@ -302,7 +302,7 @@ $rbac->requirePageAccess('gerente.php');
                 if (userError) {
                     console.error('Error checking user status:', userError);
                 } else if (!userData.is_active) {
-                    window.location.href = 'acesso-bloqueado.html';
+                    window.location.href = 'acesso-bloqueado.php';
                     return;
                 }
                 

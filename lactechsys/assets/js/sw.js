@@ -11,7 +11,7 @@ const urlsToCache = [
   '/veterinario.php',
   '/proprietario.php',
   '/login.php',
-  '/acesso-bloqueado.html',
+  '/acesso-bloqueado.php',
   '/assets/js/offline-manager.js',
   '/assets/css/style.css',
   '/assets/css/dark-theme-fixes.css',
@@ -92,7 +92,7 @@ async function handleRequest(request) {
     
     // Fallback para páginas HTML
     if (request.destination === 'document') {
-      const fallbackResponse = await caches.match('/offline.html');
+      const fallbackResponse = await caches.match('/offline.php');
       return fallbackResponse || new Response('Página não disponível offline', {
         status: 503,
         statusText: 'Service Unavailable',

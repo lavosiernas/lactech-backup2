@@ -355,7 +355,7 @@ if (isset($_GET['logout'])) {
             sessionStorage.removeItem('userSession');
             
             // Redirecionar para login
-            window.location.href = 'login.html';
+            window.location.href = 'login.php';
         }
         
         // Executar diagnóstico ao carregar a página
