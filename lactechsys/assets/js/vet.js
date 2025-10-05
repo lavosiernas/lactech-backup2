@@ -6,10 +6,6 @@ const SUPABASE_CONFIG = {
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0",
 }
 
-// Configuração da Fazenda Fixa
-const FARM_ID = 'lagoa-do-mato-farm-id';
-const FARM_NAME = 'Lagoa do Mato';
-
 // Aplicação Principal do Veterinário
 const VetApp = {
   // Estado da aplicação
@@ -66,19 +62,29 @@ const VetApp = {
        this.state.currentUser = user
        console.log("✅ Usuário autenticado:", user.email)
 
-       // Buscar dados do usuário
+       // Buscar dados do usuário e fazenda
        const { data: userData, error: userError } = await this.state.supabaseClient
          .from("users")
-         .select("name, whatsapp, role")
+         .select("farm_id, name, whatsapp, role")
          .eq("id", user.id)
          .single()
 
        if (userError) throw userError
        console.log("✅ Dados do usuário carregados:", userData)
 
-       // Usar fazenda fixa
-       this.state.currentFarm = { name: FARM_NAME }
-       console.log("✅ Fazenda fixa carregada:", this.state.currentFarm)
+       // Buscar nome da fazenda
+       if (userData.farm_id) {
+         const { data: farmData, error: farmError } = await this.state.supabaseClient
+           .from("farms")
+           .select("name")
+           .eq("id", userData.farm_id)
+           .single()
+
+         if (!farmError && farmData) {
+           this.state.currentFarm = farmData
+           console.log("✅ Dados da fazenda carregados:", farmData)
+         }
+       }
 
        // Atualizar interface
        this.updateUserInterface(userData)
@@ -164,8 +170,13 @@ const VetApp = {
   // Carregar dados do dashboard
   async loadDashboardData() {
     try {
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      const { data: userData } = await this.state.supabaseClient
+        .from("users")
+        .select("farm_id")
+        .eq("id", this.state.currentUser.id)
+        .single()
+
+      if (!userData?.farm_id) return
 
              // Carregar estatísticas de saúde (query simplificada)
        try {
@@ -174,7 +185,7 @@ const VetApp = {
          const { data: healthStats, error: healthError } = await this.state.supabaseClient
            .from("animal_health_records")
            .select("id, health_status")
-           .eq("farm_id", farmId)
+           .eq("farm_id", userData.farm_id)
 
          if (healthError) {
            console.error("❌ Erro ao carregar estatísticas de saúde:", healthError)
@@ -236,7 +247,7 @@ const VetApp = {
          const { data: activeTreatments, error: treatmentError } = await this.state.supabaseClient
            .from("treatments")
            .select("id, treatment_date, description, observations")
-           .eq("farm_id", farmId)
+           .eq("farm_id", userData.farm_id)
            .limit(5)
 
          if (treatmentError) {
@@ -301,7 +312,7 @@ const VetApp = {
       const { data: inseminations, error } = await this.state.supabaseClient
         .from("artificial_inseminations")
         .select("pregnancy_confirmed")
-        .eq("farm_id", farmId)
+        .eq("farm_id", userData.farm_id)
 
       if (error) {
         console.error("❌ Erro ao carregar inseminações:", error)
@@ -467,7 +478,7 @@ const VetApp = {
            animal_id: formData.get("animal_id"),
            health_status: formData.get("health_status"),
            user_id: this.state.currentUser.id,
-           farm_id: farmId,
+           farm_id: userData.farm_id,
            assessment_date: new Date().toISOString().split("T")[0],
            symptoms: null,
            diagnosis: null,
@@ -504,12 +515,13 @@ const VetApp = {
         .eq("id", this.state.currentUser.id)
         .single()
 
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      if (!userData?.farm_id) {
+        throw new Error("Fazenda não encontrada")
+      }
 
       const treatmentData = {
         animal_id: formData.get("animal_id"),
-        farm_id: farmId,
+        farm_id: userData.farm_id,
         user_id: this.state.currentUser.id,
         treatment_date: formData.get("treatment_date"),
         description: formData.get("treatment_type"),
@@ -544,12 +556,13 @@ const VetApp = {
         .eq("id", this.state.currentUser.id)
         .single()
 
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      if (!userData?.farm_id) {
+        throw new Error("Fazenda não encontrada")
+      }
 
       const inseminationData = {
         animal_id: formData.get("animal_id"),
-        farm_id: farmId,
+        farm_id: userData.farm_id,
         user_id: this.state.currentUser.id,
         insemination_date: formData.get("insemination_date"),
         semen_batch: formData.get("semen_batch"),
@@ -633,13 +646,18 @@ const VetApp = {
   // Carregar lista de inseminações
   async loadInseminationsList() {
     try {
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      const { data: userData } = await this.state.supabaseClient
+        .from("users")
+        .select("farm_id")
+        .eq("id", this.state.currentUser.id)
+        .single()
+
+      if (!userData?.farm_id) return
 
       const { data: inseminations, error } = await this.state.supabaseClient
         .from("artificial_inseminations")
         .select("*")
-        .eq("farm_id", farmId)
+        .eq("farm_id", userData.farm_id)
         .order("insemination_date", { ascending: false })
 
       if (error) throw error
@@ -665,13 +683,18 @@ const VetApp = {
   // Carregar inseminações pendentes para o select
   async loadPendingInseminations() {
     try {
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      const { data: userData } = await this.state.supabaseClient
+        .from("users")
+        .select("farm_id")
+        .eq("id", this.state.currentUser.id)
+        .single()
+
+      if (!userData?.farm_id) return
 
       const { data: inseminations, error } = await this.state.supabaseClient
         .from("artificial_inseminations")
         .select("id, animal_id, insemination_date, semen_batch")
-        .eq("farm_id", farmId)
+        .eq("farm_id", userData.farm_id)
         .is("pregnancy_confirmed", null)
         .order("insemination_date", { ascending: false })
 
@@ -948,12 +971,19 @@ const VetApp = {
          gender: formData.get("gender")
        })
        
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+       const { data: userData, error: userError } = await this.state.supabaseClient
+         .from("users")
+         .select("farm_id")
+         .eq("id", this.state.currentUser.id)
+         .single()
+
+       if (userError || !userData?.farm_id) {
+         throw new Error("Fazenda não encontrada")
+       }
 
        // Vamos usar apenas as colunas que existem na tabela animals
        const animalData = {
-         farm_id: farmId,
+         farm_id: userData.farm_id,
          identification: formData.get("identification"),
          name: formData.get("name") || null,
          breed: formData.get("breed") || null,
@@ -1001,12 +1031,19 @@ const VetApp = {
          start_date: formData.get("start_date")
        })
        
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+       const { data: userData, error: userError } = await this.state.supabaseClient
+         .from("users")
+         .select("farm_id")
+         .eq("id", this.state.currentUser.id)
+         .single()
+
+       if (userError || !userData?.farm_id) {
+         throw new Error("Fazenda não encontrada")
+       }
 
        // Vamos usar apenas as colunas que existem na tabela treatments
        const treatmentData = {
-         farm_id: farmId,
+         farm_id: userData.farm_id,
          animal_id: formData.get("animal_id"),
          description: formData.get("treatment_type") || "Tratamento",
          medication: formData.get("medication") || null,
@@ -1057,12 +1094,19 @@ const VetApp = {
          semen_type: formData.get("semen_type")
        })
        
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+       const { data: userData, error: userError } = await this.state.supabaseClient
+         .from("users")
+         .select("farm_id")
+         .eq("id", this.state.currentUser.id)
+         .single()
+
+       if (userError || !userData?.farm_id) {
+         throw new Error("Fazenda não encontrada")
+       }
 
        // Vamos usar apenas as colunas que existem na tabela artificial_inseminations
        const inseminationData = {
-         farm_id: farmId,
+         farm_id: userData.farm_id,
          animal_id: formData.get("animal_id"),
          insemination_date: formData.get("insemination_date"),
          semen_batch: formData.get("semen_type") || null,
@@ -1146,12 +1190,19 @@ const VetApp = {
          health_status: formData.get("health_status")
        })
        
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+       const { data: userData, error: userError } = await this.state.supabaseClient
+         .from("users")
+         .select("farm_id")
+         .eq("id", this.state.currentUser.id)
+         .single()
+
+       if (userError || !userData?.farm_id) {
+         throw new Error("Fazenda não encontrada")
+       }
 
        // Vamos usar apenas as colunas que existem na tabela animal_health_records
        const healthData = {
-         farm_id: farmId,
+         farm_id: userData.farm_id,
          animal_id: formData.get("animal_id"),
          record_date: formData.get("assessment_date"),
          health_status: formData.get("health_status"),
@@ -1194,13 +1245,12 @@ const VetApp = {
          .eq("id", this.state.currentUser.id)
          .single()
 
-       // Usar fazenda fixa
-      const farmId = FARM_ID
+       if (userError || !userData?.farm_id) return
 
        const { data: animals, error } = await this.state.supabaseClient
          .from("animals")
          .select("*")
-         .eq("farm_id", farmId)
+         .eq("farm_id", userData.farm_id)
          .order("created_at", { ascending: false })
 
        if (error) throw error
@@ -1230,13 +1280,12 @@ const VetApp = {
          .eq("id", this.state.currentUser.id)
          .single()
 
-       // Usar fazenda fixa
-      const farmId = FARM_ID
+       if (userError || !userData?.farm_id) return
 
        const { data: treatments, error } = await this.state.supabaseClient
          .from("treatments")
          .select("*")
-         .eq("farm_id", farmId)
+         .eq("farm_id", userData.farm_id)
          .order("treatment_date", { ascending: false })
 
        if (error) throw error
@@ -1435,13 +1484,14 @@ const VetApp = {
         .eq("id", this.state.currentUser.id)
         .single()
 
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      if (!userData?.farm_id) {
+        throw new Error("Fazenda não encontrada")
+      }
 
       const { data: healthData, error } = await this.state.supabaseClient
         .from("animal_health_records")
         .select("*")
-        .eq("farm_id", farmId)
+        .eq("farm_id", userData.farm_id)
         .order("record_date", { ascending: false })
 
       if (error) throw error
@@ -1461,13 +1511,14 @@ const VetApp = {
         .eq("id", this.state.currentUser.id)
         .single()
 
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      if (!userData?.farm_id) {
+        throw new Error("Fazenda não encontrada")
+      }
 
       const { data: treatmentData, error } = await this.state.supabaseClient
         .from("treatments")
         .select("*")
-        .eq("farm_id", farmId)
+        .eq("farm_id", userData.farm_id)
         .order("treatment_date", { ascending: false })
 
       if (error) throw error
@@ -1487,13 +1538,14 @@ const VetApp = {
         .eq("id", this.state.currentUser.id)
         .single()
 
-      // Usar fazenda fixa
-      const farmId = FARM_ID
+      if (!userData?.farm_id) {
+        throw new Error("Fazenda não encontrada")
+      }
 
       const { data: vaccinationData, error } = await this.state.supabaseClient
         .from("treatments")
         .select("*")
-        .eq("farm_id", farmId)
+        .eq("farm_id", userData.farm_id)
         .ilike("description", "%vacin%")
         .order("treatment_date", { ascending: false })
 

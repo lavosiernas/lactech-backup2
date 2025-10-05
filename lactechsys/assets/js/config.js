@@ -8,10 +8,6 @@
 const SUPABASE_URL = 'https://tmaamwuyucaspqcrhuck.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0';
 
-// Configuração da Fazenda Fixa
-const FARM_ID = '550e8400-e29b-41d4-a716-446655440000'; // UUID válido para Lagoa do Mato
-const FARM_NAME = 'Lagoa do Mato';
-
 // Aguardar Supabase estar disponível
 async function waitForSupabase() {
     return new Promise((resolve) => {
@@ -28,20 +24,8 @@ async function waitForSupabase() {
 
 // Inicializar Supabase e criar API
 async function initializeSupabase() {
-    // Evitar múltiplas instâncias
-    if (window.LacTechAPI && window.LacTechAPI.supabase) {
-        return window.LacTechAPI;
-    }
-    
     const supabaseLib = await waitForSupabase();
-    const supabaseClient = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        realtime: {
-            enabled: true,
-            params: {
-                eventsPerSecond: 10
-            }
-        }
-    });
+    const supabaseClient = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     // Criar API unificada
     window.LacTechAPI = {
@@ -57,10 +41,16 @@ async function initializeSupabase() {
                 try {
                     const { data: { user } } = await supabaseClient.auth.getUser();
                     if (!user) throw new Error('Usuário não autenticado');
+                    const { data: userData } = await supabaseClient
+                        .from('users')
+                        .select('farm_id')
+                        .eq('id', user.id)
+                        .single();
+                    if (!userData?.farm_id) throw new Error('Fazenda não encontrada');
                     const { data, error } = await supabaseClient
                         .from('users')
                         .select('*')
-                        .eq('farm_id', FARM_ID)
+                        .eq('farm_id', userData.farm_id)
                         .eq('is_active', true)
                         .order('name');
                     if (error) throw error;
@@ -78,10 +68,6 @@ async function initializeSupabase() {
                     return { success: false, error: error.message };
                 }
             }
-        },
-        farm: {
-            getId: () => FARM_ID,
-            getName: () => FARM_NAME
         },
         supabase: supabaseClient
     };
@@ -124,7 +110,4 @@ if (!window.LacTechAPI) {
     document.addEventListener('DOMContentLoaded', () => {
         initializeSupabase().catch(console.error);
     });
-} else {
-    // Se já existe, disparar evento para compatibilidade
-    window.dispatchEvent(new CustomEvent('lactechapi-ready'));
 }
