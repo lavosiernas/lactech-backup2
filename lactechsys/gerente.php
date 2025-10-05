@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co https://*.postgrest.org wss://*.supabase.co https://cdn.jsdelivr.net; img-src 'self' data: https:; worker-src 'self' blob:;">
     <title>Painel do Gerente - Sistema Leiteiro</title>
     
     <!-- PWA Meta Tags -->
@@ -36,6 +37,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/pdf-generator.js"></script>
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/database-config.js"></script>
     <script src="assets/js/chat-sync-service.js"></script>
     <script src="assets/js/modal-system.js"></script>
@@ -943,6 +945,9 @@
                     <button class="nav-item relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="payments">
                         Financeiro
                     </button>
+                    <button class="nav-item relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="animals">
+                        Animais
+                    </button>
                     <button class="nav-item relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="users">
                         Usuários
                     </button>
@@ -1240,6 +1245,8 @@
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Data/Hora</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Tipo</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Vaca</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Volume (L)</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Funcionário</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Observações</th>
@@ -1248,7 +1255,7 @@
                             </thead>
                             <tbody id="volumeRecords">
                                 <tr>
-                                    <td colspan="5" class="text-center py-8 text-gray-500">
+                                    <td colspan="7" class="text-center py-8 text-gray-500">
                                         Nenhum registro encontrado
                                     </td>
                                 </tr>
@@ -1507,6 +1514,57 @@
             </div>
         </div>
 
+        <!-- Animals Tab -->
+        <div id="animals-tab" class="tab-content hidden">
+            <div class="space-y-6">
+                <!-- Header -->
+                <div class="data-card rounded-2xl p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                        <div>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-1">Gestão de Animais</h2>
+                            <p class="text-slate-600 text-sm">Monitore a saúde e histórico dos animais</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <button onclick="openAddAnimalModal()" class="btn-primary px-4 py-2 text-sm font-semibold rounded-lg flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Adicionar Animal
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros -->
+                    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                        <select id="animalFilter" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none">
+                            <option value="all">Todos os animais</option>
+                            <option value="active">Ativos</option>
+                            <option value="inactive">Inativos</option>
+                        </select>
+                        <input type="text" id="animalSearch" placeholder="Buscar por identificação ou nome..." class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none flex-1">
+                    </div>
+                    
+                    <!-- Lista de Animais -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-slate-200">
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Identificação</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Nome</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Status</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Última Produção</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="animalsTableBody">
+                                <!-- Será preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Users Tab -->
         <div id="users-tab" class="tab-content hidden users-section">
             <div class="space-y-6 sm:space-y-8">
@@ -1633,6 +1691,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                 </svg>
                 <span class="text-xs font-semibold">Financeiro</span>
+            </button>
+            <button class="mobile-nav-item flex flex-col items-center py-2 px-1 transition-all" data-tab="animals">
+                <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <span class="text-xs font-semibold">Animais</span>
             </button>
             <button class="mobile-nav-item flex flex-col items-center py-2 px-1 transition-all" data-tab="users">
                 <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -7301,6 +7365,11 @@ function setupEventListeners() {
                 const targetContent = document.getElementById(targetTab + '-tab');
                 if (targetContent) {
                     targetContent.classList.remove('hidden');
+                    
+                    // Carregar dados específicos da aba quando aberta
+                    if (targetTab === 'animals') {
+                        loadAnimalsTable();
+                    }
                 }
             }
         });
@@ -9075,6 +9144,21 @@ function addVolumeRecord() {
                         </select>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700    mb-2">Tipo de Registro</label>
+                        <select name="registration_type" id="registrationType" required class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" onchange="toggleAnimalSelection()">
+                            <option value="">Selecione o tipo</option>
+                            <option value="total">Volume Total (Atual)</option>
+                            <option value="individual">Por Vaca Individual</option>
+                        </select>
+                    </div>
+                    <div id="animalSelection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700    mb-2">Vaca</label>
+                        <select name="animal_id" id="animalSelect" class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                            <option value="">Selecione a vaca</option>
+                            <!-- Será preenchido dinamicamente -->
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700    mb-2">Volume (Litros)</label>
                         <input type="number" name="volume" step="0.1" min="0" required class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent      " placeholder="0.0">
                     </div>
@@ -9695,12 +9779,15 @@ async function handleAddVolume(event) {
         'madrugada': 'night'
     };
     
+    const registrationType = formData.get('registration_type');
     const volumeData = {
         production_date: formData.get('production_date'),
         shift: shiftMapping[formData.get('shift')] || formData.get('shift'),
         volume: parseFloat(formData.get('volume')),
         temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
-        observations: formData.get('observations') || null
+        observations: formData.get('observations') || null,
+        registration_type: registrationType,
+        animal_id: registrationType === 'individual' ? formData.get('animal_id') : null
     };
     
     console.log('📅 Data do formulário:', formData.get('production_date'));
@@ -9731,6 +9818,7 @@ async function handleAddVolume(event) {
                 volume_liters: volumeData.volume,
                 temperature: volumeData.temperature,
                 notes: volumeData.observations,
+                animal_id: volumeData.animal_id,
                 created_at: new Date().toISOString()
         };
 
@@ -17107,17 +17195,78 @@ document.addEventListener('DOMContentLoaded', function() {
                         Ferramentas Principais
                     </h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- Relatórios -->
+                        <!-- Relatórios -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openReportsTab()">
                             <div class="flex flex-col items-center text-center space-y-3">
                                 <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Relatórios</p>
+                                    <p class="text-xs text-gray-600">Análises e dados</p>
+                                </div>
                             </div>
-                            <div>
-                                    <p class="font-semibold text-gray-900  text-sm">Relatórios</p>
-                                    <p class="text-xs text-gray-600 ">Análises e dados</p>
+                        </div>
+
+                        <!-- Adicionar Animal -->
+                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openAddAnimalModal()">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Adicionar Animal</p>
+                                    <p class="text-xs text-gray-600">Cadastrar novo animal</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tratamentos -->
+                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openTreatmentsModal()">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Tratamentos</p>
+                                    <p class="text-xs text-gray-600">Medicações e cuidados</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inseminação IA -->
+                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openInseminationModal()">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Inseminação IA</p>
+                                    <p class="text-xs text-gray-600">Controle reprodutivo</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Registro de Saúde -->
+                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openQuickHealthModal()">
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Registro de Saúde</p>
+                                    <p class="text-xs text-gray-600">Avaliação rápida</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -18723,7 +18872,521 @@ Funcionalidades:
         // Executar limpeza inicial após 5 segundos
         setTimeout(cleanupOldPasswordRequests, 5000);
         
-        // Função para alternar visibilidade da senha
+        // Função para alternar seleção de animal no registro de volume
+        function toggleAnimalSelection() {
+            const registrationType = document.getElementById('registrationType').value;
+            const animalSelection = document.getElementById('animalSelection');
+            const animalSelect = document.getElementById('animalSelect');
+            
+            if (registrationType === 'individual') {
+                animalSelection.classList.remove('hidden');
+                loadAnimals();
+            } else {
+                animalSelection.classList.add('hidden');
+                animalSelect.value = '';
+            }
+        }
+
+        // Função para carregar lista de animais
+        async function loadAnimals() {
+            try {
+                const supabase = await getSupabaseClient();
+                const { data: animals, error } = await supabase
+                    .from('animals')
+                    .select('id, identification, name')
+                    .eq('farm_id', FARM_ID)
+                    .order('identification');
+
+                if (error) throw error;
+
+                const animalSelect = document.getElementById('animalSelect');
+                if (animalSelect) {
+                    animalSelect.innerHTML = '<option value="">Selecione a vaca</option>';
+                    
+                    animals.forEach(animal => {
+                        const option = document.createElement('option');
+                        option.value = animal.id;
+                        option.textContent = `${animal.identification}${animal.name ? ' - ' + animal.name : ''}`;
+                        animalSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar animais:', error);
+            }
+        }
+
+        // Função para carregar animais na tabela
+        async function loadAnimalsTable() {
+            try {
+                const supabase = await getSupabaseClient();
+                const { data: animals, error } = await supabase
+                    .from('animals')
+                    .select('id, identification, name, created_at')
+                    .eq('farm_id', FARM_ID)
+                    .order('identification');
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('animalsTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+                
+                animals.forEach(animal => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-100 hover:bg-slate-50';
+                    
+                    const statusBadge = '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>';
+                    
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-medium text-slate-900">${animal.identification}</td>
+                        <td class="py-3 px-4 text-slate-600">${animal.name || '-'}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4 text-slate-600">-</td>
+                        <td class="py-3 px-4">
+                            <button onclick="editAnimal('${animal.id}')" class="text-forest-600 hover:text-forest-700 mr-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="deleteAnimal('${animal.id}')" class="text-red-600 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar tabela de animais:', error);
+            }
+        }
+
+        // Função para abrir modal de adicionar animal
+        function openAddAnimalModal() {
+            document.getElementById('addAnimalModal').classList.remove('hidden');
+            // Só fecha o modal "Mais" se ele estiver aberto
+            const moreModal = document.getElementById('moreModal');
+            if (moreModal && !moreModal.classList.contains('hidden')) {
+                closeMoreModal();
+            }
+        }
+
+        function closeAddAnimalModal() {
+            document.getElementById('addAnimalModal').classList.add('hidden');
+            document.getElementById('addAnimalForm').reset();
+        }
+
+        // Função para editar animal
+        function editAnimal(animalId) {
+            // Implementar edição de animal
+            alert(`Editar animal ${animalId}`);
+        }
+
+        // Função para deletar animal
+        function deleteAnimal(animalId) {
+            if (confirm('Tem certeza que deseja excluir este animal?')) {
+                // Implementar exclusão de animal
+                alert(`Deletar animal ${animalId}`);
+            }
+        }
+
+        // ==================== FUNÇÕES DOS MODAIS VETERINÁRIOS ====================
+
+
+
+        // Modal Tratamentos
+        function openTreatmentsModal() {
+            document.getElementById('treatmentsModal').classList.remove('hidden');
+            loadTreatmentsData();
+            loadAnimalsForSelects();
+            closeMoreModal(); // Fechar modal "Mais" ao abrir funcionalidade
+        }
+
+        function closeTreatmentsModal() {
+            document.getElementById('treatmentsModal').classList.add('hidden');
+        }
+
+        // Modal Inseminação
+        function openInseminationModal() {
+            document.getElementById('inseminationModal').classList.remove('hidden');
+            loadInseminationData();
+            loadAnimalsForSelects();
+            closeMoreModal(); // Fechar modal "Mais" ao abrir funcionalidade
+        }
+
+        function closeInseminationModal() {
+            document.getElementById('inseminationModal').classList.add('hidden');
+        }
+
+
+        async function loadTreatmentsData() {
+            try {
+                const supabase = await getSupabaseClient();
+                
+                const { data: treatments, error } = await supabase
+                    .from('treatments')
+                    .select('id, animal_id, treatment_type, treatment_date, status')
+                    .eq('farm_id', FARM_ID)
+                    .order('treatment_date', { ascending: false });
+
+                if (error) throw error;
+
+                const tbody = document.getElementById('treatmentsTableBody');
+                tbody.innerHTML = '';
+
+                if (treatments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum tratamento registrado</td></tr>';
+                    return;
+                }
+
+                treatments.forEach(treatment => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-100 hover:bg-slate-50';
+                    
+                    const statusBadge = getTreatmentStatusBadge(treatment.status);
+                    
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-medium text-slate-900">${treatment.animal_id}</td>
+                        <td class="py-3 px-4 text-slate-600">${getTreatmentTypeName(treatment.treatment_type)}</td>
+                        <td class="py-3 px-4 text-slate-600">${formatDate(treatment.treatment_date)}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4">
+                            <button onclick="editTreatment('${treatment.id}')" class="text-forest-600 hover:text-forest-700 mr-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar tratamentos:', error);
+            }
+        }
+
+        async function loadInseminationData() {
+            try {
+                const supabase = await getSupabaseClient();
+                
+                const { data: inseminations, error } = await supabase
+                    .from('artificial_inseminations')
+                    .select('id, animal_id, insemination_date, semen_batch, pregnancy_confirmed')
+                    .eq('farm_id', FARM_ID)
+                    .order('insemination_date', { ascending: false });
+
+                if (error) throw error;
+
+                // Atualizar estatísticas
+                const total = inseminations.length;
+                const confirmed = inseminations.filter(i => i.pregnancy_confirmed === true).length;
+                const pending = inseminations.filter(i => i.pregnancy_confirmed === null).length;
+                const failed = inseminations.filter(i => i.pregnancy_confirmed === false).length;
+
+                document.getElementById('totalInseminationsCount').textContent = total;
+                document.getElementById('confirmedPregnanciesCount').textContent = confirmed;
+                document.getElementById('pendingPregnanciesCount').textContent = pending;
+                document.getElementById('failedPregnanciesCount').textContent = failed;
+
+                // Atualizar tabela
+                const tbody = document.getElementById('inseminationsTableBody');
+                tbody.innerHTML = '';
+
+                if (inseminations.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhuma inseminação registrada</td></tr>';
+                    return;
+                }
+
+                inseminations.forEach(insemination => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-100 hover:bg-slate-50';
+                    
+                    const statusBadge = getPregnancyStatusBadge(insemination.pregnancy_confirmed);
+                    
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-medium text-slate-900">${insemination.animal_id}</td>
+                        <td class="py-3 px-4 text-slate-600">${formatDate(insemination.insemination_date)}</td>
+                        <td class="py-3 px-4 text-slate-600">${insemination.semen_batch || '-'}</td>
+                        <td class="py-3 px-4">${statusBadge}</td>
+                        <td class="py-3 px-4">
+                            <button onclick="editInsemination('${insemination.id}')" class="text-forest-600 hover:text-forest-700 mr-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Erro ao carregar inseminações:', error);
+            }
+        }
+
+        // Funções auxiliares
+        function getTreatmentStatusBadge(status) {
+            const badges = {
+                'active': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Ativo</span>',
+                'completed': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Concluído</span>',
+                'pending': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendente</span>'
+            };
+            return badges[status] || '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Desconhecido</span>';
+        }
+
+        function getTreatmentTypeName(type) {
+            const types = {
+                'vaccination': 'Vacinação',
+                'medication': 'Medicação',
+                'surgery': 'Cirurgia',
+                'examination': 'Exame',
+                'other': 'Outro'
+            };
+            return types[type] || type;
+        }
+
+        function getPregnancyStatusBadge(status) {
+            if (status === true) {
+                return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Confirmada</span>';
+            } else if (status === false) {
+                return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Não Confirmada</span>';
+            } else {
+                return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendente</span>';
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Funções para modais adicionais
+        function openQuickHealthModal() {
+            document.getElementById('quickHealthModal').classList.remove('hidden');
+            loadAnimalsForSelects();
+            closeMoreModal(); // Fechar modal "Mais" ao abrir funcionalidade
+        }
+
+        function closeQuickHealthModal() {
+            document.getElementById('quickHealthModal').classList.add('hidden');
+            document.getElementById('quickHealthForm').reset();
+        }
+
+        function openAddTreatmentModal() {
+            document.getElementById('addTreatmentModal').classList.remove('hidden');
+            loadAnimalsForSelects();
+        }
+
+        function closeAddTreatmentModal() {
+            document.getElementById('addTreatmentModal').classList.add('hidden');
+            document.getElementById('addTreatmentForm').reset();
+        }
+
+        function openAddInseminationModal() {
+            document.getElementById('addInseminationModal').classList.remove('hidden');
+            loadAnimalsForSelects();
+        }
+
+        function closeAddInseminationModal() {
+            document.getElementById('addInseminationModal').classList.add('hidden');
+            document.getElementById('addInseminationForm').reset();
+        }
+
+        function openVetReportsModal() {
+            alert('Modal de relatórios veterinários será implementado');
+        }
+
+        function editTreatment(treatmentId) {
+            alert(`Editar tratamento ${treatmentId}`);
+        }
+
+        function editInsemination(inseminationId) {
+            alert(`Editar inseminação ${inseminationId}`);
+        }
+
+        // ==================== FUNÇÕES DE FORMULÁRIOS ====================
+
+        // Função para adicionar animal
+        async function handleAddAnimal(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const animalData = {
+                identification: formData.get('identification'),
+                name: formData.get('name') || null,
+                birth_date: formData.get('birth_date') || null,
+                breed: formData.get('breed') || null,
+                health_status: formData.get('health_status'),
+                observations: formData.get('observations') || null,
+                farm_id: FARM_ID,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                const { data, error } = await supabase
+                    .from('animals')
+                    .insert([animalData])
+                    .select();
+
+                if (error) throw error;
+
+                showNotification('Animal adicionado com sucesso!', 'success');
+                closeAddAnimalModal();
+                loadAnimalsTable();
+            } catch (error) {
+                console.error('Erro ao adicionar animal:', error);
+                showNotification('Erro ao adicionar animal: ' + error.message, 'error');
+            }
+        }
+
+        // Função para adicionar tratamento
+        async function handleAddTreatment(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const treatmentData = {
+                animal_id: formData.get('animal_id'),
+                treatment_type: formData.get('treatment_type'),
+                treatment_date: formData.get('treatment_date'),
+                status: formData.get('status'),
+                description: formData.get('description'),
+                observations: formData.get('observations') || null,
+                farm_id: FARM_ID,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                const { data, error } = await supabase
+                    .from('treatments')
+                    .insert([treatmentData])
+                    .select();
+
+                if (error) throw error;
+
+                showNotification('Tratamento adicionado com sucesso!', 'success');
+                closeAddTreatmentModal();
+                loadTreatmentsData();
+            } catch (error) {
+                console.error('Erro ao adicionar tratamento:', error);
+                showNotification('Erro ao adicionar tratamento: ' + error.message, 'error');
+            }
+        }
+
+        // Função para adicionar inseminação
+        async function handleAddInsemination(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const inseminationData = {
+                animal_id: formData.get('animal_id'),
+                insemination_date: formData.get('insemination_date'),
+                semen_batch: formData.get('semen_batch') || null,
+                technician: formData.get('technician') || null,
+                observations: formData.get('observations') || null,
+                farm_id: FARM_ID,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                const { data, error } = await supabase
+                    .from('artificial_inseminations')
+                    .insert([inseminationData])
+                    .select();
+
+                if (error) throw error;
+
+                showNotification('Inseminação adicionada com sucesso!', 'success');
+                closeAddInseminationModal();
+                loadInseminationData();
+            } catch (error) {
+                console.error('Erro ao adicionar inseminação:', error);
+                showNotification('Erro ao adicionar inseminação: ' + error.message, 'error');
+            }
+        }
+
+        // Função para registro rápido de saúde
+        async function handleQuickHealth(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const healthData = {
+                animal_id: formData.get('animal_id'),
+                health_status: formData.get('health_status'),
+                assessment_date: formData.get('assessment_date'),
+                temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
+                observations: formData.get('observations') || null,
+                farm_id: FARM_ID,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                // Atualizar status de saúde do animal
+                const { error: animalError } = await supabase
+                    .from('animals')
+                    .update({ health_status: healthData.health_status })
+                    .eq('id', healthData.animal_id);
+
+                if (animalError) throw animalError;
+
+                // Registrar avaliação de saúde
+                const { data, error } = await supabase
+                    .from('health_assessments')
+                    .insert([healthData])
+                    .select();
+
+                if (error) throw error;
+
+                showNotification('Registro de saúde realizado com sucesso!', 'success');
+                closeQuickHealthModal();
+                loadAnimalsTable();
+            } catch (error) {
+                console.error('Erro ao registrar saúde:', error);
+                showNotification('Erro ao registrar saúde: ' + error.message, 'error');
+            }
+        }
+
+        // Função para carregar animais nos selects
+        async function loadAnimalsForSelects() {
+            try {
+                const { data: animals, error } = await supabase
+                    .from('animals')
+                    .select('id, identification, name')
+                    .eq('farm_id', FARM_ID)
+                    .order('identification');
+
+                if (error) throw error;
+
+                const animalSelects = [
+                    'treatmentAnimalSelect',
+                    'inseminationAnimalSelect', 
+                    'quickHealthAnimalSelect'
+                ];
+
+                animalSelects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = '<option value="">Selecione o animal</option>';
+                        animals.forEach(animal => {
+                            const option = document.createElement('option');
+                            option.value = animal.id;
+                            option.textContent = `${animal.identification}${animal.name ? ' - ' + animal.name : ''}`;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar animais para selects:', error);
+            }
+        }
+
+// Função para alternar visibilidade da senha
         function togglePasswordVisibility(button) {
             const input = button.previousElementSibling;
             const icon = button.querySelector('svg');
@@ -19670,19 +20333,23 @@ Funcionalidades:
                 }
             }
             
-            // Ctrl + R para rejeitar solicitação
+            // Ctrl + R para rejeitar solicitação (apenas se modal de solicitações estiver aberto)
             if (e.ctrlKey && e.key === 'r') {
-                // Verificar se há uma solicitação selecionada
-                if (window.currentPasswordRequestId) {
-                const rejectButton = document.querySelector('button[onclick*="rejectPasswordRequest"]');
-                if (rejectButton && !rejectButton.disabled) {
-                    e.preventDefault();
-                    rejectButton.click();
+                const passwordRequestsModal = document.getElementById('passwordRequestsModal');
+                if (passwordRequestsModal && !passwordRequestsModal.classList.contains('hidden')) {
+                    // Verificar se há uma solicitação selecionada
+                    if (window.currentPasswordRequestId) {
+                        const rejectButton = document.querySelector('button[onclick*="rejectPasswordRequest"]');
+                        if (rejectButton && !rejectButton.disabled) {
+                            e.preventDefault();
+                            rejectButton.click();
+                        }
+                    } else {
+                        e.preventDefault();
+                        showNotification('Nenhuma solicitação selecionada. Abra o modal de solicitações primeiro.', 'warning');
                     }
-                } else {
-                    e.preventDefault();
-                    showNotification('Nenhuma solicitação selecionada. Abra o modal de solicitações primeiro.', 'warning');
                 }
+                // Se o modal não estiver aberto, permitir o comportamento padrão (recarregar página)
             }
             
             // Escape para fechar modais
@@ -20096,18 +20763,18 @@ Funcionalidades:
             showUninstallButton();
         });
         
-        // Registrar service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                        console.log('SW registrado: ', registration);
-                    })
-                    .catch((registrationError) => {
-                        console.log('SW falhou: ', registrationError);
-                    });
-            });
-        }
+        // Registrar service worker (comentado para evitar erro 404)
+        // if ('serviceWorker' in navigator) {
+        //     window.addEventListener('load', () => {
+        //         navigator.serviceWorker.register('/sw.js')
+        //             .then((registration) => {
+        //                 console.log('SW registrado: ', registration);
+        //             })
+        //             .catch((registrationError) => {
+        //                 console.log('SW falhou: ', registrationError);
+        //             });
+        //     });
+        // }
 
         // ==================== DETECÇÃO DE CONEXÃO COM INTERNET ====================
         let wasOffline = false;
@@ -20336,28 +21003,28 @@ Funcionalidades:
             return await window.offlineManager.getData(cacheKey, fetchOnlineData);
         }
         
-        // Listener para mensagens do Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.addEventListener('message', (event) => {
-                const { type, data } = event.data;
-                
-                switch (type) {
-                    case 'DATA_SYNC_SUCCESS':
-                        console.log('✅ Dados sincronizados com sucesso:', data);
-                        if (window.offlineManager) {
-                            window.offlineManager.showNotification('Dados sincronizados com sucesso!', 'success');
-                        }
-                        break;
-                    case 'DATA_SYNC_FAILED':
-                        console.log('⚠️ Falha na sincronização, salvando offline:', data);
-                        if (window.offlineManager) {
-                            window.offlineManager.addToSyncQueue('volume_record', data);
-                            window.offlineManager.showNotification('Dados salvos offline, serão sincronizados quando a conexão for restaurada.', 'info');
-                        }
-                        break;
-                }
-            });
-        }
+        // Listener para mensagens do Service Worker (comentado para evitar erro)
+        // if ('serviceWorker' in navigator) {
+        //     navigator.serviceWorker.addEventListener('message', (event) => {
+        //         const { type, data } = event.data;
+        //         
+        //         switch (type) {
+        //             case 'DATA_SYNC_SUCCESS':
+        //                 console.log('✅ Dados sincronizados com sucesso:', data);
+        //                 if (window.offlineManager) {
+        //                     window.offlineManager.showNotification('Dados sincronizados com sucesso!', 'success');
+        //                 }
+        //                 break;
+        //             case 'DATA_SYNC_FAILED':
+        //                 console.log('⚠️ Falha na sincronização, salvando offline:', data);
+        //                 if (window.offlineManager) {
+        //                     window.offlineManager.addToSyncQueue('volume_record', data);
+        //                     window.offlineManager.showNotification('Dados salvos offline, serão sincronizados quando a conexão for restaurada.', 'info');
+        //                 }
+        //                 break;
+        //         }
+        //     });
+        // }
         
         // Tornar funções offline globais
         window.loadProductionDataWithCache = loadProductionDataWithCache;
@@ -21542,6 +22209,428 @@ Funcionalidades:
                 <p class="text-sm text-gray-500">
                     Por favor, aguarde...
                 </p>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Modal Tratamentos -->
+    <div id="treatmentsModal" class="fullscreen-modal">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Gestão de Tratamentos</h2>
+                    <button onclick="closeTreatmentsModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Filtros -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <select id="treatmentFilter" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none">
+                        <option value="all">Todos os tratamentos</option>
+                        <option value="active">Ativos</option>
+                        <option value="completed">Concluídos</option>
+                        <option value="pending">Pendentes</option>
+                    </select>
+                    <button onclick="openAddTreatmentModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Novo Tratamento
+                    </button>
+                </div>
+
+                <!-- Lista de Tratamentos -->
+                <div class="bg-white rounded-xl border border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Animal</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Tipo</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Data</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Status</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="treatmentsTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-gray-500">
+                                        Nenhum tratamento registrado
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Inseminação IA -->
+    <div id="inseminationModal" class="fullscreen-modal">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Inseminação Artificial</h2>
+                    <button onclick="closeInseminationModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Estatísticas -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl p-4 text-center border border-gray-200">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xl font-bold text-slate-900 mb-1" id="totalInseminationsCount">--</div>
+                        <div class="text-xs text-slate-500 font-medium">Total</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 text-center border border-gray-200">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xl font-bold text-slate-900 mb-1" id="confirmedPregnanciesCount">--</div>
+                        <div class="text-xs text-slate-500 font-medium">Confirmadas</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 text-center border border-gray-200">
+                        <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xl font-bold text-slate-900 mb-1" id="pendingPregnanciesCount">--</div>
+                        <div class="text-xs text-slate-500 font-medium">Pendentes</div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 text-center border border-gray-200">
+                        <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xl font-bold text-slate-900 mb-1" id="failedPregnanciesCount">--</div>
+                        <div class="text-xs text-slate-500 font-medium">Não Confirmadas</div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <select id="inseminationFilter" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none">
+                        <option value="all">Todas as inseminações</option>
+                        <option value="confirmed">Gravidez confirmada</option>
+                        <option value="pending">Aguardando confirmação</option>
+                        <option value="failed">Não confirmada</option>
+                    </select>
+                    <button onclick="openAddInseminationModal()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Nova Inseminação
+                    </button>
+                </div>
+
+                <!-- Lista de Inseminações -->
+                <div class="bg-white rounded-xl border border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Animal</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Data</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Lote</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Status</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inseminationsTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-gray-500">
+                                        Nenhuma inseminação registrada
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Animal -->
+    <div id="addAnimalModal" class="fullscreen-modal">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Adicionar Animal</h2>
+                    <button onclick="closeAddAnimalModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="addAnimalForm" onsubmit="handleAddAnimal(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Identificação *</label>
+                            <input type="text" name="identification" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Ex: V001">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+                            <input type="text" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Nome do animal (opcional)">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento</label>
+                            <input type="date" name="birth_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Raça</label>
+                            <input type="text" name="breed" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Ex: Holandesa">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status de Saúde</label>
+                            <select name="health_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                                <option value="healthy">Saudável</option>
+                                <option value="warning">Atenção</option>
+                                <option value="sick">Doente</option>
+                            </select>
+                        </div>
+                        
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Observações adicionais (opcional)"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeAddAnimalModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">
+                            Adicionar Animal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Tratamento -->
+    <div id="addTreatmentModal" class="fullscreen-modal">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Adicionar Tratamento</h2>
+                    <button onclick="closeAddTreatmentModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="addTreatmentForm" onsubmit="handleAddTreatment(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Animal *</label>
+                            <select name="animal_id" id="treatmentAnimalSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                                <option value="">Selecione o animal</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Tratamento *</label>
+                            <select name="treatment_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                                <option value="">Selecione o tipo</option>
+                                <option value="vaccination">Vacinação</option>
+                                <option value="medication">Medicação</option>
+                                <option value="surgery">Cirurgia</option>
+                                <option value="examination">Exame</option>
+                                <option value="other">Outro</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data do Tratamento *</label>
+                            <input type="date" name="treatment_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                                <option value="pending">Pendente</option>
+                                <option value="active">Ativo</option>
+                                <option value="completed">Concluído</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Descrição *</label>
+                        <textarea name="description" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Descreva o tratamento"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                        <textarea name="observations" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Observações adicionais (opcional)"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeAddTreatmentModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">
+                            Adicionar Tratamento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Inseminação -->
+    <div id="addInseminationModal" class="fullscreen-modal">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Adicionar Inseminação Artificial</h2>
+                    <button onclick="closeAddInseminationModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="addInseminationForm" onsubmit="handleAddInsemination(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Animal *</label>
+                            <select name="animal_id" id="inseminationAnimalSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                                <option value="">Selecione o animal</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data da Inseminação *</label>
+                            <input type="date" name="insemination_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lote do Sêmen</label>
+                            <input type="text" name="semen_batch" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Ex: L001">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Técnico Responsável</label>
+                            <input type="text" name="technician" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Nome do técnico">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Observações sobre a inseminação"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeAddInseminationModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">
+                            Adicionar Inseminação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registro de Saúde -->
+    <div id="quickHealthModal" class="fullscreen-modal">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Registro de Saúde</h2>
+                    <button onclick="closeQuickHealthModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="quickHealthForm" onsubmit="handleQuickHealth(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Animal *</label>
+                            <select name="animal_id" id="quickHealthAnimalSelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                                <option value="">Selecione o animal</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status de Saúde *</label>
+                            <select name="health_status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                                <option value="">Selecione o status</option>
+                                <option value="healthy">Saudável</option>
+                                <option value="warning">Atenção</option>
+                                <option value="sick">Doente</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Data da Avaliação *</label>
+                            <input type="date" name="assessment_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Temperatura (°C)</label>
+                            <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="38.5">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent" placeholder="Observações sobre a saúde do animal"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeQuickHealthModal()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">
+                            Registrar Saúde
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

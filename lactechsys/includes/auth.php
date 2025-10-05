@@ -4,10 +4,12 @@ require_once 'config.php';
 class Auth {
     private $supabase_url;
     private $supabase_key;
+    private $farm_id;
     
     public function __construct() {
         $this->supabase_url = SUPABASE_URL;
         $this->supabase_key = SUPABASE_ANON_KEY;
+        $this->farm_id = FARM_ID; // Fazenda fixa
     }
     
     /**
@@ -29,6 +31,20 @@ class Auth {
      */
     public function getUser() {
         return $_SESSION['user'] ?? null;
+    }
+    
+    /**
+     * Obtém o ID da fazenda (sempre a mesma)
+     */
+    public function getFarmId() {
+        return $this->farm_id;
+    }
+    
+    /**
+     * Obtém o nome da fazenda
+     */
+    public function getFarmName() {
+        return FARM_NAME;
     }
     
     /**

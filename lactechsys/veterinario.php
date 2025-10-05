@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Veterinário - Sistema Leiteiro</title>
+    <title>Painel do Veterinário - Sistema Leiteiro (DESABILITADO)</title>
     
     <!-- PWA Meta Tags -->
     <meta name="description" content="Painel do Veterinário - Sistema completo para gestão de produção leiteira, controle de qualidade e relatórios">
@@ -244,6 +244,16 @@
     </style>
 </head>
 <body class="gradient-mesh antialiased">
+    <!-- AVISO DE PÁGINA DESABILITADA -->
+    <div class="fixed inset-0 bg-red-600 text-white flex items-center justify-center z-50">
+        <div class="text-center p-8">
+            <h1 class="text-4xl font-bold mb-4">PÁGINA DESABILITADA</h1>
+            <p class="text-xl mb-6">As funcionalidades do veterinário foram movidas para o painel do gerente.</p>
+            <a href="gerente.php" class="bg-white text-red-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Ir para o Painel do Gerente
+            </a>
+        </div>
+    </div>
 
     <!-- Header -->
     <header class="gradient-forest shadow-xl sticky top-0 z-40 border-b border-forest-800">

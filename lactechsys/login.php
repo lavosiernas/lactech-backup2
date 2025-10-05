@@ -564,9 +564,14 @@
             const redirectMap = {
                 'proprietario': 'proprietario.php',
                 'gerente': 'gerente.php',
-                'funcionario': 'funcionario.php',
-                'veterinario': 'veterinario.php'
+                'funcionario': 'funcionario.php'
+                // veterinario removido - redirecionado para gerente
             };
+            
+            // Se for veterinário, redireciona para gerente (conforme solicitado)
+            if (userType === 'veterinario') {
+                return 'gerente.php';
+            }
             
             return redirectMap[userType] || 'gerente.php'; // Default fallback
         }

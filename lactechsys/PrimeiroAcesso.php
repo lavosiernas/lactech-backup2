@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($farmName) || empty($farmLocation)) {
         $error = 'Por favor, preencha todos os campos';
     } else {
-        $success = 'Fazenda configurada com sucesso!';
+        $success = 'Fazenda Lagoa do Mato configurada com sucesso!';
     }
 }
 
@@ -127,6 +127,37 @@ if ($notification) {
             margin-bottom: 16px;
             display: none;
         }
+
+        /* Estilos da logo */
+        .header-logo {
+            width: 32px !important;
+            height: 32px !important;
+            object-fit: contain !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .header-logo-container {
+            width: 40px !important;
+            height: 40px !important;
+            background-color: white !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 4px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .header-logo-container img {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -200,7 +231,7 @@ if ($notification) {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Nome da Fazenda *</label>
-                        <input type="text" required name="farm_name" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder="Ex: Fazenda São João">
+                        <input type="text" required name="farm_name" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" value="Lagoa do Mato" readonly>
                     </div>
                     
                     <div>
@@ -726,7 +757,7 @@ if ($notification) {
                 }
                 
                 farmData = {
-                    name: formData.get('farm_name'),
+                    name: 'Lagoa do Mato',
                     owner_name: formData.get('owner_name'),
                     cnpj: document || null,
                     city: formData.get('city'),
