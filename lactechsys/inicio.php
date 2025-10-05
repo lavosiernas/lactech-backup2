@@ -117,14 +117,14 @@
                 
                 <div class="space-y-4">
                     <button 
-                        onclick="window.location.href='PrimeiroAcesso.html'"
+                        onclick="window.location.href='PrimeiroAcesso.php'"
                         class="w-full bg-green-900 hover:bg-green-800 text-white py-4 px-6 rounded-xl font-medium transition-all duration-200"
                     >
                         <span class="login-button-text">Primeiro Acesso</span>
                     </button>
                     
                     <button 
-                        onclick="window.location.href='login.html'"
+                        onclick="window.location.href='login.php'"
                         class="w-full text-gray-600 hover:text-gray-800 py-2 px-6 font-medium transition-colors duration-200 flex items-center justify-center gap-2"
                     >
                         Login
@@ -244,7 +244,7 @@
 
                         <div class="space-y-4">
                             <button 
-                                onclick="window.location.href='PrimeiroAcesso.html'"
+                                onclick="window.location.href='PrimeiroAcesso.php'"
                                 class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-6 rounded-2xl font-semibold transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
                             >
                                 <div class="flex items-center justify-center space-x-2">
@@ -256,7 +256,7 @@
                             </button>
                             
                             <button 
-                            onclick="window.location.href='login.html'"
+                            onclick="window.location.href='login.php'"
                             class="w-full bg-white/10 hover:bg-white/20 text-white py-4 px-6 rounded-2xl font-medium transition-all duration-300 border border-white/20 hover:border-white/40"
                             >
                             <div class="flex items-center justify-center space-x-2">
@@ -391,12 +391,12 @@
                         console.log('🔐 Sessão ativa detectada, redirecionando...');
                         // Redirecionar baseado no tipo de usuário
                         const redirectMap = {
-                            'proprietario': 'proprietario.html',
-                            'gerente': 'gerente.html',
-                            'funcionario': 'funcionario.html',
-                            'veterinario': 'veterinario.html'
+                            'proprietario': 'proprietario.php',
+                            'gerente': 'gerente.php',
+                            'funcionario': 'funcionario.php',
+                            'veterinario': 'veterinario.php'
                         };
-                        const redirectUrl = redirectMap[user.userType] || 'gerente.html';
+                        const redirectUrl = redirectMap[user.userType] || 'gerente.php';
                         window.location.replace(redirectUrl);
                         return;
                     }
