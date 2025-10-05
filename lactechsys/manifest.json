@@ -3,7 +3,7 @@
   "short_name": "LacTech",
   "description": "Sistema completo para gestão agropecuária - LacTech",
   "version": "2.0.0",
-  "start_url": "/xandria-store.html",
+  "start_url": "/xandria-store.php",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#01875f",
@@ -30,7 +30,7 @@
       "name": "Gerente",
       "short_name": "Gerente",
       "description": "Abrir Painel do Gerente",
-      "url": "/gerente.html",
+      "url": "/gerente.php",
       "icons": [
         {
           "src": "assets/img/lactech-logo.png",
@@ -42,7 +42,7 @@
       "name": "Funcionário",
       "short_name": "Funcionário",
       "description": "Abrir Painel do Funcionário",
-      "url": "/funcionario.html",
+      "url": "/funcionario.php",
       "icons": [
         {
           "src": "assets/img/lactech-logo.png",
@@ -54,7 +54,7 @@
       "name": "Veterinário",
       "short_name": "Veterinário",
       "description": "Abrir Painel do Veterinário",
-      "url": "/veterinario.html",
+      "url": "/veterinario.php",
       "icons": [
         {
           "src": "assets/img/lactech-logo.png",

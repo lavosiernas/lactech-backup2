@@ -1,3 +1,24 @@
+<?php
+require_once 'includes/config.php';
+require_once 'includes/auth.php';
+require_once 'includes/functions.php';
+
+// Esta página não requer autenticação, mas pode verificar se o usuário está bloqueado
+session_start();
+
+// Se o usuário não estiver bloqueado, redirecionar para login
+if (!isset($_SESSION['user_blocked']) || $_SESSION['user_blocked'] !== true) {
+    header('Location: login.php');
+    exit;
+}
+
+// Limpar sessão de bloqueio se o usuário clicar em logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>

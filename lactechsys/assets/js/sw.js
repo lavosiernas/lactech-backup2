@@ -5,12 +5,12 @@ const OFFLINE_CACHE = 'lactech-offline-data-v2.0.2';
 
 const urlsToCache = [
   '/',
-  '/xandria-store.html',
-  '/gerente.html',
-  '/funcionario.html',
-  '/veterinario.html',
-  '/proprietario.html',
-  '/login.html',
+  '/xandria-store.php',
+  '/gerente.php',
+  '/funcionario.php',
+  '/veterinario.php',
+  '/proprietario.php',
+  '/login.php',
   '/acesso-bloqueado.html',
   '/assets/js/offline-manager.js',
   '/assets/css/style.css',
@@ -208,7 +208,7 @@ self.addEventListener('notificationclick', (event) => {
   if (event.action === 'explore') {
     // Abrir o LacTech
     event.waitUntil(
-      clients.openWindow('/xandria-store.html')
+      clients.openWindow('/xandria-store.php')
     );
   } else if (event.action === 'close') {
     // Apenas fechar a notificação
@@ -216,7 +216,7 @@ self.addEventListener('notificationclick', (event) => {
   } else {
     // Clique padrão - abrir o LacTech
     event.waitUntil(
-      clients.openWindow('/xandria-store.html')
+      clients.openWindow('/xandria-store.php')
     );
   }
 });

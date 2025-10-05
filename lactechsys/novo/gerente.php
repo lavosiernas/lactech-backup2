@@ -1,3 +1,21 @@
+<?php
+require_once '../includes/config.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+require_once '../includes/rbac.php';
+
+$auth = new Auth();
+$rbac = RBAC::getInstance();
+
+// Verificar autenticação
+$auth->requireLogin();
+$auth->require2FA();
+
+$user = $auth->getCurrentUser();
+
+// Verificar permissões
+$rbac->requirePageAccess('gerente.php');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>

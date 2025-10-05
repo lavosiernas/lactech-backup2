@@ -1,3 +1,41 @@
+<?php
+require_once 'includes/config.php';
+require_once 'includes/auth.php';
+require_once 'includes/functions.php';
+
+$auth = new Auth();
+
+// Se já estiver logado, redirecionar para dashboard
+if ($auth->isLoggedIn()) {
+    redirect(DASHBOARD_URL);
+}
+
+$error = '';
+$success = '';
+
+// Processar configuração da fazenda
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $farmName = sanitizeInput($_POST['farm_name'] ?? '');
+    $farmLocation = sanitizeInput($_POST['farm_location'] ?? '');
+    
+    if (empty($farmName) || empty($farmLocation)) {
+        $error = 'Por favor, preencha todos os campos';
+    } else {
+        // Aqui você pode adicionar a lógica para criar a fazenda
+        $success = 'Fazenda configurada com sucesso!';
+    }
+}
+
+// Verificar notificação
+$notification = getNotification();
+if ($notification) {
+    if ($notification['type'] === 'success') {
+        $success = $notification['message'];
+    } else {
+        $error = $notification['message'];
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,11 +44,10 @@
     <title>Configuração da Fazenda - Sistema de Controle Leiteiro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/loading-screen.js"></script>
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
     <link href="assets/css/loading-screen.css" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -112,15 +149,6 @@
                     </div>
                 </div>
                 
-                <!-- Botão de Tema Escuro -->
-                <button id="themeToggle" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-                    <svg id="sunIcon" class="w-5 h-5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                    <svg id="moonIcon" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
             </div>
         </div>
     </header>
@@ -1066,14 +1094,14 @@
             // Redirect based on user role
             if (adminData.role === 'proprietario') {
                 console.log('👤 Redirecionando para proprietário');
-                window.location.href = 'proprietario.html';
+                window.location.href = 'proprietario.php';
             } else if (adminData.role === 'gerente') {
                 console.log('👤 Redirecionando para gerente');
-                window.location.href = 'gerente.html';
+                window.location.href = 'gerente.php';
             } else {
                 console.log('⚠️ Role não definido, redirecionando para login');
                 // Fallback to login page
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
             }
         }
 
@@ -1142,56 +1170,6 @@
         // Initialize masks when page loads
         document.addEventListener('DOMContentLoaded', setupInputMasks);
 
-        // =====================================================
-        // CONTROLE DO TEMA ESCURO
-        // =====================================================
-        
-        function initTheme() {
-            const html = document.documentElement;
-            const body = document.body;
-            const themeToggle = document.getElementById('themeToggle');
-            const sunIcon = document.getElementById('sunIcon');
-            const moonIcon = document.getElementById('moonIcon');
-            
-            // Verificar tema salvo ou preferência do sistema
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            // Aplicar tema inicial
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                html.classList.add('dark');
-                body.classList.add('dark');
-                sunIcon.classList.remove('hidden');
-                moonIcon.classList.add('hidden');
-            } else {
-                html.classList.remove('dark');
-                body.classList.remove('dark');
-                sunIcon.classList.add('hidden');
-                moonIcon.classList.remove('hidden');
-            }
-            
-            // Event listener para alternar tema
-            themeToggle.addEventListener('click', () => {
-                if (html.classList.contains('dark')) {
-                    // Mudar para tema claro
-                    html.classList.remove('dark');
-                    body.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
-                } else {
-                    // Mudar para tema escuro
-                    html.classList.add('dark');
-                    body.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
-                }
-            });
-        }
-        
-        // Inicializar tema quando a página carregar
-        document.addEventListener('DOMContentLoaded', initTheme);
 
         // Função para iniciar contador regressivo e redirecionamento automático
         function startRedirectCountdown() {

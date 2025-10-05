@@ -1,3 +1,16 @@
+<?php
+require_once '../includes/config.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+
+$auth = new Auth();
+
+// Verificar autenticação
+$auth->requireLogin();
+$auth->require2FA();
+
+$user = $auth->getCurrentUser();
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1047,6 +1060,6 @@
     </div>
 
     <!-- JavaScript atualizado para nova interface -->
-    <script src="app.js"></script>
+    <script src="../assets/js/app.js"></script>
 </body>
 </html>

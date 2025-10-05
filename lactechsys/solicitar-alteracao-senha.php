@@ -354,7 +354,7 @@
     </main>
 
     <!-- Scripts -->
-    <script src="config.js"></script>
+    <script src="assets/js/config.js"></script>
     <script>
         let supabaseClient;
 
@@ -616,7 +616,7 @@
             if (document.referrer && document.referrer.includes(window.location.origin)) {
                 window.history.back();
             } else {
-                window.location.href = 'inicio.html';
+                window.location.href = 'index.php';
             }
         }
 

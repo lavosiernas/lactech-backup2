@@ -32,15 +32,15 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="config.js"></script>
-    <script src="database-config.js"></script>
-    <script src="chat-sync-service.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/database-config.js"></script>
+    <script src="assets/js/chat-sync-service.js"></script>
     <script src="assets/js/loading-screen.js"></script>
-    <script src="api.js"></script>
+    <script src="assets/js/api.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
     <script src="assets/js/offline-loading.js"></script>
-    <script src="ecosystem-manager.js"></script>
+    <script src="assets/js/ecosystem-manager.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="assets/css/loading-screen.css" rel="stylesheet">
@@ -6449,7 +6449,7 @@
                 sessionStorage.removeItem('currentSecondaryAccount');
                 
                 // Redirecionar para o painel do gerente
-                window.location.replace('gerente.html');
+                window.location.replace('gerente.php');
             }
         }
         
@@ -7345,13 +7345,6 @@
             console.log('🚀 FORÇANDO aba dashboard visível...');
             switchToTab('dashboard');
             
-            // Teste manual das abas
-            setTimeout(() => {
-                console.log('🧪 Teste das abas disponível no console');
-                console.log('Digite: switchToTab("register") para testar');
-                console.log('Digite: switchToTab("history") para testar');
-                console.log('Digite: switchToTab("dashboard") para voltar');
-            }, 1000);
         });
         
         

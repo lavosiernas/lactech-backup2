@@ -221,11 +221,9 @@ const VetApp = {
          console.error("❌ Erro ao carregar estatísticas de saúde:", error)
        }
 
-       // Carregar tratamentos ativos (query de teste)
+       // Carregar tratamentos ativos
        try {
-         console.log("🔍 Tentando carregar tratamentos para farm_id:", userData.farm_id)
-         
-         // Primeiro, vamos testar se a tabela existe e ver sua estrutura
+         console.log("🔍 Carregando tratamentos para farm_id:", userData.farm_id)
          const { data: tableInfo, error: tableError } = await this.state.supabaseClient
            .from("treatments")
            .select("*")
@@ -896,11 +894,6 @@ const VetApp = {
        modal.classList.add("hidden")
        console.log("🔍 Modal encontrado, classes depois:", modal.className)
        
-       // Teste adicional - verificar se realmente ficou hidden
-       setTimeout(() => {
-         console.log("🔍 Verificação após 100ms - modal hidden:", modal.classList.contains("hidden"))
-         console.log("🔍 Todas as classes:", modal.className)
-       }, 100)
        
        console.log("✅ Modal fechado:", modalId)
      } else {
@@ -1798,7 +1791,7 @@ const VetApp = {
 
     if (confirmed) {
       sessionStorage.removeItem("currentSecondaryAccount")
-      window.location.href = "gerente.html"
+      window.location.href = "gerente.php"
     }
   },
 

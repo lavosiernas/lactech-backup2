@@ -247,12 +247,6 @@
                         <span class="text-yellow-600 dark:text-yellow-400">Atualizar App</span>
                     </button>
 
-                    <button id="debugPWAButton" onclick="debugPWAStatus()" class="w-full flex items-center space-x-3 p-3 rounded-xl text-left hover:bg-blue-100 dark:hover:bg-blue-900">
-                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                        <span class="text-blue-600 dark:text-blue-400">Debug PWA</span>
-                    </button>
 
                     <button onclick="toggleTheme()" class="w-full flex items-center justify-between p-3 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-gray-800">
                         <div class="flex items-center space-x-3">
@@ -609,29 +603,6 @@
                 </div>
 
                    <!-- Teste de Notificações -->
-                   <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl p-6">
-                       <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Teste de Notificações</h3>
-                       <div class="space-y-4">
-                           <div class="flex items-center justify-between">
-                               <div>
-                                   <p class="text-gray-900 dark:text-white font-medium">Novo app disponível</p>
-                                   <p class="text-gray-600 dark:text-gray-400 text-sm">Simular notificação de novo app</p>
-                    </div>
-                               <button onclick="simulateNewAppNotification()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-full text-sm transition-colors">
-                                   Testar
-                               </button>
-                           </div>
-                           <div class="flex items-center justify-between">
-                               <div>
-                                   <p class="text-gray-900 dark:text-white font-medium">Atualização disponível</p>
-                                   <p class="text-gray-600 dark:text-gray-400 text-sm">Simular notificação de atualização</p>
-                               </div>
-                               <button onclick="simulateUpdateNotification()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-full text-sm transition-colors">
-                                   Testar
-                               </button>
-                           </div>
-                    </div>
-                </div>
 
                  <!-- Sobre -->
                  <div class="bg-gray-100 dark:bg-gray-900 rounded-2xl p-6">
@@ -864,10 +835,10 @@
               if (from) {
                   // Mapear páginas para roles
                   const pageToRole = {
-                      'gerente.html': 'gerente',
-                      'funcionario.html': 'funcionario',
-                      'veterinario.html': 'veterinario',
-                      'proprietario.html': 'proprietario'
+                      'gerente.php': 'gerente',
+                      'funcionario.php': 'funcionario',
+                      'veterinario.php': 'veterinario',
+                      'proprietario.php': 'proprietario'
                   };
                   
                   const role = pageToRole[from];
@@ -919,10 +890,10 @@
           // Redirecionar para módulo específico
           function redirectToModule(role) {
               const moduleUrls = {
-                  'gerente': '/gerente.html',
-                  'funcionario': '/funcionario.html',
-                  'veterinario': '/veterinario.html',
-                  'proprietario': '/proprietario.html'
+                  'gerente': '/gerente.php',
+                  'funcionario': '/funcionario.php',
+                  'veterinario': '/veterinario.php',
+                  'proprietario': '/proprietario.php'
               };
               
               const url = moduleUrls[role];
@@ -1619,30 +1590,6 @@
                }
            }
 
-           // Simular notificação de novo app
-           function simulateNewAppNotification() {
-               sendPushNotification(
-                   'Novo App Disponível!',
-                   'AgroSmart foi lançado na Xandria Store. Instale agora!',
-                   {
-                       action: 'open_app',
-                       app: 'AgroSmart'
-                   }
-               );
-           }
-
-           // Simular notificação de atualização
-           function simulateUpdateNotification() {
-               sendPushNotification(
-                   'Atualização Disponível',
-                   'LacTech foi atualizado para a versão 2.5.0. Instale agora!',
-                   {
-                       action: 'update_app',
-                       app: 'LacTech',
-                       version: '2.5.0'
-                   }
-               );
-           }
 
            // Inicializar sistema de notificações
            async function initializeNotifications() {
@@ -2029,40 +1976,6 @@
                return isStandalone || hasValidInstallData;
            }
            
-           // Função de debug para verificar status da PWA
-           async function debugPWAStatus() {
-               const isInstalled = await isPWAInstalled();
-               const installedVersion = localStorage.getItem('pwa_version');
-               const hasServiceWorker = await checkServiceWorker();
-               const isStandalone = isRunningAsPWA();
-               const displayMode = window.matchMedia('(display-mode: standalone)').matches;
-               const standalone = window.navigator.standalone;
-               
-               const debugInfo = {
-                   'PWA Instalada': isInstalled,
-                   'Versão Instalada': installedVersion || 'Nenhuma',
-                   'Versão Atual': CURRENT_VERSION,
-                   'Service Worker': hasServiceWorker,
-                   'Modo Standalone': isStandalone,
-                   'Display Mode': displayMode,
-                   'Navigator Standalone': standalone,
-                   'Deferred Prompt': deferredPrompt !== null,
-                   'Local Storage Keys': Object.keys(localStorage)
-               };
-               
-               console.log('=== DEBUG PWA STATUS ===');
-               console.table(debugInfo);
-               
-               let message = '=== DEBUG PWA STATUS ===\n\n';
-               for (const [key, value] of Object.entries(debugInfo)) {
-                   message += `${key}: ${value}\n`;
-               }
-               
-               alert(message);
-               
-               // Forçar verificação de status
-               checkPWAStatus();
-           }
            
            // Verificar status inicial
            checkPWAStatus();

@@ -391,12 +391,12 @@
                         console.log('🔐 Sessão ativa detectada, redirecionando...');
                         // Redirecionar baseado no tipo de usuário
                         const redirectMap = {
-                            'proprietario': 'proprietario.html',
-                            'gerente': 'gerente.html',
-                            'funcionario': 'funcionario.html',
-                            'veterinario': 'veterinario.html'
+                            'proprietario': 'proprietario.php',
+                            'gerente': 'gerente.php',
+                            'funcionario': 'funcionario.php',
+                            'veterinario': 'veterinario.php'
                         };
-                        const redirectUrl = redirectMap[user.userType] || 'gerente.html';
+                        const redirectUrl = redirectMap[user.userType] || 'gerente.php';
                         window.location.replace(redirectUrl);
                         return;
                     }

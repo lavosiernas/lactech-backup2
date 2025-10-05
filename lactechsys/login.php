@@ -6,7 +6,7 @@
     <title>Login - LacTech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="config.js"></script>
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
@@ -222,7 +222,7 @@
                     Não tem uma conta? 
                     <a href="register.html" class="text-forest-600 hover:text-forest-700 font-semibold">Criar conta</a>
                 </p>
-                <button onclick="window.location.href='inicio.html'" class="mt-4 text-slate-500 hover:text-slate-700 text-sm">
+                <button onclick="window.location.href='index.php'" class="mt-4 text-slate-500 hover:text-slate-700 text-sm">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
@@ -562,13 +562,13 @@
         // Get redirect URL based on user type
         function getRedirectUrl(userType) {
             const redirectMap = {
-                'proprietario': 'proprietario.html',
-                'gerente': 'gerente.html',
-                'funcionario': 'funcionario.html',
-                'veterinario': 'veterinario.html'
+                'proprietario': 'proprietario.php',
+                'gerente': 'gerente.php',
+                'funcionario': 'funcionario.php',
+                'veterinario': 'veterinario.php'
             };
             
-            return redirectMap[userType] || 'gerente.html'; // Default fallback
+            return redirectMap[userType] || 'gerente.php'; // Default fallback
         }
 
         // Handle form submission

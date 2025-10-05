@@ -30,11 +30,11 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="config.js"></script>
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
     <script src="assets/js/offline-loading.js"></script>
-    <script src="vet.js"></script>
+    <script src="assets/js/vet.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1818,11 +1818,11 @@
                     timestamp: Date.now().toString()
                 });
                 
-                window.open(`xandria-store.html?${securityParams.toString()}`, '_blank');
+                window.open(`xandria-store.php?${securityParams.toString()}`, '_blank');
             } catch (error) {
                 console.error('Erro ao abrir Xandria Store:', error);
                 // Fallback para URL simples
-                window.open('xandria-store.html?role=veterinario', '_blank');
+                window.open('xandria-store.php?role=veterinario', '_blank');
             }
         }
         

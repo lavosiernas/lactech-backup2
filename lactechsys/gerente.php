@@ -36,8 +36,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/pdf-generator.js"></script>
-    <script src="database-config.js"></script>
-    <script src="chat-sync-service.js"></script>
+    <script src="assets/js/database-config.js"></script>
+    <script src="assets/js/chat-sync-service.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
     <script src="assets/js/offline-loading.js"></script>
@@ -49,6 +49,7 @@
     <link href="assets/css/offline-loading.css" rel="stylesheet">
     <link href="assets/css/weather-modal.css" rel="stylesheet">
     <link href="assets/css/native-notifications.css" rel="stylesheet">
+    <link href="assets/css/quality-modal.css" rel="stylesheet">
     
     <!-- Responsividade Customizada -->
     <style>
@@ -2037,7 +2038,7 @@
                         <div class="form-floating relative">
                             <input type="password" id="userPassword" name="password" class="w-full px-3 py-4 pr-12 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" " required>
                             <label for="userPassword" class="text-slate-600">Senha *</label>
-                            <button type="button" onclick="togglePasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none" id="userPasswordToggle">
+                            <button type="button" onclick="toggleUserPasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none" id="userPasswordToggle">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -2151,7 +2152,7 @@
                         <div class="form-floating relative">
                             <input type="password" id="editUserPassword" name="password" class="w-full px-3 py-4 pr-12 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" ">
                             <label for="editUserPassword" class="text-slate-600">Nova Senha (deixe em branco para manter a atual)</label>
-                            <button type="button" onclick="togglePasswordVisibility('editUserPassword', 'editUserPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none" id="editUserPasswordToggle">
+                            <button type="button" onclick="toggleUserPasswordVisibility('editUserPassword', 'editUserPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none" id="editUserPasswordToggle">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -2456,7 +2457,7 @@
                             <h4 class="text-lg font-semibold text-gray-900 mb-2">Segurança da Conta</h4>
                             <p class="text-sm text-gray-600">Altere sua senha para manter sua conta segura</p>
                         </div>
-                        <button onclick="window.location.href='alterar-senha.html'" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
+                        <button onclick="window.location.href='alterar-senha.php'" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                             </svg>
@@ -2643,7 +2644,7 @@
             <!-- Overlay de Verificação Facial -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div id="managerFocusCircle" class="relative">
-                    <div class="w-80 h-80 border-2 border-white/40 rounded-full flex items-center justify-center animate-pulse">
+                    <div id="managerFaceCircle" class="w-80 h-80 border-4 border-red-500 rounded-full flex items-center justify-center animate-pulse transition-colors duration-300">
                         <div class="w-72 h-72 border-2 border-white/60 rounded-full flex items-center justify-center">
                             <div class="w-64 h-64 border-3 border-white/80 rounded-full flex items-center justify-center">
                                 <div id="managerFocusIndicator" class="w-56 h-56 border-2 border-green-400 rounded-full flex items-center justify-center opacity-0 transition-opacity duration-500">
@@ -2655,9 +2656,15 @@
                     
                     <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 text-center">
                         <div id="managerFocusText" class="text-white text-lg font-medium mb-2">Posicione o rosto no centro</div>
+                        <div id="managerFaceStatus" class="text-white/70 text-sm mb-2">Centralizando rosto...</div>
                         <div id="managerFocusTimer" class="text-white/70 text-sm hidden">Focando em <span id="managerTimerCount">3</span>s...</div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Aviso de Centralização -->
+            <div id="managerFaceWarning" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none">
+                Centralize o rosto no círculo para tirar a foto
             </div>
 
             <!-- Controles -->
@@ -2669,10 +2676,10 @@
                         </svg>
                     </button>
                     
-                    <button id="managerCaptureBtn" onclick="startManagerFaceVerification()" class="p-6 bg-white rounded-full hover:bg-gray-100 transition-all shadow-2xl transform hover:scale-105">
+                    <button id="managerCaptureBtn" onclick="captureManagerPhoto()" class="p-6 bg-white/50 rounded-full transition-all shadow-2xl cursor-not-allowed opacity-50" disabled>
                         <div class="w-20 h-20 border-4 border-gray-200 rounded-full flex items-center justify-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                                <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
@@ -3581,7 +3588,7 @@
                 
                 showNotification('Sessão expirada. Redirecionando para login...', 'error');
                 setTimeout(() => {
-                    safeRedirect('login.html');
+                    safeRedirect('login.php');
                 }, 2000);
                 return false;
             }
@@ -3595,7 +3602,7 @@
                 
                 showNotification('Usuário não encontrado. Redirecionando para login...', 'error');
                 setTimeout(() => {
-                    safeRedirect('login.html');
+                    safeRedirect('login.php');
                 }, 2000);
                 return false;
             }
@@ -3604,7 +3611,7 @@
             if (!userData.is_active) {
                 showNotification('Conta bloqueada. Redirecionando...', 'error');
                 setTimeout(() => {
-                    safeRedirect('acesso-bloqueado.html');
+                    safeRedirect('acesso-bloqueado.php');
                 }, 2000);
                 return false;
             }
@@ -3616,7 +3623,7 @@
             clearUserSession();
             
             setTimeout(() => {
-                safeRedirect('login.html');
+                safeRedirect('login.php');
             }, 2000);
             return false;
         }
@@ -3683,7 +3690,7 @@ function safeRedirect(url) {
                 
                 if (!user) {
                     clearUserSession();
-                    safeRedirect('login.html');
+                    safeRedirect('login.php');
                     return;
                 }
                     
@@ -3696,13 +3703,13 @@ function safeRedirect(url) {
                 if (!error && userData && !userData.is_active) {
                     clearUserSession();
                     clearInterval(blockWatcherInterval);
-                    safeRedirect('acesso-bloqueado.html');
+                    safeRedirect('acesso-bloqueado.php');
                 }
             } catch (error) {
                 // Em caso de erro persistente, limpar sessão
                 clearUserSession();
                 clearInterval(blockWatcherInterval);
-                safeRedirect('login.html');
+                safeRedirect('login.php');
             }
         }, BLOCK_CHECK_INTERVAL);
     }
@@ -3725,7 +3732,7 @@ function safeRedirect(url) {
         // Verificar se há dados de sessão válidos
         const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
         if (!userData) {
-            safeRedirect('login.html');
+            safeRedirect('login.php');
             return;
         }
         
@@ -3734,7 +3741,7 @@ function safeRedirect(url) {
         if (redirectCount > 3) {
             clearUserSession();
             sessionStorage.removeItem('redirectCount');
-            safeRedirect('login.html');
+            safeRedirect('login.php');
             return;
         }
         
@@ -3743,12 +3750,12 @@ function safeRedirect(url) {
             const parsedUserData = JSON.parse(userData);
             if (!parsedUserData || !parsedUserData.id) {
                 clearUserSession();
-                safeRedirect('login.html');
+                safeRedirect('login.php');
                 return;
             }
         } catch (error) {
             clearUserSession();
-            safeRedirect('login.html');
+            safeRedirect('login.php');
             return;
         }
         
@@ -9102,54 +9109,187 @@ function addVolumeRecord() {
 function addQualityTest() {
     // Criar modal para adicionar novo teste de qualidade
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 quality-modal-backdrop py-8 px-4';
     modal.innerHTML = `
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-slate-900 ">Novo Teste de Qualidade</h3>
-                <button onclick="closeQualityModal()" class="text-gray-400 hover:text-gray-600  hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-lg mx-4 shadow-2xl transform transition-all duration-300 scale-100">
+            <!-- Header com ícone -->
+            <div class="flex items-center justify-between mb-8 quality-modal-header p-6 -m-8 mb-8 rounded-t-3xl">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Novo Teste de Qualidade</h3>
+                        <p class="text-sm text-gray-500">Registre os parâmetros de qualidade do leite</p>
+                    </div>
+                </div>
+                <button onclick="closeQualityModal()" class="quality-close-btn text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <form id="qualityForm" onsubmit="handleAddQuality(event)">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700  mb-2">Data do Teste</label>
-                        <input type="date" name="test_date" required class="w-full px-3 py-2 border border-gray-300 border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent bg-white bg-white text-gray-900 ">
+
+            <form id="qualityForm" onsubmit="handleAddQuality(event)" class="quality-form space-y-6">
+                <!-- Data do Teste -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Data do Teste
+                    </label>
+                    <input type="date" name="test_date" required 
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white">
+                </div>
+
+                <!-- Parâmetros de Qualidade em Grid -->
+                <div class="quality-modal-grid grid grid-cols-2 gap-4">
+                    <!-- Gordura -->
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <div class="w-3 h-3 bg-orange-400 rounded-full inline-block mr-2"></div>
+                            Gordura (%)
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="fat_percentage" step="0.01" min="0" max="100" required 
+                                   class="w-full px-4 py-3 pr-16 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                                   placeholder="3.50">
+                            <div class="absolute inset-y-0 right-0 flex flex-col items-center pr-3">
+                                <button type="button" onclick="adjustValue('fat_percentage', 0.1)" class="text-gray-400 hover:text-orange-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" onclick="adjustValue('fat_percentage', -0.1)" class="text-gray-400 hover:text-orange-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="quality-standards">Padrão: 3.0 - 6.0%</div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700  mb-2">Gordura (%)</label>
-                        <input type="number" name="fat_percentage" step="0.01" min="0" max="100" required class="w-full px-3 py-2 border border-gray-300 border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent bg-white bg-white text-gray-900 " placeholder="3.50">
+
+                    <!-- Proteína -->
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <div class="w-3 h-3 bg-blue-400 rounded-full inline-block mr-2"></div>
+                            Proteína (%)
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="protein_percentage" step="0.01" min="0" max="100" required 
+                                   class="w-full px-4 py-3 pr-16 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                                   placeholder="3.20">
+                            <div class="absolute inset-y-0 right-0 flex flex-col items-center pr-3">
+                                <button type="button" onclick="adjustValue('protein_percentage', 0.1)" class="text-gray-400 hover:text-blue-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" onclick="adjustValue('protein_percentage', -0.1)" class="text-gray-400 hover:text-blue-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="quality-standards">Padrão: 2.8 - 4.0%</div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700  mb-2">Proteína (%)</label>
-                        <input type="number" name="protein_percentage" step="0.01" min="0" max="100" required class="w-full px-3 py-2 border border-gray-300 border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent bg-white bg-white text-gray-900 " placeholder="3.20">
+
+                    <!-- CCS -->
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <div class="w-3 h-3 bg-red-400 rounded-full inline-block mr-2"></div>
+                            CCS (mil/mL)
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="scc" min="0" max="1000" required 
+                                   class="w-full px-4 py-3 pr-16 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                                   placeholder="200">
+                            <div class="absolute inset-y-0 right-0 flex flex-col items-center pr-3">
+                                <button type="button" onclick="adjustValue('scc', 10)" class="text-gray-400 hover:text-red-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" onclick="adjustValue('scc', -10)" class="text-gray-400 hover:text-red-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="quality-standards">Máximo: 400 mil/mL</div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700  mb-2">CCS (mil/mL)</label>
-                        <input type="number" name="scc" min="0" required class="w-full px-3 py-2 border border-gray-300 border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent bg-white bg-white text-gray-900 " placeholder="200">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700  mb-2">CBT (mil/mL)</label>
-                        <input type="number" name="total_bacterial_count" min="0" required class="w-full px-3 py-2 border border-gray-300 border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent bg-white bg-white text-gray-900 " placeholder="50">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700  mb-2">Laboratório</label>
-                        <input type="text" name="laboratory" class="w-full px-3 py-2 border border-gray-300 border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent bg-white bg-white text-gray-900 " placeholder="Nome do laboratório">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700  mb-2">Observações</label>
-                        <textarea name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent bg-white bg-white text-gray-900 " placeholder="Observações adicionais (opcional)"></textarea>
+
+                    <!-- CBT -->
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <div class="w-3 h-3 bg-purple-400 rounded-full inline-block mr-2"></div>
+                            CBT (mil/mL)
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="total_bacterial_count" min="0" max="1000" required 
+                                   class="w-full px-4 py-3 pr-16 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                                   placeholder="50">
+                            <div class="absolute inset-y-0 right-0 flex flex-col items-center pr-3">
+                                <button type="button" onclick="adjustValue('total_bacterial_count', 5)" class="text-gray-400 hover:text-purple-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" onclick="adjustValue('total_bacterial_count', -5)" class="text-gray-400 hover:text-purple-600 p-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="quality-standards">Máximo: 100 mil/mL</div>
                     </div>
                 </div>
-                <div class="flex gap-3 mt-6">
-                    <button type="button" onclick="closeQualityModal()" class="flex-1 px-4 py-2 border border-gray-300 border-gray-300 text-gray-700  rounded-lg hover:bg-gray-50 hover:bg-gray-50 transition-colors">
+
+                <!-- Laboratório -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                        Laboratório
+                    </label>
+                    <input type="text" name="laboratory" 
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
+                           placeholder="Nome do laboratório">
+                </div>
+
+                <!-- Observações -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Observações
+                    </label>
+                    <textarea name="notes" rows="3" 
+                              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none" 
+                              placeholder="Observações adicionais (opcional)"></textarea>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeQualityModal()" 
+                            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
                         Cancelar
                     </button>
-                    <button type="submit" class="flex-1 px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">
-                        Registrar
+                    <button type="submit" 
+                            class="quality-btn-primary flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Registrar Teste
                     </button>
                 </div>
             </form>
@@ -9162,6 +9302,28 @@ function addQualityTest() {
     // Set default date to today
     const today = new Date().toISOString().split('T')[0];
     modal.querySelector('input[name="test_date"]').value = today;
+    
+    // Garantir posicionamento correto
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '9999';
+    
+    // Adicionar animação de entrada
+    setTimeout(() => {
+        modal.querySelector('.bg-white').classList.add('scale-100');
+    }, 10);
+    
+    // Ativar validação em tempo real
+    setTimeout(() => {
+        validateQualityInputs();
+        addQualitySummary();
+    }, 100);
 }
 
 function addPayment() {
@@ -9254,8 +9416,271 @@ function closeVolumeModal() {
 function closeQualityModal() {
     const modal = document.getElementById('qualityModal');
     if (modal) {
-        modal.remove();
+        // Adicionar animação de saída
+        modal.querySelector('.bg-white').classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.remove();
+        }, 200);
     }
+}
+
+// Função para ajustar valores dos campos numéricos
+function adjustValue(fieldName, increment) {
+    const field = document.querySelector(`input[name="${fieldName}"]`);
+    if (field) {
+        const currentValue = parseFloat(field.value) || 0;
+        const newValue = Math.max(0, currentValue + increment);
+        
+        // Determinar número de casas decimais baseado no campo
+        let decimalPlaces = 0;
+        if (fieldName === 'fat_percentage' || fieldName === 'protein_percentage') {
+            decimalPlaces = 2;
+        }
+        
+        field.value = newValue.toFixed(decimalPlaces);
+        
+        // Adicionar feedback visual
+        const color = increment > 0 ? '#fef3c7' : '#fef2f2';
+        field.style.backgroundColor = color;
+        setTimeout(() => {
+            field.style.backgroundColor = '';
+        }, 300);
+        
+        // Disparar evento de input para validação
+        field.dispatchEvent(new Event('input'));
+    }
+}
+
+// Função para validar valores em tempo real
+function validateQualityInputs() {
+    const inputs = document.querySelectorAll('#qualityForm input[type="number"]');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            const fieldName = this.name;
+            
+            // Validações específicas por campo
+            switch(fieldName) {
+                case 'fat_percentage':
+                    if (value < 0 || value > 100) {
+                        this.style.borderColor = '#ef4444';
+                        this.style.backgroundColor = '#fef2f2';
+                    } else if (value < 3.0 || value > 6.0) {
+                        this.style.borderColor = '#f59e0b';
+                        this.style.backgroundColor = '#fffbeb';
+                    } else {
+                        this.style.borderColor = '#10b981';
+                        this.style.backgroundColor = '#f0fdf4';
+                    }
+                    break;
+                    
+                case 'protein_percentage':
+                    if (value < 0 || value > 100) {
+                        this.style.borderColor = '#ef4444';
+                        this.style.backgroundColor = '#fef2f2';
+                    } else if (value < 2.8 || value > 4.0) {
+                        this.style.borderColor = '#f59e0b';
+                        this.style.backgroundColor = '#fffbeb';
+                    } else {
+                        this.style.borderColor = '#10b981';
+                        this.style.backgroundColor = '#f0fdf4';
+                    }
+                    break;
+                    
+                case 'scc':
+                    if (value < 0) {
+                        this.style.borderColor = '#ef4444';
+                        this.style.backgroundColor = '#fef2f2';
+                    } else if (value > 400) {
+                        this.style.borderColor = '#ef4444';
+                        this.style.backgroundColor = '#fef2f2';
+                    } else if (value > 300) {
+                        this.style.borderColor = '#f59e0b';
+                        this.style.backgroundColor = '#fffbeb';
+                    } else {
+                        this.style.borderColor = '#10b981';
+                        this.style.backgroundColor = '#f0fdf4';
+                    }
+                    break;
+                    
+                case 'total_bacterial_count':
+                    if (value < 0) {
+                        this.style.borderColor = '#ef4444';
+                        this.style.backgroundColor = '#fef2f2';
+                    } else if (value > 100) {
+                        this.style.borderColor = '#ef4444';
+                        this.style.backgroundColor = '#fef2f2';
+                    } else if (value > 50) {
+                        this.style.borderColor = '#f59e0b';
+                        this.style.backgroundColor = '#fffbeb';
+                    } else {
+                        this.style.borderColor = '#10b981';
+                        this.style.backgroundColor = '#f0fdf4';
+                    }
+                    break;
+            }
+            
+            // Reset após 2 segundos
+            setTimeout(() => {
+                this.style.borderColor = '';
+                this.style.backgroundColor = '';
+            }, 2000);
+        });
+    });
+}
+
+// Função para adicionar resumo visual dos valores
+function addQualitySummary() {
+    const inputs = document.querySelectorAll('#qualityForm input[type="number"]');
+    const summaryContainer = document.createElement('div');
+    summaryContainer.className = 'quality-summary mt-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-200';
+    summaryContainer.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-semibold text-gray-700">Resumo da Qualidade</h4>
+            <div class="quality-overall-status w-3 h-3 rounded-full bg-gray-300"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="quality-summary-item">
+                <span class="text-gray-600">Gordura:</span>
+                <span class="quality-fat-status font-semibold">--%</span>
+            </div>
+            <div class="quality-summary-item">
+                <span class="text-gray-600">Proteína:</span>
+                <span class="quality-protein-status font-semibold">--%</span>
+            </div>
+            <div class="quality-summary-item">
+                <span class="text-gray-600">CCS:</span>
+                <span class="quality-scc-status font-semibold">--</span>
+            </div>
+            <div class="quality-summary-item">
+                <span class="text-gray-600">CBT:</span>
+                <span class="quality-cbt-status font-semibold">--</span>
+            </div>
+        </div>
+    `;
+    
+    // Inserir o resumo após o grid de parâmetros
+    const gridContainer = document.querySelector('.quality-modal-grid').parentElement;
+    gridContainer.insertBefore(summaryContainer, gridContainer.querySelector('div:last-child'));
+    
+    // Atualizar resumo quando valores mudarem
+    inputs.forEach(input => {
+        input.addEventListener('input', updateQualitySummary);
+    });
+}
+
+// Função para atualizar o resumo
+function updateQualitySummary() {
+    const fatValue = parseFloat(document.querySelector('input[name="fat_percentage"]')?.value || 0);
+    const proteinValue = parseFloat(document.querySelector('input[name="protein_percentage"]')?.value || 0);
+    const sccValue = parseFloat(document.querySelector('input[name="scc"]')?.value || 0);
+    const cbtValue = parseFloat(document.querySelector('input[name="total_bacterial_count"]')?.value || 0);
+    
+    // Atualizar valores
+    const fatStatus = document.querySelector('.quality-fat-status');
+    const proteinStatus = document.querySelector('.quality-protein-status');
+    const sccStatus = document.querySelector('.quality-scc-status');
+    const cbtStatus = document.querySelector('.quality-cbt-status');
+    const overallStatus = document.querySelector('.quality-overall-status');
+    
+    if (fatStatus) {
+        fatStatus.textContent = fatValue > 0 ? fatValue.toFixed(2) + '%' : '--%';
+        fatStatus.className = getQualityStatusClass('fat', fatValue);
+    }
+    
+    if (proteinStatus) {
+        proteinStatus.textContent = proteinValue > 0 ? proteinValue.toFixed(2) + '%' : '--%';
+        proteinStatus.className = getQualityStatusClass('protein', proteinValue);
+    }
+    
+    if (sccStatus) {
+        sccStatus.textContent = sccValue > 0 ? sccValue.toFixed(0) : '--';
+        sccStatus.className = getQualityStatusClass('scc', sccValue);
+    }
+    
+    if (cbtStatus) {
+        cbtStatus.textContent = cbtValue > 0 ? cbtValue.toFixed(0) : '--';
+        cbtStatus.className = getQualityStatusClass('cbt', cbtValue);
+    }
+    
+    // Status geral
+    if (overallStatus) {
+        const overallScore = calculateOverallQuality(fatValue, proteinValue, sccValue, cbtValue);
+        overallStatus.className = `quality-overall-status w-3 h-3 rounded-full ${getOverallStatusClass(overallScore)}`;
+    }
+}
+
+// Função para calcular status de qualidade
+function getQualityStatusClass(type, value) {
+    const baseClass = 'font-semibold';
+    
+    switch(type) {
+        case 'fat':
+            if (value >= 3.0 && value <= 6.0) return `${baseClass} text-green-600`;
+            if (value >= 2.5 && value < 3.0 || value > 6.0 && value <= 7.0) return `${baseClass} text-yellow-600`;
+            return `${baseClass} text-red-600`;
+            
+        case 'protein':
+            if (value >= 2.8 && value <= 4.0) return `${baseClass} text-green-600`;
+            if (value >= 2.5 && value < 2.8 || value > 4.0 && value <= 4.5) return `${baseClass} text-yellow-600`;
+            return `${baseClass} text-red-600`;
+            
+        case 'scc':
+            if (value <= 200) return `${baseClass} text-green-600`;
+            if (value > 200 && value <= 400) return `${baseClass} text-yellow-600`;
+            return `${baseClass} text-red-600`;
+            
+        case 'cbt':
+            if (value <= 50) return `${baseClass} text-green-600`;
+            if (value > 50 && value <= 100) return `${baseClass} text-yellow-600`;
+            return `${baseClass} text-red-600`;
+            
+        default:
+            return baseClass;
+    }
+}
+
+// Função para calcular qualidade geral
+function calculateOverallQuality(fat, protein, scc, cbt) {
+    let score = 0;
+    let count = 0;
+    
+    if (fat > 0) {
+        if (fat >= 3.0 && fat <= 6.0) score += 100;
+        else if (fat >= 2.5 && fat < 3.0 || fat > 6.0 && fat <= 7.0) score += 60;
+        else score += 20;
+        count++;
+    }
+    
+    if (protein > 0) {
+        if (protein >= 2.8 && protein <= 4.0) score += 100;
+        else if (protein >= 2.5 && protein < 2.8 || protein > 4.0 && protein <= 4.5) score += 60;
+        else score += 20;
+        count++;
+    }
+    
+    if (scc > 0) {
+        if (scc <= 200) score += 100;
+        else if (scc > 200 && scc <= 400) score += 60;
+        else score += 20;
+        count++;
+    }
+    
+    if (cbt > 0) {
+        if (cbt <= 50) score += 100;
+        else if (cbt > 50 && cbt <= 100) score += 60;
+        else score += 20;
+        count++;
+    }
+    
+    return count > 0 ? score / count : 0;
+}
+
+// Função para obter classe do status geral
+function getOverallStatusClass(score) {
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-yellow-500';
+    return 'bg-red-500';
 }
 
 async function handleAddVolume(event) {
@@ -10383,26 +10808,28 @@ function previewReport() {
 }
 
 
-// Toggle password visibility function
-function togglePasswordVisibility(inputId, buttonId) {
+// Toggle password visibility function for user forms
+function toggleUserPasswordVisibility(inputId, buttonId) {
     const passwordInput = document.getElementById(inputId);
     const toggleButton = document.getElementById(buttonId);
     
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleButton.innerHTML = `
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
-            </svg>
-        `;
-    } else {
-        passwordInput.type = 'password';
-        toggleButton.innerHTML = `
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-            </svg>
-        `;
+    if (passwordInput && toggleButton) {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                </svg>
+            `;
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+            `;
+        }
     }
 }
 
@@ -10713,11 +11140,11 @@ async function confirmLogout() {
         
         // Notificação de logout concluído - REMOVIDA (não é crítica)
         
-        safeRedirect('inicio.html'); // Use new safeRedirect function
+        safeRedirect('index.php'); // Use new safeRedirect function
     } catch (error) {
         console.error('❌ Erro no logout:', error);
         clearUserSession();
-        safeRedirect('inicio.html');
+        safeRedirect('index.php');
     }
 }
 
@@ -11299,9 +11726,9 @@ async function switchToAccount(accountId) {
         
         // Redirect to appropriate page based on role
         if (secondaryAccount.role === 'funcionario') {
-            window.location.href = 'funcionario.html';
+            window.location.href = 'funcionario.php';
         } else if (secondaryAccount.role === 'veterinario') {
-            window.location.href = 'veterinario.html';
+            window.location.href = 'veterinario.php';
         } else {
             showNotification('Conta secundária encontrada, mas o tipo não é reconhecido.', 'warning');
         }
@@ -11753,7 +12180,6 @@ const originalConsoleError = console.error;
 //     // Não fazer nada - silenciar completamente
 // };
 
-// Função para restaurar console.log se necessário (para debug)
 window.restoreConsoleLogs = function() {
     
     console.error = originalConsoleError;
@@ -13070,9 +13496,9 @@ async function accessSecondaryAccount(userId, userName, userRole) {
             
             // Redirecionar para a página apropriada baseada no role
             if (userRole === 'veterinario') {
-                window.location.href = 'veterinario.html';
+                window.location.href = 'veterinario.php';
             } else if (userRole === 'funcionario') {
-                window.location.href = 'funcionario.html';
+                window.location.href = 'funcionario.php';
             } else {
                 showNotification('Tipo de conta não suportado', 'error');
             }
@@ -13234,7 +13660,7 @@ function closeManagerPhotoModal() {
     }
 }
 
-// Abrir câmera do gerente
+// Abrir câmera do gerente com verificação facial
 async function openManagerCamera() {
     try {
         console.log('🔍 Abrindo câmera do gerente...');
@@ -13257,17 +13683,53 @@ async function openManagerCamera() {
         
         modal.classList.add('show');
         
-        // Solicitar acesso à câmera
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'user',
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-            } 
-        });
+        // Verificar câmeras disponíveis
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        
+        console.log('📹 Câmeras disponíveis:', videoDevices.length);
+        
+        let stream;
+        if (videoDevices.length >= 2) {
+            // Se tem duas câmeras, usar a traseira primeiro
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    } 
+                });
+                console.log('✅ Usando câmera traseira');
+            } catch (error) {
+                // Fallback para câmera frontal
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    } 
+                });
+                console.log('✅ Usando câmera frontal (fallback)');
+            }
+        } else {
+            // Se tem apenas uma câmera, usar ela
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'user',
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                } 
+            });
+            console.log('✅ Usando única câmera disponível');
+        }
         
         video.srcObject = stream;
         window.managerCameraStream = stream;
+        window.managerCurrentFacingMode = stream.getVideoTracks()[0].getSettings().facingMode;
+        
+        // Inicializar verificação facial
+        initializeFaceDetection();
         
         console.log('✅ Câmera do gerente aberta com sucesso');
         
@@ -13316,6 +13778,16 @@ function closeManagerCamera() {
     // Resetar indicadores
     resetManagerFaceVerification();
     
+    // Limpar detecção facial
+    if (faceDetectionInterval) {
+        clearInterval(faceDetectionInterval);
+        faceDetectionInterval = null;
+    }
+    
+    // Resetar estados
+    isFaceDetected = false;
+    faceCentered = false;
+    
     console.log('✅ Câmera do gerente fechada');
 }
 
@@ -13345,9 +13817,132 @@ async function switchManagerCamera() {
     }
 }
 
-// Capturar foto do gerente
+// Variáveis globais para verificação facial
+let faceDetectionInterval;
+let isFaceDetected = false;
+let faceCentered = false;
+
+// Inicializar detecção facial
+function initializeFaceDetection() {
+    console.log('🔍 Inicializando detecção facial...');
+    
+    // Resetar estados
+    isFaceDetected = false;
+    faceCentered = false;
+    updateFaceUI();
+    
+    // Iniciar detecção facial
+    startFaceDetection();
+}
+
+// Iniciar detecção facial
+function startFaceDetection() {
+    const video = document.getElementById('managerCameraVideo');
+    
+    if (faceDetectionInterval) {
+        clearInterval(faceDetectionInterval);
+    }
+    
+    // Simular detecção facial (em produção, usar uma biblioteca como face-api.js)
+    faceDetectionInterval = setInterval(() => {
+        detectFace(video);
+    }, 100); // Verificar a cada 100ms
+}
+
+// Detectar rosto (simulação)
+function detectFace(video) {
+    // Esta é uma simulação. Em produção, você usaria uma biblioteca real de detecção facial
+    const rect = video.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    // Simular detecção baseada em movimento ou outras heurísticas
+    const hasMovement = Math.random() > 0.3; // Simular que há movimento/detecção
+    const isCentered = Math.random() > 0.4; // Simular centralização
+    
+    if (hasMovement) {
+        isFaceDetected = true;
+        if (isCentered) {
+            faceCentered = true;
+            updateFaceUI();
+        } else {
+            faceCentered = false;
+            updateFaceUI();
+        }
+    } else {
+        isFaceDetected = false;
+        faceCentered = false;
+        updateFaceUI();
+    }
+}
+
+// Atualizar interface baseada na detecção
+function updateFaceUI() {
+    const faceCircle = document.getElementById('managerFaceCircle');
+    const captureBtn = document.getElementById('managerCaptureBtn');
+    const faceStatus = document.getElementById('managerFaceStatus');
+    const faceWarning = document.getElementById('managerFaceWarning');
+    
+    if (!isFaceDetected) {
+        // Rosto não detectado
+        faceCircle.style.borderColor = 'rgb(239, 68, 68)'; // Vermelho
+        faceStatus.textContent = 'Centralizando rosto...';
+        faceStatus.style.color = 'rgba(255, 255, 255, 0.7)';
+        
+        // Desabilitar botão
+        captureBtn.disabled = true;
+        captureBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        captureBtn.classList.remove('hover:scale-105', 'hover:bg-gray-100');
+        captureBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+        
+    } else if (!faceCentered) {
+        // Rosto detectado mas não centralizado
+        faceCircle.style.borderColor = 'rgb(239, 68, 68)'; // Vermelho
+        faceStatus.textContent = 'Centralize o rosto no círculo';
+        faceStatus.style.color = 'rgba(255, 255, 255, 0.7)';
+        
+        // Desabilitar botão
+        captureBtn.disabled = true;
+        captureBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        captureBtn.classList.remove('hover:scale-105', 'hover:bg-gray-100');
+        captureBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+        
+    } else {
+        // Rosto centralizado
+        faceCircle.style.borderColor = 'rgb(34, 197, 94)'; // Verde
+        faceStatus.textContent = 'Rosto centralizado!';
+        faceStatus.style.color = 'rgb(34, 197, 94)';
+        
+        // Habilitar botão
+        captureBtn.disabled = false;
+        captureBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        captureBtn.classList.add('hover:scale-105', 'hover:bg-gray-100');
+        captureBtn.style.backgroundColor = 'white';
+        
+        // Ocultar aviso se estiver visível
+        if (faceWarning) {
+            faceWarning.style.opacity = '0';
+        }
+    }
+}
+
+// Capturar foto do gerente com verificação facial
 async function captureManagerPhoto() {
+    // Verificar se o rosto está centralizado
+    if (!faceCentered) {
+        const faceWarning = document.getElementById('managerFaceWarning');
+        if (faceWarning) {
+            faceWarning.style.opacity = '1';
+            setTimeout(() => {
+                faceWarning.style.opacity = '0';
+            }, 3000);
+        }
+        return;
+    }
+    
     try {
+        console.log('📸 Capturando foto do gerente...');
+        
         const video = document.getElementById('managerCameraVideo');
         const canvas = document.getElementById('managerCameraCanvas');
         const processingScreen = document.getElementById('managerPhotoProcessingScreen');
@@ -18817,14 +19412,6 @@ Funcionalidades:
             }
         };
         
-        function debugPasswordRequestsModal() {
-            console.log('🔍 Debug do modal de solicitações:');
-            console.log('Modal:', document.getElementById('passwordRequestsModal'));
-            console.log('Lista:', document.getElementById('passwordRequestsList'));
-            console.log('EmptyState:', document.getElementById('emptyPasswordRequests'));
-        }
-        
-        window.debugPasswordRequestsModal = debugPasswordRequestsModal;
         
         function togglePasswordVisibility(requestId) {
             const passwordElement = document.getElementById(`password-${requestId}`);
@@ -18851,16 +19438,7 @@ Funcionalidades:
         
         window.togglePasswordVisibility = togglePasswordVisibility;
         
-        function testPasswordRequestFunctions() {
-            console.log('Testando funções de solicitações de senha:');
-            console.log('viewPasswordRequestDetails:', typeof window.viewPasswordRequestDetails);
-            console.log('approvePasswordRequest:', typeof window.approvePasswordRequest);
-            console.log('rejectPasswordRequest:', typeof window.rejectPasswordRequest);
-            console.log('displayPasswordRequests:', typeof window.displayPasswordRequests);
-        }
         
-        // Tornar função de teste global
-        window.testPasswordRequestFunctions = testPasswordRequestFunctions;
         
         // Logs de auditoria para o gerente
         function logAuditEvent(action, userId, details = {}) {

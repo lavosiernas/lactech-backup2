@@ -39,7 +39,7 @@
     <script src="lactech-api-nova.js"></script>
     <script src="auth_fix.js"></script>
     <script src="pwa-manager.js"></script>
-    <script src="config.js" defer></script>
+    <script src="assets/js/config.js" defer></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
     <script src="assets/js/offline-loading.js"></script>
@@ -2365,7 +2365,7 @@
         async function signOut() {
             if (confirm('Tem certeza que deseja sair?')) {
                 await supabase.auth.signOut();
-                window.location.href = 'inicio.html';
+                window.location.href = 'index.php';
             }
         }
         
@@ -2435,11 +2435,11 @@
                     timestamp: Date.now().toString()
                 });
                 
-                window.open(`xandria-store.html?${securityParams.toString()}`, '_blank');
+                window.open(`xandria-store.php?${securityParams.toString()}`, '_blank');
             } catch (error) {
                 console.error('Erro ao abrir Xandria Store:', error);
                 // Fallback para URL simples
-                window.open('xandria-store.html?role=proprietario', '_blank');
+                window.open('xandria-store.php?role=proprietario', '_blank');
             }
         }
         

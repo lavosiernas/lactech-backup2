@@ -310,10 +310,10 @@
         // Função para voltar
         function goBack() {
             const referrer = document.referrer;
-            if (referrer && referrer.includes('gerente.html')) {
-                window.location.href = 'gerente.html';
+            if (referrer && referrer.includes('gerente.php')) {
+                window.location.href = 'gerente.php';
             } else {
-                window.location.href = 'inicio.html';
+                window.location.href = 'index.php';
             }
         }
 
