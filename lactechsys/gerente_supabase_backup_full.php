@@ -3684,41 +3684,13 @@ function safeRedirect(url) {
     window.location.replace(url);
     }
     
-    // Função para monitorar bloqueio de usuário (otimizada)
-    let blockWatcherInterval = null;
-    let lastBlockCheck = 0;
-    const BLOCK_CHECK_INTERVAL = 60000; // 1 minuto em vez de 15 segundos
-    
+    // Função de monitoramento removida - MySQL não precisa
     function startBlockWatcher() {
-        // Evitar múltiplos intervalos
-        if (blockWatcherInterval) {
-            clearInterval(blockWatcherInterval);
-        }
-        
-        blockWatcherInterval = setInterval(async () => {
-            try {
-                const now = Date.now();
-                // Evitar verificações muito frequentes
-                if (now - lastBlockCheck < BLOCK_CHECK_INTERVAL) {
-                    return;
-                }
-                lastBlockCheck = now;
-                
-                // Verificação MySQL removida - não precisa
-            } catch (error) {
-                // Em caso de erro persistente, limpar sessão
-                clearUserSession();
-                clearInterval(blockWatcherInterval);
-                safeRedirect('login.php');
-            }
-        }, BLOCK_CHECK_INTERVAL);
+        // Desabilitado - MySQL
     }
     
     function stopBlockWatcher() {
-        if (blockWatcherInterval) {
-            clearInterval(blockWatcherInterval);
-            blockWatcherInterval = null;
-        }
+        // Desabilitado - MySQL
     }
     
     document.addEventListener('DOMContentLoaded', async function() {
@@ -3836,75 +3808,19 @@ function safeRedirect(url) {
  * Carrega dados do dashboard, volume, qualidade, pagamentos e usuários
  * Configura autenticação e verifica status do usuário
  */
-// =====================================================
-// MOCK DO SUPABASE PARA COMPATIBILIDADE
-// =====================================================
-// Este mock faz TODAS as funções Supabase funcionarem sem erros
-// Retornam dados vazios, permitindo que o código execute normalmente
+// Supabase removido - sistema MySQL
 
-const supabaseMock = {
-    auth: {
-        getUser: async () => {
-            const userData = localStorage.getItem('user_data');
-            if (userData) {
-                const user = JSON.parse(userData);
-                return { data: { user: user }, error: null };
-            }
-            return { data: { user: null }, error: null };
-        },
-        signOut: async () => {
-            localStorage.clear();
-            return { error: null };
-        }
-    },
-    from: (table) => ({
-        select: (cols) => {
-            const query = {
-                eq: (col, val) => query,
-                gte: (col, val) => query,
-                lte: (col, val) => query,
-                gt: (col, val) => query,
-                lt: (col, val) => query,
-                not: (col, op, val) => query,
-                order: (col, opts) => query,
-                limit: (n) => query,
-                single: async () => ({ data: null, error: null }),
-                maybeSingle: async () => ({ data: null, error: null }),
-                then: async (callback) => callback({ data: [], error: null })
-            };
-            return query;
-        },
-        insert: async (data) => ({ data: null, error: null }),
-        update: async (data) => ({ data: null, error: null }),
-        delete: async () => ({ data: null, error: null }),
-        upsert: async (data) => ({ data: null, error: null })
-    }),
-    rpc: async (funcName, params) => ({ data: null, error: null }),
-    storage: {
-        from: (bucket) => ({
-            upload: async (path, file) => ({ data: null, error: null }),
-            download: async (path) => ({ data: null, error: null }),
-            remove: async (paths) => ({ data: null, error: null })
-        })
-    },
-    channel: (name) => ({
-        on: (event, opts, callback) => ({
-            subscribe: (callback) => {}
-        }),
-        subscribe: (callback) => {},
-        unsubscribe: () => {}
-    })
-};
-
-// Função que retorna o mock
+// Função stub - retorna null para evitar erros em código legado
 async function getSupabaseClient() {
-    return supabaseMock;
+    // Não fazer nada - deixar funções Supabase falharem silenciosamente
+    return null;
 }
 
 // =====================================================
-// FUNÇÕES MYSQL
+// FUNÇÕES MYSQL PARA SUBSTITUIR SUPABASE
 // =====================================================
 
+// Função para obter dados do usuário atual
 async function getCurrentUser() {
     const userData = localStorage.getItem('user_data');
     if (!userData) {
@@ -3913,6 +3829,7 @@ async function getCurrentUser() {
     return JSON.parse(userData);
 }
 
+// Função para fazer requisições para APIs MySQL
 async function mysqlRequest(endpoint, data = null) {
     const options = {
         method: data ? 'POST' : 'GET',
@@ -4050,10 +3967,17 @@ async function initializePage() {
         showNotification('Algumas informações não puderam ser carregadas. Verifique sua conexão.', 'warning');
     }
 }
-// Function to create user if not exists - MySQL stub
+// Function to create user if not exists using RPC functions
 async function createUserIfNotExists(authUser) {
-    // MySQL: não precisa criar usuário automaticamente
-    return;
+    try {
+
+        
+        // First check if user already exists
+        const { data: existingUser, error: userCheckError } = await supabase
+            .from('users')
+            .select('id, farm_id')
+            .eq('id', authUser.id)
+            .maybeSingle();
         
         if (userCheckError) {
             throw userCheckError;
@@ -4856,16 +4780,17 @@ function restoreSavedVolume() {
 
 // Load volume data from database and local storage
 async function loadVolumeData() {
-    // Aguardar Supabase estar disponível
-    if (!window.supabase) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        if (!window.supabase) {
-            console.error('❌ Supabase não disponível para volume');
-            return;
-        }
+    // MySQL: implementar API se necessário
+    try {
+        // Stub: definir valores padrão
+        document.getElementById('volumeToday').textContent = '0 L';
+        document.getElementById('volumeWeekAvg').textContent = '0 L';
+        document.getElementById('volumeGrowth').textContent = '0%';
+        document.getElementById('todayVolume').textContent = '0 L';
+    } catch (error) {
+        // Silencioso
     }
-    
-    const supabase = await getSupabaseClient();
+    return;
     
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -14624,8 +14549,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // ==================== FUNÇÕES REMOVIDAS - CHAT ====================
         // Sistema de chat removido para simplificar o sistema da Lagoa do Mato
-        // Todas as funcionalidades de chat foram removidas
-        console.log('ℹ️ Sistema de chat desabilitado - Lagoa do Mato');
         
         async function openChatModal() {
             
@@ -17817,23 +17740,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Função para atualizar contadores de estatísticas
         async function updateStatisticsCounters() {
             try {
-                console.log('📊 Atualizando contadores de estatísticas (MySQL)...');
-                
-                // Por enquanto, não há contadores no MySQL
-                // Definir valores padrão
-                const pendingCount = 0;
-                const approvedCount = 0;
-                const rejectedCount = 0;
-                
-                // Atualizar elementos na interface
-                updateCounterElement('pendingCount', pendingCount);
-                updateCounterElement('approvedCount', approvedCount);
-                updateCounterElement('rejectedCount', rejectedCount);
-                
-                console.log('✅ Contadores atualizados (MySQL)');
-                
+                updateCounterElement('pendingCount', 0);
+                updateCounterElement('approvedCount', 0);
+                updateCounterElement('rejectedCount', 0);
             } catch (error) {
-                console.error('❌ Erro ao atualizar contadores:', error);
+                // Silencioso
             }
         }
         
@@ -19607,7 +19518,6 @@ Funcionalidades:
         });
         
         // Service Worker removido - sistema MySQL não precisa
-        console.log('ℹ️ Service Worker desabilitado - sistema MySQL');
 
         // ==================== DETECÇÃO DE CONEXÃO COM INTERNET ====================
         let wasOffline = false;
@@ -19837,7 +19747,6 @@ Funcionalidades:
         }
         
         // Service Worker listener removido - sistema MySQL
-        console.log('ℹ️ Service Worker listener desabilitado - sistema MySQL');
         
         // Tornar funções offline globais
         window.loadProductionDataWithCache = loadProductionDataWithCache;
