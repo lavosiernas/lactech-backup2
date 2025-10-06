@@ -325,4 +325,20 @@ function setWarningNotification($message) {
 function setInfoNotification($message) {
     setNotification($message, 'info');
 }
+
+/**
+ * Obtém ID da fazenda única (Lagoa do Mato)
+ */
+function getSingleFarmId() {
+    // Sistema configurado para Lagoa do Mato
+    // Para ativar multi-fazendas no futuro, retorne null
+    return null; // Será determinado dinamicamente
+}
+
+/**
+ * Obtém nome da fazenda única (Lagoa do Mato)
+ */
+function getSingleFarmName() {
+    return 'Lagoa do Mato';
+}
 ?>

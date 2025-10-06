@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - LacTech</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="assets/js/config.js"></script>
+    <script src="assets/js/config_mysql.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
@@ -324,63 +323,8 @@
 
         // Global variables for authentication state
         let isAuthenticating = false;
-        let supabaseClient = null;
 
-        // Initialize Supabase client immediately
-        function initializeSupabaseClient() {
-            if (window.supabase && window.supabase.createClient) {
-                return window.supabase.createClient(
-                    'https://tmaamwuyucaspqcrhuck.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0'
-                );
-            }
-            return null;
-        }
-
-        // Try to initialize immediately
-        supabaseClient = initializeSupabaseClient();
-
-        // If not initialized immediately, try again after a short delay
-        if (!supabaseClient) {
-            setTimeout(() => {
-                supabaseClient = initializeSupabaseClient();
-            }, 100);
-        }
-
-        // Wait for Supabase to be available
-        function waitForSupabase() {
-            return new Promise((resolve, reject) => {
-                let attempts = 0;
-                const maxAttempts = 200; // 10 seconds max
-                
-                const checkSupabase = () => {
-                    attempts++;
-                    
-                    // If we already have a client, use it
-                    if (supabaseClient && supabaseClient.auth) {
-                        resolve(supabaseClient);
-                        return;
-                    }
-                    
-                    // Try to initialize
-                    const client = initializeSupabaseClient();
-                    if (client && client.auth) {
-                        supabaseClient = client;
-                        resolve(client);
-                        return;
-                    }
-                    
-                    if (attempts >= maxAttempts) {
-                        reject(new Error('Timeout: Supabase não foi inicializado em 10 segundos'));
-                    } else {
-                        setTimeout(checkSupabase, 50);
-                    }
-                };
-                checkSupabase();
-            });
-        }
-
-        // Supabase initialization is handled in the main DOMContentLoaded listener below
+        // Sistema MySQL - sem necessidade de inicialização do Supabase
 
         // Password toggle functions
         function togglePassword() {
@@ -475,71 +419,44 @@
         // Authenticate user with direct database login
         async function authenticateUser(email, password) {
             try {
-                // Ensure Supabase is ready
-                if (!supabaseClient || !supabaseClient.auth) {
-                    supabaseClient = await waitForSupabase();
-                }
+                console.log('🔐 Tentando login MySQL:', email);
                 
-                // Verify client is valid
-                if (!supabaseClient || !supabaseClient.auth) {
-                    throw new Error('Supabase client not available');
-                }
-                
-                // First try Supabase Auth
-                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
+                const response = await fetch('api/auth.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
                 });
                 
-                if (authError) {
-                    throw new Error('Invalid login credentials');
+                const data = await response.json();
+                
+                if (data.success && data.user) {
+                    console.log('✅ Login MySQL realizado com sucesso:', data.user.name);
+                    
+                    // Retornar no formato esperado pela interface original
+                    return {
+                        user: {
+                            id: data.user.id,
+                            email: data.user.email,
+                            email_confirmed_at: new Date().toISOString()
+                        },
+                        profile: {
+                            id: data.user.id,
+                            email: data.user.email,
+                            name: data.user.name || data.user.email.split('@')[0],
+                            user_type: data.user.role || 'gerente',
+                            farm_id: data.user.farm_id,
+                            farm_name: 'Lagoa do Mato',
+                            status: 'active'
+                        }
+                    };
+                } else {
+                    throw new Error(data.message || 'Email ou senha incorretos');
                 }
-                
-                // Get user profile from database - SEMPRE PEGAR A CONTA PRIMÁRIA
-                const { data: usersData, error: usersError } = await supabaseClient
-                    .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('is_active', true)
-                    .order('created_at', { ascending: true }); // Primeira conta criada = primária
-                
-                if (usersError || !usersData || usersData.length === 0) {
-                    throw new Error('Usuário não encontrado no sistema. Complete o cadastro primeiro.');
-                }
-                
-                // Sempre usar a conta primária (primeira criada)
-                const userData = usersData[0];
-                
-                // Get farm information
-                const { data: farmData, error: farmError } = await supabaseClient
-                    .from('farms')
-                    .select('*')
-                    .eq('id', userData.farm_id)
-                    .single();
-                
-                if (farmError) {
-                    // Farm data not critical, continue without it
-                }
-                
-                // Create user session object
-                return {
-                    user: {
-                        id: userData.id,
-                        email: userData.email,
-                        email_confirmed_at: new Date().toISOString()
-                    },
-                    profile: {
-                        id: userData.id,
-                        email: userData.email,
-                        name: userData.name || userData.email.split('@')[0],
-                        user_type: userData.role || 'gerente',
-                        farm_id: userData.farm_id,
-                        farm_name: farmData ? farmData.name : 'Minha Fazenda',
-                        status: 'active'
-                    }
-                };
                 
             } catch (error) {
+                console.error('❌ Erro na autenticação MySQL:', error);
                 throw error;
             }
         }
@@ -584,17 +501,6 @@
 
         async function handleLogin(form, isDesktop) {
             if (isAuthenticating) return;
-            
-            // Ensure Supabase is ready
-            if (!supabaseClient || !supabaseClient.auth) {
-                try {
-                    supabaseClient = await waitForSupabase();
-                } catch (error) {
-                    console.error('Error getting Supabase client:', error);
-                    showError('Erro de conexão. Por favor, recarregue a página.', isDesktop);
-                    return;
-                }
-            }
             
             const formData = new FormData(form);
             const email = formData.get('email');
@@ -722,19 +628,12 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
-            // Wait for config.js and Supabase to be ready
+            // Sistema MySQL - sem necessidade de inicialização do Supabase
             try {
-                // Wait longer for config.js to load and initialize LacTechAPI
-                await new Promise(resolve => setTimeout(resolve, 800));
-            
-                if (!supabaseClient) {
-                    supabaseClient = await waitForSupabase();
-                }
+                console.log('🚀 Inicializando sistema MySQL - Lagoa do Mato');
                 
                 // Check if user is already logged in
                 checkExistingSession();
-                
-            checkExistingSession();
             } catch (error) {
                 console.error('Error initializing page:', error);
             }

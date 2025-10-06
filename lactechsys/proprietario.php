@@ -34,12 +34,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/pdf-generator.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config_mysql.js"></script>
     <script src="assets/js/loading-screen.js"></script>
-    <script src="lactech-api-nova.js"></script>
-    <script src="auth_fix.js"></script>
-    <script src="pwa-manager.js"></script>
-    <script src="assets/js/config.js" defer></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
     <script src="assets/js/offline-loading.js"></script>

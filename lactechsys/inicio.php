@@ -32,9 +32,7 @@
     
     <!-- Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="lactech-api-nova.js"></script>
-    <script src="pwa-manager.js"></script>
+    <script src="assets/js/config_mysql.js"></script>
     
     <!-- CSS Files -->
     <link href="assets/css/dark-theme-fixes.css" rel="stylesheet">

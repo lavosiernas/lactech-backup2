@@ -1,9 +1,24 @@
+<?php
+// =====================================================
+// PÁGINA DO VETERINÁRIO - DESATIVADA
+// =====================================================
+// Todas as funções veterinárias foram movidas para o painel do gerente
+// Redirecionamento automático para o gerente
+// =====================================================
+
+require_once 'includes/config_mysql.php';
+
+// Redirecionar para o gerente
+redirect('gerente.php');
+exit;
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Veterinário - Sistema Leiteiro</title>
+    <title>Painel do Veterinário - Sistema Leiteiro (Desativado)</title>
     
     <!-- PWA Meta Tags -->
     <meta name="description" content="Painel do Veterinário - Sistema completo para gestão de produção leiteira, controle de qualidade e relatórios">

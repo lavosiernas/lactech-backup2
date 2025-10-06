@@ -101,8 +101,8 @@ if (isset($_GET['logout'])) {
         </div>
     </main>
 
-    <!-- Supabase CDN -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- MySQL Config -->
+    <script src="assets/js/config_mysql.js"></script>
     
     <!-- JavaScript para diagnóstico e botões -->
     <script>

@@ -33,11 +33,9 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="assets/js/pdf-generator.js"></script>
-    <script src="assets/js/database-config.js"></script>
-    <script src="assets/js/chat-sync-service.js"></script>
+    <script src="assets/js/config_mysql.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
     <script src="assets/js/offline-loading.js"></script>
@@ -1132,6 +1130,12 @@
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
+                            <button onclick="openIndividualVolumeModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                </svg>
+                                Por Vaca
+                            </button>
                             <button onclick="exportVolumeReport()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-4-4m4 4l4-4m3 8H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1"></path>
@@ -1640,6 +1644,12 @@
                 </svg>
                 <span class="text-xs font-semibold">Usuários</span>
             </button>
+            <button class="mobile-nav-item flex flex-col items-center py-2 px-1 transition-all" data-tab="animals">
+                <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+                <span class="text-xs font-semibold">Animais</span>
+            </button>
             <button class="mobile-nav-item flex flex-col items-center py-2 px-1 transition-all" onclick="openMoreModal()">
                 <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
@@ -1648,6 +1658,106 @@
             </button>
         </div>
     </nav>
+    
+    <!-- Animals Management Tab -->
+    <div id="animals-tab" class="tab-content hidden animals-section">
+        <div class="space-y-6 sm:space-y-8">
+            <!-- Animals Header -->
+            <div class="data-card rounded-2xl p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+                    <div>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-1">Gestão de Animais</h2>
+                        <p class="text-slate-600 text-xs sm:text-sm">Gerencie o rebanho da Lagoa do Mato</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                        <button onclick="openAddAnimalModal()" class="px-3 sm:px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Adicionar Animal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Animal Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                <div class="data-card rounded-2xl p-4 sm:p-6 text-center metric-card-responsive">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="totalAnimals">--</div>
+                    <div class="text-xs text-slate-500 font-medium">Total</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Animais</div>
+                </div>
+                
+                <div class="data-card rounded-2xl p-4 sm:p-6 text-center metric-card-responsive">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="healthyAnimals">--</div>
+                    <div class="text-xs text-slate-500 font-medium">Saudáveis</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Animais</div>
+                </div>
+                
+                <div class="data-card rounded-2xl p-4 sm:p-6 text-center metric-card-responsive">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="warningAnimals">--</div>
+                    <div class="text-xs text-slate-500 font-medium">Em Tratamento</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Animais</div>
+                </div>
+                
+                <div class="data-card rounded-2xl p-4 sm:p-6 text-center metric-card-responsive">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="criticalAnimals">--</div>
+                    <div class="text-xs text-slate-500 font-medium">Doentes</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1">Animais</div>
+                </div>
+            </div>
+
+            <!-- Animals List -->
+            <div class="data-card rounded-2xl p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Lista de Animais</h3>
+                    <div class="flex gap-2">
+                        <button onclick="openAddTreatmentModal()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-all">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Tratamento
+                        </button>
+                        <button onclick="openAddInseminationModal()" class="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-all">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Inseminação
+                        </button>
+                    </div>
+                </div>
+                <div id="animalsList" class="space-y-3">
+                    <div class="text-center py-8 text-gray-500">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                        <p>Carregando animais...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Reports Tab -->
     <div id="reports-tab" class="tab-content hidden">
         <div class="px-4 sm:px-6 lg:px-8 py-6">
@@ -3427,24 +3537,13 @@
             async getUserData(forceRefresh = false) {
                 const now = Date.now();
                 if (!forceRefresh && this.userData && (now - this.lastUserFetch) < this.CACHE_DURATION) {
-                    console.log('📋 Usando dados do usuário do cache');
                     return this.userData;
                 }
                 
-                console.log('🔄 Buscando dados do usuário no Supabase');
-                const supabase = await getSupabaseClient();
-                const { data: { user } } = await supabase.auth.getUser();
-                
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('*')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    this.userData = { ...user, ...userData };
+                const userDataLS = localStorage.getItem('user_data');
+                if (userDataLS) {
+                    this.userData = JSON.parse(userDataLS);
                     this.lastUserFetch = now;
-                    console.log('✅ Dados do usuário cacheados');
                 }
                 
                 return this.userData;
@@ -3454,24 +3553,15 @@
             async getFarmData(forceRefresh = false) {
                 const now = Date.now();
                 if (!forceRefresh && this.farmData && (now - this.lastFarmFetch) < this.CACHE_DURATION) {
-                    console.log('📋 Usando dados da fazenda do cache');
                     return this.farmData;
                 }
                 
-                console.log('🔄 Buscando dados da fazenda no Supabase');
-                const userData = await this.getUserData();
-                if (userData?.farm_id) {
-                    const supabase = await getSupabaseClient();
-                    const { data: farmData } = await supabase
-                        .from('farms')
-                        .select('*')
-                        .eq('id', userData.farm_id)
-                        .single();
-                    
-                    this.farmData = farmData;
-                    this.lastFarmFetch = now;
-                    console.log('✅ Dados da fazenda cacheados');
-                }
+                this.farmData = {
+                    id: 1,
+                    name: 'Lagoa do Mato',
+                    location: 'Lagoa do Mato'
+                };
+                this.lastFarmFetch = now;
                 
                 return this.farmData;
             },
@@ -3517,75 +3607,19 @@
                 this.lastFarmFetch = 0;
             },
             
-            // Cache para dados de volume
+            // Cache para dados de volume (MySQL - stub)
             async getVolumeData(farmId, dateRange, forceRefresh = false) {
-                const cacheKey = `volume_${farmId}_${dateRange}`;
-                const cachedData = this.get(cacheKey);
-                
-                if (!forceRefresh && cachedData) {
-                    console.log('📋 Usando dados de volume do cache:', cacheKey);
-                    return cachedData;
-                }
-                
-                console.log('🔄 Buscando dados de volume no Supabase:', cacheKey);
-                const supabase = await getSupabaseClient();
-                
-                let query = supabase
-                    .from('volume_records')
-                    .select('volume_liters, production_date')
-                    .eq('farm_id', farmId);
-                
-                // Aplicar filtro de data se especificado
-                if (dateRange === 'today') {
-                    const today = new Date().toISOString().split('T')[0];
-                    query = query.eq('production_date', today);
-                } else if (dateRange === 'week') {
-                    const sevenDaysAgo = new Date();
-                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-                    query = query.gte('production_date', sevenDaysAgo.toISOString().split('T')[0]);
-                } else if (dateRange === 'month') {
-                    const firstDayOfMonth = new Date();
-                    firstDayOfMonth.setDate(1);
-                    query = query.gte('production_date', firstDayOfMonth.toISOString().split('T')[0]);
-                }
-                
-                const { data, error } = await query.order('production_date', { ascending: true });
-                
-                if (error) {
-                    console.error('❌ Erro ao buscar dados de volume:', error);
-                    return null;
-                }
-                
-                // Cachear por 2 minutos (dados de volume mudam mais frequentemente)
-                this.set(cacheKey, data, 2 * 60 * 1000);
-                console.log('✅ Dados de volume cacheados:', cacheKey);
-                
-                return data;
+                return null; // MySQL: implementar API se necessário
             }
         };
         
-    // Função para verificar autenticação
+    // Função para verificar autenticação MySQL
     async function checkAuthentication() {
         try {
+            const userData = localStorage.getItem('user_data');
             
-            // Aguardar Supabase estar disponível
-            let attempts = 0;
-            while (!window.supabase) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                attempts++;
-                if (attempts > 20) {
-                    return false;
-                }
-            }
-            
-            const supabase = await getSupabaseClient();
-            
-            // Verificar autenticação do Supabase
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
-            if (authError || !user) {
-                // Limpar dados de sessão locais
+            if (!userData) {
                 clearUserSession();
-                
                 showNotification('Sessão expirada. Redirecionando para login...', 'error');
                 setTimeout(() => {
                     safeRedirect('login.php');
@@ -3593,35 +3627,26 @@
                 return false;
             }
             
-            // Verificar se o usuário existe na tabela users (usando cache)
-            const userData = await CacheManager.getUserData();
-                
-            if (!userData) {
-                // Limpar dados de sessão locais
+            let user;
+            try {
+                user = JSON.parse(userData);
+            } catch (e) {
                 clearUserSession();
-                
-                showNotification('Usuário não encontrado. Redirecionando para login...', 'error');
-                setTimeout(() => {
-                    safeRedirect('login.php');
-                }, 2000);
+                safeRedirect('login.php');
                 return false;
             }
             
-            // Verificar se o usuário está ativo
-            if (!userData.is_active) {
-                showNotification('Conta bloqueada. Redirecionando...', 'error');
-                setTimeout(() => {
-                    safeRedirect('acesso-bloqueado.php');
-                }, 2000);
+            if (!user.id || !user.email || !user.role) {
+                clearUserSession();
+                safeRedirect('login.php');
                 return false;
             }
             
+            window.currentUser = user;
             return true;
             
         } catch (error) {
-            // Em caso de erro, limpar dados e redirecionar
             clearUserSession();
-            
             setTimeout(() => {
                 safeRedirect('login.php');
             }, 2000);
@@ -3629,30 +3654,26 @@
         }
     }
     
-    // Função para limpar completamente a sessão
+    // Função para limpar completamente a sessão MySQL
 function clearUserSession() {
-    
-    // Limpar atualizações em tempo real
-    cleanupRealtimeUpdates();
-    
-    // Limpar localStorage
+    localStorage.removeItem('user_data');
+    localStorage.removeItem('user_token');
     localStorage.removeItem('userData');
     localStorage.removeItem('userSession');
     localStorage.removeItem('farmData');
     localStorage.removeItem('setupCompleted');
     
-    // Limpar sessionStorage
+    sessionStorage.removeItem('user_data');
+    sessionStorage.removeItem('user_token');
     sessionStorage.removeItem('userData');
     sessionStorage.removeItem('userSession');
     sessionStorage.removeItem('farmData');
     sessionStorage.removeItem('setupCompleted');
     sessionStorage.removeItem('redirectCount');
     
-    // Limpar cookies relacionados
-    document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-    });
-    
+    if (window.currentUser) {
+        delete window.currentUser;
+    }
 }
 
 // Função para gerenciar redirecionamentos
@@ -3729,8 +3750,8 @@ function safeRedirect(url) {
         
         window.pageInitialized = true;
         
-        // Verificar se há dados de sessão válidos
-        const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+        // Verificar se há dados de sessão válidos (MySQL)
+        const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
         if (!userData) {
             safeRedirect('login.php');
             return;
@@ -3746,7 +3767,6 @@ function safeRedirect(url) {
         }
         
         try {
-            // Verificar se os dados são válidos
             const parsedUserData = JSON.parse(userData);
             if (!parsedUserData || !parsedUserData.id) {
                 clearUserSession();
@@ -3842,68 +3862,61 @@ if (!window.supabaseClient) {
     window.supabaseClient = null;
 }
 
+// Função stub - retorna null para evitar erros em código legado
 async function getSupabaseClient() {
-    if (window.supabaseClient) {
-        return window.supabaseClient;
+    // Não fazer nada - deixar funções Supabase falharem silenciosamente
+    return null;
+}
+
+// =====================================================
+// FUNÇÕES MYSQL PARA SUBSTITUIR SUPABASE
+// =====================================================
+
+// Função para obter dados do usuário atual
+async function getCurrentUser() {
+    const userData = localStorage.getItem('user_data');
+    if (!userData) {
+        throw new Error('Usuário não autenticado');
     }
-    
-    // Aguardar Supabase estar disponível
-    let attempts = 0;
-    while (!window.supabase) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        attempts++;
-        if (attempts > 20) {
-            console.error('❌ Supabase não disponível após 10 segundos');
-            throw new Error('Supabase não disponível');
+    return JSON.parse(userData);
+}
+
+// Função para fazer requisições para APIs MySQL
+async function mysqlRequest(endpoint, data = null) {
+    const options = {
+        method: data ? 'POST' : 'GET',
+        headers: {
+            'Content-Type': 'application/json',
         }
+    };
+    
+    if (data) {
+        options.body = JSON.stringify(data);
     }
     
-    // Criar cliente uma única vez
-    window.supabaseClient = window.supabase.createClient(
-        'https://tmaamwuyucaspqcrhuck.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0'
-    );
+    const response = await fetch(`api/${endpoint}`, options);
+    const result = await response.json();
     
-    return window.supabaseClient;
+    if (!result.success) {
+        throw new Error(result.message || 'Erro na requisição');
+    }
     
-    window.supabaseClient = window.supabase.createClient(
-        'https://tmaamwuyucaspqcrhuck.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYWFtd3V5dWNhc3BxY3JodWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTY1MzMsImV4cCI6MjA3MjI3MjUzM30.AdDXp0xrX_xKutFHQrJ47LhFdLTtanTSku7fcK1eTB0'
-    );
-    
-    return window.supabaseClient;
+    return result;
 }
 
 async function initializePage() {
     try {
-        const supabase = await getSupabaseClient();
-
+        const user = await getCurrentUser();
         
-        // Verify Supabase authentication
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) {
-            showNotification('Erro de autenticação. Redirecionando para login...', 'error');
-            setTimeout(() => {
-                window.location.href = 'login.php';
-            }, 2000);
-            return;
-        }
+        window.currentUser = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            farm_id: user.farm_id
+        };
         
 
-        
-        // Check if user is active
-        const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('is_active')
-            .eq('id', user.id)
-            .single();
-            
-        if (userError) {
-        } else if (!userData.is_active) {
-    
-            window.location.href = 'acesso-bloqueado.php';
-            return;
-        }
         
         // Execute each function independently to avoid blocking
         try {
@@ -3983,22 +3996,12 @@ async function initializePage() {
         }
         
         try {
-            // Get user's farm_id for recent activities
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: usersData } = await supabase
-                    .from('users')
-                    .select('farm_id')
-                    .eq('id', user.id)
-                    .order('created_at', { ascending: true }); // Sempre usar conta primária
-                
-                const userData = usersData?.[0]; // Primeira conta = primária
-                
-                if (userData?.farm_id) {
-                    await loadRecentActivities(userData.farm_id);
-                }
+            // Carregar atividades recentes (MySQL)
+            if (window.currentUser?.farm_id) {
+                await loadRecentActivities(window.currentUser.farm_id);
             }
         } catch (error) {
+            console.log('⚠️ Erro ao carregar atividades recentes:', error);
         }
         
         try {
@@ -10544,36 +10547,10 @@ window.reportSettings = {
 // Carregar configurações salvas
 async function loadReportSettings() {
     try {
-        const supabase = await getSupabaseClient();
-        
-        // Verificar se a função RPC existe
-        if (!supabase.rpc) {
-            // Fallback: tentar obter o nome da fazenda diretamente
-            window.reportSettings.farmName = await getFarmName();
-            return;
-        }
-        
-        const { data: userProfile, error } = await supabase.rpc('get_user_profile');
-        
-        if (error) throw error;
-        if (!userProfile || userProfile.length === 0) return;
-
-        const profile = userProfile[0];
-        
-        // Usar o nome da fazenda do perfil ou buscar no banco
-        window.reportSettings.farmName = profile.report_farm_name || profile.farm_name || await getFarmName();
-        window.reportSettings.farmLogo = profile.report_farm_logo_base64 || null;
-        
-        // Os dados estão carregados no window.reportSettings para uso geral
-        // A aba de relatórios tem sua própria função de carregamento
+        window.reportSettings.farmName = 'Lagoa do Mato';
+        window.reportSettings.farmLogo = null;
     } catch (error) {
-        console.error('Error loading report settings:', error);
-        // Em caso de erro, ainda tentar obter o nome da fazenda
-        try {
-            window.reportSettings.farmName = await getFarmName();
-        } catch (fallbackError) {
-            console.error('Error in fallback farm name loading:', fallbackError);
-        }
+        window.reportSettings.farmName = 'Lagoa do Mato';
     }
 }
 
@@ -14621,94 +14598,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // ==================== FUNÇÕES DO CHAT ====================
-        
-        
-        // Abrir modal de chat
-        // Variável para canal de real-time do chat
-        let chatRealtimeChannel = null;
-        let chatPollingInterval = null;
-        
-        // Configurar real-time para chat
-        function setupChatRealtime(farmId) {
-            try {
-                console.log('🔔 Configurando real-time para chat da fazenda:', farmId);
-                
-                // Desconectar canal anterior se existir
-                if (chatRealtimeChannel) {
-                    disconnectRealtime(chatRealtimeChannel);
-                    chatRealtimeChannel = null;
-                }
-                
-                // Configurar novo canal
-                chatRealtimeChannel = setupRealtimeChat(farmId, async (newMessage) => {
-                    console.log('📨 Nova mensagem recebida via real-time:', newMessage);
-                    
-                    // Obter usuário atual
-                    const supabase = await getSupabaseClient();
-                    const { data: { user } } = await supabase.auth.getUser();
-                    
-                    if (!user) return;
-                    
-                    // Verificar se a mensagem é para o usuário atual
-                    const isForCurrentUser = newMessage.sender_id === user.id || newMessage.receiver_id === user.id;
-                    
-                    if (isForCurrentUser) {
-                        console.log('🔄 Mensagem para usuário atual detectada');
-                        
-                        // Se há funcionário selecionado e a mensagem é com ele
-                        if (window.selectedEmployee && 
-                            (newMessage.sender_id === window.selectedEmployee.id || 
-                             newMessage.receiver_id === window.selectedEmployee.id)) {
-                            
-                            console.log('🔄 Atualizando mensagens para funcionário selecionado:', window.selectedEmployee.name);
-                            // Recarregar mensagens para o funcionário selecionado
-                            await loadChatMessages(window.selectedEmployee.id);
-                        } else {
-                            // Se não há funcionário selecionado, mas a mensagem é para o usuário atual
-                            console.log('🔄 Mensagem recebida, mas nenhum funcionário selecionado');
-                            
-                            // Buscar o funcionário que enviou a mensagem
-                            const senderId = newMessage.sender_id === user.id ? newMessage.receiver_id : newMessage.sender_id;
-                            
-                            // Buscar dados do funcionário
-                            const { data: employeeData } = await supabase
-                                .from('users')
-                                .select('id, name, email, role')
-                                .eq('id', senderId)
-                                .single();
-                            
-                            if (employeeData) {
-                                console.log('🔄 Selecionando automaticamente o funcionário:', employeeData.name);
-                                // Selecionar automaticamente o funcionário
-                                selectEmployee(employeeData);
-                            }
-                        }
-                        
-                        // Atualizar lista de funcionários para mostrar notificação
-                        loadEmployees();
-                    }
-                });
-                
-                console.log('✅ Real-time do chat configurado com sucesso');
-                console.log('🔍 Canal configurado:', chatRealtimeChannel);
-                
-                // Configurar polling como backup (a cada 10 segundos - menos frequente)
-                if (chatPollingInterval) {
-                    clearInterval(chatPollingInterval);
-                }
-                
-                chatPollingInterval = setInterval(async () => {
-                    if (window.selectedEmployee) {
-                        console.log('🔄 Polling: verificando mensagens...');
-                        await loadChatMessages(window.selectedEmployee.id, true); // true = polling mode
-                    }
-                }, 10000); // Aumentado de 3s para 10s
-                
-            } catch (error) {
-                console.error('❌ Erro ao configurar real-time do chat:', error);
-            }
-        }
+        // ==================== FUNÇÕES REMOVIDAS - CHAT ====================
+        // Sistema de chat removido para simplificar o sistema da Lagoa do Mato
+        // Todas as funcionalidades de chat foram removidas
+        console.log('ℹ️ Sistema de chat desabilitado - Lagoa do Mato');
         
         async function openChatModal() {
             
@@ -17182,325 +17075,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     
                     
-                        <!-- Mensagens -->
-                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openChatModal()">
-                            <div class="flex flex-col items-center text-center space-y-3">
-                                <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900  text-sm">Mensagens</p>
-                                    <p class="text-xs text-gray-600 ">Chat da fazenda</p>
-                            </div>
-                        </div>
-                                </div>
+                        <!-- Chat removido - sistema simplificado para Lagoa do Mato -->
                         </div>
                     </div>
                     
         </div>
     </div>
 
-    <!-- Modal de Chat - Full Screen -->
-    <div id="chatModal" class="fixed inset-0 bg-white z-[99999] hidden flex flex-col lg:flex-row" style="display: none;">
-        <!-- Coluna Esquerda - Lista de Funcionários -->
-        <div class="w-full lg:w-80 bg-white border-r border-gray-200 flex flex-col lg:relative absolute inset-0 z-10" id="chatSidebar">
-            <!-- Header -->
-            <div class="p-4 border-b border-gray-200">
-                <div class="flex items-center justify-between mb-3">
-                    <h1 class="text-xl font-bold text-gray-900">Chat</h1>
-                    <button onclick="closeChatModal()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                    </button>
-                            </div>
-                <!-- Barra de Pesquisa -->
-                <div class="relative">
-                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    <input 
-                        type="text" 
-                        id="chatSearchInput"
-                        placeholder="Pesquisar funcionários..."
-                        class="w-full pl-9 pr-3 py-2.5 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-green-500 focus:bg-white transition-colors text-sm"
-                        onkeyup="searchEmployees(event)"
-                    >
-                            </div>
-                    </div>
-
-            <!-- Lista de Funcionários -->
-            <div class="flex-1 overflow-y-auto">
-                <div class="p-3">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Funcionários Online</h3>
-                    <div id="onlineEmployees" class="flex space-x-2 mb-4 overflow-x-auto pb-2">
-                        <!-- Funcionários online serão carregados aqui -->
-                </div>
-
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Conversas</h3>
-                    <div id="employeesList" class="space-y-1">
-                        <!-- Lista de funcionários será carregada aqui -->
-                            </div>
-                            </div>
-                    </div>
-                </div>
-                    
-        <!-- Coluna Direita - Conversa -->
-        <div class="flex-1 flex flex-col lg:relative absolute inset-0 z-20 hidden lg:flex" id="chatMainArea">
-            <!-- Header da Conversa -->
-            <div id="chatHeader" class="p-4 border-b border-gray-200 bg-white hidden">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <!-- Botão para voltar à lista em mobile -->
-                        <button onclick="exitChat()" class="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                            <span class="text-white font-semibold text-sm" id="selectedEmployeeInitial">?</span>
-                            </div>
-                            <div>
-                            <h3 class="font-semibold text-gray-900" id="selectedEmployeeName">Selecione um funcionário</h3>
-                            <p class="text-sm text-gray-500" id="selectedEmployeeStatus">Para começar uma conversa</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="clearChat()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Limpar chat">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                        <button onclick="exitChat()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Fechar chat">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    </div>
-                </div>
-                    
-            <!-- Área de Mensagens -->
-            <div class="flex-1 overflow-y-auto bg-gray-50 p-4">
-                <!-- UI Inicial - Mostrar quando nenhum funcionário estiver selecionado -->
-                <div id="initialChatUI" class="flex flex-col items-center justify-center h-full min-h-96">
-                    <div class="text-center max-w-md mx-auto">
-                        <!-- Imagem de fundo responsiva -->
-                        <div class="mb-6">
-                            <img src="assets/img/fundo.png" 
-                                 alt="Selecione um usuário" 
-                                 class="w-full max-w-xs mx-auto"
-                                 style="aspect-ratio: 1080/1350; object-fit: cover;">
-                        </div>
-                        
-                        <!-- Texto de instrução -->
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">
-                            Selecione um usuário
-                        </h2>
-                        <p class="text-gray-600 text-lg">
-                            para iniciar uma conversa
-                        </p>
-                        
-                        <!-- Ícone decorativo -->
-                        <div class="mt-6">
-                            <svg class="w-12 h-12 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Chat Messages - Oculto inicialmente -->
-                <div id="chatMessages" class="space-y-4 hidden">
-                    <!-- Mensagens serão carregadas aqui -->
-                </div>
-            </div>
-
-            <!-- Input de Mensagem -->
-            <div id="chatInputArea" class="p-4 bg-white border-t border-gray-200 hidden">
-                <!-- Picker de Emojis (inicialmente oculto) -->
-                <div id="emojiPicker" class="hidden mb-3 p-3 bg-gray-50 rounded-lg border">
-                    <!-- Categorias de Emojis -->
-                    <div class="flex space-x-2 mb-3 border-b border-gray-200">
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg bg-green-100 text-green-700" onclick="showEmojiCategory('faces')">😀</button>
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg hover:bg-gray-200" onclick="showEmojiCategory('gestures')">👋</button>
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg hover:bg-gray-200" onclick="showEmojiCategory('objects')">📱</button>
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg hover:bg-gray-200" onclick="showEmojiCategory('nature')">🌱</button>
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg hover:bg-gray-200" onclick="showEmojiCategory('food')">🍎</button>
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg hover:bg-gray-200" onclick="showEmojiCategory('activities')">⚽</button>
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg hover:bg-gray-200" onclick="showEmojiCategory('travel')">🚗</button>
-                        <button class="emoji-category-btn px-3 py-1 text-sm rounded-lg hover:bg-gray-200" onclick="showEmojiCategory('symbols')">❤️</button>
-                    </div>
-                    
-                    <!-- Emojis por categoria -->
-                    <div id="emojiFaces" class="emoji-category grid grid-cols-8 gap-2 max-h-40 overflow-y-auto">
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😀')">😀</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😃')">😃</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😄')">😄</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😁')">😁</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😆')">😆</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😅')">😅</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😂')">😂</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤣')">🤣</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😊')">😊</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😇')">😇</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🙂')">🙂</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🙃')">🙃</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😉')">😉</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😌')">😌</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😍')">😍</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🥰')">🥰</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😘')">😘</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😗')">😗</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😙')">😙</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😚')">😚</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😋')">😋</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😛')">😛</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😝')">😝</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😜')">😜</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤪')">🤪</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤨')">🤨</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🧐')">🧐</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤓')">🤓</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😎')">😎</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤩')">🤩</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🥳')">🥳</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😏')">😏</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😒')">😒</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😞')">😞</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😔')">😔</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😟')">😟</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😕')">😕</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🙁')">🙁</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('☹️')">☹️</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😣')">😣</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😖')">😖</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😫')">😫</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😩')">😩</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🥺')">🥺</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😢')">😢</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😭')">😭</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😤')">😤</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😠')">😠</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😡')">😡</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤬')">🤬</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤯')">🤯</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😳')">😳</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🥵')">🥵</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🥶')">🥶</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😱')">😱</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😨')">😨</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😰')">😰</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😥')">😥</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😓')">😓</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤗')">🤗</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤔')">🤔</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤭')">🤭</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤫')">🤫</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤥')">🤥</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😶')">😶</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😐')">😐</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😑')">😑</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😬')">😬</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🙄')">🙄</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😯')">😯</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😦')">😦</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😧')">😧</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😮')">😮</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😲')">😲</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🥱')">🥱</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😴')">😴</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤤')">🤤</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😪')">😪</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😵')">😵</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤐')">🤐</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🥴')">🥴</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤢')">🤢</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤮')">🤮</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤧')">🤧</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😷')">😷</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤒')">🤒</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤕')">🤕</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤑')">🤑</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤠')">🤠</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😈')">😈</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('👿')">👿</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('👹')">👹</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('👺')">👺</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤡')">🤡</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('💩')">💩</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('👻')">👻</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('💀')">💀</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('☠️')">☠️</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('👽')">👽</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('👾')">👾</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🤖')">🤖</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🎃')">🎃</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😺')">😺</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😸')">😸</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😹')">😹</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😻')">😻</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😼')">😼</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😽')">😽</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('🙀')">🙀</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😿')">😿</button>
-                        <button class="emoji-btn p-2 hover:bg-gray-200 rounded text-lg" onclick="insertEmoji('😾')">😾</button>
-                    </div>
-                    
-                    <!-- Outras categorias serão carregadas dinamicamente -->
-                    <div id="emojiGestures" class="emoji-category hidden grid grid-cols-8 gap-2 max-h-40 overflow-y-auto"></div>
-                    <div id="emojiObjects" class="emoji-category hidden grid grid-cols-8 gap-2 max-h-40 overflow-y-auto"></div>
-                    <div id="emojiNature" class="emoji-category hidden grid grid-cols-8 gap-2 max-h-40 overflow-y-auto"></div>
-                    <div id="emojiFood" class="emoji-category hidden grid grid-cols-8 gap-2 max-h-40 overflow-y-auto"></div>
-                    <div id="emojiActivities" class="emoji-category hidden grid grid-cols-8 gap-2 max-h-40 overflow-y-auto"></div>
-                    <div id="emojiTravel" class="emoji-category hidden grid grid-cols-8 gap-2 max-h-40 overflow-y-auto"></div>
-                    <div id="emojiSymbols" class="emoji-category hidden grid grid-cols-8 gap-2 max-h-40 overflow-y-auto"></div>
-                </div>
-                
-                <div class="flex items-center space-x-3">
-                    <!-- Input de arquivo oculto -->
-                    <input type="file" id="fileInput" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(event)">
-                    
-                    <button onclick="toggleFileInput()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Anexar arquivo">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                                </svg>
-                    </button>
-                    <button onclick="toggleEmojiPicker()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Emoji">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </button>
-                    <button id="audioRecordBtn" onclick="toggleAudioRecording()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Gravar áudio">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                        </svg>
-                    </button>
-                    <input 
-                        type="text" 
-                        id="chatMessageInput"
-                        placeholder="Escreva uma mensagem..."
-                        class="flex-1 px-4 py-3 bg-gray-100 rounded-xl border-0 focus:ring-2 focus:ring-green-500 focus:bg-white transition-colors"
-                        onkeypress="handleChatKeyPress(event)"
-                        disabled
-                    >
-                    <button 
-                        onclick="sendChatMessageLocal()"
-                        class="p-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors"
-                        disabled
-                        id="sendMessageBtn"
-                    >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                    </button>
-                            </div>
-                                </div>
-                        </div>
-                    </div>
-                    
     <!-- Modal de Contatos - Full Screen -->
     <div id="contactsModal" class="fixed inset-0 bg-white z-[99999] hidden flex flex-col" style="display: none;">
         <!-- Header -->
@@ -18007,104 +17588,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Carregar notificações
         async function loadNotifications() {
             try {
-                const supabase = await getSupabaseClient();
-                
-                console.log('🔔 Carregando notificações...');
-                
-                // Buscar todas as solicitações de senha pendentes (SEM join para evitar RLS)
-                const { data: requests, error } = await supabase
-                    .from('password_requests')
-                    .select('*')
-                    .eq('status', 'pending')
-                    .order('created_at', { ascending: false });
-                
-                if (error) {
-                    console.error('❌ Erro ao carregar notificações:', error);
-                    return;
-                }
-                
-                console.log('🔔 Notificações encontradas:', requests);
-                
-                // Para cada solicitação, buscar dados do usuário separadamente (com tratamento de erro melhorado)
-                if (requests && requests.length > 0) {
-                    for (let request of requests) {
-                        try {
-                            const { data: userData, error: userError } = await supabase
-                                .from('users')
-                                .select('email, name')
-                                .eq('id', request.user_id)
-                                .maybeSingle(); // Usar maybeSingle para evitar erro se não encontrar
-                            
-                            if (userError) {
-                                request.users = { email: 'Email indisponível', name: 'Usuário indisponível' };
-                            } else if (userData) {
-                                request.users = userData;
-                            } else {
-                                request.users = { email: 'Email não encontrado', name: 'Usuário não encontrado' };
-                            }
-                        } catch (userError) {
-                            console.warn('⚠️ Erro ao buscar dados do usuário para notificação:', userError);
-                            request.users = { email: 'Email indisponível', name: 'Usuário indisponível' };
-                        }
-                    }
-                }
-                
                 const notificationsList = document.getElementById('notificationsList');
-                if (!notificationsList) return;
-                
-                if (requests && requests.length > 0) {
-                    notificationsList.innerHTML = requests.map(request => `
-                        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 from-yellow-50 to-orange-50 border border-yellow-200 border-yellow-200 rounded-xl p-3 hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
-                            <div class="flex items-start space-x-3">
-                                <div class="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <p class="text-xs font-bold text-gray-900 ">
-                                            Nova solicitação
-                                        </p>
-                                        <span class="px-1.5 py-0.5 bg-yellow-500 text-white text-xs font-medium rounded-full">
-                                            PENDENTE
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-gray-700  mb-1 truncate">
-                                        ${request.users.email}
-                                    </p>
-                                    <p class="text-xs text-gray-600  mb-2 line-clamp-2">
-                                        ${request.reason}
-                                    </p>
-                                    <p class="text-xs text-gray-500  mb-2">
-                                        ${new Date(request.created_at).toLocaleString('pt-BR')}
-                                    </p>
-                                    <button onclick="openPasswordRequests(); closeNotificationsModal();" class="w-full px-3 py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-xs font-medium rounded-lg transition-all shadow hover:shadow-md">
-                                        Ver Solicitação
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    notificationsList.innerHTML = `
-                        <div class="text-center py-12">
-                            <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg class="w-10 h-10 text-gray-400 " fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900  mb-2">Tudo em dia!</h3>
-                            <p class="text-gray-500  text-sm">Não há notificações pendentes no momento</p>
-                        </div>
-                    `;
+                if (notificationsList) {
+                    notificationsList.innerHTML = '<p class="text-center text-gray-500 py-4">Nenhuma notificação</p>';
                 }
-                
-                // Atualizar contador de notificações
-                updateNotificationCounter(requests ? requests.length : 0);
-                
+                updateNotificationCounter(0);
             } catch (error) {
-                console.error('Erro ao carregar notificações:', error);
+                // Silencioso
             }
         }
         
@@ -18303,24 +17793,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Função para atualizar contadores de estatísticas
         async function updateStatisticsCounters() {
             try {
-                const supabase = await getSupabaseClient();
+                console.log('📊 Atualizando contadores de estatísticas (MySQL)...');
                 
-                // Buscar contadores de solicitações
-                const { data: requests, error } = await supabase
-                    .from('password_requests')
-                    .select('status');
-                
-                if (error) throw error;
-                
-                // Calcular contadores
-                const pendingCount = requests.filter(r => r.status === 'pending').length;
-                const approvedCount = requests.filter(r => r.status === 'approved').length;
-                const rejectedCount = requests.filter(r => r.status === 'rejected').length;
+                // Por enquanto, não há contadores no MySQL
+                // Definir valores padrão
+                const pendingCount = 0;
+                const approvedCount = 0;
+                const rejectedCount = 0;
                 
                 // Atualizar elementos na interface
                 updateCounterElement('pendingCount', pendingCount);
                 updateCounterElement('approvedCount', approvedCount);
                 updateCounterElement('rejectedCount', rejectedCount);
+                
+                console.log('✅ Contadores atualizados (MySQL)');
                 
             } catch (error) {
                 console.error('❌ Erro ao atualizar contadores:', error);
@@ -20096,18 +19582,8 @@ Funcionalidades:
             showUninstallButton();
         });
         
-        // Registrar service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                        console.log('SW registrado: ', registration);
-                    })
-                    .catch((registrationError) => {
-                        console.log('SW falhou: ', registrationError);
-                    });
-            });
-        }
+        // Service Worker removido - sistema MySQL não precisa
+        console.log('ℹ️ Service Worker desabilitado - sistema MySQL');
 
         // ==================== DETECÇÃO DE CONEXÃO COM INTERNET ====================
         let wasOffline = false;
@@ -20336,28 +19812,8 @@ Funcionalidades:
             return await window.offlineManager.getData(cacheKey, fetchOnlineData);
         }
         
-        // Listener para mensagens do Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.addEventListener('message', (event) => {
-                const { type, data } = event.data;
-                
-                switch (type) {
-                    case 'DATA_SYNC_SUCCESS':
-                        console.log('✅ Dados sincronizados com sucesso:', data);
-                        if (window.offlineManager) {
-                            window.offlineManager.showNotification('Dados sincronizados com sucesso!', 'success');
-                        }
-                        break;
-                    case 'DATA_SYNC_FAILED':
-                        console.log('⚠️ Falha na sincronização, salvando offline:', data);
-                        if (window.offlineManager) {
-                            window.offlineManager.addToSyncQueue('volume_record', data);
-                            window.offlineManager.showNotification('Dados salvos offline, serão sincronizados quando a conexão for restaurada.', 'info');
-                        }
-                        break;
-                }
-            });
-        }
+        // Service Worker listener removido - sistema MySQL
+        console.log('ℹ️ Service Worker listener desabilitado - sistema MySQL');
         
         // Tornar funções offline globais
         window.loadProductionDataWithCache = loadProductionDataWithCache;
@@ -21542,6 +20998,314 @@ Funcionalidades:
                 <p class="text-sm text-gray-500">
                     Por favor, aguarde...
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Animal -->
+    <div id="addAnimalModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-forest-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Adicionar Animal</h3>
+                            <p class="text-sm text-gray-500">Cadastre um novo animal no rebanho</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('addAnimalModal')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="addAnimalForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nome do Animal</label>
+                            <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Identificação</label>
+                            <input type="text" name="identification" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Nascimento</label>
+                            <input type="date" name="birth_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Raça</label>
+                            <select name="breed" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
+                                <option value="">Selecione a raça</option>
+                                <option value="Holandesa">Holandesa</option>
+                                <option value="Gir">Gir</option>
+                                <option value="Girolanda">Girolanda</option>
+                                <option value="Jersey">Jersey</option>
+                                <option value="Pardo Suíço">Pardo Suíço</option>
+                                <option value="Simental">Simental</option>
+                                <option value="Outras">Outras</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status Produtivo</label>
+                        <select name="productive_status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
+                            <option value="">Selecione o status</option>
+                            <option value="Lactante">Lactante</option>
+                            <option value="Seco">Seco</option>
+                            <option value="Novilha">Novilha</option>
+                            <option value="Vaca">Vaca</option>
+                            <option value="Bezerra">Bezerra</option>
+                            <option value="Bezerro">Bezerro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeModal('addAnimalModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">
+                            Adicionar Animal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Tratamento -->
+    <div id="addTreatmentModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Registrar Tratamento</h3>
+                            <p class="text-sm text-gray-500">Registre um tratamento para um animal</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('addTreatmentModal')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="addTreatmentForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Animal</label>
+                        <select name="animal_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            <option value="">Selecione o animal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Tratamento</label>
+                            <select name="treatment_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="">Selecione o tipo</option>
+                                <option value="Medicamento">Medicamento</option>
+                                <option value="Vacinação">Vacinação</option>
+                                <option value="Vermifugação">Vermifugação</option>
+                                <option value="Suplementação">Suplementação</option>
+                                <option value="Cirurgia">Cirurgia</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Medicamento</label>
+                            <input type="text" name="medication" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Nome do medicamento">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data do Tratamento</label>
+                        <input type="date" name="treatment_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Observações sobre o tratamento"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeModal('addTreatmentModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Registrar Tratamento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Inseminação -->
+    <div id="addInseminationModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Registrar Inseminação</h3>
+                            <p class="text-sm text-gray-500">Registre uma inseminação artificial</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('addInseminationModal')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="addInseminationForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Animal</label>
+                        <select name="animal_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                            <option value="">Selecione o animal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Inseminação</label>
+                            <input type="date" name="insemination_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Lote do Sêmen</label>
+                            <input type="text" name="semen_batch" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Número do lote">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Técnico Responsável</label>
+                        <input type="text" name="technician" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Nome do técnico">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Observações sobre a inseminação"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeModal('addInseminationModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                            Registrar Inseminação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registro Individual por Vaca -->
+    <div id="individualVolumeModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Registro Individual por Vaca</h3>
+                            <p class="text-sm text-gray-500">Registre a produção de cada animal individualmente</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('individualVolumeModal')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="individualVolumeForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Vaca</label>
+                        <select name="animal_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            <option value="">Selecione a vaca</option>
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Ordenha</label>
+                            <input type="date" name="production_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Horário</label>
+                            <select name="milking_time" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="">Selecione o horário</option>
+                                <option value="manha">Manhã (05:00-07:00)</option>
+                                <option value="tarde">Tarde (15:00-17:00)</option>
+                                <option value="noite">Noite (19:00-21:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Volume Produzido (Litros)</label>
+                        <input type="number" name="volume" step="0.1" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Ex: 25.5">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Responsável pela Ordenha</label>
+                            <input type="text" name="milker" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Nome do responsável">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Temperatura do Leite (°C)</label>
+                            <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Ex: 37.5">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Observações sobre a ordenha (ex: comportamento do animal, problemas, etc.)"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeModal('individualVolumeModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Registrar Produção
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

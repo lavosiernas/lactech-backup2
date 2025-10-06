@@ -31,10 +31,7 @@
     <link rel="manifest" href="manifest.json">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/database-config.js"></script>
-    <script src="assets/js/chat-sync-service.js"></script>
+    <script src="assets/js/config_mysql.js"></script>
     <script src="assets/js/loading-screen.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/modal-system.js"></script>

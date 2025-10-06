@@ -20,7 +20,7 @@
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config_mysql.js"></script>
     
     <!-- CSS Files -->
     <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
@@ -354,9 +354,8 @@
     </main>
 
     <!-- Scripts -->
-    <script src="assets/js/config.js"></script>
     <script>
-        let supabaseClient;
+        // Sistema MySQL - sem supabaseClient
 
         // Inicializar Supabase
         async function initSupabase() {
