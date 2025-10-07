@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -3487,80 +3487,6 @@
 
 
     <script>
-        const supabaseMock = {
-            auth: {
-                getUser: async () => {
-                    const userData = localStorage.getItem('user_data');
-                    if (userData) {
-                        const user = JSON.parse(userData);
-                        return { data: { user: user }, error: null };
-                    }
-                    return { data: { user: null }, error: null };
-                },
-                signOut: async () => {
-                    localStorage.clear();
-                    return { error: null };
-                },
-                getSession: async () => {
-                    const userData = localStorage.getItem('user_data');
-                    return { data: { session: userData ? { user: JSON.parse(userData) } : null }, error: null };
-                }
-            },
-            from: (table) => ({
-                select: (cols) => {
-                    const query = {
-                        eq: (col, val) => query,
-                        gte: (col, val) => query,
-                        lte: (col, val) => query,
-                        gt: (col, val) => query,
-                        lt: (col, val) => query,
-                        not: (col, op, val) => query,
-                        order: (col, opts) => query,
-                        limit: (n) => query,
-                        single: async () => ({ data: null, error: null }),
-                        maybeSingle: async () => ({ data: null, error: null }),
-                        then: async (callback) => {
-                            if (callback) callback({ data: [], error: null });
-                            return { data: [], error: null };
-                        }
-                    };
-                    return query;
-                },
-                insert: async (data) => ({ data: null, error: null }),
-                update: (data) => ({
-                    eq: async (col, val) => ({ data: null, error: null })
-                }),
-                delete: () => ({
-                    eq: async (col, val) => ({ data: null, error: null })
-                }),
-                upsert: async (data) => ({ data: null, error: null })
-            }),
-            rpc: async (funcName, params) => ({ data: null, error: null }),
-            storage: {
-                from: (bucket) => ({
-                    upload: async (path, file) => ({ data: null, error: null }),
-                    download: async (path) => ({ data: null, error: null }),
-                    remove: async (paths) => ({ data: null, error: null }),
-                    getPublicUrl: (path) => ({ data: { publicUrl: '' } })
-                })
-            },
-            channel: (name) => ({
-                on: (event, opts, callback) => ({
-                    subscribe: (callback) => ({ unsubscribe: () => {} })
-                }),
-                subscribe: (callback) => ({ unsubscribe: () => {} }),
-                unsubscribe: () => {}
-            })
-        };
-        
-        // Função que retorna o mock ao invés do Supabase real
-        async function getSupabaseClient() {
-            return supabaseMock;
-        }
-        
-        // Tornar disponível globalmente
-        window.supabase = supabaseMock;
-        
         // ==================== CONTROLE DE TELA DE CARREGAMENTO DE CONEXÃO ====================
         function showServerConnectionLoading() {
             const loadingModal = document.getElementById('serverConnectionLoading');
@@ -4246,7 +4172,7 @@ async function getFarmName() {
         }
         
         // Get current user and their farm
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             return 'Minha Fazenda';
@@ -4293,7 +4219,7 @@ async function getFarmName() {
 // Função utilitária para sempre buscar a conta primária
 async function getPrimaryUserAccount(email) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: usersData, error } = await supabase
             .from('users')
             .select('*')
@@ -4752,7 +4678,7 @@ async function loadDashboardData() {
         }
     }
     
-    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+    const supabase = await getSupabaseClient();
     
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -4939,7 +4865,7 @@ async function loadVolumeData() {
         }
     }
     
-    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+    const supabase = await getSupabaseClient();
     
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -5092,7 +5018,7 @@ async function loadQualityData() {
             }
         }
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -5265,7 +5191,7 @@ async function loadPaymentsData() {
         }
     }
     
-    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+    const supabase = await getSupabaseClient();
     
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -5339,7 +5265,7 @@ async function loadUsersData() {
             }
         }
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
@@ -5419,7 +5345,7 @@ async function loadWeeklyVolumeChart() {
             }
         }
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
@@ -5491,7 +5417,7 @@ async function loadWeeklyVolumeChart() {
 // Load daily volume chart data
 async function loadDailyVolumeChart() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
@@ -5730,7 +5656,7 @@ async function loadDashboardVolumeChart() {
     try {
         console.log('🔄 Carregando gráfico Volume Semanal...');
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         if (!supabase) {
             console.error('❌ Supabase não disponível para Volume Semanal');
             return;
@@ -5852,7 +5778,7 @@ async function loadDashboardWeeklyChart() {
     try {
         console.log('🔄 Carregando gráfico de produção semanal...');
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         if (!supabase) {
             console.error('❌ Supabase não disponível');
             return;
@@ -5989,7 +5915,7 @@ async function loadMonthlyProductionChart() {
     try {
         console.log('🔄 Carregando gráfico de produção mensal...');
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         if (!supabase) {
             console.error('❌ Cliente Supabase não disponível');
             return;
@@ -6315,7 +6241,7 @@ function displayUsersList(users) {
 // Function to edit user
 async function editUser(userId) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         // Buscar dados do funcionário pelo ID selecionado
         const { data: user, error } = await supabase
             .from('users')
@@ -6364,7 +6290,7 @@ async function editUser(userId) {
 // Function to toggle user access
 async function toggleUserAccess(userId, currentStatus) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         // Validate inputs
         if (!userId) {
@@ -6413,7 +6339,7 @@ async function testUserBlocking() {
     try {
 
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         // Get current user data
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -6489,7 +6415,7 @@ function deleteUser(userId, userName) {
 // Função para executar a exclusão
 async function executeDeleteUser(userId, userName) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         // Primeiro, buscar dados completos do usuário antes de excluir
         const { data: userData, error: fetchError } = await supabase
@@ -6613,7 +6539,7 @@ async function undoDelete() {
     
     if (userToDelete) {
         try {
-            // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+            const supabase = await getSupabaseClient();
             
             // Restaurar usuário usando RPC
             const { data: result, error } = await supabase.rpc('restore_deleted_user', {
@@ -6810,7 +6736,7 @@ async function handleEditUser(e) {
             updateData.profile_photo_url = null;
         }
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { error } = await supabase
             .from('users')
             .update(updateData)
@@ -7453,7 +7379,7 @@ let qualityDistributionChart = null;
 // Load volume records table
 async function loadVolumeRecords() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
@@ -7540,7 +7466,7 @@ function displayVolumeRecords(records) {
 // Load quality tests table
 async function loadQualityTests() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
@@ -7708,7 +7634,7 @@ async function deleteQualityTest(testId) {
     }
     
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             showNotification('Usuário não autenticado', 'error');
@@ -7742,7 +7668,7 @@ async function deleteQualityTest(testId) {
 // Load quality chart data
 async function loadQualityChart() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
@@ -7789,7 +7715,7 @@ async function loadQualityChart() {
 async function loadTemperatureChart() {
     try {
         console.log('🌡️ Iniciando carregamento do gráfico de temperatura...');
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -8067,7 +7993,7 @@ async function loadRecentActivities(farmId) {
             }
         }
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         const { data: activities, error } = await supabase
             .from('volume_records')
@@ -8160,7 +8086,7 @@ async function setupRealtimeUpdates() {
         const farmId = parsedUserData.farm_id;
         
         // Obter cliente Supabase
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         if (!supabase) {
             console.log('❌ Supabase não disponível para tempo real');
             return;
@@ -8321,7 +8247,7 @@ async function updateTodayVolume() {
         if (!userData) return;
         
         const parsedUserData = JSON.parse(userData);
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         const { data: volumeData, error: volumeError } = await supabase
             .from('volume_records')
@@ -9808,7 +9734,7 @@ async function handleAddVolume(event) {
     console.log('📅 Data processada:', volumeData.production_date);
 
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (!currentUser) throw new Error('User not authenticated');
 
@@ -9959,7 +9885,7 @@ async function handleAddQuality(event) {
     };
 
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         // Usar a nova função RPC para registrar o teste de qualidade
         const { data, error } = await supabase.rpc('register_quality_test', {
             p_test_date: qualityData.test_date,
@@ -10012,7 +9938,7 @@ async function handleAddPayment(event) {
     };
 
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (!currentUser) throw new Error('User not authenticated');
 
@@ -10113,7 +10039,7 @@ async function generateUserEmail(name, farmId) {
             throw new Error('ID da fazenda é obrigatório');
         }
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         // Get farm name
         const { data: farmData, error: farmError } = await supabase
             .from('farms')
@@ -10206,7 +10132,7 @@ async function updateEmailPreview(name) {
     }
     
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (!currentUser) {
             emailPreview.textContent = 'Usuário não autenticado';
@@ -10427,7 +10353,7 @@ async function handleAddUser(e) {
     
     try {
         console.log('🔍 Iniciando criação do usuário...');
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         console.log('🔍 Cliente Supabase obtido');
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         console.log('🔍 Usuário atual:', currentUser);
@@ -10554,7 +10480,7 @@ function addUser() {
 
 async function exportVolumeReport() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         // Buscar dados de volume de leite
         const { data: volumeData, error } = await supabase
             .from('volume_records')
@@ -10579,7 +10505,7 @@ async function exportVolumeReport() {
 
 async function exportQualityReport() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         // Buscar dados de qualidade
         const { data: qualityData, error } = await supabase
             .from('quality_records')
@@ -10600,7 +10526,7 @@ async function exportQualityReport() {
 // Função para gerar relatório de vendas
 async function generatePaymentsReport() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
@@ -10738,7 +10664,7 @@ function removeFarmLogo() {
 
 async function saveReportSettings() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         // Usar o nome da fazenda das configurações globais ou padrão
         const farmName = window.reportSettings.farmName || 'Fazenda';
@@ -10824,7 +10750,7 @@ async function generateEmailFromName(name) {
 // Função para obter próximo número sequencial de usuário
 async function getNextUserNumber(farmName) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return '001';
 
@@ -10913,7 +10839,7 @@ function toggleUserPasswordVisibility(inputId, buttonId) {
 // Upload profile photo to Supabase Storage
 async function uploadProfilePhoto(file, userId) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         // Get current authenticated user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -10990,7 +10916,7 @@ async function uploadProfilePhoto(file, userId) {
 async function refreshUsersListOnly() {
 
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             return;
@@ -11209,7 +11135,7 @@ async function confirmLogout() {
         cleanupRealtimeUpdates();
         
         clearUserSession(); // Use new clearUserSession function
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         await supabase.auth.signOut();
         console.log('✅ Logout realizado com sucesso');
         
@@ -11226,7 +11152,7 @@ async function confirmLogout() {
 // Função para carregar dados da conta secundária existente
 async function loadSecondaryAccountData() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         // Get current user data
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -12510,7 +12436,7 @@ function updateModalProfilePhoto(photoUrl) {
 // Função para carregar foto do gerente ao abrir o modal
 async function loadManagerPhoto() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
@@ -12551,7 +12477,7 @@ async function loadHeaderPhoto() {
     try {
         console.log('🖼️ Carregando foto do header...');
         
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.log('❌ Usuário não autenticado');
@@ -12593,7 +12519,7 @@ let reportTabSettings = {
 // Função para carregar configurações na aba de relatórios
 async function loadReportTabSettings() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
@@ -13274,7 +13200,7 @@ function cancelSecondaryAccountForm() {
 // Preencher formulário com dados do gerente atual
 async function fillSecondaryAccountForm() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
@@ -13316,7 +13242,7 @@ async function fillSecondaryAccountForm() {
 // Criar conta secundária
 async function createSecondaryAccount(formData) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) throw new Error('Usuário não autenticado');
@@ -13392,7 +13318,7 @@ async function checkExistingSecondaryAccount(accountType) {
     }
     
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) return;
@@ -13427,7 +13353,7 @@ async function checkExistingSecondaryAccount(accountType) {
 // Carregar contas secundárias
 async function loadSecondaryAccounts() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) return;
@@ -13530,7 +13456,7 @@ function displaySecondaryAccounts(accounts) {
 // Obter farm_id do usuário atual
 async function getCurrentUserFarmId() {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) return null;
@@ -14097,7 +14023,7 @@ async function processManagerPhoto(file) {
         previewManagerProfilePhoto(file);
         
         // Upload da foto
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) throw new Error('Usuário não autenticado');
@@ -14277,7 +14203,7 @@ function updateManagerPhotoDisplay(photoUrl) {
 // Upload da foto do gerente para o Supabase
 async function uploadManagerProfilePhoto(file, userId) {
     try {
-        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const supabase = await getSupabaseClient();
         
         // Obter farm_id do usuário atual
         const { data: { user } } = await supabase.auth.getUser();
@@ -14545,7 +14471,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const confirmed = confirm('Tem certeza que deseja remover sua foto de perfil?');
                 if (!confirmed) return;
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -14716,7 +14642,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Atualizar status online do usuário atual
                 try {
-                    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                    const supabase = await getSupabaseClient();
                     const { data: { user } } = await supabase.auth.getUser();
                     if (user) {
                         await updateUserLastLogin(user.id);
@@ -14770,7 +14696,7 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 console.log('🔄 Carregando funcionários...');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -15225,7 +15151,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Limpando conversa...', 'info');
 
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -15379,7 +15305,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function loadChatMessages(employeeId = null, isPolling = false) {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
@@ -15919,7 +15845,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showTypingIndicator(window.currentUser?.name || 'Você');
 
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
@@ -16046,7 +15972,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
@@ -16270,7 +16196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
@@ -16374,7 +16300,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 
                 const { error: updateError } = await supabase
                     .from('password_requests')
@@ -16426,7 +16352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 
                 // Atualizar status da solicitação
                 const { error: updateError } = await supabase
@@ -16569,7 +16495,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Carregar solicitações de senha
         async function loadPasswordRequests() {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -16785,7 +16711,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Visualizar detalhes da solicitação (versão corrigida)
         async function viewPasswordRequestDetailsFixed(requestId) {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 
                 // Buscar solicitação sem JOIN
                 const { data: request, error } = await supabase
@@ -16871,7 +16797,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -16911,7 +16837,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -17714,7 +17640,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Função corrigida para carregar solicitações de senha
         async function loadPasswordRequestsFixed() {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 
                 console.log('🔄 Carregando solicitações de senha...');
                 
@@ -18007,7 +17933,7 @@ Funcionalidades:
         // Função para limpeza automática de solicitações antigas (24 horas)
         async function cleanupOldPasswordRequests() {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const twentyFourHoursAgo = new Date();
                 twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
                 
@@ -18092,7 +18018,7 @@ Funcionalidades:
             }
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const loadingElement = document.getElementById('historyLoading');
                 const emptyElement = document.getElementById('emptyHistory');
                 const listElement = document.getElementById('passwordHistoryList');
@@ -18333,7 +18259,7 @@ Funcionalidades:
                 const confirmed = confirm('Tem certeza que deseja excluir esta solicitação? Esta ação não pode ser desfeita.');
                 if (!confirmed) return;
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 
                 console.log('🗑️ Excluindo solicitação:', requestId);
                 
@@ -18379,7 +18305,7 @@ Funcionalidades:
                 const confirmed = confirm(`Tem certeza que deseja excluir ${requestIds.length} solicitação(ões)? Esta ação não pode ser desfeita.`);
                 if (!confirmed) return;
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 
                 console.log('🗑️ Excluindo múltiplas solicitações:', requestIds);
                 
@@ -18597,7 +18523,7 @@ Funcionalidades:
             }
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -18740,7 +18666,7 @@ Funcionalidades:
             }
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -18867,7 +18793,7 @@ Funcionalidades:
             }
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -18950,7 +18876,7 @@ Funcionalidades:
             }
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -19053,7 +18979,7 @@ Funcionalidades:
         // Validação de sessão do gerente
         async function validateManagerSession() {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -19090,7 +19016,7 @@ Funcionalidades:
         // Função para notificar usuário sobre alteração de senha
         async function notifyUserPasswordChanged(userId, newPassword) {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 
                 // Validar sessão do gerente
                 const sessionValidation = await validateManagerSession();
@@ -19343,7 +19269,7 @@ Funcionalidades:
             isLoadingRequests = true;
             
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -19817,7 +19743,7 @@ Funcionalidades:
             const cacheKey = `production_${farmId}_${dateRange}`;
             
             const fetchOnlineData = async () => {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 let query = supabase
                     .from('volume_records')
                     .select('volume_liters, production_date, milking_type')
@@ -19868,7 +19794,7 @@ Funcionalidades:
             const cacheKey = 'user_data';
             
             const fetchOnlineData = async () => {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) throw new Error('Usuário não autenticado');
@@ -19896,7 +19822,7 @@ Funcionalidades:
             const cacheKey = `farm_data_${farmId}`;
             
             const fetchOnlineData = async () => {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: farmData, error } = await supabase
                     .from('farms')
                     .select('*')
@@ -20231,7 +20157,7 @@ Funcionalidades:
             try {
                 console.log('🔄 Atualizando lista de registros de volume...');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
 
@@ -20355,7 +20281,7 @@ Funcionalidades:
             try {
                 console.log('🔧 Corrigindo nomes de funcionários nos registros existentes...');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
 
@@ -20420,7 +20346,7 @@ Funcionalidades:
             try {
                 showCustomLoading('Gerando relatório de volume...', 'generate');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -20467,7 +20393,7 @@ Funcionalidades:
             try {
                 showCustomLoading('Gerando relatório de qualidade...', 'generate');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -20514,7 +20440,7 @@ Funcionalidades:
             try {
                 showCustomLoading('Gerando relatório financeiro...', 'generate');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -20580,7 +20506,7 @@ Funcionalidades:
 
         async function loadCustomReportSettings() {
             try {
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
@@ -20682,7 +20608,7 @@ Funcionalidades:
             try {
                 showCustomLoading('Salvando configurações...', 'save');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -20727,7 +20653,7 @@ Funcionalidades:
             try {
                 showCustomLoading('Gerando relatório personalizado...', 'generate');
                 
-                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const supabase = await getSupabaseClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
@@ -21410,5 +21336,3 @@ Funcionalidades:
 
 </body>
 </html>
-
-
