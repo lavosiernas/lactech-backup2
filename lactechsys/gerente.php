@@ -3853,9 +3853,9 @@ function extractFormalName(fullName) {
         return names[0];
     }
     
-    // If two names, return the second
+    // If two names, return the first
     if (names.length === 2) {
-        return names[1];
+        return names[0];
     }
     
     // For 3 or more names, try to find the most formal name
@@ -3876,16 +3876,16 @@ function extractFormalName(fullName) {
         // Count meaningful names
         nameCount++;
         
-        // Get the second meaningful name
-        if (nameCount === 2) {
+        // Get the first meaningful name
+        if (nameCount === 1) {
             formalName = names[i];
             break;
         }
     }
     
-    // If we didn't find a second meaningful name, use the second name overall
-    if (!formalName && names.length >= 2) {
-        formalName = names[1];
+    // If we didn't find a first meaningful name, use the first name overall
+    if (!formalName && names.length >= 1) {
+        formalName = names[0];
     }
     
     // If still no formal name, use the first name
@@ -20500,88 +20500,7 @@ Funcionalidades:
         </div>
     </div>
 
-    <!-- Modal Adicionar Animal -->
-    <div id="addAnimalModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-forest-100 rounded-xl flex items-center justify-center">
-                            <svg class="w-5 h-5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Adicionar Animal</h3>
-                            <p class="text-sm text-gray-500">Cadastre um novo animal no rebanho</p>
-                        </div>
-                    </div>
-                    <button onclick="closeModal('addAnimalModal')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="p-6">
-                <form id="addAnimalForm" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nome do Animal</label>
-                            <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Identificação</label>
-                            <input type="text" name="identification" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Nascimento</label>
-                            <input type="date" name="birth_date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Raça</label>
-                            <select name="breed" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
-                                <option value="">Selecione a raça</option>
-                                <option value="Holandesa">Holandesa</option>
-                                <option value="Gir">Gir</option>
-                                <option value="Girolanda">Girolanda</option>
-                                <option value="Jersey">Jersey</option>
-                                <option value="Pardo Suíço">Pardo Suíço</option>
-                                <option value="Simental">Simental</option>
-                                <option value="Outras">Outras</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status Produtivo</label>
-                        <select name="productive_status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-forest-500 focus:outline-none">
-                            <option value="">Selecione o status</option>
-                            <option value="Lactante">Lactante</option>
-                            <option value="Seco">Seco</option>
-                            <option value="Novilha">Novilha</option>
-                            <option value="Vaca">Vaca</option>
-                            <option value="Bezerra">Bezerra</option>
-                            <option value="Bezerro">Bezerro</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex justify-end space-x-3 pt-4">
-                        <button type="button" onclick="closeModal('addAnimalModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 transition-colors">
-                            Adicionar Animal
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- Modal Adicionar Animal - Removido completamente (usando modal dinâmico) -->
 
     <!-- Modal Adicionar Tratamento -->
     <div id="addTreatmentModal" class="modal hidden">
@@ -21288,20 +21207,20 @@ function showAddAnimalModal() {
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Número do Animal *</label>
                         <input type="text" name="animal_number" required 
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="Ex: 001">
+                            placeholder="Ex: 001" tabindex="1">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Nome</label>
                         <input type="text" name="animal_name" 
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="Ex: Mimosa">
+                            placeholder="Ex: Mimosa" tabindex="2">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Raça *</label>
-                        <select name="breed" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <select name="breed" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" tabindex="3">
                             <option value="">Selecione...</option>
                             <option value="Holandês">Holandês</option>
                             <option value="Jersey">Jersey</option>
@@ -21313,78 +21232,39 @@ function showAddAnimalModal() {
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Nascimento *</label>
-                        <div class="relative">
-                            <input type="text" id="birth_date_display" readonly 
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white cursor-pointer"
-                                placeholder="Selecione a data">
-                            <input type="hidden" name="birth_date" id="birth_date_value" required>
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                        </div>
-                        
-                        <!-- Seletor de Data Customizado -->
-                        <div id="date_picker_modal" class="fixed inset-0 bg-black bg-opacity-50 z-[100001] hidden">
-                            <div class="flex items-center justify-center min-h-screen p-4">
-                                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
-                                    <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 rounded-t-2xl">
-                                        <h3 class="text-lg font-semibold">Selecionar Data</h3>
-                                    </div>
-                                    <div class="p-6">
-                                        <div class="grid grid-cols-3 gap-2 mb-4">
-                                            <select id="day_select" class="px-3 py-2 border border-gray-300 rounded-lg text-center">
-                                                <option value="">Dia</option>
-                                            </select>
-                                            <select id="month_select" class="px-3 py-2 border border-gray-300 rounded-lg text-center">
-                                                <option value="">Mês</option>
-                                                <option value="01">Jan</option>
-                                                <option value="02">Fev</option>
-                                                <option value="03">Mar</option>
-                                                <option value="04">Abr</option>
-                                                <option value="05">Mai</option>
-                                                <option value="06">Jun</option>
-                                                <option value="07">Jul</option>
-                                                <option value="08">Ago</option>
-                                                <option value="09">Set</option>
-                                                <option value="10">Out</option>
-                                                <option value="11">Nov</option>
-                                                <option value="12">Dez</option>
-                                            </select>
-                                            <select id="year_select" class="px-3 py-2 border border-gray-300 rounded-lg text-center">
-                                                <option value="">Ano</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="flex gap-2">
-                                            <button type="button" onclick="confirmDateSelection()" 
-                                                class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors">
-                                                Confirmar
-                                            </button>
-                                            <button type="button" onclick="closeDatePicker()" 
-                                                class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
-                                                Cancelar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <input type="date" name="birth_date" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" 
+                            tabindex="4">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Sexo *</label>
-                        <select name="gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <select name="gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" tabindex="5">
                             <option value="Fêmea">Fêmea</option>
                             <option value="Macho">Macho</option>
                         </select>
                     </div>
                     <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+                        <select name="status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" tabindex="6">
+                            <option value="">Selecione o status</option>
+                            <option value="Lactante">Lactante</option>
+                            <option value="Seco">Seco</option>
+                            <option value="Novilha">Novilha</option>
+                            <option value="Vaca">Vaca</option>
+                            <option value="Bezerra">Bezerra</option>
+                            <option value="Bezerro">Bezerro</option>
+                            <option value="Touro">Touro</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Origem</label>
-                        <select name="origin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <select name="origin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" tabindex="7">
                             <option value="Nascido na Fazenda">Nascido na Fazenda</option>
                             <option value="Comprado">Comprado</option>
                             <option value="Doado">Doado</option>
@@ -21448,32 +21328,41 @@ function showAddAnimalModal() {
     // Carregar animais disponíveis para pedigree
     loadAnimalsForPedigreeSelection();
     
-    // Inicializar seletor de data customizado
-    initializeDatePicker();
-    
     // Handler do formulário
     document.getElementById('addAnimalForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
         
+        // Debug: Log dos dados do formulário
+        console.log('DEBUG - Dados do formulário:', data);
+        
         try {
+            const payload = { action: 'insert', ...data };
+            console.log('DEBUG - Payload enviado:', payload);
+            
             const response = await fetch('api/animals.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'insert', ...data })
+                body: JSON.stringify(payload)
             });
             
+            console.log('DEBUG - Response status:', response.status);
             const result = await response.json();
+            console.log('DEBUG - Resultado da API:', result);
             
             if (result.success) {
                 alert('✅ Animal cadastrado com sucesso!');
                 modal.remove();
-                loadAnimalsList();
+                // Aguardar um pouco antes de recarregar a lista
+                setTimeout(() => {
+                    loadAnimalsList();
+                }, 500);
             } else {
                 alert('❌ Erro: ' + result.error);
             }
         } catch (error) {
+            console.error('DEBUG - Erro na requisição:', error);
             alert('❌ Erro ao cadastrar: ' + error.message);
         }
     });

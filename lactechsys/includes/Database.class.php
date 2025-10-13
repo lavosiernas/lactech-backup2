@@ -963,6 +963,258 @@ class Database {
             return null;
         }
     }
+    
+    /**
+     * Obter todas as inseminações
+     */
+    public function getAllInseminations() {
+        try {
+            $stmt = $this->query("
+                SELECT i.*, a.animal_number, a.name as animal_name, a.breed,
+                       b.bull_number, b.name as bull_name,
+                       u.name as recorded_by_name
+                FROM inseminations i
+                LEFT JOIN animals a ON i.animal_id = a.id
+                LEFT JOIN bulls b ON i.bull_id = b.id
+                LEFT JOIN users u ON i.recorded_by = u.id
+                ORDER BY i.insemination_date DESC
+            ");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+    
+    /**
+     * Obter inseminações por animal
+     */
+    public function getInseminationsByAnimal($animalId) {
+        try {
+            $stmt = $this->query("
+                SELECT i.*, b.bull_number, b.name as bull_name,
+                       u.name as recorded_by_name
+                FROM inseminations i
+                LEFT JOIN bulls b ON i.bull_id = b.id
+                LEFT JOIN users u ON i.recorded_by = u.id
+                WHERE i.animal_id = ?
+                ORDER BY i.insemination_date DESC
+            ", [$animalId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+    
+    /**
+     * Obter inseminações recentes
+     */
+    public function getRecentInseminations($limit = 10) {
+        try {
+            $stmt = $this->query("
+                SELECT i.*, a.animal_number, a.name as animal_name,
+                       b.bull_number, b.name as bull_name,
+                       u.name as recorded_by_name
+                FROM inseminations i
+                LEFT JOIN animals a ON i.animal_id = a.id
+                LEFT JOIN bulls b ON i.bull_id = b.id
+                LEFT JOIN users u ON i.recorded_by = u.id
+                ORDER BY i.insemination_date DESC
+                LIMIT ?
+            ", [$limit]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+    
+    /**
+     * Criar inseminação
+     */
+    public function createInsemination($data) {
+        try {
+            $stmt = $this->query("
+                INSERT INTO inseminations (animal_id, bull_id, insemination_date, insemination_type, technician, notes, recorded_by, farm_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ", [
+                $data['animal_id'],
+                $data['bull_id'] ?? null,
+                $data['insemination_date'] ?? date('Y-m-d'),
+                $data['insemination_type'] ?? 'inseminacao_artificial',
+                $data['technician'] ?? null,
+                $data['notes'] ?? null,
+                $data['recorded_by'] ?? 1,
+                self::FARM_ID
+            ]);
+            
+            return [
+                'success' => true,
+                'id' => $this->getConnection()->lastInsertId()
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Atualizar inseminação
+     */
+    public function updateInsemination($id, $data) {
+        try {
+            $fields = [];
+            $values = [];
+            
+            foreach ($data as $field => $value) {
+                if (in_array($field, ['animal_id', 'bull_id', 'insemination_date', 'insemination_type', 'technician', 'notes'])) {
+                    $fields[] = "{$field} = ?";
+                    $values[] = $value;
+                }
+            }
+            
+            if (empty($fields)) {
+                return [
+                    'success' => false,
+                    'error' => 'Nenhum campo válido para atualizar'
+                ];
+            }
+            
+            $fields[] = "updated_at = NOW()";
+            $values[] = $id;
+            
+            $sql = "UPDATE inseminations SET " . implode(', ', $fields) . " WHERE id = ?";
+            $this->query($sql, $values);
+            
+            return [
+                'success' => true,
+                'message' => 'Inseminação atualizada com sucesso'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Deletar inseminação
+     */
+    public function deleteInsemination($id) {
+        try {
+            $this->query("DELETE FROM inseminations WHERE id = ?", [$id]);
+            return [
+                'success' => true,
+                'message' => 'Inseminação excluída com sucesso'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Criar animal
+     */
+    public function createAnimal($data) {
+        try {
+            // Debug: Log dos dados recebidos
+            error_log("DEBUG createAnimal - Dados recebidos: " . json_encode($data));
+            
+            $stmt = $this->query("
+                INSERT INTO animals (animal_number, name, birth_date, breed, gender, status, origin, father_id, mother_id, notes, farm_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ", [
+                $data['animal_number'],
+                $data['animal_name'] ?? null,
+                $data['birth_date'],
+                $data['breed'],
+                $data['gender'],
+                $data['status'],
+                $data['origin'] ?? 'Nascido na Fazenda',
+                $data['father_id'] ?? null,
+                $data['mother_id'] ?? null,
+                $data['notes'] ?? null,
+                self::FARM_ID
+            ]);
+            
+            $insertId = $this->getConnection()->lastInsertId();
+            error_log("DEBUG createAnimal - Animal inserido com ID: " . $insertId);
+            
+            return [
+                'success' => true,
+                'id' => $insertId,
+                'message' => 'Animal cadastrado com sucesso'
+            ];
+        } catch (PDOException $e) {
+            error_log("DEBUG createAnimal - Erro PDO: " . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Atualizar animal
+     */
+    public function updateAnimal($id, $data) {
+        try {
+            $fields = [];
+            $values = [];
+            
+            foreach ($data as $field => $value) {
+                if (in_array($field, ['animal_number', 'name', 'birth_date', 'breed', 'gender', 'status', 'origin', 'father_id', 'mother_id', 'notes'])) {
+                    $fields[] = "{$field} = ?";
+                    $values[] = $value;
+                }
+            }
+            
+            if (empty($fields)) {
+                return [
+                    'success' => false,
+                    'error' => 'Nenhum campo válido para atualizar'
+                ];
+            }
+            
+            $fields[] = "updated_at = NOW()";
+            $values[] = $id;
+            
+            $sql = "UPDATE animals SET " . implode(', ', $fields) . " WHERE id = ?";
+            $this->query($sql, $values);
+            
+            return [
+                'success' => true,
+                'message' => 'Animal atualizado com sucesso'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Deletar animal
+     */
+    public function deleteAnimal($id) {
+        try {
+            $this->query("DELETE FROM animals WHERE id = ?", [$id]);
+            return [
+                'success' => true,
+                'message' => 'Animal excluído com sucesso'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
 
     /**
      * Destructor - fechar conexão
