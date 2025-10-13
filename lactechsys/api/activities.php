@@ -1,5 +1,5 @@
 <?php
-// API de estatísticas simplificada
+// API para atividades recentes
 
 // Desabilitar exibição de erros em produção
 error_reporting(0);
@@ -24,13 +24,32 @@ require_once $dbPath;
 $db = Database::getInstance();
 
 try {
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    if ($method === 'GET') {
         $action = $_GET['action'] ?? '';
         
         switch ($action) {
-            case 'get_farm_stats':
-                $stats = $db->getDashboardStats();
-                echo json_encode(['success' => true, 'data' => $stats]);
+            case 'get_recent':
+            case 'select':
+                // Retornar atividades recentes simuladas
+                $activities = [
+                    [
+                        'id' => 1,
+                        'type' => 'volume',
+                        'description' => 'Coleta de leite registrada',
+                        'date' => date('Y-m-d H:i:s'),
+                        'user' => 'Sistema'
+                    ],
+                    [
+                        'id' => 2,
+                        'type' => 'quality',
+                        'description' => 'Teste de qualidade realizado',
+                        'date' => date('Y-m-d H:i:s', strtotime('-1 hour')),
+                        'user' => 'Sistema'
+                    ]
+                ];
+                
+                echo json_encode(['success' => true, 'data' => $activities]);
                 break;
                 
             default:

@@ -355,23 +355,10 @@ class OfflineManager {
         this.isOnline = true;
         this.showConnectionStatus();
         
-        // Mostrar loading de sincronização
-        if (window.offlineLoadingSystem) {
-            window.offlineLoadingSystem.showLoading('Reconectando com o servidor online');
-        }
-        
-        // Aguardar 6 segundos para simular carregamento
-        await new Promise(resolve => setTimeout(resolve, 6000));
-        
-        // Tentar sincronizar dados pendentes
+        // Sincronizar dados pendentes sem loading visual
         await this.syncPendingData();
         
-        // Esconder loading
-        if (window.offlineLoadingSystem) {
-            window.offlineLoadingSystem.hideLoading();
-        }
-        
-        this.showNotification('Conexão restaurada! Dados sincronizados com sucesso!', 'success');
+        // Não mostrar notificação - reconexão silenciosa
     }
 
     /**

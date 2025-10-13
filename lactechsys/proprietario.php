@@ -38,8 +38,8 @@
     <script src="assets/js/loading-screen.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
-    <script src="assets/js/offline-loading.js"></script>
-    <link href="assets/css/offline-loading.css" rel="stylesheet">
+    <!-- <script src="assets/js/offline-loading.js"></script> --> <!-- Desabilitado - reconexão silenciosa -->
+    <!-- <link href="assets/css/offline-loading.css" rel="stylesheet"> --> <!-- Desabilitado -->
     <script>
         // ==================== CACHE SYSTEM ====================
         const CacheManager = {
@@ -58,18 +58,11 @@
                     return this.userData;
                 }
                 
-                console.log('🔄 Buscando dados do usuário no Supabase');
-                const supabase = createSupabaseClient();
-                const { data: { user } } = await supabase.auth.getUser();
+                console.log('🔄 Buscando dados do usuário');
+                const userData = localStorage.getItem('user_data');
                 
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('id, name, email, role, farm_id, profile_photo')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    this.userData = { ...user, ...userData };
+                if (userData) {
+                    this.userData = JSON.parse(userData);
                     this.lastUserFetch = now;
                     console.log('✅ Dados do usuário cacheados');
                 }
@@ -85,20 +78,14 @@
                     return this.farmData;
                 }
                 
-                console.log('🔄 Buscando dados da fazenda no Supabase');
-                const userData = await this.getUserData();
-                if (userData?.farm_id) {
-                    const supabase = createSupabaseClient();
-                    const { data: farmData } = await supabase
-                        .from('farms')
-                        .select('id, name, location')
-                        .eq('id', userData.farm_id)
-                        .single();
-                    
-                    this.farmData = farmData;
-                    this.lastFarmFetch = now;
-                    console.log('✅ Dados da fazenda cacheados');
-                }
+                console.log('🔄 Dados da fazenda: Lagoa Do Mato');
+                this.farmData = {
+                    id: 1,
+                    name: 'Lagoa Do Mato',
+                    location: 'Sua localização'
+                };
+                this.lastFarmFetch = now;
+                console.log('✅ Dados da fazenda cacheados');
                 
                 return this.farmData;
             },
@@ -126,8 +113,8 @@
             },
             
             // Cache para dados de volume
-            async getVolumeData(farmId, dateRange, forceRefresh = false) {
-                const cacheKey = `volume_${farmId}_${dateRange}`;
+            async getVolumeData(dateRange, forceRefresh = false) {
+                const cacheKey = `volume_lagoa_do_mato_${dateRange}`;
                 const cachedData = this.get(cacheKey);
                 
                 if (!forceRefresh && cachedData) {
@@ -135,15 +122,9 @@
                     return cachedData;
                 }
                 
-                console.log('🔄 Buscando dados de volume no Supabase:', cacheKey);
-                const supabase = createSupabaseClient();
-                
-                let query = supabase
-                    .from('volume_records')
-                    .select('volume_liters, production_date')
-                    .eq('farm_id', farmId);
-                
-                // Aplicar filtro de data se especificado
+                console.log('🔄 Buscando dados de volume via API:', cacheKey);
+                // Usar API MySQL
+                return null;
                 if (dateRange === 'today') {
                     const today = new Date().toISOString().split('T')[0];
                     query = query.eq('production_date', today);
@@ -191,7 +172,7 @@
             }
         };
         
-        // Aguardar configuração do Supabase antes de carregar fix_data_sync_complete.js
+                // Sistema MySQL - Lagoa Do Mato
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 const script = document.createElement('script');
@@ -1004,12 +985,11 @@
     </div>
 
     <script>
-        // Supabase client is already initialized in supabase_config_fixed.js
-        // Using the global supabase instance from supabase_config_fixed.js
+        // Sistema MySQL - Lagoa Do Mato
 
         // Check authentication
         async function checkAuthentication() {
-            // Usar a versão corrigida que sincroniza com Supabase
+            // Sistema MySQL
             return await window.authFix.checkAuthenticationFixed();
         }
 
@@ -1027,12 +1007,9 @@
         async function initializePage() {
             // Verificar se o usuário está ativo
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
                 if (user) {
-                    const { data: userData, error } = await supabase
-                        .from('users')
-                        .select('is_active')
-                        .eq('id', user.id)
+                    // Dados do localStorage - sistema MySQL
                         .single();
                     
                     if (!error && userData && userData.is_active === false) {
@@ -1056,8 +1033,8 @@
         // Check if it's first access and show add manager button
         async function checkFirstAccess() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+                if (!userData || !userData.id) return;
 
                 // Check if there are any managers in the system
                 const { data: managers, error } = await supabase
@@ -1082,37 +1059,26 @@
             }
         }
 
-        // Function to get farm name from Supabase
+        // Função para obter nome da fazenda
         async function getFarmName() {
             try {
-                const { data, error } = await supabase
-                    .from('farms')
-                    .select('name')
-                    .single();
-                
-                if (error) throw error;
-                return data?.name || 'Nome da Fazenda';
+                // Fazenda Lagoa Do Mato (fixo)
+                return 'Lagoa Do Mato';
             } catch (error) {
                 console.error('Error fetching farm name:', error);
                 return 'Nome da Fazenda';
             }
         }
 
-        // Function to get owner name from Supabase
+        // Função para obter nome do proprietário
         async function getOwnerName() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return { name: 'Nome do Proprietário', profile_photo_url: null };
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+                if (!userData || !userData.id) return { name: 'Nome do Proprietário', profile_photo_url: null };
 
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('name, profile_photo_url')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (error) throw error;
+                // Retornar dados do localStorage
                 return {
-                    name: data?.name || 'Nome do Proprietário',
+                    name: userData.name || 'Proprietário',
                     profile_photo_url: data?.profile_photo_url || null
                 };
             } catch (error) {
@@ -1243,78 +1209,63 @@
             }
         }
 
-        // Load dashboard data from Supabase
+        // Carregar dashboard via API MySQL
         async function loadDashboardData() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-
-                // Load financial data
-                const { data: financialData, error: financialError } = await supabase
-                    .from('financial_records')
-                    .select('*')
-                    .gte('date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
-
-                if (!financialError && financialData) {
-                    const monthlyRevenue = financialData
-                        .filter(record => record.type === 'revenue')
-                        .reduce((sum, record) => sum + record.amount, 0);
-                    
-                    document.getElementById('monthlyRevenue').textContent = `R$ ${monthlyRevenue.toLocaleString('pt-BR')}`;
+                console.log('📊 Carregando dashboard do proprietário...');
+                
+                // Buscar estatísticas via API
+                const response = await fetch('api/owner.php?action=get_dashboard_stats');
+                const { success, data } = await response.json();
+                
+                if (!success) {
+                    console.error('❌ Erro ao carregar dashboard');
+                    return;
                 }
-
-                // Load production data
-                const { data: productionData, error: productionError } = await supabase
-                    .from('volume_records')
-                    .select('volume_liters')
-                    .gte('production_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
-
-                if (!productionError && productionData) {
-                    const avgProduction = productionData.reduce((sum, record) => sum + record.volume_liters, 0) / productionData.length;
-                    document.getElementById('dailyProduction').textContent = `${Math.round(avgProduction)} L`;
+                
+                console.log('✅ Dados do dashboard:', data);
+                
+                // Atualizar métricas
+                if (document.getElementById('monthlyRevenue')) {
+                    document.getElementById('monthlyRevenue').textContent = `R$ 0`; // TODO: Adicionar na API
                 }
-
-                // Load team data
-                const { data: teamData, error: teamError } = await supabase
-                    .from('users')
-                    .select('role')
-                    .neq('role', 'proprietario');
-
-                if (!teamError && teamData) {
-                    document.getElementById('totalEmployees').textContent = teamData.length;
+                
+                if (document.getElementById('dailyProduction')) {
+                    const avgDaily = data.volume_month ? Math.round(data.volume_month / 30) : 0;
+                    document.getElementById('dailyProduction').textContent = `${avgDaily} L`;
                 }
-
-                // Load animals data
-                const { data: animalsData, error: animalsError } = await supabase
-                    .from('animals')
-                    .select('id');
-
-                if (!animalsError && animalsData) {
-                    document.getElementById('totalAnimals').textContent = animalsData.length;
+                
+                if (document.getElementById('totalEmployees')) {
+                    document.getElementById('totalEmployees').textContent = data.active_users || 0;
                 }
+                
+                if (document.getElementById('totalAnimals')) {
+                    document.getElementById('totalAnimals').textContent = '0'; // TODO: Adicionar tabela animals
+                }
+                
+                console.log('✅ Dashboard proprietário carregado!');
 
             } catch (error) {
-                console.error('Error loading dashboard data:', error);
+                console.error('❌ Erro ao carregar dashboard:', error);
             }
         }
 
         // Load farm settings
         async function loadFarmSettings() {
             try {
-                const { data, error } = await supabase
-                    .from('farms')
-                    .select('*')
-                    .single();
+                // Buscar dados da fazenda via API
+                const response = await fetch('api/owner.php?action=get_farm_info');
+                const { success, data } = await response.json();
 
-                if (!error && data) {
-                    document.getElementById('farmName').value = data.name || '';
+                if (success && data) {
+                    document.getElementById('farmName').value = data.name || 'Lagoa Do Mato';
                     document.getElementById('farmOwner').value = data.owner_name || '';
                     document.getElementById('farmEmail').value = data.email || '';
                     document.getElementById('farmPhone').value = data.phone || '';
                     document.getElementById('farmAddress').value = data.address || '';
                 }
             } catch (error) {
-                console.error('Error loading farm settings:', error);
+                console.error('❌ Erro ao carregar configurações da fazenda:', error);
             }
         }
 
@@ -1364,7 +1315,7 @@
             const formData = new FormData(e.target);
 
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
                 if (!user) throw new Error('User not authenticated');
 
                 const farmData = {
@@ -1376,8 +1327,7 @@
                     updated_at: new Date().toISOString()
                 };
 
-                const { error } = await supabase
-                    .from('farms')
+                // API MySQL - usar api/owner.php
                     .upsert([farmData]);
 
                 if (error) throw error;
@@ -1405,7 +1355,7 @@
             }
 
             try {
-                const { error } = await supabase.auth.updateUser({
+                // API MySQL.auth.updateUser({
                     password: newPassword
                 });
 
@@ -1426,9 +1376,6 @@
             try {
                 // Get farm name
                 const { data: farmData, error: farmError } = await supabase
-                    .from('farms')
-                    .select('name')
-                    .eq('id', farmId)
                     .single();
 
                 if (farmError) throw farmError;
@@ -1462,9 +1409,6 @@
                     
                     // Verificar se email já existe
                     const { data: existingUser, error } = await supabase
-                        .from('users')
-                        .select('id')
-                        .eq('email', finalEmail)
                         .maybeSingle(); // Use maybeSingle() em vez de single()
                     
                     if (error) {
@@ -1505,9 +1449,6 @@
                 if (!currentUser) return;
 
                 const { data: ownerData, error: ownerError } = await supabase
-                    .from('users')
-                    .select('farm_id')
-                    .eq('id', currentUser.id)
                     .single();
 
                 if (ownerError) throw ownerError;
@@ -1670,14 +1611,11 @@
         // Load team data
         async function loadTeamData() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+                if (!userData || !userData.id) return;
 
                 // Get current user's farm_id
                 const { data: ownerData, error: ownerError } = await supabase
-                    .from('users')
-                    .select('farm_id')
-                    .eq('id', user.id)
                     .single();
 
                 if (ownerError) throw ownerError;
@@ -1913,7 +1851,7 @@
         // Report generation functions
         async function generateFinancialReport() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
                 if (!user) throw new Error('User not authenticated');
 
                 // Buscar dados financeiros
@@ -1944,7 +1882,7 @@
 
         async function generateProductionReport() {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
                 if (!user) throw new Error('User not authenticated');
 
                 // Buscar dados de produção
@@ -2191,7 +2129,7 @@
         async function exportData() {
             if (confirm('Tem certeza que deseja exportar todos os dados?')) {
                 try {
-                    const { data: { user } } = await supabase.auth.getUser();
+                    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
                     if (!user) throw new Error('User not authenticated');
 
                     // Buscar todos os dados da fazenda
@@ -2290,7 +2228,7 @@
                     const confirmText = prompt('Digite "CONFIRMAR RESET" para prosseguir:');
                     if (confirmText === 'CONFIRMAR RESET') {
                         try {
-                            const { data: { user } } = await supabase.auth.getUser();
+                            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
                             if (!user) throw new Error('User not authenticated');
 
                             // Buscar farm_id do usuário
@@ -2360,7 +2298,7 @@
         // Sign out function
         async function signOut() {
             if (confirm('Tem certeza que deseja sair?')) {
-                await supabase.auth.signOut();
+                localStorage.clear(); // Logout simples
                 window.location.href = 'index.php';
             }
         }

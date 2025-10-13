@@ -1,22 +1,24 @@
 <?php
-require_once '../includes/config.php';
-require_once '../includes/auth.php';
-require_once '../includes/functions.php';
-require_once '../includes/PDFGenerator.php';
+// Sistema MySQL - Lagoa Do Mato
+session_start();
 
-$auth = new Auth();
+// Verificar autenticação básica
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
+    header('Location: ../login.php');
+    exit;
+}
 
-// Verificar autenticação
-$auth->requireLogin();
-$auth->require2FA();
+$user = [
+    'id' => $_SESSION['user_id'],
+    'role' => $_SESSION['user_role'],
+    'farm_id' => 1 // Lagoa Do Mato
+];
 
-$user = $auth->getCurrentUser();
-
-// Verificar permissões (gerente, funcionário ou veterinário podem gerar relatórios)
+// Verificar permissões
 $allowedRoles = ['gerente', 'funcionario', 'veterinario'];
 if (!in_array($user['role'], $allowedRoles)) {
-    setNotification('Você não tem permissão para gerar relatórios', 'error');
-    redirect(DASHBOARD_URL);
+    header('Location: ../index.php');
+    exit;
 }
 
 try {
@@ -74,6 +76,10 @@ function validateDate($date, $format = 'Y-m-d') {
     return $d && $d->format($format) === $date;
 }
 ?>
+
+
+
+
 
 
 

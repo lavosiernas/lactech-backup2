@@ -32,18 +32,11 @@
                     return this.userData;
                 }
                 
-                console.log('🔄 Buscando dados do usuário no Supabase');
-                const supabase = createSupabaseClient();
-                const { data: { user } } = await supabase.auth.getUser();
+                console.log('🔄 Buscando dados do usuário');
+                const userData = localStorage.getItem('user_data');
                 
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('id, name, email, role, farm_id, profile_photo')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    this.userData = { ...user, ...userData };
+                if (userData) {
+                    this.userData = JSON.parse(userData);
                     this.lastUserFetch = now;
                     console.log('✅ Dados do usuário cacheados');
                 }
@@ -59,17 +52,15 @@
                     return this.farmData;
                 }
                 
-                console.log('🔄 Buscando dados da fazenda no Supabase');
+                console.log('🔄 Buscando dados da fazenda');
                 const userData = await this.getUserData();
                 if (userData?.farm_id) {
-                    const supabase = createSupabaseClient();
-                    const { data: farmData } = await supabase
-                        .from('farms')
-                        .select('id, name, location')
-                        .eq('id', userData.farm_id)
-                        .single();
-                    
-                    this.farmData = farmData;
+                    // Dados fixos da fazenda Lagoa do Mato
+                    this.farmData = {
+                        id: 1,
+                        name: 'Lagoa do Mato',
+                        location: 'MG'
+                    };
                     this.lastFarmFetch = now;
                     console.log('✅ Dados da fazenda cacheados');
                 }
