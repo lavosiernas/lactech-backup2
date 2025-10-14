@@ -1,7 +1,9 @@
 // Gerador de PDF usando jsPDF
 
 // Logo do sistema (global) - será convertida para base64
-const SYSTEM_LOGO_URL = "https://i.postimg.cc/vmrkgDcB/lactech.png"
+if (typeof SYSTEM_LOGO_URL === 'undefined') {
+    const SYSTEM_LOGO_URL = "https://i.postimg.cc/vmrkgDcB/lactech.png";
+}
 let systemLogoBase64 = null
 let farmLogoBase64 = null
 

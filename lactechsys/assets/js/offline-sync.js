@@ -4,6 +4,7 @@
  * Versão: 2.0.2
  */
 
+if (typeof OfflineSyncManager === 'undefined') {
 class OfflineSyncManager {
     constructor() {
         this.isOnline = navigator.onLine;
@@ -614,3 +615,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Exportar para uso global
 window.OfflineSyncManager = OfflineSyncManager;
+} // Fechar a verificação de undefined

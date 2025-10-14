@@ -11,11 +11,13 @@ class Database {
     private static $instance = null;
     private $pdo = null;
     private $lastError = null;
+    private $queryCache = [];
     
     // Constantes do sistema
     const FARM_ID = 1;
     const FARM_NAME = 'Lagoa do Mato';
     const DEFAULT_USER_ROLE = 'funcionario';
+    const CACHE_TTL = 300; // 5 minutos
     
     /**
      * Construtor privado (Singleton)
@@ -86,18 +88,75 @@ class Database {
     }
     
     /**
-     * Executar query com tratamento de erro
+     * Executar query com tratamento de erro e cache
      */
-    public function query($sql, $params = []) {
+    public function query($sql, $params = [], $useCache = false, $cacheKey = null) {
+        // Gerar chave de cache se não fornecida
+        if ($useCache && $cacheKey === null) {
+            $cacheKey = md5($sql . serialize($params));
+        }
+        
+        // Verificar cache primeiro
+        if ($useCache && isset($this->queryCache[$cacheKey])) {
+            $cached = $this->queryCache[$cacheKey];
+            if (time() - $cached['timestamp'] < self::CACHE_TTL) {
+                return $cached['data'];
+            } else {
+                unset($this->queryCache[$cacheKey]);
+            }
+        }
+        
         try {
             $stmt = $this->getConnection()->prepare($sql);
             $stmt->execute($params);
+            
+            // Armazenar no cache se solicitado
+            if ($useCache) {
+                $this->queryCache[$cacheKey] = [
+                    'data' => $stmt,
+                    'timestamp' => time()
+                ];
+            }
+            
             return $stmt;
         } catch (PDOException $e) {
             $this->lastError = $e->getMessage();
             error_log("Erro na query SQL: {$sql} - {$e->getMessage()}");
             throw $e;
         }
+    }
+    
+    /**
+     * Query otimizada para listagem com paginação
+     */
+    public function queryPaginated($sql, $params = [], $page = 1, $limit = 50) {
+        $offset = ($page - 1) * $limit;
+        
+        // Adicionar LIMIT e OFFSET
+        $sql .= " LIMIT {$limit} OFFSET {$offset}";
+        
+        return $this->query($sql, $params);
+    }
+    
+    /**
+     * Query otimizada para contagem
+     */
+    public function count($table, $conditions = [], $params = []) {
+        $sql = "SELECT COUNT(*) as count FROM {$table}";
+        
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
+        }
+        
+        $result = $this->query($sql, $params)->fetch();
+        return (int) $result['count'];
+    }
+    
+    /**
+     * Limpar cache de queries
+     */
+    public function clearCache() {
+        $this->queryCache = [];
     }
     
     /**
@@ -1124,21 +1183,67 @@ class Database {
             // Debug: Log dos dados recebidos
             error_log("DEBUG createAnimal - Dados recebidos: " . json_encode($data));
             
+            // Validar campos obrigatórios
+            if (empty($data['animal_number'])) {
+                return [
+                    'success' => false,
+                    'error' => 'Número do animal é obrigatório'
+                ];
+            }
+            
+            if (empty($data['breed'])) {
+                return [
+                    'success' => false,
+                    'error' => 'Raça é obrigatória'
+                ];
+            }
+            
+            if (empty($data['gender'])) {
+                return [
+                    'success' => false,
+                    'error' => 'Sexo é obrigatório'
+                ];
+            }
+            
+            if (empty($data['birth_date'])) {
+                return [
+                    'success' => false,
+                    'error' => 'Data de nascimento é obrigatória'
+                ];
+            }
+            
             $stmt = $this->query("
-                INSERT INTO animals (animal_number, name, birth_date, breed, gender, status, origin, father_id, mother_id, notes, farm_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO animals (
+                    animal_number, 
+                    name, 
+                    breed, 
+                    gender, 
+                    birth_date, 
+                    birth_weight, 
+                    father_id, 
+                    mother_id, 
+                    status, 
+                    health_status, 
+                    reproductive_status, 
+                    entry_date, 
+                    farm_id, 
+                    notes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ", [
                 $data['animal_number'],
-                $data['animal_name'] ?? null,
-                $data['birth_date'],
+                $data['name'] ?? null,
                 $data['breed'],
                 $data['gender'],
-                $data['status'],
-                $data['origin'] ?? 'Nascido na Fazenda',
+                $data['birth_date'],
+                $data['birth_weight'] ?? null,
                 $data['father_id'] ?? null,
                 $data['mother_id'] ?? null,
-                $data['notes'] ?? null,
-                self::FARM_ID
+                $data['status'] ?? 'Bezerra',
+                $data['health_status'] ?? 'saudavel',
+                $data['reproductive_status'] ?? 'vazia',
+                $data['entry_date'] ?? date('Y-m-d'),
+                self::FARM_ID,
+                $data['notes'] ?? null
             ]);
             
             $insertId = $this->getConnection()->lastInsertId();

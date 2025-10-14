@@ -30,7 +30,25 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- Tailwind CSS CDN -->
+    <!-- Critical CSS - inline for fastest loading -->
+    <style>
+        /* Critical styles inline to prevent FOUC */
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .main-content { opacity: 0; transition: opacity 0.5s ease-in; }
+        .main-content.loaded { opacity: 1; }
+    </style>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="assets/css/critical.css" as="style">
+    <link rel="preload" href="assets/js/performance-optimizer.js" as="script">
+    <link rel="preload" href="assets/js/config_mysql.js" as="script">
+    
+    <!-- Load critical CSS immediately -->
+    <link rel="stylesheet" href="assets/css/critical.css">
+    
+    <!-- Tailwind CSS CDN - optimized -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
@@ -48,38 +66,58 @@
                 }
             }
         }
-        
-        // Garantir que Tailwind está carregado
-        console.log('✅ Tailwind configurado');
     </script>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="assets/js/pdf-generator.js"></script>
+    <!-- Performance Optimizer - load first -->
+    <script src="assets/js/performance-optimizer.js"></script>
+    
+    <!-- Critical scripts only -->
     <script src="assets/js/config_mysql.js"></script>
+    <script src="assets/js/loading-screen.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
-    <!-- <script src="assets/js/offline-loading.js"></script> --> <!-- Desabilitado - reconexão silenciosa -->
     <script src="assets/js/native-notifications.js"></script>
-    <script src="assets/js/offline-sync.js">
     
-        // Non-blocking alert shim routed to showNotification when available
-        (function(){
-            var nativeAlert = window.alert;
-            window.alert = function(message){
-                try {
-                    var msg = String(message);
-                    if (typeof showNotification === 'function') {
-                        showNotification(msg, 'warning');
-                        return;
+    <!-- Load Chart.js immediately for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Defer other non-critical scripts -->
+    <script>
+        // Load non-critical scripts after page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                // Load PDF generator and other scripts (avoiding duplicates)
+                const scripts = [
+                    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                    'assets/js/pdf-generator.js',
+                    'assets/js/offline-sync.js'
+                ];
+                
+                scripts.forEach(function(src) {
+                    // Check if script already exists
+                    if (!document.querySelector(`script[src="${src}"]`)) {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        script.async = true;
+                        document.head.appendChild(script);
                     }
-                    var host = (window.location && window.location.hostname) || '';
-                    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') {
-                        nativeAlert(msg);
-                    }
-                } catch(_){}
-            };
-        })();
+                });
+            }, 500); // Increased delay to ensure Chart.js is ready
+        });
+    </script>
+    
+        // Alert shim for custom notifications
+        window.alert = function(message){
+            try {
+                var msg = String(message);
+                if (typeof showNotification === 'function') {
+                    showNotification(msg, 'warning');
+                    return;
+                }
+                // Fallback silencioso - não mostrar alertas nativos
+                console.warn('Alert:', msg);
+            } catch(_){}
+        };
     </script>
     
     <style>
@@ -171,7 +209,7 @@
     </div>
 </div>
 
-<body class="gradient-mesh antialiased transition-colors duration-300" id="mainBody">
+<body class="gradient-mesh antialiased transition-colors duration-300 main-content" id="mainBody" data-non-critical>
 
     <!-- Header -->
     <header class="gradient-forest shadow-xl sticky top-0 z-40 border-b border-forest-800 header-compact">
@@ -4715,6 +4753,21 @@ async function loadDashboardVolumeChart() {
     try {
         console.log('🔄 Carregando gráfico Volume Semanal...');
         
+        // Wait for Chart.js to be available
+        if (typeof Chart === 'undefined') {
+            console.log('⏳ Aguardando Chart.js...');
+            await new Promise(resolve => {
+                const checkChart = () => {
+                    if (typeof Chart !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(checkChart, 100);
+                    }
+                };
+                checkChart();
+            });
+        }
+        
         // Usando MySQL direto através do objeto 'db'
         if (!db) {
             console.error('❌ Database não disponível para Volume Semanal');
@@ -4834,6 +4887,21 @@ async function loadDashboardVolumeChart() {
 async function loadDashboardWeeklyChart() {
     try {
         console.log('🔄 Carregando gráfico de produção semanal...');
+        
+        // Wait for Chart.js to be available
+        if (typeof Chart === 'undefined') {
+            console.log('⏳ Aguardando Chart.js...');
+            await new Promise(resolve => {
+                const checkChart = () => {
+                    if (typeof Chart !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(checkChart, 100);
+                    }
+                };
+                checkChart();
+            });
+        }
         
         // Usando MySQL direto através do objeto 'db'
         if (!db) {
@@ -4964,6 +5032,21 @@ async function loadDashboardWeeklyChart() {
 async function loadMonthlyProductionChart() {
     try {
         console.log('🔄 Carregando gráfico de produção mensal...');
+        
+        // Wait for Chart.js to be available
+        if (typeof Chart === 'undefined') {
+            console.log('⏳ Aguardando Chart.js...');
+            await new Promise(resolve => {
+                const checkChart = () => {
+                    if (typeof Chart !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(checkChart, 100);
+                    }
+                };
+                checkChart();
+            });
+        }
         
         // Usando MySQL direto através do objeto 'db'
         if (!db) {
@@ -5976,7 +6059,7 @@ async function openCamera() {
         
     } catch (error) {
         console.error('❌ Erro ao acessar câmera:', error);
-        alert('Não foi possível acessar a câmera. Verifique as permissões.');
+        showNotification('Não foi possível acessar a câmera. Verifique as permissões.', 'error');
         closeCamera();
     }
 }
@@ -6723,6 +6806,22 @@ async function loadQualityChart() {
 async function loadTemperatureChart() {
     try {
         console.log('🌡️ Iniciando carregamento do gráfico de temperatura...');
+        
+        // Wait for Chart.js to be available
+        if (typeof Chart === 'undefined') {
+            console.log('⏳ Aguardando Chart.js...');
+            await new Promise(resolve => {
+                const checkChart = () => {
+                    if (typeof Chart !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(checkChart, 100);
+                    }
+                };
+                checkChart();
+            });
+        }
+        
         // Usar API de volume para dados de temperatura
         const response = await fetch('api/volume.php?action=select');
         const result = await response.json();
@@ -21147,7 +21246,7 @@ function showAnimalManagement() {
         
     } catch (error) {
         console.error('❌ Erro ao abrir Gestão de Rebanho:', error);
-        alert('Erro ao abrir Gestão de Rebanho: ' + error.message);
+        showNotification('Erro ao abrir Gestão de Rebanho: ' + error.message, 'error');
     }
 }
 
@@ -21263,12 +21362,16 @@ function showAddAnimalModal() {
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Origem</label>
-                        <select name="origin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" tabindex="7">
-                            <option value="Nascido na Fazenda">Nascido na Fazenda</option>
-                            <option value="Comprado">Comprado</option>
-                            <option value="Doado">Doado</option>
-                        </select>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Peso ao Nascer (kg)</label>
+                        <input type="number" name="birth_weight" step="0.1" min="0" max="100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                            placeholder="Ex: 35.5" tabindex="7">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                        <textarea name="notes" rows="2" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                            placeholder="Informações adicionais sobre o animal..." tabindex="8"></textarea>
                     </div>
                 </div>
                 
@@ -21291,15 +21394,6 @@ function showAddAnimalModal() {
                     <p class="text-xs text-gray-500 mt-2">
                         <strong>Dica:</strong> Cadastre primeiro os reprodutores (touros e vacas adultas) sem pedigree, depois cadastre os filhotes com pedigree completo.
                     </p>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Observações <span class="text-gray-400 font-normal">(opcional)</span>
-                    </label>
-                    <textarea name="notes" rows="3" 
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
-                        placeholder="Informações adicionais sobre o animal"></textarea>
                 </div>
             </form>
             
@@ -21334,14 +21428,28 @@ function showAddAnimalModal() {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
         
+        // Converter dados para o formato esperado pelo backend
+        const payload = {
+            animal_number: data.animal_number,
+            name: data.animal_name || null, // Converter animal_name para name
+            breed: data.breed,
+            gender: data.gender === 'Fêmea' ? 'femea' : 'macho', // Converter para lowercase
+            birth_date: data.birth_date,
+            birth_weight: data.birth_weight || null,
+            father_id: data.father_id || null,
+            mother_id: data.mother_id || null,
+            status: data.status,
+            health_status: 'saudavel', // Valor padrão
+            reproductive_status: 'vazia', // Valor padrão
+            notes: data.notes || null
+        };
+        
         // Debug: Log dos dados do formulário
         console.log('DEBUG - Dados do formulário:', data);
+        console.log('DEBUG - Payload processado:', payload);
         
         try {
-            const payload = { action: 'insert', ...data };
-            console.log('DEBUG - Payload enviado:', payload);
-            
-            const response = await fetch('api/animals.php', {
+            const response = await fetch('api/animals/create.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -21352,18 +21460,18 @@ function showAddAnimalModal() {
             console.log('DEBUG - Resultado da API:', result);
             
             if (result.success) {
-                alert('✅ Animal cadastrado com sucesso!');
+                showNotification('✅ Animal cadastrado com sucesso!', 'success');
                 modal.remove();
                 // Aguardar um pouco antes de recarregar a lista
                 setTimeout(() => {
                     loadAnimalsList();
                 }, 500);
             } else {
-                alert('❌ Erro: ' + result.error);
+                showNotification('❌ Erro: ' + result.error, 'error');
             }
         } catch (error) {
             console.error('DEBUG - Erro na requisição:', error);
-            alert('❌ Erro ao cadastrar: ' + error.message);
+            showNotification('❌ Erro ao cadastrar: ' + error.message, 'error');
         }
     });
 }
@@ -21472,14 +21580,14 @@ function showAddInseminationModal() {
             const result = await response.json();
             
             if (result.success) {
-                alert('✅ Inseminação registrada com sucesso!');
+                showNotification('✅ Inseminação registrada com sucesso!', 'success');
                 modal.remove();
                 loadInseminationsList();
             } else {
-                alert('❌ Erro: ' + result.error);
+                showNotification('❌ Erro: ' + result.error, 'error');
             }
         } catch (error) {
-            alert('❌ Erro ao registrar: ' + error.message);
+            showNotification('❌ Erro ao registrar: ' + error.message, 'error');
         }
     });
 }
@@ -22180,7 +22288,7 @@ function showHealthManagement() {
         
     } catch (error) {
         console.error('❌ Erro ao abrir Gestão Sanitária:', error);
-        alert('Erro ao abrir Gestão Sanitária: ' + error.message);
+        showNotification('Erro ao abrir Gestão Sanitária: ' + error.message, 'error');
     }
 }
 
@@ -22579,7 +22687,7 @@ function showReproductionManagement() {
         
     } catch (error) {
         console.error('❌ Erro ao abrir Sistema de Reprodução:', error);
-        alert('Erro ao abrir Sistema de Reprodução: ' + error.message);
+        showNotification('Erro ao abrir Sistema de Reprodução: ' + error.message, 'error');
     }
 }
 
@@ -23077,7 +23185,7 @@ function showAnalyticsDashboard() {
         
     } catch (error) {
         console.error('❌ Erro ao abrir Dashboard Analítico:', error);
-        alert('Erro ao abrir Dashboard Analítico: ' + error.message);
+        showNotification('Erro ao abrir Dashboard Analítico: ' + error.message, 'error');
     }
 }
 
@@ -23496,6 +23604,37 @@ async function loadFinancialAnalytics() {
 }
 
 
+</script>
+
+<!-- Performance initialization -->
+<script>
+// Initialize performance optimizations
+document.addEventListener('DOMContentLoaded', function() {
+    // Register service worker for caching
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => console.log('✅ Service Worker registered'))
+            .catch(error => console.log('❌ Service Worker registration failed:', error));
+    }
+    
+    // Mark content as loaded
+    setTimeout(function() {
+        document.body.classList.add('loaded');
+        document.querySelector('.main-content').classList.add('loaded');
+    }, 100);
+});
+
+// Performance monitoring
+window.addEventListener('load', function() {
+    // Log performance metrics
+    if ('performance' in window) {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        console.log('🚀 Performance Metrics:');
+        console.log('DOM Content Loaded:', perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart, 'ms');
+        console.log('Page Load Complete:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+        console.log('Total Load Time:', perfData.loadEventEnd - perfData.fetchStart, 'ms');
+    }
+});
 </script>
 
 </body>
