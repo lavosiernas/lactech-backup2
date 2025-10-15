@@ -24,7 +24,7 @@
     
     <!-- CSS Files -->
     <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
-    <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO -->
+    <link href="assets/css/loading-screen.css" rel="stylesheet">
     
     <style>
         /* Clean white background */

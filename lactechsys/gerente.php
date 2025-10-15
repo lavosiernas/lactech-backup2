@@ -35,7 +35,7 @@
         /* Critical styles inline to prevent FOUC */
         * { box-sizing: border-box; }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        /* .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; } REMOVIDO - usando apenas modal HTML */
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
         .main-content { opacity: 0; transition: opacity 0.5s ease-in; }
         .main-content.loaded { opacity: 1; }
     </style>
@@ -79,7 +79,7 @@
     <script src="assets/js/pdf-generator.js"></script>
 >>>>>>> parent of 0eb3d2f (.)
     <script src="assets/js/config_mysql.js"></script>
-    <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
+    <script src="assets/js/loading-screen.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
 <<<<<<< HEAD
@@ -113,6 +113,7 @@
         });
     </script>
     
+<<<<<<< HEAD
         // Alert shim for custom notifications - PRIORIDADE MÁXIMA
 =======
     <script src="assets/js/offline-loading.js"></script>
@@ -867,46 +868,20 @@
                     console.warn('Alert (fallback):', msg);
                 } catch(e){
                     console.error('Erro no alert shim:', e);
+=======
+        // Alert shim for custom notifications
+        window.alert = function(message){
+            try {
+                var msg = String(message);
+                if (typeof showNotification === 'function') {
+                    showNotification(msg, 'warning');
+                    return;
+>>>>>>> parent of 15a3155 (.)
                 }
-            };
-            
-            // Garantir que nossa função não seja sobrescrita
-            Object.defineProperty(window, 'alert', {
-                value: window.alert,
-                writable: false,
-                configurable: false
-            });
-        })();
-        
-        // Confirm shim for custom modals
-        (function(){
-            var originalConfirm = window.confirm;
-            window.confirm = function(message){
-                try {
-                    var msg = String(message);
-                    console.log('🚨 Confirm interceptado:', msg);
-                    
-                    // Usar modal system se disponível
-                    if (typeof window.modalSystem !== 'undefined' && window.modalSystem.showConfirm) {
-                        return window.modalSystem.showConfirm(msg);
-                    }
-                    
-                    // Fallback: usar alert nativo (temporário)
-                    console.warn('Confirm (fallback para alert nativo):', msg);
-                    return originalConfirm(msg);
-                } catch(e){
-                    console.error('Erro no confirm shim:', e);
-                    return originalConfirm(message);
-                }
-            };
-            
-            // Garantir que nossa função não seja sobrescrita
-            Object.defineProperty(window, 'confirm', {
-                value: window.confirm,
-                writable: false,
-                configurable: false
-            });
-        })();
+                // Fallback silencioso - não mostrar alertas nativos
+                console.warn('Alert:', msg);
+            } catch(_){}
+        };
     </script>
     <!-- Script fix_data_sync_complete.js removido para evitar conflitos -->
 
@@ -955,10 +930,34 @@
         }
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         /* Sistema de loading REMOVIDO - sem tela de carregamento */
 =======
         .focus-pulse {
             animation: focusPulse 2s ease-in-out infinite;
+=======
+        /* Exceção: Loading screen DEVE estar visível no início */
+        #loadingScreen:not(.hidden) {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: all !important;
+        }
+        
+        /* Quando loading screen tem classe hidden, forçar esconder */
+        #loadingScreen.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Quando modal está com classe 'show', mostrar */
+        .fullscreen-modal.show {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+>>>>>>> parent of 15a3155 (.)
         }
         
         .focus-success {
@@ -1008,10 +1007,15 @@
 
 </head>
 <<<<<<< HEAD
+<<<<<<< HEAD
 <!-- Tela de Carregamento - REMOVIDA - sem tela de loading -->
 =======
 <!-- Tela de Carregamento -->
 <div id="loadingScreen" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
+=======
+<!-- Tela de Carregamento -->
+<div id="loadingScreen" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-[100000]">
+>>>>>>> parent of 15a3155 (.)
     <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
         <!-- Logo -->
         <div class="mb-6">
@@ -1042,7 +1046,10 @@
         </div>
     </div>
 </div>
+<<<<<<< HEAD
 >>>>>>> parent of 0eb3d2f (.)
+=======
+>>>>>>> parent of 15a3155 (.)
 
 <body class="gradient-mesh antialiased transition-colors duration-300 main-content" id="mainBody" data-non-critical>
 
@@ -3937,7 +3944,27 @@ function safeRedirect(url) {
         window.pageInitialized = true;
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         // FAILSAFE REMOVIDO - sem tela de loading
+=======
+        // FAILSAFE: Garantir que o loading seja ocultado após 10 segundos
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+                console.log('⚠️ Failsafe: Forçando ocultação da tela de carregamento');
+                loadingScreen.style.transition = 'opacity 0.5s ease-out';
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.setProperty('display', 'none', 'important');
+                    loadingScreen.style.setProperty('visibility', 'hidden', 'important');
+                    loadingScreen.style.setProperty('opacity', '0', 'important');
+                    loadingScreen.style.setProperty('pointer-events', 'none', 'important');
+                    loadingScreen.classList.add('hidden');
+                    console.log('✅ Failsafe executado');
+                }, 500);
+            }
+        }, 10000);
+>>>>>>> parent of 15a3155 (.)
         
 =======
 >>>>>>> parent of 0eb3d2f (.)
@@ -14652,13 +14679,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentStep = 0;
         let loadingInterval;
 
-        // DESABILITADO - função duplicada, usando apenas modal HTML
         function updateLoadingScreen() {
+<<<<<<< HEAD
 <<<<<<< HEAD
             // Função desabilitada - usando apenas a modal de carregamento HTML
             return;
             // Código do sistema de carregamento removido
 =======
+=======
+>>>>>>> parent of 15a3155 (.)
             const loadingMessage = document.getElementById('loadingMessage');
             const loadingSubMessage = document.getElementById('loadingSubMessage');
             const loadingProgress = document.getElementById('loadingProgress');
@@ -14684,6 +14713,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Carregamento completo
                 clearInterval(loadingInterval);
+<<<<<<< HEAD
                 setTimeout(() => {
                     const loadingScreen = document.getElementById('loadingScreen');
                     if (loadingScreen) {
@@ -14693,15 +14723,43 @@ document.addEventListener('DOMContentLoaded', function() {
                             loadingScreen.style.display = 'none';
                             loadingScreen.style.visibility = 'hidden';
                             loadingScreen.style.pointerEvents = 'none';
+=======
+                console.log('✅ Carregamento 100% - Ocultando tela...');
+                
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    if (loadingScreen) {
+                        // Remover estilos inline que estão bloqueando
+                        loadingScreen.style.setProperty('display', 'flex', '');
+                        loadingScreen.style.setProperty('visibility', 'visible', '');
+                        loadingScreen.style.setProperty('opacity', '1', '');
+                        
+                        // Iniciar fade out
+                        loadingScreen.style.transition = 'opacity 0.5s ease-out';
+                        loadingScreen.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            // Esconder completamente com !important override
+                            loadingScreen.style.setProperty('display', 'none', 'important');
+                            loadingScreen.style.setProperty('visibility', 'hidden', 'important');
+                            loadingScreen.style.setProperty('opacity', '0', 'important');
+                            loadingScreen.style.setProperty('pointer-events', 'none', 'important');
+                            loadingScreen.classList.add('hidden');
+                            console.log('✅ Tela de loading removida');
+>>>>>>> parent of 15a3155 (.)
                         }, 500);
                     }
                 }, 500);
             }
+<<<<<<< HEAD
 >>>>>>> parent of 0eb3d2f (.)
+=======
+>>>>>>> parent of 15a3155 (.)
         }
 
-        // Iniciar sistema
+        // Iniciar carregamento
         document.addEventListener('DOMContentLoaded', function() {
+<<<<<<< HEAD
 <<<<<<< HEAD
             console.log('✅ Sistema carregado sem tela de loading');
             
@@ -14747,6 +14805,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ Modal de foto do gerente fechado na inicialização');
         }
 >>>>>>> parent of 0eb3d2f (.)
+=======
+            console.log('🚀 Iniciando sistema LacTech...');
+>>>>>>> parent of 15a3155 (.)
             
             // Iniciar sequência de carregamento
             loadingInterval = setInterval(updateLoadingScreen, 1000);
@@ -14768,7 +14829,18 @@ document.addEventListener('DOMContentLoaded', function() {
             window.cameraStream = null;
             window.currentPhotoMode = '';
             
-            // Sistema de carregamento REMOVIDO - sem tela de loading
+            // PASSO 3: Garantir que o loading screen esteja visível
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'flex';
+                loadingScreen.style.visibility = 'visible';
+                loadingScreen.style.opacity = '1';
+                loadingScreen.classList.remove('hidden');
+                console.log('✅ Tela de loading ativada');
+            }
+            
+            // PASSO 4: Iniciar sequência de carregamento (3 segundos total)
+            loadingInterval = setInterval(updateLoadingScreen, 500); // 6 steps * 500ms = 3 segundos
             
             console.log('✅ Sistema inicializado com sucesso!');
 =======
@@ -20194,7 +20266,7 @@ Funcionalidades:
 // ========== O CÓDIGO ABAIXO É CSS/HTML MAS FAZ PARTE DO DOCUMENTO, NÃO DO SCRIPT ==========
 </script>
 
-    <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
+    <link href="assets/css/loading-screen.css" rel="stylesheet">
     <!-- <link href="assets/css/offline-loading.css" rel="stylesheet"> --> <!-- Desabilitado -->
     <link href="assets/css/weather-modal.css" rel="stylesheet">
     <link href="assets/css/native-notifications.css" rel="stylesheet">

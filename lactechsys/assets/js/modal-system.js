@@ -26,10 +26,6 @@ class ModalSystem {
     }
 
     overrideNativeFunctions() {
-        // DESABILITADO - usando shim no gerente.php para evitar conflitos
-        console.log('⚠️ ModalSystem.overrideNativeFunctions DESABILITADO - usando shim no gerente.php');
-        return;
-        
         // Substituir window.alert
         const nativeAlert = window.alert;
         window.alert = (message, options = {}) => {
