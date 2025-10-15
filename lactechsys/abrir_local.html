@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LacTech - Acesso Local</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            background: #667eea;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .steps {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🐄</div>
+        <h1>LacTech - Sistema Local</h1>
+        <p class="subtitle">Acesso para desenvolvimento</p>
+        
+        <div class="warning">
+            ⚠️ <strong>IMPORTANTE:</strong> Use HTTP (não HTTPS) para desenvolvimento local
+        </div>
+        
+        <a href="http://localhost/GitHub/lactech-backup2/lactechsys/login.php" class="btn" target="_blank">
+            🚀 Abrir Sistema (HTTP)
+        </a>
+        
+        <div class="steps">
+            <h3>Se der erro de "Conexão não particular":</h3>
+            <div class="step">
+                <strong>1.</strong> Clique em "Avançadas" (Advanced)
+            </div>
+            <div class="step">
+                <strong>2.</strong> Clique em "Prosseguir para localhost (não seguro)"
+            </div>
+            <div class="step">
+                <strong>3.</strong> Ou pressione <code>Ctrl + F5</code> para recarregar
+            </div>
+        </div>
+        
+        <p style="color: #666; font-size: 14px;">
+            Este é um ambiente de desenvolvimento local. O HTTPS será usado automaticamente em produção.
+        </p>
+    </div>
+    
+    <script>
+        // Redirecionar automaticamente após 3 segundos se não houver interação
+        setTimeout(() => {
+            if (confirm('Abrir o sistema automaticamente?')) {
+                window.location.href = 'http://localhost/GitHub/lactech-backup2/lactechsys/login.php';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
+

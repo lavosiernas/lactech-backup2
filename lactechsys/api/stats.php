@@ -1,43 +1,45 @@
 <?php
-// =====================================================
-// API DE ESTATÍSTICAS - MYSQL
-// =====================================================
-// Estatísticas da fazenda Lagoa do Mato
-// =====================================================
+// API de estatísticas simplificada
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+// Desabilitar exibição de erros em produção
+error_reporting(0);
+ini_set('display_errors', 0);
 
-// Permitir requisições OPTIONS
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+// Iniciar sessão se não estiver iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-require_once '../includes/config_mysql.php';
-require_once '../includes/database.php';
+// Sempre retornar JSON
+header('Content-Type: application/json');
+
+// Carregar Database.class.php
+$dbPath = __DIR__ . '/../includes/Database.class.php';
+if (!file_exists($dbPath)) {
+    echo json_encode(['success' => false, 'error' => 'Database class não encontrada']);
+    exit;
+}
+require_once $dbPath;
+
+$db = Database::getInstance();
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        // Obter estatísticas da fazenda
-        $stats = getFarmStats();
+        $action = $_GET['action'] ?? '';
         
-        echo json_encode([
-            'success' => true,
-            'data' => $stats
-        ]);
+        switch ($action) {
+            case 'get_farm_stats':
+                $stats = $db->getDashboardStats();
+                echo json_encode(['success' => true, 'data' => $stats]);
+                break;
+                
+            default:
+                echo json_encode(['success' => false, 'error' => 'Ação não especificada']);
+        }
     } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Método não permitido'
-        ]);
+        echo json_encode(['success' => false, 'error' => 'Método não permitido']);
     }
 } catch (Exception $e) {
-    error_log('Erro na API de estatísticas: ' . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'Erro interno do servidor'
-    ]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?>

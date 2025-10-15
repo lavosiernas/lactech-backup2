@@ -1,9 +1,9 @@
-<<<<<<< HEAD
 <?php
 /**
  * Página inicial - Redirecionamento inteligente
  * Detecta automaticamente se está em localhost ou produção
  */
+<<<<<<< HEAD
 =======
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
@@ -265,6 +265,8 @@
 >>>>>>> parent of 0eb3d2f (.)
 =======
 >>>>>>> parent of 15a3155 (.)
+=======
+>>>>>>> parent of 9abc566 (Revert ".")
 
         
         ::-webkit-scrollbar {
