@@ -20,3 +20,4 @@ echo.
 echo Ou pressione Ctrl + F5 para recarregar
 echo.
 pause
+

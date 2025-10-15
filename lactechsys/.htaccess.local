@@ -67,3 +67,4 @@ RedirectMatch 403 ^/backups/
 # UTF-8 como padrão
 AddDefaultCharset UTF-8
 
+
