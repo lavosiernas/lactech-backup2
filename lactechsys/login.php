@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - LacTech</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="assets/js/config_mysql.js"></script>
-    <script src="assets/js/modal-system.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
@@ -49,18 +46,11 @@
                     return this.userData;
                 }
                 
-                console.log('🔄 Buscando dados do usuário no Supabase');
-                const supabase = createSupabaseClient();
-                const { data: { user } } = await supabase.auth.getUser();
+                console.log('🔄 Buscando dados do usuário');
+                const userData = localStorage.getItem('user_data');
                 
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('id, name, email, role, farm_id, profile_photo')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    this.userData = { ...user, ...userData };
+                if (userData) {
+                    this.userData = JSON.parse(userData);
                     this.lastUserFetch = now;
                     console.log('✅ Dados do usuário cacheados');
                 }
@@ -76,17 +66,11 @@
                     return this.farmData;
                 }
                 
-                console.log('🔄 Buscando dados da fazenda no Supabase');
+                console.log('🔄 Buscando dados da fazenda');
                 const userData = await this.getUserData();
                 if (userData?.farm_id) {
-                    const supabase = createSupabaseClient();
-                    const { data: farmData } = await supabase
-                        .from('farms')
-                        .select('id, name, location')
-                        .eq('id', userData.farm_id)
-                        .single();
-                    
-                    this.farmData = farmData;
+                    // Buscar dados da fazenda via API se necessário
+                    this.farmData = { id: userData.farm_id, name: userData.farm_name };
                     this.lastFarmFetch = now;
                     console.log('✅ Dados da fazenda cacheados');
                 }
@@ -217,10 +201,6 @@
             </form>
 
             <div class="mt-8 text-center">
-                <p class="text-slate-600 text-sm">
-                    Não tem uma conta? 
-                    <a href="PrimeiroAcesso.php" class="text-forest-600 hover:text-forest-700 font-semibold">Criar conta</a>
-                </p>
                 <button onclick="window.location.href='index.php'" class="mt-4 text-slate-500 hover:text-slate-700 text-sm">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -311,8 +291,7 @@
 
                 <div class="mt-8 text-center">
                     <p class="text-slate-600 text-sm">
-                        Não tem uma conta? 
-                        <a href="PrimeiroAcesso.php" class="text-forest-600 hover:text-forest-700 font-semibold">Criar conta</a>
+                        Fazenda Lagoa Do Mato - Entre em contato com o administrador para criar sua conta.
                     </p>
                 </div>
             </div>
@@ -324,7 +303,7 @@
         // Global variables for authentication state
         let isAuthenticating = false;
 
-        // Sistema MySQL - sem necessidade de inicialização do Supabase
+        // Sistema MySQL - Conexão direta com banco de dados
 
         // Password toggle functions
         function togglePassword() {
@@ -421,7 +400,7 @@
             try {
                 console.log('🔐 Tentando login MySQL:', email);
                 
-                const response = await fetch('api/auth.php', {
+                const response = await fetch('api/login.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -433,6 +412,13 @@
                 
                 if (data.success && data.user) {
                     console.log('✅ Login MySQL realizado com sucesso:', data.user.name);
+                    
+                    // Adicionar nome da fazenda
+                    data.user.farm_name = 'Lagoa Do Mato';
+                    data.user.farm_id = 1;
+                    
+                    // Salvar dados do usuário no localStorage
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
                     
                     // Retornar no formato esperado pela interface original
                     return {
@@ -446,13 +432,14 @@
                             email: data.user.email,
                             name: data.user.name || data.user.email.split('@')[0],
                             user_type: data.user.role || 'gerente',
-                            farm_id: data.user.farm_id,
-                            farm_name: 'Lagoa do Mato',
+                            farm_id: 1,
+                            farm_name: 'Lagoa Do Mato',
                             status: 'active'
-                        }
+                        },
+                        redirect: data.redirect // Usar redirect da API
                     };
                 } else {
-                    throw new Error(data.message || 'Email ou senha incorretos');
+                    throw new Error(data.error || 'Email ou senha incorretos');
                 }
                 
             } catch (error) {
@@ -529,7 +516,8 @@
                 
                 // Redirect after short delay
                 setTimeout(() => {
-                    const redirectUrl = getRedirectUrl(userData.profile.user_type);
+                    const redirectUrl = userData.redirect || getRedirectUrl(userData.profile.user_type);
+                    console.log('🔀 Redirecionando para:', redirectUrl);
                     window.location.href = redirectUrl;
                 }, 1500);
                 
@@ -628,9 +616,9 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
-            // Sistema MySQL - sem necessidade de inicialização do Supabase
+            // Sistema MySQL - Conexão direta com banco de dados
             try {
-                console.log('🚀 Inicializando sistema MySQL - Lagoa do Mato');
+                console.log('🚀 Inicializando sistema de login MySQL');
                 
                 // Check if user is already logged in
                 checkExistingSession();

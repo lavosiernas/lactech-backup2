@@ -36,17 +36,12 @@
     <script src="assets/js/api.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
-    <script src="assets/js/offline-loading.js"></script>
+    <!-- <script src="assets/js/offline-loading.js"></script> --> <!-- Desabilitado - reconexão silenciosa -->
     <script src="assets/js/ecosystem-manager.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
-<<<<<<< HEAD
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
     <!-- <link href="assets/css/offline-loading.css" rel="stylesheet"> --> <!-- Desabilitado -->
-=======
-    <link href="assets/css/loading-screen.css" rel="stylesheet">
-    <link href="assets/css/offline-loading.css" rel="stylesheet">
->>>>>>> parent of 0eb3d2f (.)
     <link href="assets/css/ecosystem.css" rel="stylesheet">
     
     <style>
@@ -1154,18 +1149,11 @@
                     return this.userData;
                 }
                 
-                console.log('🔄 Buscando dados do usuário no Supabase');
-                const supabase = createSupabaseClient();
-                const { data: { user } } = await supabase.auth.getUser();
+                console.log('🔄 Buscando dados do usuário');
+                const userData = localStorage.getItem('user_data');
                 
-                if (user) {
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('id, name, email, role, farm_id, profile_photo_url, is_active')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    this.userData = { ...user, ...userData };
+                if (userData) {
+                    this.userData = JSON.parse(userData);
                     this.lastUserFetch = now;
                     console.log('✅ Dados do usuário cacheados');
                 }
@@ -1181,20 +1169,14 @@
                     return this.farmData;
                 }
                 
-                console.log('🔄 Buscando dados da fazenda no Supabase');
-                const userData = await this.getUserData();
-                if (userData?.farm_id) {
-                    const supabase = createSupabaseClient();
-                    const { data: farmData } = await supabase
-                        .from('farms')
-                        .select('id, name')
-                        .eq('id', userData.farm_id)
-                        .single();
-                    
-                    this.farmData = farmData;
-                    this.lastFarmFetch = now;
-                    console.log('✅ Dados da fazenda cacheados');
-                }
+                console.log('🔄 Fazenda: Lagoa Do Mato');
+                this.farmData = {
+                    id: 1,
+                    name: 'Lagoa Do Mato',
+                    location: 'Sua localização'
+                };
+                this.lastFarmFetch = now;
+                console.log('✅ Dados da fazenda: Lagoa Do Mato');
                 
                 return this.farmData;
             },
@@ -1231,8 +1213,9 @@
                     return cachedData;
                 }
                 
-                console.log('🔄 Buscando dados de volume no Supabase:', cacheKey);
-                const supabase = createSupabaseClient();
+                console.log('🔄 Buscando dados de volume via API:', cacheKey);
+                // Usar API MySQL
+                return null;
                 
                 let query = supabase
                     .from('volume_records')

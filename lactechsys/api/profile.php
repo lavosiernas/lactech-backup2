@@ -1,5 +1,5 @@
 <?php
-// API de estatísticas simplificada
+// API para perfil e foto do usuário
 
 // Desabilitar exibição de erros em produção
 error_reporting(0);
@@ -24,13 +24,32 @@ require_once $dbPath;
 $db = Database::getInstance();
 
 try {
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    if ($method === 'GET') {
         $action = $_GET['action'] ?? '';
         
         switch ($action) {
-            case 'get_farm_stats':
-                $stats = $db->getDashboardStats();
-                echo json_encode(['success' => true, 'data' => $stats]);
+            case 'get_photo':
+            case 'select':
+                // Retornar foto padrão ou URL da foto do usuário
+                $photoData = [
+                    'photo_url' => 'assets/img/default-avatar.png',
+                    'has_photo' => false
+                ];
+                
+                echo json_encode(['success' => true, 'data' => $photoData]);
+                break;
+                
+            case 'get_profile':
+                // Retornar dados do perfil
+                $userId = $_SESSION['user_id'] ?? 1;
+                $user = $db->getUserById($userId);
+                
+                if ($user) {
+                    echo json_encode(['success' => true, 'data' => $user]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Usuário não encontrado']);
+                }
                 break;
                 
             default:

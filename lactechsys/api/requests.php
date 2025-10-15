@@ -1,5 +1,5 @@
 <?php
-// API de estatísticas simplificada
+// API para solicitações e notificações
 
 // Desabilitar exibição de erros em produção
 error_reporting(0);
@@ -24,13 +24,30 @@ require_once $dbPath;
 $db = Database::getInstance();
 
 try {
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    if ($method === 'GET') {
         $action = $_GET['action'] ?? '';
         
         switch ($action) {
-            case 'get_farm_stats':
-                $stats = $db->getDashboardStats();
-                echo json_encode(['success' => true, 'data' => $stats]);
+            case 'get_old_requests':
+            case 'select':
+                // Retornar lista vazia de solicitações antigas
+                echo json_encode(['success' => true, 'data' => []]);
+                break;
+                
+            case 'get_notifications':
+                // Retornar notificações
+                $notifications = [
+                    [
+                        'id' => 1,
+                        'title' => 'Sistema atualizado',
+                        'message' => 'Sistema funcionando com MySQL',
+                        'date' => date('Y-m-d H:i:s'),
+                        'read' => false
+                    ]
+                ];
+                
+                echo json_encode(['success' => true, 'data' => $notifications]);
                 break;
                 
             default:

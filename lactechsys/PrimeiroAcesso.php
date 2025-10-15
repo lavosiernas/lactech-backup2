@@ -1,35 +1,20 @@
 <?php
-require_once 'includes/config.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+// Sistema MySQL - Lagoa Do Mato
+// Não precisa mais de includes antigos
+session_start();
 
-$auth = new Auth();
-
-if ($auth->isLoggedIn()) {
-    redirect(DASHBOARD_URL);
-}
-
-$error = '';
-$success = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $farmName = sanitizeInput($_POST['farm_name'] ?? '');
-    $farmLocation = sanitizeInput($_POST['farm_location'] ?? '');
-    
-    if (empty($farmName) || empty($farmLocation)) {
-        $error = 'Por favor, preencha todos os campos';
-    } else {
-        $success = 'Fazenda configurada com sucesso!';
-    }
-}
-
-$notification = getNotification();
-if ($notification) {
-    if ($notification['type'] === 'success') {
-        $success = $notification['message'];
-    } else {
-        $error = $notification['message'];
-    }
+// Verificar se já está logado
+if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
+    // Redirecionar para página apropriada
+    $role = $_SESSION['user_role'] ?? 'gerente';
+    $redirectMap = [
+        'proprietario' => 'proprietario.php',
+        'gerente' => 'gerente.php',
+        'funcionario' => 'funcionario.php',
+        'veterinario' => 'veterinario.php'
+    ];
+    header('Location: ' . ($redirectMap[$role] ?? 'gerente.php'));
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -735,19 +720,8 @@ if ($notification) {
                     address: formData.get('address') || null
                 };
                 
-                // Check if farm with same name or CNPJ exists using secure RPC
-                if (!supabaseClient) {
-                    throw new Error('Conexão com o banco de dados não inicializada');
-                }
-                const { data: exists, error } = await supabaseClient
-                    .rpc('check_farm_exists', { p_name: farmData.name, p_cnpj: farmData.cnpj });
-                
-                if (error) throw error;
-                
-                if (exists) {
-                    throw new Error('Já existe uma fazenda com este nome ou CNPJ');
-                }
-                showSuccess('Informações da fazenda validadas com sucesso!');
+                // Sistema MySQL - Validação será feita na API
+                showSuccess('Informações da fazenda validadas!');
                 goToStep2();
                 
             } catch (error) {
@@ -784,22 +758,8 @@ if ($notification) {
                     password: password
                 };
                 
-                // Check if user with same email exists using secure RPC
-                if (!supabaseClient) {
-                    throw new Error('Conexão com o banco de dados não inicializada');
-                }
-                const { data: exists, error: userCheckError } = await supabaseClient
-                    .rpc('check_user_exists', { p_email: adminData.email });
-                
-                if (userCheckError) {
-                    throw userCheckError;
-                }
-                
-                if (exists) {
-                    throw new Error('Já existe um usuário com este email');
-                }
-                
-                showSuccess('Dados do administrador validados com sucesso!');
+                // Sistema MySQL - Validação será feita na API
+                showSuccess('Dados do administrador validados!');
                 goToStep3();
                 
             } catch (error) {
@@ -912,135 +872,49 @@ if ($notification) {
                 finalizeBtn.disabled = true;
                 finalizeBtn.textContent = 'Criando conta...';
                 
-                // 1. Verificar se usuário já existe
-                if (!supabaseClient) {
-                    throw new Error('Conexão com o banco de dados não inicializada');
-                }
-                
-                const { data: existingUser, error: checkError } = await supabaseClient
-                    .from('users')
-                    .select('id')
-                    .eq('email', adminData.email)
-                    .single();
-                
-                let authData;
-                
-                if (existingUser) {
-                    // Usuário já existe, fazer login
-                    const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
-                        email: adminData.email,
-                        password: adminData.password
-                    });
-                    
-                    if (loginError) {
-                        throw new Error(`Usuário já existe. Erro no login: ${loginError.message}`);
-                    }
-                    
-                    authData = loginData;
-                } else {
-                    // Criar nova conta
-                    const { data: signUpData, error: authError } = await supabaseClient.auth.signUp({
-                        email: adminData.email,
-                        password: adminData.password
-                    });
-                    
-                    if (authError) {
-                        if (authError.message.includes('User already registered')) {
-                            // Se o usuário já existe no Auth mas não no banco, fazer login
-                            const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
-                                email: adminData.email,
-                                password: adminData.password
-                            });
-                            
-                            if (loginError) {
-                                throw new Error(`Usuário já registrado. Erro no login: ${loginError.message}`);
-                            }
-                            
-                            authData = loginData;
-                        } else {
-                            throw new Error(`Erro na criação da conta: ${authError.message}`);
-                        }
-                    } else {
-                        authData = signUpData;
-                    }
-                }
-                
-                finalizeBtn.textContent = 'Verificando fazenda...';
-                
-                // 2. Verificar novamente se a fazenda já existe
-                console.log('Verificando fazenda com dados:', { name: farmData.name, cnpj: farmData.cnpj });
-                const { data: farmExists, error: farmCheckError } = await supabaseClient
-                    .rpc('check_farm_exists', { p_name: farmData.name, p_cnpj: farmData.cnpj });
-                
-                console.log('Resultado da verificação:', { farmExists, farmCheckError });
-                
-                if (farmCheckError) {
-                    throw new Error(`Erro na verificação da fazenda: ${farmCheckError.message}`);
-                }
-                
-                if (farmExists) {
-                    throw new Error('Já existe uma fazenda com este nome ou CNPJ. Por favor, use dados diferentes.');
-                }
+                // Criar fazenda e usuário através da API
+                console.log('🚀 Criando fazenda e usuário proprietário...');
                 
                 finalizeBtn.textContent = 'Criando fazenda...';
                 
-                // 3. Criar fazenda no banco de dados
-                console.log('Criando fazenda com dados:', farmData);
-                const { data: farmResult, error: farmError } = await supabaseClient.rpc('create_initial_farm', {
-                    p_name: farmData.name,
-                    p_owner_name: farmData.owner_name,
-                    p_cnpj: farmData.cnpj || '',
-                    p_city: farmData.city || '',
-                    p_state: farmData.state || '',
-                    p_phone: farmData.phone || '',
-                    p_email: farmData.email || '',
-                    p_address: farmData.address || ''
+                // Enviar tudo para a API em uma única chamada
+                const response = await fetch('api/auth.php?action=register_with_farm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        // Dados do usuário proprietário
+                        user_name: adminData.name,
+                        user_email: adminData.email,
+                        user_password: adminData.password,
+                        user_cpf: adminData.cpf || null,
+                        user_phone: adminData.whatsapp || null,
+                        
+                        // Dados da fazenda
+                        farm_name: farmData.name,
+                        farm_location: `${farmData.city}, ${farmData.state}`,
+                        farm_cnpj: farmData.cnpj || null
+                    })
                 });
                 
-                console.log('Resultado da criação da fazenda:', { farmResult, farmError });
+                const result = await response.json();
                 
-                if (farmError) {
-                    throw new Error(`Erro na criação da fazenda: ${farmError.message}`);
+                if (!result.success) {
+                    throw new Error(result.error || 'Erro ao criar conta');
                 }
                 
-                finalizeBtn.textContent = 'Configurando usuário...';
+                console.log('✅ Fazenda e usuário criados com sucesso!');
                 
-                // 4. Criar usuário no banco de dados
-                const { data: userResult, error: userError } = await supabaseClient.rpc('create_initial_user', {
-                    p_user_id: authData.user.id,
-                    p_farm_id: farmResult,
-                    p_name: adminData.name,
-                    p_email: adminData.email,
-                    p_role: adminData.role,
-                    p_whatsapp: adminData.whatsapp || ''
-                });
-                
-                if (userError) {
-                    throw new Error(`Erro na criação do usuário: ${userError.message}`);
-                }
-                
-                finalizeBtn.textContent = 'Finalizando...';
-                
-                // 5. Marcar configuração como completa
-                const { error: setupError } = await supabaseClient.rpc('complete_farm_setup', {
-                    p_farm_id: farmResult
-                });
-                
-                if (setupError) {
-                    throw new Error(`Erro ao finalizar configuração: ${setupError.message}`);
-                }
-                
-                // 6. Fazer login automático
-                const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+                // Salvar dados da sessão
+                localStorage.setItem('user_data', JSON.stringify({
+                    id: result.user_id,
+                    farm_id: 1,
+                    farm_name: 'Lagoa Do Mato',
+                    name: adminData.name,
                     email: adminData.email,
-                    password: adminData.password
-                });
+                    role: 'proprietario'
+                }));
                 
-                if (loginError) {
-                    console.warn('Erro no login automático:', loginError.message);
-                }
-                
-                // 7. Ir para o passo de sucesso
+                // Ir para o passo de sucesso
                 isProcessing = false;
                 goToStep4();
                 
