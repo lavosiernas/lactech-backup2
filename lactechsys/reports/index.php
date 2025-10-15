@@ -1,24 +1,23 @@
 <?php
-// Sistema MySQL - Lagoa Do Mato
-session_start();
+require_once '../includes/config.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+require_once '../includes/rbac.php';
 
-// Verificar autenticação básica
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
-    header('Location: ../login.php');
-    exit;
-}
+$auth = new Auth();
+$rbac = RBAC::getInstance();
 
-$user = [
-    'id' => $_SESSION['user_id'],
-    'role' => $_SESSION['user_role'],
-    'farm_id' => 1 // Lagoa Do Mato
-];
+// Verificar autenticação
+$auth->requireLogin();
+$auth->require2FA();
+
+$user = $auth->getCurrentUser();
 
 // Verificar permissões
 $allowedRoles = ['gerente', 'funcionario', 'veterinario', 'proprietario'];
 if (!in_array($user['role'], $allowedRoles)) {
-    header('Location: ../index.php');
-    exit;
+    setNotification('Você não tem permissão para acessar relatórios', 'error');
+    redirect(DASHBOARD_URL);
 }
 
 $error = '';
@@ -275,10 +274,6 @@ if ($notification) {
     </script>
 </body>
 </html>
-
-
-
-
 
 
 

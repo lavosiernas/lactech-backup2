@@ -1,22 +1,21 @@
 <?php
 /**
  * Exemplo de uso dos relatórios em PDF
- * Sistema MySQL - Lagoa Do Mato
+ * Este arquivo demonstra como usar a classe PDFGenerator
  */
 
-session_start();
+require_once '../includes/config.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+require_once '../includes/PDFGenerator.php';
 
-// Verificar autenticação básica
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
-    header('Location: ../login.php');
-    exit;
-}
+$auth = new Auth();
 
-$user = [
-    'id' => $_SESSION['user_id'],
-    'role' => $_SESSION['user_role'],
-    'farm_id' => 1 // Lagoa Do Mato
-];
+// Verificar autenticação
+$auth->requireLogin();
+$auth->require2FA();
+
+$user = $auth->getCurrentUser();
 
 // Verificar permissões
 $allowedRoles = ['gerente', 'funcionario', 'veterinario', 'proprietario'];
@@ -116,10 +115,6 @@ try {
     die('Erro ao gerar relatório: ' . $e->getMessage());
 }
 ?>
-
-
-
-
 
 
 

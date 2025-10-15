@@ -1,24 +1,22 @@
 <?php
-// Sistema MySQL - Lagoa Do Mato
-session_start();
+require_once '../includes/config.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+require_once '../includes/PDFGenerator.php';
 
-// Verificar autenticação básica
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
-    header('Location: ../login.php');
-    exit;
-}
+$auth = new Auth();
 
-$user = [
-    'id' => $_SESSION['user_id'],
-    'role' => $_SESSION['user_role'],
-    'farm_id' => 1 // Lagoa Do Mato
-];
+// Verificar autenticação
+$auth->requireLogin();
+$auth->require2FA();
 
-// Verificar permissões
+$user = $auth->getCurrentUser();
+
+// Verificar permissões (gerente e proprietário podem gerar relatórios financeiros)
 $allowedRoles = ['gerente', 'proprietario'];
 if (!in_array($user['role'], $allowedRoles)) {
-    header('Location: ../index.php');
-    exit;
+    setNotification('Você não tem permissão para gerar relatórios financeiros', 'error');
+    redirect(DASHBOARD_URL);
 }
 
 try {
@@ -76,10 +74,6 @@ function validateDate($date, $format = 'Y-m-d') {
     return $d && $d->format($format) === $date;
 }
 ?>
-
-
-
-
 
 
 

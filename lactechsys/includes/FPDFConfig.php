@@ -142,10 +142,3 @@ class FPDF extends FPDF {
 
 
 
-
-
-
-
-
-
-

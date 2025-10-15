@@ -22,9 +22,6 @@ class OfflineLoadingSystem {
     }
 
     createLoadingContainer() {
-        // Desabilitado - reconexão silenciosa (sem interface visual)
-        return;
-        
         // Aguardar o DOM estar pronto
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
@@ -117,9 +114,6 @@ class OfflineLoadingSystem {
     }
 
     showLoading(message = 'Reconectando com o servidor online') {
-        // Desabilitado - reconexão silenciosa
-        return;
-        
         if (this.isLoading) return;
         
         this.isLoading = true;
@@ -216,10 +210,14 @@ class OfflineLoadingSystem {
     }
 
     handleOnline() {
-        // Reconexão silenciosa - sem loading
-        this.hideLoading();
-        this.updateConnectionStatus('online', 'Online');
-        console.log('🌐 Conexão restaurada');
+        this.showLoading('Reconectando com o servidor online');
+        
+        // Simular sincronização por 6 segundos
+        setTimeout(() => {
+            this.hideLoading();
+            this.updateConnectionStatus('online', 'Online'); // Isso vai ocultar o status
+            console.log('🌐 Conexão restaurada e dados sincronizados');
+        }, this.loadingDuration);
     }
 
     // Mostrar notificação temporária de offline
