@@ -32,7 +32,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/js/config_mysql.js"></script>
-    <script src="assets/js/loading-screen.js"></script>
+    <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
     <script src="assets/js/api.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
@@ -40,7 +40,7 @@
     <script src="assets/js/ecosystem-manager.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="assets/css/loading-screen.css" rel="stylesheet">
+    <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
     <!-- <link href="assets/css/offline-loading.css" rel="stylesheet"> --> <!-- Desabilitado -->
     <link href="assets/css/ecosystem.css" rel="stylesheet">
     

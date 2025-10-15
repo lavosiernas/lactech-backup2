@@ -1,6 +1,9 @@
 // =====================================================
 // GERENCIADOR DE TELA DE CARREGAMENTO - LACTECH SYSTEM
 // =====================================================
+// DESABILITADO - Usando apenas modal HTML no gerente.php
+console.log('⚠️ loading-screen.js DESABILITADO - usando apenas modal HTML');
+return; // Parar execução imediatamente
 
 class LoadingScreen {
     constructor() {

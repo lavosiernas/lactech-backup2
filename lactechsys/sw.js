@@ -17,10 +17,10 @@ const CRITICAL_RESOURCES = [
     '/assets/css/critical.css',
     '/assets/css/style.css',
     '/assets/css/dark-theme-fixes.css',
-    '/assets/css/loading-screen.css',
+    // '/assets/css/loading-screen.css', DESABILITADO
     '/assets/js/config_mysql.js',
     '/assets/js/performance-optimizer.js',
-    '/assets/js/loading-screen.js',
+    // '/assets/js/loading-screen.js', DESABILITADO
     '/assets/img/lactech-logo.png'
 ];
 

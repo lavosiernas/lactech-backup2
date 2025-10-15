@@ -10291,60 +10291,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 });
 
-// Sistema de Carregamento
-const loadingSteps = [
-    { message: 'Inicializando sistema...', subMessage: 'Preparando ambiente...', progress: 10 },
-    { message: 'Conectando ao banco de dados...', subMessage: 'Estabelecendo conexão...', progress: 25 },
-    { message: 'Carregando dados da fazenda...', subMessage: 'Buscando informações...', progress: 40 },
-    { message: 'Configurando interface...', subMessage: 'Preparando componentes...', progress: 60 },
-    { message: 'Carregando gráficos...', subMessage: 'Preparando visualizações...', progress: 80 },
-    { message: 'Finalizando carregamento...', subMessage: 'Quase pronto...', progress: 95 },
-    { message: 'Sistema pronto!', subMessage: 'Bem-vindo ao LacTech', progress: 100 }
-];
-
-let currentStep = 0;
-let loadingInterval;
-
-function updateLoadingScreen() {
-    const loadingMessage = document.getElementById('loadingMessage');
-    const loadingSubMessage = document.getElementById('loadingSubMessage');
-    const loadingProgress = document.getElementById('loadingProgress');
-    const loadingPercentage = document.getElementById('loadingPercentage');
-    const farmNameLoading = document.getElementById('farmNameLoading');
-
-    if (currentStep < loadingSteps.length) {
-        const step = loadingSteps[currentStep];
-        
-        if (loadingMessage) loadingMessage.textContent = step.message;
-        if (loadingSubMessage) loadingSubMessage.textContent = step.subMessage;
-        if (loadingProgress) loadingProgress.style.width = step.progress + '%';
-        if (loadingPercentage) loadingPercentage.textContent = step.progress + '%';
-        
-        // Atualizar nome da fazenda quando disponível
-        if (currentStep === 2 && farmNameLoading) {
-            // Tentar pegar o nome da fazenda do localStorage ou de outro lugar
-            const farmName = localStorage.getItem('farmName') || 'Sistema de Gestão';
-            farmNameLoading.textContent = farmName;
-        }
-        
-        currentStep++;
-    } else {
-        // Carregamento completo
-        clearInterval(loadingInterval);
-        setTimeout(() => {
-            const loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                loadingScreen.style.opacity = '0';
-                loadingScreen.style.transition = 'opacity 0.5s ease-out';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                    loadingScreen.style.visibility = 'hidden';
-                    loadingScreen.style.pointerEvents = 'none';
-                }, 500);
-            }
-        }, 500);
-    }
-}
+// Sistema de Carregamento - REMOVIDO para evitar duplicação
+// Usando apenas a modal HTML existente no gerente.php
 
 // Iniciar carregamento
 document.addEventListener('DOMContentLoaded', function() {
@@ -10383,8 +10331,7 @@ if (managerPhotoModal) {
     console.log('✅ Modal de foto do gerente fechado na inicialização');
 }
     
-    // Iniciar sequência de carregamento
-    loadingInterval = setInterval(updateLoadingScreen, 1000);
+    // Sistema de carregamento desabilitado - usando apenas modal HTML
     
             // Garantir que os modais fiquem fechados na inicialização
 const photoChoiceModal = document.getElementById('photoChoiceModal');

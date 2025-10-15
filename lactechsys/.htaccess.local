@@ -1,20 +1,12 @@
 # =====================================================
-# CONFIGURAÇÕES APACHE - LACTECH
+# CONFIGURAÇÕES APACHE - LACTECH LOCAL (XAMPP)
+# =====================================================
+# Use este arquivo para desenvolvimento local
+# Renomeie para .htaccess quando for testar localmente
 # =====================================================
 
-# Forçar HTTPS (SSL) - APENAS EM PRODUÇÃO
+# NÃO FORÇAR HTTPS EM LOCALHOST
 RewriteEngine On
-
-# DESABILITAR HTTPS EM LOCALHOST - Permitir HTTP em desenvolvimento
-# Só força HTTPS se NÃO for localhost/127.0.0.1/192.168.x.x
-RewriteCond %{HTTPS} off
-RewriteCond %{HTTP_HOST} !^localhost [NC]
-RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
-RewriteCond %{HTTP_HOST} !^::1 [NC]
-RewriteCond %{HTTP_HOST} !^192\.168\. [NC]
-RewriteCond %{HTTP_HOST} !^10\. [NC]
-RewriteCond %{HTTP_HOST} !^172\.16\. [NC]
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Desabilitar listagem de diretórios
 Options -Indexes
@@ -38,6 +30,8 @@ Options -Indexes
     php_value max_execution_time 300
     php_value max_input_time 300
     php_value memory_limit 256M
+    php_flag display_errors On
+    php_value error_reporting E_ALL
 </IfModule>
 
 # Compressão GZIP
@@ -59,18 +53,11 @@ Options -Indexes
     ExpiresByType application/javascript "access plus 1 week"
 </IfModule>
 
-# Headers de segurança
+# Headers de segurança (relaxados para desenvolvimento)
 <IfModule mod_headers.c>
-    Header set X-Frame-Options "SAMEORIGIN"
     Header set X-Content-Type-Options "nosniff"
     Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
-
-# Página de erro personalizada
-ErrorDocument 404 /404.html
-ErrorDocument 403 /403.html
-ErrorDocument 500 /500.html
 
 # Bloquear acesso a pastas sensíveis
 RedirectMatch 403 ^/includes/
@@ -79,3 +66,4 @@ RedirectMatch 403 ^/backups/
 
 # UTF-8 como padrão
 AddDefaultCharset UTF-8
+
