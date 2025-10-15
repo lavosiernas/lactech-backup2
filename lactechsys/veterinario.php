@@ -44,11 +44,11 @@ exit;
     
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Sistema MySQL - Não precisa mais do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
     <script src="assets/js/config.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
-    <!-- <script src="assets/js/offline-loading.js"></script> --> <!-- Desabilitado - reconexão silenciosa -->
+    <script src="assets/js/offline-loading.js"></script>
     <script src="assets/js/vet.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -58,7 +58,7 @@ exit;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="assets/css/dark-theme-fixes.css?v=2.0" rel="stylesheet">
-    <!-- <link href="assets/css/offline-loading.css" rel="stylesheet"> --> <!-- Desabilitado -->
+    <link href="assets/css/offline-loading.css" rel="stylesheet">
 
     <script>
         // ==================== CACHE SYSTEM ====================
@@ -78,11 +78,18 @@ exit;
                     return this.userData;
                 }
                 
-                console.log('🔄 Buscando dados do usuário');
-                const userData = localStorage.getItem('user_data');
+                console.log('🔄 Buscando dados do usuário no Supabase');
+                const supabase = createSupabaseClient();
+                const { data: { user } } = await supabase.auth.getUser();
                 
-                if (userData) {
-                    this.userData = JSON.parse(userData);
+                if (user) {
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('id, name, email, role, farm_id, profile_photo_url, is_active')
+                        .eq('id', user.id)
+                        .single();
+                    
+                    this.userData = { ...user, ...userData };
                     this.lastUserFetch = now;
                     console.log('✅ Dados do usuário cacheados');
                 }
@@ -98,14 +105,20 @@ exit;
                     return this.farmData;
                 }
                 
-                console.log('🔄 Dados da fazenda: Lagoa Do Mato');
-                this.farmData = {
-                    id: 1,
-                    name: 'Lagoa Do Mato',
-                    location: 'Sua localização'
-                };
-                this.lastFarmFetch = now;
-                console.log('✅ Dados da fazenda cacheados');
+                console.log('🔄 Buscando dados da fazenda no Supabase');
+                const userData = await this.getUserData();
+                if (userData?.farm_id) {
+                    const supabase = createSupabaseClient();
+                    const { data: farmData } = await supabase
+                        .from('farms')
+                        .select('id, name, location')
+                        .eq('id', userData.farm_id)
+                        .single();
+                    
+                    this.farmData = farmData;
+                    this.lastFarmFetch = now;
+                    console.log('✅ Dados da fazenda cacheados');
+                }
                 
                 return this.farmData;
             },

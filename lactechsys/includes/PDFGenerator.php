@@ -402,10 +402,3 @@ class PDFGenerator {
 
 
 
-
-
-
-
-
-
-

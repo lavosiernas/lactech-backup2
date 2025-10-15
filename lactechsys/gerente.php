@@ -50,6 +50,7 @@
     
     <!-- Tailwind CSS CDN - optimized -->
     <script src="https://cdn.tailwindcss.com"></script>
+<<<<<<< HEAD
     
     <script>
         // Configurar Tailwind ANTES de carregar outros scripts
@@ -72,10 +73,16 @@
     <script src="assets/js/performance-optimizer.js"></script>
     
     <!-- Critical scripts only -->
+=======
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="assets/js/pdf-generator.js"></script>
+>>>>>>> parent of 0eb3d2f (.)
     <script src="assets/js/config_mysql.js"></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
+<<<<<<< HEAD
     <script src="assets/js/native-notifications.js"></script>
     
     <!-- Load Chart.js immediately for graphs -->
@@ -107,6 +114,736 @@
     </script>
     
         // Alert shim for custom notifications - PRIORIDADE MÁXIMA
+=======
+    <script src="assets/js/offline-loading.js"></script>
+    <script src="assets/js/native-notifications.js"></script>
+    <script src="assets/js/offline-sync.js"></script>
+    
+    <!-- CSS Files -->
+    <link href="assets/css/loading-screen.css" rel="stylesheet">
+    <link href="assets/css/offline-loading.css" rel="stylesheet">
+    <link href="assets/css/weather-modal.css" rel="stylesheet">
+    <link href="assets/css/native-notifications.css" rel="stylesheet">
+    <link href="assets/css/quality-modal.css" rel="stylesheet">
+    
+    <!-- Responsividade Customizada -->
+    <style>
+        /* Gradiente de texto estilo Xandria Store */
+        .gradient-text {
+            background: linear-gradient(135deg, #01875f, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Card hover effect estilo Xandria Store */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dark .card-hover:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+        }
+        
+        /* Responsividade para telas muito pequenas */
+        @media (max-width: 360px) {
+            .text-xs { font-size: 0.65rem !important; line-height: 0.9rem !important; }
+            .text-sm { font-size: 0.75rem !important; line-height: 1rem !important; }
+            .text-base { font-size: 0.8rem !important; line-height: 1.1rem !important; }
+            .text-lg { font-size: 0.9rem !important; line-height: 1.2rem !important; }
+            .text-xl { font-size: 1rem !important; line-height: 1.3rem !important; }
+            .text-2xl { font-size: 1.1rem !important; line-height: 1.4rem !important; }
+            
+            /* Espaçamentos reduzidos */
+            .p-2 { padding: 0.3rem !important; }
+            .p-3 { padding: 0.5rem !important; }
+            .p-4 { padding: 0.6rem !important; }
+            .p-6 { padding: 0.8rem !important; }
+            .px-3 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+            .px-4 { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+            .px-6 { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
+            .py-2 { padding-top: 0.3rem !important; padding-bottom: 0.3rem !important; }
+            .py-3 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+            .py-4 { padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
+            
+            /* Margens reduzidas */
+            .m-2 { margin: 0.3rem !important; }
+            .m-3 { margin: 0.5rem !important; }
+            .m-4 { margin: 0.6rem !important; }
+            .mb-2 { margin-bottom: 0.3rem !important; }
+            .mb-3 { margin-bottom: 0.5rem !important; }
+            .mb-4 { margin-bottom: 0.6rem !important; }
+            .mb-6 { margin-bottom: 0.8rem !important; }
+            .mt-2 { margin-top: 0.3rem !important; }
+            .mt-3 { margin-top: 0.5rem !important; }
+            .mt-4 { margin-top: 0.6rem !important; }
+            
+            /* Grid gaps reduzidos */
+            .gap-2 { gap: 0.3rem !important; }
+            .gap-3 { gap: 0.5rem !important; }
+            .gap-4 { gap: 0.6rem !important; }
+            .gap-6 { gap: 0.8rem !important; }
+            
+            /* Espaçamentos entre elementos */
+            .space-y-2 > * + * { margin-top: 0.3rem !important; }
+            .space-y-3 > * + * { margin-top: 0.5rem !important; }
+            .space-y-4 > * + * { margin-top: 0.6rem !important; }
+            .space-y-6 > * + * { margin-top: 0.8rem !important; }
+            
+            /* Botões menores */
+            .btn-sm { padding: 0.3rem 0.6rem !important; font-size: 0.7rem !important; }
+            .btn-md { padding: 0.5rem 0.8rem !important; font-size: 0.8rem !important; }
+            
+            /* Cards mais compactos */
+            .card-compact { padding: 0.6rem !important; }
+            .card-compact .text-lg { font-size: 0.85rem !important; }
+            .card-compact .text-xl { font-size: 0.95rem !important; }
+            
+            /* Headers mais compactos */
+            .header-compact { padding: 0.5rem 0.8rem !important; }
+            .header-compact .text-xl { font-size: 0.9rem !important; }
+            .header-compact .text-2xl { font-size: 1rem !important; }
+        }
+        
+        /* Responsividade para telas pequenas */
+        @media (max-width: 480px) {
+            .text-xs { font-size: 0.7rem !important; line-height: 0.95rem !important; }
+            .text-sm { font-size: 0.8rem !important; line-height: 1.05rem !important; }
+            .text-base { font-size: 0.85rem !important; line-height: 1.15rem !important; }
+            .text-lg { font-size: 0.95rem !important; line-height: 1.25rem !important; }
+            .text-xl { font-size: 1.05rem !important; line-height: 1.35rem !important; }
+            .text-2xl { font-size: 1.15rem !important; line-height: 1.45rem !important; }
+            
+            /* Espaçamentos moderados */
+            .p-2 { padding: 0.4rem !important; }
+            .p-3 { padding: 0.6rem !important; }
+            .p-4 { padding: 0.7rem !important; }
+            .p-6 { padding: 0.9rem !important; }
+            .px-3 { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+            .px-4 { padding-left: 0.7rem !important; padding-right: 0.7rem !important; }
+            .px-6 { padding-left: 0.9rem !important; padding-right: 0.9rem !important; }
+            .py-2 { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
+            .py-3 { padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
+            .py-4 { padding-top: 0.7rem !important; padding-bottom: 0.7rem !important; }
+            
+            /* Margens moderadas */
+            .m-2 { margin: 0.4rem !important; }
+            .m-3 { margin: 0.6rem !important; }
+            .m-4 { margin: 0.7rem !important; }
+            .mb-2 { margin-bottom: 0.4rem !important; }
+            .mb-3 { margin-bottom: 0.6rem !important; }
+            .mb-4 { margin-bottom: 0.7rem !important; }
+            .mb-6 { margin-bottom: 0.9rem !important; }
+            .mt-2 { margin-top: 0.4rem !important; }
+            .mt-3 { margin-top: 0.6rem !important; }
+            .mt-4 { margin-top: 0.7rem !important; }
+            
+            /* Grid gaps moderados */
+            .gap-2 { gap: 0.4rem !important; }
+            .gap-3 { gap: 0.6rem !important; }
+            .gap-4 { gap: 0.7rem !important; }
+            .gap-6 { gap: 0.9rem !important; }
+            
+            /* Espaçamentos entre elementos */
+            .space-y-2 > * + * { margin-top: 0.4rem !important; }
+            .space-y-3 > * + * { margin-top: 0.6rem !important; }
+            .space-y-4 > * + * { margin-top: 0.7rem !important; }
+            .space-y-6 > * + * { margin-top: 0.9rem !important; }
+        }
+        
+        /* Prevenir quebra de linha em textos importantes */
+        .no-wrap { white-space: nowrap !important; }
+        .text-ellipsis { overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+        
+        /* Ajustes específicos para elementos que quebram */
+        .metric-value { font-size: clamp(0.8rem, 2.5vw, 1.25rem) !important; }
+        .metric-label { font-size: clamp(0.6rem, 2vw, 0.875rem) !important; }
+        .card-title { font-size: clamp(0.75rem, 2.2vw, 1.125rem) !important; }
+        .button-text { font-size: clamp(0.7rem, 2vw, 0.875rem) !important; }
+        
+        /* Melhorar espaçamento em grids */
+        .grid-compact { gap: 0.5rem !important; }
+        .grid-compact > * { padding: 0.5rem !important; }
+        
+        /* Ajustes para modais em telas pequenas */
+        @media (max-width: 480px) {
+            .modal-content { padding: 0.8rem !important; }
+            .modal-title { font-size: 1rem !important; }
+            .modal-body { font-size: 0.85rem !important; }
+            .modal-button { padding: 0.5rem 0.8rem !important; font-size: 0.8rem !important; }
+        }
+        
+        @media (max-width: 360px) {
+            .modal-content { padding: 0.6rem !important; }
+            .modal-title { font-size: 0.9rem !important; }
+            .modal-body { font-size: 0.75rem !important; }
+            .modal-button { padding: 0.4rem 0.6rem !important; font-size: 0.7rem !important; }
+        }
+        
+        /* Ajustes específicos para cards de dados */
+        @media (max-width: 480px) {
+            .data-card { padding: 0.8rem !important; }
+            .data-card h3 { font-size: 0.9rem !important; margin-bottom: 0.6rem !important; }
+            .data-card .text-lg { font-size: 0.85rem !important; }
+            .data-card .text-xl { font-size: 0.95rem !important; }
+            .data-card .text-2xl { font-size: 1.05rem !important; }
+        }
+        
+        @media (max-width: 360px) {
+            .data-card { padding: 0.6rem !important; }
+            .data-card h3 { font-size: 0.8rem !important; margin-bottom: 0.5rem !important; }
+            .data-card .text-lg { font-size: 0.75rem !important; }
+            .data-card .text-xl { font-size: 0.85rem !important; }
+            .data-card .text-2xl { font-size: 0.95rem !important; }
+        }
+        
+        /* Ajustes para botões em telas pequenas */
+        @media (max-width: 480px) {
+            .btn-primary, .btn-secondary, .btn-success, .btn-danger { 
+                padding: 0.4rem 0.8rem !important; 
+                font-size: 0.8rem !important; 
+            }
+            .btn-sm { 
+                padding: 0.3rem 0.6rem !important; 
+                font-size: 0.7rem !important; 
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .btn-primary, .btn-secondary, .btn-success, .btn-danger { 
+                padding: 0.3rem 0.6rem !important; 
+                font-size: 0.7rem !important; 
+            }
+            .btn-sm { 
+                padding: 0.25rem 0.5rem !important; 
+                font-size: 0.65rem !important; 
+            }
+        }
+        
+        /* Ajustes para tabelas em telas pequenas */
+        @media (max-width: 480px) {
+            .table-responsive { font-size: 0.75rem !important; }
+            .table-responsive th, .table-responsive td { 
+                padding: 0.4rem 0.3rem !important; 
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .table-responsive { font-size: 0.7rem !important; }
+            .table-responsive th, .table-responsive td { 
+                padding: 0.3rem 0.2rem !important; 
+            }
+        }
+        
+        /* Ajustes para inputs e formulários */
+        @media (max-width: 480px) {
+            input, select, textarea { 
+                font-size: 0.85rem !important; 
+                padding: 0.4rem 0.6rem !important; 
+            }
+            label { font-size: 0.8rem !important; }
+        }
+        
+        @media (max-width: 360px) {
+            input, select, textarea { 
+                font-size: 0.8rem !important; 
+                padding: 0.3rem 0.5rem !important; 
+            }
+            label { font-size: 0.75rem !important; }
+        }
+        
+        /* Ajustes específicos para modal de logout */
+        @media (max-width: 480px) {
+            #logoutConfirmationModal .bg-white,
+            #logoutConfirmationModal .bg-white {
+                margin: 1rem !important;
+                padding: 1.5rem !important;
+            }
+            
+            #logoutConfirmationModal h3 {
+                font-size: 1.1rem !important;
+            }
+            
+            #logoutConfirmationModal p {
+                font-size: 0.9rem !important;
+            }
+            
+            #logoutConfirmationModal .w-16 {
+                width: 3rem !important;
+                height: 3rem !important;
+            }
+            
+            #logoutConfirmationModal .w-8 {
+                width: 1.5rem !important;
+                height: 1.5rem !important;
+            }
+        }
+        
+        /* Garantir que os botões de edição sejam ocultados corretamente */
+        #profileEditButtons.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Forçar ocultação dos botões quando não há mudanças */
+        #profileEditButtons[style*="display: none"] {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Garantir que as telas de processamento sejam ocultadas */
+        #photoProcessingScreen.hidden,
+        #managerPhotoProcessingScreen.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Forçar ocultação das telas de processamento */
+        #photoProcessingScreen[style*="display: none"],
+        #managerPhotoProcessingScreen[style*="display: none"] {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Garantir que o modal de foto do gerente seja exibido corretamente */
+        #managerPhotoChoiceModal[style*="display: flex"] {
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        
+        #managerPhotoChoiceModal.flex {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Garantir que o modal MAIS seja exibido corretamente */
+        #moreModal[style*="display: block"] {
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        
+        #moreModal:not(.hidden) {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        
+        
+        /* Melhorar aparência dos apps no modal estilo mobile */
+        #moreModal .app-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        
+        #moreModal .app-item:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        
+        #moreModal .app-item:active {
+            transform: scale(0.95) !important;
+        }
+        
+        
+        /* Garantir que o ícone de perfil seja ocultado quando há foto */
+        #headerProfileIcon.hidden,
+        #modalProfileIcon.hidden,
+        #managerProfilePlaceholder.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Garantir que a foto de perfil seja exibida */
+        #headerProfilePhoto:not(.hidden),
+        #modalProfilePhoto:not(.hidden),
+        #managerProfilePreview:not(.hidden) {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Forçar fechamento do modal de foto do gerente */
+        #managerPhotoChoiceModal.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: fixed !important;
+            z-index: -1 !important;
+        }
+        
+        #managerPhotoChoiceModal[style*="display: none"] {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: fixed !important;
+            z-index: -1 !important;
+        }
+        
+        /* Garantir que o modal de foto do gerente seja exibido corretamente */
+        #managerPhotoChoiceModal.flex {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            position: fixed !important;
+            z-index: 999999 !important;
+        }
+        
+        #managerPhotoChoiceModal[style*="display: flex"] {
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            position: fixed !important;
+            z-index: 999999 !important;
+        }
+        
+        /* Corrigir overflow nas contas secundárias */
+        #secondaryAccountsList {
+            overflow-x: hidden;
+            overflow-y: auto;
+            width: 100%;
+        }
+        
+        #secondaryAccountsList > div {
+            max-width: 100%;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        /* Corrigir centralização no desktop */
+        @media (min-width: 640px) {
+            #secondaryAccountsList {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+            
+            #secondaryAccountsList > div {
+                width: 100%;
+                max-width: none;
+                flex: 1;
+            }
+        }
+        
+        /* Garantir que o container das contas secundárias ocupe toda a largura */
+        .bg-white.rounded-2xl.p-4.sm\\:p-8.border.border-gray-200.mx-0.sm\\:mx-4.mb-8 {
+            width: 100%;
+        }
+        
+        /* ==================== ANIMAÇÃO DE CONEXÃO COM SERVIDOR ==================== */
+        /* From Uiverse.io by Juanes200122 */ 
+        #svg_svg {
+            zoom: 0.3;
+        }
+        .estrobo_animation {
+            animation:
+                floatAndBounce 4s infinite ease-in-out,
+                strobe 0.8s infinite;
+        }
+
+        .estrobo_animationV2 {
+            animation:
+                floatAndBounce 4s infinite ease-in-out,
+                strobev2 0.8s infinite;
+        }
+
+        #float_server {
+            animation: floatAndBounce 4s infinite ease-in-out;
+        }
+
+        @keyframes floatAndBounce {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes strobe {
+            0%,
+            50%,
+            100% {
+                fill: #17e300;
+            }
+
+            25%,
+            75% {
+                fill: #17e300b4;
+            }
+        }
+
+        @keyframes strobev2 {
+            0%,
+            50%,
+            100% {
+                fill: rgb(255, 95, 74);
+            }
+
+            25%,
+            75% {
+                fill: rgb(16, 53, 115);
+            }
+        }
+
+        /* Animación de los colores del gradiente */
+        @keyframes animateGradient {
+            0% {
+                stop-color: #313f8773;
+            }
+
+            50% {
+                stop-color: #040d3a;
+            }
+
+            100% {
+                stop-color: #313f8773;
+            }
+        }
+
+        /* Animación aplicada a los puntos del gradiente */
+        #paint13_linear_163_1030 stop {
+            animation: animateGradient 4s infinite alternate;
+        }
+        
+        /* Garantir que os textos longos sejam truncados */
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Animações do header dinâmico - Global */
+        #profileModalHeader {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
+        }
+        
+        /* Responsividade para telas pequenas */
+        @media (max-width: 640px) {
+            #secondaryAccountsList > div {
+                padding: 0.75rem;
+            }
+            
+            #secondaryAccountsList .flex-col {
+                gap: 0.5rem;
+            }
+            
+            /* Modal de perfil ocupar toda a tela no mobile */
+            #profileModal {
+                width: 100vw;
+                height: 100vh;
+                max-width: none;
+                max-height: none;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            #profileModal .modal-content {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            /* Header do modal de perfil */
+            #profileModalHeader {
+                border-radius: 0;
+                margin: 0;
+                width: 100vw;
+                margin-left: -1rem;
+                margin-right: -1rem;
+            }
+            
+            @media (min-width: 640px) {
+                #profileModalHeader {
+                    width: 100%;
+                    margin-left: 0;
+                    margin-right: 0;
+                }
+            }
+            
+            /* Conteúdo do modal responsivo - padding removido para evitar conflito com sticky header */
+            
+            /* Animações do header dinâmico */
+            #profileModalHeader {
+                transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            #logoutConfirmationModal .bg-white,
+            #logoutConfirmationModal .bg-white {
+                margin: 0.5rem !important;
+                padding: 1rem !important;
+            }
+            
+            #logoutConfirmationModal h3 {
+                font-size: 1rem !important;
+            }
+            
+            #logoutConfirmationModal p {
+                font-size: 0.85rem !important;
+            }
+            
+            #logoutConfirmationModal .w-16 {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+            }
+            
+            #logoutConfirmationModal .w-8 {
+                width: 1.25rem !important;
+                height: 1.25rem !important;
+            }
+        }
+        
+        /* Animação dos três pontinhos para indicador de digitando */
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #9CA3AF;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+    
+    <script>
+    </script>
+    
+    <!-- Estilos personalizados para animações premium da seção de relatórios -->
+    <style>
+        /* Animações customizadas */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        /* Efeito shimmer nos botões */
+        .btn-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-shimmer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.4),
+                transparent
+            );
+            transition: left 0.6s ease-in-out;
+        }
+        
+        .btn-shimmer:hover::before {
+            left: 100%;
+        }
+        
+        /* Efeito de vidro melhorado */
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Sombras coloridas personalizadas */
+        .shadow-red-glow {
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3);
+        }
+        
+        .shadow-green-glow {
+            box-shadow: 0 10px 40px rgba(34, 197, 94, 0.3);
+        }
+        
+        .shadow-purple-glow {
+            box-shadow: 0 10px 40px rgba(147, 51, 234, 0.3);
+        }
+        
+        /* Efeito de partículas flutuantes */
+        .floating-particles::before,
+        .floating-particles::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .floating-particles::before {
+            top: 20%;
+            right: 15%;
+            animation-delay: -1s;
+        }
+        
+        .floating-particles::after {
+            bottom: 25%;
+            left: 10%;
+            animation-delay: -2s;
+        }
+    </style>
+
+        
+    <script>
+        // Non-blocking alert shim routed to showNotification when available
+>>>>>>> parent of 0eb3d2f (.)
         (function(){
             var originalAlert = window.alert;
             window.alert = function(message){
@@ -171,50 +908,141 @@
             });
         })();
     </script>
-    
+    <!-- Script fix_data_sync_complete.js removido para evitar conflitos -->
+
+    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        /* CRITICAL: Prevenir bugs de inicialização */
+
         
-        /* Body e conteúdo principal sempre visíveis */
-        html, body {
-            visibility: visible !important;
-            opacity: 1 !important;
+
+        
+        /* Efeito de foco nos botões */ 
+        button:focus { 
+            outline: none; 
+        } 
+        
+        /* Classes Tailwind para focus-visible */ 
+        .focus-visible:focus { 
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); 
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); 
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); 
+            --tw-ring-color: rgba(134, 209, 134, 0.5); 
+            --tw-ring-offset-width: 2px; 
+        } 
+        
+        /* Classe para background do ícone */ 
+        .bg-forest-100 { 
+            background-color: #f0f9f0; 
+        } 
+        
+        /* Definição de cores personalizadas para o ring */
+        :root {
+            --forest-300: #86d186;
         }
         
-        body {
-            display: block !important;
+        /* Animações da Câmera */
+        @keyframes focusPulse {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.05); opacity: 0.8; }
         }
         
-        /* APENAS modals HTML estáticos começam escondidos */
-        #profileModal,
-        #moreModal,
-        #managerPhotoChoiceModal,
-        #managerCameraModal,
-        #contactsModal,
-        .modal.hidden,
-        .fullscreen-modal.hidden {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
+        @keyframes focusSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         
+<<<<<<< HEAD
         /* Sistema de loading REMOVIDO - sem tela de carregamento */
-        
-        /* Quando modal está com classe 'show', mostrar */
-        .fullscreen-modal.show {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+=======
+        .focus-pulse {
+            animation: focusPulse 2s ease-in-out infinite;
         }
         
-        /* Quando modal NÃO tem classe 'hidden', ele pode ser mostrado via JS */
-        .fullscreen-modal:not(.hidden).show {
-            display: flex !important;
+        .focus-success {
+            animation: focusSuccess 0.5s ease-in-out;
         }
+>>>>>>> parent of 0eb3d2f (.)
+        
+        /* Estilos da câmera */
+        .camera-overlay {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .camera-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .camera-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Modal de Foto */
+        #photoModal.show #photoModalContent {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+
     </style>
+    <script>
+        
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'forest': {
+                            50: '#f0f9f0', 100: '#dcf2dc', 200: '#bce5bc', 300: '#8dd18d',
+                            400: '#5bb85b', 500: '#369e36', 600: '#2a7f2a', 700: '#236523',
+                            800: '#1f511f', 900: '#1a431a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
 
 </head>
+<<<<<<< HEAD
 <!-- Tela de Carregamento - REMOVIDA - sem tela de loading -->
+=======
+<!-- Tela de Carregamento -->
+<div id="loadingScreen" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
+        <!-- Logo -->
+        <div class="mb-6">
+            <img src="assets/img/lactech-logo.png" alt="LacTech" class="w-20 h-20 mx-auto mb-4">
+            <h2 class="text-2xl font-bold text-gray-800">LacTech</h2>
+            <p class="text-gray-600" id="farmNameLoading">Carregando sistema...</p>
+        </div>
+        
+        <!-- Mensagem de Status -->
+        <div class="mb-6">
+            <div id="loadingMessage" class="text-lg font-medium text-gray-700 mb-2">Inicializando sistema...</div>
+            <div id="loadingSubMessage" class="text-sm text-gray-500">Preparando ambiente...</div>
+        </div>
+        
+        <!-- Barra de Progresso -->
+        <div class="mb-6">
+            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div id="loadingProgress" class="bg-gradient-to-r from-forest-500 to-forest-600 h-3 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+            <div class="mt-2 text-sm text-gray-600">
+                <span id="loadingPercentage">0%</span> concluído
+            </div>
+        </div>
+        
+        <!-- Indicador de Carregamento -->
+        <div class="flex justify-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-forest-600"></div>
+        </div>
+    </div>
+</div>
+>>>>>>> parent of 0eb3d2f (.)
 
 <body class="gradient-mesh antialiased transition-colors duration-300 main-content" id="mainBody" data-non-critical>
 
@@ -435,13 +1263,7 @@
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
-                            <button onclick="showAddVolumeModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                + Volume
-                            </button>
-                            <button onclick="showVolumeByCowModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="openIndividualVolumeModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                                 </svg>
@@ -590,12 +1412,6 @@
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
-                            <button onclick="showAddQualityModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                + Qualidade
-                            </button>
                             <button onclick="exportQualityReport()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -1751,7 +2567,7 @@
     </div>
 
 <!-- Modal de Perfil do Gerente -->
-    <div id="profileModal" class="fullscreen-modal hidden">
+    <div id="profileModal" class="fullscreen-modal">
         <div class="modal-content overflow-y-auto">
             <!-- Header do Modal -->
             <div id="profileModalHeader" class="sticky top-0 left-0 right-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 z-20 transition-transform duration-300 ease-in-out -mx-4 sm:mx-0">
@@ -1997,12 +2813,58 @@
                         </button>
                     </div>
                 </div>
+                
+                <!-- Modal de Escolha de Foto do Gerente (dentro do modal de perfil) -->
+                <div id="managerPhotoChoiceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[-999999]" style="display: none !important; visibility: hidden !important;">
+                    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-900">Mudar Foto de Perfil</h2>
+                            <button onclick="closeManagerPhotoModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+            </div>
+                        
+                        <div>
+                            <div class="text-center space-y-6">
+                                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Como você quer adicionar sua foto?</h3>
+                                    <p class="text-gray-600">Escolha entre tirar uma foto ou selecionar da galeria</p>
+                                </div>
+                                
+                                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <button onclick="openManagerCamera()" class="flex items-center justify-center space-x-3 px-6 py-4 bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-xl transition-all">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <span>Tirar Foto</span>
+                                    </button>
+                                    
+                                    <button onclick="selectManagerFromGallery()" class="flex items-center justify-center space-x-3 px-6 py-4 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-xl transition-all">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span>Galeria</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Modal de Câmera do Gerente -->
-    <div id="managerCameraModal" class="fullscreen-modal hidden" style="display: none;">
+    <div id="managerCameraModal" class="fullscreen-modal" style="display: none;">
         <div class="modal-content bg-black">
             <!-- Header com Logo -->
             <div class="absolute top-0 left-0 right-0 z-30 p-4">
@@ -2758,8 +3620,7 @@
 
 
     <script>
-        // ==================== DATABASE API - MySQL Direct Access ====================
-        const db = {
+        const supabaseMock = {
             auth: {
                 getUser: async () => {
                     const userData = localStorage.getItem('user_data');
@@ -2776,217 +3637,38 @@
                 getSession: async () => {
                     const userData = localStorage.getItem('user_data');
                     return { data: { session: userData ? { user: JSON.parse(userData) } : null }, error: null };
-                },
-                updateUser: async (updates) => {
-                    // Atualizar usuário
-                    return { data: null, error: null };
-                },
-                signUp: async (credentials) => {
-                    // Sign up
-                    return { data: null, error: null };
                 }
             },
-            from: (table) => {
-                // Mapear nomes de tabelas para os arquivos PHP corretos
-                const tableMap = {
-                    'users': 'users',
-                    'volume_records': 'volume',
-                    'quality_tests': 'quality',
-                    'financial_records': 'financial',
-                    'farms': 'farms',
-                    'secondary_accounts': 'generic',
-                    'password_requests': 'generic',
-                    'notifications': 'generic',
-                    'chat_messages': 'generic',
-                    'chat-files': 'generic',
-                    'profile-photos': 'generic',
-                    'quality_records': 'generic',
-                    'auth.users': 'users'
-                };
-                
-                const apiFile = tableMap[table] || 'generic';
-                const apiUrl = apiFile === 'generic' ? `api/generic.php?table=${table}` : `api/${apiFile}.php`;
-                
-                return {
-                    select: (cols = '*') => {
-                        const queryBuilder = {
-                            _columns: cols,
-                            _filters: { eq: {}, neq: {}, gte: {}, lte: {}, gt: {}, lt: {} },
-                            _order: '',
-                            _limit: 0,
-                            _single: false,
-                            _maybeSingle: false,
-                            
-                            eq: (col, val) => {
-                                queryBuilder._filters.eq[col] = val;
-                                return queryBuilder;
-                            },
-                            neq: (col, val) => {
-                                queryBuilder._filters.neq[col] = val;
-                                return queryBuilder;
-                            },
-                            gte: (col, val) => {
-                                queryBuilder._filters.gte[col] = val;
-                                return queryBuilder;
-                            },
-                            lte: (col, val) => {
-                                queryBuilder._filters.lte[col] = val;
-                                return queryBuilder;
-                            },
-                            gt: (col, val) => {
-                                queryBuilder._filters.gt[col] = val;
-                                return queryBuilder;
-                            },
-                            lt: (col, val) => {
-                                queryBuilder._filters.lt[col] = val;
-                                return queryBuilder;
-                            },
-                            not: (col, op, val) => {
-                                queryBuilder._filters.neq[col] = val;
-                                return queryBuilder;
-                            },
-                            order: (col, opts = {}) => {
-                                const direction = opts.ascending === false ? 'DESC' : 'ASC';
-                                queryBuilder._order = `${col} ${direction}`;
-                                return queryBuilder;
-                            },
-                            limit: (n) => {
-                                queryBuilder._limit = n;
-                                return queryBuilder;
-                            },
-                            single: () => {
-                                queryBuilder._single = true;
-                                return queryBuilder;
-                            },
-                            maybeSingle: () => {
-                                queryBuilder._maybeSingle = true;
-                                return queryBuilder;
-                            },
-                            then: async (callback) => {
-                                // Executar a query
-                                try {
-                                    const response = await fetch(apiUrl, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            action: 'select',
-                                            columns: queryBuilder._columns,
-                                            eq: queryBuilder._filters.eq,
-                                            neq: queryBuilder._filters.neq,
-                                            gte: queryBuilder._filters.gte,
-                                            lte: queryBuilder._filters.lte,
-                                            gt: queryBuilder._filters.gt,
-                                            lt: queryBuilder._filters.lt,
-                                            order: queryBuilder._order,
-                                            limit: queryBuilder._limit,
-                                            single: queryBuilder._single || queryBuilder._maybeSingle
-                                        })
-                                    });
-                                    
-                                    const result = await response.json();
-                                    if (callback) callback(result);
-                                    return result;
-                                } catch (error) {
-                                    console.error('Erro ao buscar dados:', error);
-                                    // Verificar se é erro de JSON
-                                    if (error.message.includes('Unexpected token')) {
-                                        console.error('❌ API retornou HTML em vez de JSON. Verifique se a API está funcionando.');
-                                    }
-                                    const errorResult = { data: null, error: error.message };
-                                    if (callback) callback(errorResult);
-                                    return errorResult;
-                                }
-                            }
-                        };
-                        
-                        return queryBuilder;
-                    },
-                    
-                    insert: async (data) => {
-                        try {
-                            const response = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    action: 'insert',
-                                    ...data
-                                })
-                            });
-                            
-                            return await response.json();
-                        } catch (error) {
-                            console.error('Erro ao inserir dados:', error);
-                            return { data: null, error: error.message };
+            from: (table) => ({
+                select: (cols) => {
+                    const query = {
+                        eq: (col, val) => query,
+                        gte: (col, val) => query,
+                        lte: (col, val) => query,
+                        gt: (col, val) => query,
+                        lt: (col, val) => query,
+                        not: (col, op, val) => query,
+                        order: (col, opts) => query,
+                        limit: (n) => query,
+                        single: async () => ({ data: null, error: null }),
+                        maybeSingle: async () => ({ data: null, error: null }),
+                        then: async (callback) => {
+                            if (callback) callback({ data: [], error: null });
+                            return { data: [], error: null };
                         }
-                    },
-                    
-                    update: (data) => ({
-                        eq: async (col, val) => {
-                            try {
-                                const response = await fetch(apiUrl, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        action: 'update',
-                                        id: val,
-                                        ...data
-                                    })
-                                });
-                                
-                                return await response.json();
-                            } catch (error) {
-                                console.error('Erro ao atualizar dados:', error);
-                                return { data: null, error: error.message };
-                            }
-                        }
-                    }),
-                    
-                    delete: () => ({
-                        eq: async (col, val) => {
-                            try {
-                                const response = await fetch(apiUrl, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        action: 'delete',
-                                        id: val
-                                    })
-                                });
-                                
-                                return await response.json();
-                            } catch (error) {
-                                console.error('Erro ao deletar dados:', error);
-                                return { data: null, error: error.message };
-                            }
-                        }
-                    }),
-                    
-                    upsert: async (data) => {
-                        try {
-                            const response = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    action: 'upsert',
-                                    ...data
-                                })
-                            });
-                            
-                            return await response.json();
-                        } catch (error) {
-                            console.error('Erro ao upsert dados:', error);
-                            return { data: null, error: error.message };
-                        }
-                    }
-                };
-            },
-            
-            rpc: async (funcName, params) => {
-                // RPC functions - implementar conforme necessário
-                console.log('RPC chamado:', funcName, params);
-                return { data: null, error: null };
-            },
-            
+                    };
+                    return query;
+                },
+                insert: async (data) => ({ data: null, error: null }),
+                update: (data) => ({
+                    eq: async (col, val) => ({ data: null, error: null })
+                }),
+                delete: () => ({
+                    eq: async (col, val) => ({ data: null, error: null })
+                }),
+                upsert: async (data) => ({ data: null, error: null })
+            }),
+            rpc: async (funcName, params) => ({ data: null, error: null }),
             storage: {
                 from: (bucket) => ({
                     upload: async (path, file) => ({ data: null, error: null }),
@@ -2995,7 +3677,6 @@
                     getPublicUrl: (path) => ({ data: { publicUrl: '' } })
                 })
             },
-            
             channel: (name) => ({
                 on: (event, opts, callback) => ({
                     subscribe: (callback) => ({ unsubscribe: () => {} })
@@ -3005,8 +3686,13 @@
             })
         };
         
+        // Função que retorna o mock ao invés do Supabase real
+        async function getSupabaseClient() {
+            return supabaseMock;
+        }
+        
         // Tornar disponível globalmente
-        window.db = db;
+        window.supabase = supabaseMock;
         
         // ==================== CONTROLE DE TELA DE CARREGAMENTO DE CONEXÃO ====================
         function showServerConnectionLoading() {
@@ -3250,8 +3936,11 @@ function safeRedirect(url) {
         
         window.pageInitialized = true;
         
+<<<<<<< HEAD
         // FAILSAFE REMOVIDO - sem tela de loading
         
+=======
+>>>>>>> parent of 0eb3d2f (.)
         // Verificar se há dados de sessão válidos (MySQL)
         const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
         if (!userData) {
@@ -3282,37 +3971,15 @@ function safeRedirect(url) {
         }
         
         // Check authentication first
-        console.log('🔐 Verificando autenticação...');
         const isAuthenticated = await checkAuthentication();
         if (!isAuthenticated) {
-            console.error('❌ Autenticação falhou');
             return; // Stop execution if not authenticated
         }
-        console.log('✅ Autenticação OK');
         
-        console.log('📊 Inicializando gráficos...');
         
-        // Aguardar Chart.js carregar
-        if (typeof Chart === 'undefined') {
-            console.log('⏳ Aguardando Chart.js carregar...');
-            setTimeout(() => {
-                if (typeof Chart !== 'undefined') {
-                    initializeCharts();
-                } else {
-                    console.error('❌ Chart.js não carregou após timeout');
-                }
-            }, 1000);
-        } else {
-            initializeCharts(); // Initialize charts before loading data
-        }
-        
-        console.log('📋 Inicializando página...');
+        initializeCharts(); // Initialize charts before loading data
         await initializePage();
-        
-        console.log('⚙️ Configurando event listeners...');
         setupEventListeners();
-        
-        console.log('✅ Sistema carregado com sucesso!');
         
         // Carregar foto do header
         await loadHeaderPhoto();
@@ -3382,9 +4049,69 @@ function safeRedirect(url) {
  * Configura autenticação e verifica status do usuário
  */
 // =====================================================
-// DATABASE CLIENT (removido mock do Database)
+// MOCK DO SUPABASE PARA COMPATIBILIDADE
 // =====================================================
-// Agora usando conexão direta com MySQL através do objeto 'db'
+// Este mock faz TODAS as funções Supabase funcionarem sem erros
+// Retornam dados vazios, permitindo que o código execute normalmente
+
+const supabaseMock = {
+    auth: {
+        getUser: async () => {
+            const userData = localStorage.getItem('user_data');
+            if (userData) {
+                const user = JSON.parse(userData);
+                return { data: { user: user }, error: null };
+            }
+            return { data: { user: null }, error: null };
+        },
+        signOut: async () => {
+            localStorage.clear();
+            return { error: null };
+        }
+    },
+    from: (table) => ({
+        select: (cols) => {
+            const query = {
+                eq: (col, val) => query,
+                gte: (col, val) => query,
+                lte: (col, val) => query,
+                gt: (col, val) => query,
+                lt: (col, val) => query,
+                not: (col, op, val) => query,
+                order: (col, opts) => query,
+                limit: (n) => query,
+                single: async () => ({ data: null, error: null }),
+                maybeSingle: async () => ({ data: null, error: null }),
+                then: async (callback) => callback({ data: [], error: null })
+            };
+            return query;
+        },
+        insert: async (data) => ({ data: null, error: null }),
+        update: async (data) => ({ data: null, error: null }),
+        delete: async () => ({ data: null, error: null }),
+        upsert: async (data) => ({ data: null, error: null })
+    }),
+    rpc: async (funcName, params) => ({ data: null, error: null }),
+    storage: {
+        from: (bucket) => ({
+            upload: async (path, file) => ({ data: null, error: null }),
+            download: async (path) => ({ data: null, error: null }),
+            remove: async (paths) => ({ data: null, error: null })
+        })
+    },
+    channel: (name) => ({
+        on: (event, opts, callback) => ({
+            subscribe: (callback) => {}
+        }),
+        subscribe: (callback) => {},
+        unsubscribe: () => {}
+    })
+};
+
+// Função que retorna o mock
+async function getSupabaseClient() {
+    return supabaseMock;
+}
 
 // =====================================================
 // FUNÇÕES MYSQL
@@ -3429,7 +4156,7 @@ async function initializePage() {
             email: user.email,
             name: user.name,
             role: user.role,
-            farm_id: 1 // Lagoa Do Mato
+            farm_id: user.farm_id
         };
         
 
@@ -3513,8 +4240,9 @@ async function initializePage() {
         
         try {
             // Carregar atividades recentes (MySQL)
-            // Carregar atividades da fazenda Lagoa Do Mato
-            await loadRecentActivities(); // Lagoa Do Mato
+            if (window.currentUser?.farm_id) {
+                await loadRecentActivities(window.currentUser.farm_id);
+            }
         } catch (error) {
             console.log('⚠️ Erro ao carregar atividades recentes:', error);
         }
@@ -3537,12 +4265,107 @@ async function initializePage() {
 // Function to create user if not exists - MySQL stub
 async function createUserIfNotExists(authUser) {
     // MySQL: não precisa criar usuário automaticamente
-    // O usuário é criado diretamente pelo gerente na interface
-    console.log('MySQL: Usuário será criado manualmente pelo gerente');
     return;
+        
+        if (userCheckError) {
+            throw userCheckError;
+        }
+        
+        if (existingUser) {
+    
+            return;
+        }
+        
+        // Check if farm already exists with the same name
+        const farmName = authUser.user_metadata?.farm_name || 'fazenda nascimento';
+
+        
+        const { data: existingFarm, error: farmCheckError } = await supabase
+            .from('farms')
+            .select('id')
+            .eq('name', farmName)
+            .maybeSingle();
+        
+        if (farmCheckError) {
+            throw farmCheckError;
+        }
+        
+        let farmId;
+        
+        if (existingFarm) {
+    
+            farmId = existingFarm.id;
+        } else {
+            // Try to create new farm, but handle duplicate name error
+    
+            const { data: newFarmId, error: farmError } = await supabase
+                .rpc('create_initial_farm', {
+                    p_name: farmName,
+                    p_owner_name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Proprietário',
+                    p_city: authUser.user_metadata?.city || 'Cidade',
+                    p_state: authUser.user_metadata?.state || 'MG'
+                });
+            
+            if (farmError) {
+                // If it's a duplicate name error, try to find the existing farm
+                if (farmError.code === '23505' || farmError.message?.includes('duplicate') || farmError.message?.includes('already exists')) {
+            
+                    
+                    // Wait a bit and try again
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    const { data: retryFarm, error: retryError } = await supabase
+                        .from('farms')
+                        .select('id')
+                        .eq('name', farmName)
+                        .maybeSingle();
+                    
+                    if (retryError) {
+                        throw retryError;
+                    }
+                    
+                    if (retryFarm) {
+                        farmId = retryFarm.id;
+                
+                    } else {
+                        throw new Error('Failed to create or find farm');
+                    }
+                } else {
+                    throw farmError;
+                }
+            } else {
+                farmId = newFarmId;
+        
+            }
+        }
+        
+        if (!farmId) {
+            throw new Error('No farm ID available for user creation');
+        }
+        
+        // Create user with the farm_id
+
+        const { data: userResult, error: userError } = await supabase
+            .rpc('create_initial_user', {
+                p_user_id: authUser.id,
+                p_farm_id: farmId,
+                p_name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário',
+                p_email: authUser.email,
+                p_role: authUser.user_metadata?.role || 'funcionario',
+                p_whatsapp: authUser.user_metadata?.whatsapp || authUser.user_metadata?.phone || ''
+            });
+        
+        if (userError) {
+            throw userError;
+        } else {
+    
+        }
+    } catch (error) {
+        throw error; // Re-throw the error so it can be handled by the caller
+    }
 }
 
-// Function to get farm name from session or Database
+// Function to get farm name from session or Supabase
 async function getFarmName() {
     try {
 
@@ -3561,16 +4384,16 @@ async function getFarmName() {
         }
         
         // Get current user and their farm
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             return 'Minha Fazenda';
         }
 
-        // Usuário da fazenda Lagoa Do Mato from users table - SEMPRE USAR CONTA PRIMÁRIA
-        const { data: userDbData, error: userError } = await db
+        // Get user's farm_id from users table - SEMPRE USAR CONTA PRIMÁRIA
+        const { data: userDbData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
             
@@ -3578,7 +4401,7 @@ async function getFarmName() {
             throw userError;
         }
         
-        if (!userDbData) {
+        if (!userDbData?.farm_id) {
             // Fallback to auth metadata
             if (user.user_metadata?.farm_name) {
                 return user.user_metadata.farm_name;
@@ -3587,10 +4410,10 @@ async function getFarmName() {
         }
 
         // Get farm name from farms table
-        const { data: farmData, error: farmError } = await db
+        const { data: farmData, error: farmError } = await supabase
             .from('farms')
             .select('name')
-            .eq('id', 1)
+            .eq('id', userDbData.farm_id)
             .single();
         
         if (farmError || !farmData?.name) {
@@ -3608,8 +4431,8 @@ async function getFarmName() {
 // Função utilitária para sempre buscar a conta primária
 async function getPrimaryUserAccount(email) {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: usersData, error } = await db
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: usersData, error } = await supabase
             .from('users')
             .select('*')
             .eq('email', email)
@@ -3811,7 +4634,7 @@ function closeSuccessModal() {
     }
 }
 
-// Function to get manager name from session or Database
+// Function to get manager name from session or Supabase
 async function getManagerName() {
     try {
 
@@ -3829,8 +4652,8 @@ async function getManagerName() {
             }
         }
         
-        // Fallback to Database Auth
-        const { data: { user } } = await db.auth.getUser();
+        // Fallback to Supabase Auth
+        const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
     
@@ -3838,7 +4661,7 @@ async function getManagerName() {
         }
 
         // First try to get user from database
-        const { data, error } = await db
+        const { data, error } = await supabase
             .from('users')
             .select('name')
             .eq('id', user.id)
@@ -3989,8 +4812,8 @@ async function loadUserProfile() {
             }
         }
         
-        // Fallback to Database Auth
-        const { data: { user } } = await db.auth.getUser();
+        // Fallback to Supabase Auth
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
             document.getElementById('profileEmail2').textContent = 'Não logado';
@@ -3998,7 +4821,7 @@ async function loadUserProfile() {
             return;
         }
 
-        const { data: userData, error } = await db
+        const { data: userData, error } = await supabase
             .from('users')
             .select('name, email, whatsapp')
             .eq('id', user.id)
@@ -4051,86 +4874,173 @@ function updateDateTime() {
     });
     document.getElementById('lastUpdate').textContent = timeString;
 }
-// Load dashboard data from Database
+// Load dashboard data from Supabase
 /**
  * Carrega dados do dashboard principal
  * Inclui métricas de volume, qualidade, pagamentos e atividades recentes
  */
 async function loadDashboardData() {
-    console.log('📊 Carregando dados do dashboard...');
-    
-    try {
-        // Buscar todos os dados do dashboard de uma vez
-        const response = await fetch('api/manager.php?action=get_dashboard_stats');
-        
-        // Verificar se a resposta é válida
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const responseText = await response.text();
-        console.log('📡 Resposta da API:', responseText.substring(0, 200) + '...');
-        
-        let jsonData;
-        try {
-            jsonData = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('❌ Erro ao fazer parse do JSON:', parseError);
-            console.error('📄 Conteúdo recebido:', responseText);
-            throw new Error('API retornou dados inválidos');
-        }
-        
-        const { success, data } = jsonData;
-        
-        if (!success) {
-            console.error('❌ Erro ao buscar estatísticas do dashboard');
+    // Aguardar LacTech estar disponível
+    if (!window.LacTech || !window.LacTech.supabase) {
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (!window.supabase) {
+            console.error('❌ Supabase não disponível');
             return;
         }
-        
-        console.log('✅ Dados do dashboard carregados:', data);
-        
-        // Atualizar volume de hoje
-        const volumeToday = data.volume_today || 0;
-        document.getElementById('todayVolume').textContent = `${volumeToday} L`;
-        localStorage.setItem('todayVolume', volumeToday.toString());
-        localStorage.setItem('todayVolumeDate', new Date().toISOString().split('T')[0]);
-        
-        // Atualizar volume do mês
-        if (document.getElementById('monthVolume')) {
-            const volumeMonth = data.volume_month || 0;
-            document.getElementById('monthVolume').textContent = `${volumeMonth} L`;
+    }
+    
+    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+    
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return;
         }
+
+        // Get user's farm_id first
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .maybeSingle();
         
-        // Atualizar qualidade média
-        const avgFat = data.avg_fat || 0;
-        const avgProtein = data.avg_protein || 0;
-        if (avgFat > 0 || avgProtein > 0) {
-            // Calcular score de qualidade baseado em gordura e proteína
-            const fatScore = Math.min(100, Math.max(0, (avgFat / 4.0) * 100));
-            const proteinScore = Math.min(100, Math.max(0, (avgProtein / 3.5) * 100));
-            const avgQuality = (fatScore + proteinScore) / 2;
-            document.getElementById('qualityAverage').textContent = `${Math.round(avgQuality)}%`;
-        } else {
+        if (userError || !userData) {
+            return;
+        }
+
+        // Load volume data - handle if table doesn't exist
+        try {
+            const { data: volumeData, error: volumeError } = await supabase
+                .from('volume_records')
+                .select('volume_liters')
+                .eq('farm_id', userData.farm_id)
+                .gte('production_date', new Date().toISOString().split('T')[0]);
+
+            let todayVolume = 0;
+            if (!volumeError && volumeData && volumeData.length > 0) {
+                todayVolume = volumeData.reduce((sum, record) => sum + (record.volume_liters || 0), 0);
+            }
+
+            // Adicionar dados locais de hoje
+            if (window.offlineSyncManager) {
+                const localVolumeData = window.offlineSyncManager.getLocalData('volume');
+                const today = new Date().toISOString().split('T')[0];
+                const todayLocalData = localVolumeData.filter(record => 
+                    record.production_date === today && record.farm_id === userData.farm_id
+                );
+                const todayLocalVolume = todayLocalData.reduce((sum, record) => sum + (record.volume_liters || 0), 0);
+                todayVolume += todayLocalVolume;
+                console.log(`📊 Volume hoje (online + offline): ${todayVolume}L`);
+            }
+
+                document.getElementById('todayVolume').textContent = `${todayVolume} L`;
+                
+                // Salvar no localStorage para persistir entre sessões
+                localStorage.setItem('todayVolume', todayVolume.toString());
+                localStorage.setItem('todayVolumeDate', new Date().toISOString().split('T')[0]);
+        } catch (error) {
+            console.error('❌ Erro ao carregar volume de hoje:', error);
+            document.getElementById('todayVolume').textContent = '0 L';
+            localStorage.setItem('todayVolume', '0');
+            localStorage.setItem('todayVolumeDate', new Date().toISOString().split('T')[0]);
+        }
+
+        // Load quality data - handle if table doesn't exist
+        try {
+            // Buscar dados dos últimos 30 dias ao invés de apenas hoje
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            
+            
+            const { data: qualityData, error: qualityError } = await supabase
+                .from('quality_tests')
+                .select('fat_percentage, protein_percentage')
+                .eq('farm_id', userData.farm_id)
+                .gte('test_date', thirtyDaysAgo.toISOString().split('T')[0]);
+                
+            
+
+            if (!qualityError && qualityData && qualityData.length > 0) {
+                // Calculate quality score based on fat and protein percentages
+                let totalScore = 0;
+                let validTests = 0;
+                
+                qualityData.forEach(record => {
+                    if (record.fat_percentage && record.protein_percentage) {
+                        // Quality score: fat (3.0-4.5% ideal) + protein (3.0-3.8% ideal)
+                        const fatScore = Math.min(100, Math.max(0, (record.fat_percentage / 4.0) * 100));
+                        const proteinScore = Math.min(100, Math.max(0, (record.protein_percentage / 3.5) * 100));
+                        const testScore = (fatScore + proteinScore) / 2;
+                        totalScore += testScore;
+                        validTests++;
+                    }
+                });
+                
+                if (validTests > 0) {
+                    const avgQuality = totalScore / validTests;
+                    document.getElementById('qualityAverage').textContent = `${Math.round(avgQuality)}%`;
+                } else {
+                    document.getElementById('qualityAverage').textContent = '--%';
+                }
+            } else {
+                document.getElementById('qualityAverage').textContent = '--%';
+            }
+        } catch (error) {
+    
             document.getElementById('qualityAverage').textContent = '--%';
         }
+
+        // Load financial data - handle if table doesn't exist
+        try {
+            const { data: financialData, error: financialError } = await supabase
+                .from('financial_records')
+                .select('amount, type')
+                .eq('farm_id', userData.farm_id)
+                .eq('type', 'expense')
+                .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+
+            if (!financialError && financialData && financialData.length > 0) {
+                const pendingAmount = financialData.reduce((sum, record) => sum + (record.amount || 0), 0);
+                document.getElementById('pendingPayments').textContent = `R$ ${pendingAmount.toLocaleString('pt-BR')}`;
+            } else {
+                document.getElementById('pendingPayments').textContent = 'R$ 0';
+            }
+        } catch (error) {
+
+            document.getElementById('pendingPayments').textContent = 'R$ 0';
+        }
+
+        // Load users data
+        try {
+            const { data: usersData, error: usersError } = await supabase
+                .from('users')
+                .select('id')
+                .eq('farm_id', userData.farm_id)
+                .eq('is_active', true);
+
+            if (!usersError && usersData) {
+                document.getElementById('activeUsers').textContent = usersData.length;
+            } else {
+                document.getElementById('activeUsers').textContent = '0';
+            }
+        } catch (error) {
+
+            document.getElementById('activeUsers').textContent = '0';
+        }
+
+        // Load recent activities
+        await loadRecentActivities(userData.farm_id);
         
-        // Atualizar pagamentos pendentes
-        const pendingPayments = data.pending_payments || 0;
-        document.getElementById('pendingPayments').textContent = `R$ ${pendingPayments.toLocaleString('pt-BR')}`;
+        // Restaurar volume salvo se for do mesmo dia
+        restoreSavedVolume();
         
-        // Atualizar usuários ativos
-        const activeUsers = data.active_users || 0;
-        document.getElementById('activeUsers').textContent = activeUsers;
-        
-        console.log('✅ Dashboard atualizado com sucesso!');
-        
+
+
     } catch (error) {
-        console.error('❌ Erro ao carregar dashboard:', error);
-        // Valores padrão em caso de erro
-        document.getElementById('todayVolume').textContent = '0 L';
-        document.getElementById('qualityAverage').textContent = '--%';
-        document.getElementById('pendingPayments').textContent = 'R$ 0';
-        document.getElementById('activeUsers').textContent = '0';
+        console.error('❌ ERRO GERAL em loadDashboardData:', error);
+        console.error('Stack trace:', error.stack);
     }
 }
 
@@ -4158,38 +5068,94 @@ function restoreSavedVolume() {
 
 // Load volume data from database and local storage
 async function loadVolumeData() {
-    // Aguardar Database estar disponível
-    if (!window.db) {
+    // Aguardar Supabase estar disponível
+    if (!window.supabase) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        if (!window.db) {
-            console.error('❌ Database não disponível para volume');
+        if (!window.supabase) {
+            console.error('❌ Supabase não disponível para volume');
             return;
         }
     }
     
+    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+    
     try {
-        // Usar API de volume
-        const response = await fetch('api/volume.php?action=select');
-        const result = await response.json();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const { data: volumeUserData, error: userError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .single();
         
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar dados de volume');
+        if (userError) {
+            throw userError;
         }
-        
-        const volumeData = result.data || [];
-        
-        // Calcular estatísticas simples
+
+        // Carregar dados locais se disponível
+        let localVolumeData = [];
+        if (window.offlineSyncManager) {
+            localVolumeData = window.offlineSyncManager.getLocalData('volume');
+            console.log(`📊 ${localVolumeData.length} registros locais de volume carregados`);
+        }
+
+        // Forçar atualização se cache foi limpo
+        if (CacheManager.forceRefresh) {
+            console.log('🔄 Cache foi limpo, forçando atualização...');
+            CacheManager.forceRefresh = false;
+        }
+
+        // Get today's production data
         const today = new Date().toISOString().split('T')[0];
-        const todayVolume = volumeData
-            .filter(record => record.collection_date === today)
-            .reduce((sum, record) => sum + (parseFloat(record.volume) || 0), 0);
-        
+        const { data: todayData, error: todayError } = await supabase
+            .from('volume_records')
+            .select('volume_liters')
+            .eq('farm_id', volumeUserData.farm_id)
+            .gte('production_date', today)
+            .lte('production_date', today);
+
+        if (todayError) {
+        }
+
+        // Get week average
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        const weekData = volumeData
-            .filter(record => new Date(record.collection_date) >= weekAgo)
-            .reduce((sum, record) => sum + (parseFloat(record.volume) || 0), 0);
-        const weekAvg = weekData / 7;
+        const { data: weekData, error: weekError } = await supabase
+            .from('volume_records')
+            .select('volume_liters')
+            .eq('farm_id', volumeUserData.farm_id)
+            .gte('production_date', weekAgo.toISOString().split('T')[0]);
+
+        if (weekError) {
+        }
+
+        // Calcular volume de hoje incluindo dados locais
+        let todayVolume = todayData?.reduce((sum, record) => sum + (record.volume_liters || 0), 0) || 0;
+        
+        // Adicionar dados locais de hoje
+        const todayLocalData = localVolumeData.filter(record => 
+            record.production_date === today && record.farm_id === volumeUserData.farm_id
+        );
+        const todayLocalVolume = todayLocalData.reduce((sum, record) => sum + (record.volume_liters || 0), 0);
+        todayVolume += todayLocalVolume;
+
+        // Calcular média semanal incluindo dados locais
+        let weekAvg = weekData?.length > 0 ? 
+            weekData.reduce((sum, record) => sum + (record.volume_liters || 0), 0) / weekData.length : 0;
+        
+        // Adicionar dados locais da semana
+        const weekLocalData = localVolumeData.filter(record => {
+            const recordDate = new Date(record.production_date);
+            return recordDate >= weekAgo && record.farm_id === volumeUserData.farm_id;
+        });
+        const weekLocalVolume = weekLocalData.reduce((sum, record) => sum + (record.volume_liters || 0), 0);
+        const totalWeekData = (weekData?.length || 0) + weekLocalData.length;
+        if (totalWeekData > 0) {
+            const totalWeekVolume = (weekData?.reduce((sum, record) => sum + (record.volume_liters || 0), 0) || 0) + weekLocalVolume;
+            weekAvg = totalWeekVolume / totalWeekData;
+        }
+
         const growth = weekAvg > 0 ? ((todayVolume - weekAvg) / weekAvg * 100) : 0;
         
         // Atualizar elementos da interface
@@ -4218,15 +5184,28 @@ async function loadVolumeData() {
             console.error('❌ Elemento volumeGrowth não encontrado');
         }
         
-        // Última coleta
-        const lastCollectionElement = document.getElementById('lastCollection');
-        if (lastCollectionElement) {
-            if (volumeData.length > 0) {
-                const lastRecord = volumeData[0]; // Assumindo que está ordenado
-                lastCollectionElement.textContent = `${lastRecord.collection_date || '--/--/----'} - --:--`;
-            } else {
-                lastCollectionElement.textContent = '--/--/---- - --:--';
-            }
+        // Buscar a última coleta real do banco de dados
+        const { data: lastCollectionData, error: lastCollectionError } = await supabase
+            .from('volume_records')
+            .select('created_at')
+            .eq('farm_id', volumeUserData.farm_id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (!lastCollectionError && lastCollectionData && lastCollectionData.length > 0) {
+            const lastCollectionTime = new Date(lastCollectionData[0].created_at);
+            const dateStr = lastCollectionTime.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+            const timeStr = lastCollectionTime.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('lastCollection').textContent = `${dateStr} - ${timeStr}`;
+        } else {
+            document.getElementById('lastCollection').textContent = '--/--/---- - --:--';
         }
         
     } catch (error) {
@@ -4242,30 +5221,155 @@ async function loadVolumeData() {
 // Load quality data from database
 async function loadQualityData() {
     try {
-        // Aguardar Database estar disponível
-        if (!window.db) {
+        // Aguardar Supabase estar disponível
+        if (!window.supabase) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            if (!window.db) {
-                console.error('❌ Database não disponível para qualidade');
-                throw new Error('Database not available');
+            if (!window.supabase) {
+                console.error('❌ Supabase não disponível para qualidade');
+                throw new Error('Supabase not available');
             }
         }
         
-        // Usar API de qualidade
-        const response = await fetch('api/quality.php?action=select');
-        const result = await response.json();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar dados de qualidade');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            throw new Error('User not authenticated');
         }
+
+
+
+        const { data: qualityUserData, error: userError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .single();
         
-        const qualityData = result.data || [];
+        if (userError) {
+            console.error('❌ Erro ao buscar dados do usuário:', userError);
+            throw userError;
+        }
+
+        if (!qualityUserData || !qualityUserData.farm_id) {
+            console.error('❌ Farm ID não encontrado para o usuário');
+            throw new Error('Farm ID not found');
+        }
+
+
+
+        // Get latest quality data
+
         
-        // Atualizar gráficos com os dados
-        updateQualityCharts(qualityData);
+        const { data: qualityData, error } = await supabase
+            .from('quality_tests')
+            .select('fat_percentage, protein_percentage, scc, cbt, test_date')
+            .eq('farm_id', qualityUserData.farm_id)
+            .not('fat_percentage', 'is', null)
+            .not('protein_percentage', 'is', null)
+            .order('test_date', { ascending: false })
+            .limit(30);
+
+        if (error) {
+            console.error('❌ Erro ao buscar dados de qualidade:', error);
+            throw error;
+        }
+
+
+        if (qualityData && qualityData.length > 0) {
+
+        }
+
+        if (qualityData && qualityData.length > 0) {
+            // Filter out records with invalid data
+            const validQualityData = qualityData.filter(record => 
+                record.fat_percentage && 
+                record.protein_percentage && 
+                !isNaN(record.fat_percentage) && 
+                !isNaN(record.protein_percentage)
+            );
+            
+
+            
+            if (validQualityData.length === 0) {
+
+                updateQualityDisplay('--', '--', '--', '--', '--%');
+                updateQualityCharts([]);
+                return;
+            }
+            
+            const avgFat = validQualityData.reduce((sum, record) => sum + (record.fat_percentage || 0), 0) / validQualityData.length;
+            const avgProtein = validQualityData.reduce((sum, record) => sum + (record.protein_percentage || 0), 0) / validQualityData.length;
+                            const avgSCC = validQualityData.reduce((sum, record) => sum + (record.scc || 0), 0) / validQualityData.length;
+                            const avgTBC = validQualityData.reduce((sum, record) => sum + (record.cbt || 0), 0) / validQualityData.length;
+            
+
+            
+            // Calculate quality score based on industry standards
+            let totalScore = 0;
+            let validTests = 0;
+            
+            validQualityData.forEach(record => {
+                if (record.fat_percentage && record.protein_percentage) {
+                    // Quality scoring based on industry standards
+                    // Fat: 3.0-4.5% is excellent, 2.5-3.0% is good, <2.5% is poor
+                    // Protein: 3.0-3.8% is excellent, 2.7-3.0% is good, <2.7% is poor
+                    
+                    let fatScore = 0;
+                    if (record.fat_percentage >= 3.0 && record.fat_percentage <= 4.5) {
+                        fatScore = 100; // Excellent range
+                    } else if (record.fat_percentage >= 2.5 && record.fat_percentage < 3.0) {
+                        fatScore = 70; // Good range
+                    } else if (record.fat_percentage > 4.5) {
+                        fatScore = 80; // Above excellent, still good
+                    } else {
+                        fatScore = Math.max(0, (record.fat_percentage / 2.5) * 70); // Poor range
+                    }
+                    
+                    let proteinScore = 0;
+                    if (record.protein_percentage >= 3.0 && record.protein_percentage <= 3.8) {
+                        proteinScore = 100; // Excellent range
+                    } else if (record.protein_percentage >= 2.7 && record.protein_percentage < 3.0) {
+                        proteinScore = 70; // Good range
+                    } else if (record.protein_percentage > 3.8) {
+                        proteinScore = 80; // Above excellent, still good
+                    } else {
+                        proteinScore = Math.max(0, (record.protein_percentage / 2.7) * 70); // Poor range
+                    }
+                    
+                    const testScore = (fatScore + proteinScore) / 2;
+                    totalScore += testScore;
+                    validTests++;
+                    
+
+                }
+            });
+            
+            const avgQuality = validTests > 0 ? totalScore / validTests : 0;
+
+            
+            // Atualizar elementos do DOM com verificação de existência
+            const fatContent = `${avgFat.toFixed(1)}%`;
+            const proteinContent = `${avgProtein.toFixed(1)}%`;
+            const sccContent = avgSCC > 0 ? `${Math.round(avgSCC / 1000)}k` : '--';
+            const tbcContent = avgTBC > 0 ? `${Math.round(avgTBC / 1000)}k` : '--';
+            const qualityContent = `${Math.round(avgQuality)}%`;
+            
+            updateQualityDisplay(fatContent, proteinContent, sccContent, tbcContent, qualityContent);
+            
+
+            
+            // Update quality charts
+            updateQualityCharts(validQualityData);
+        } else {
+    
+            updateQualityDisplay('--', '--', '--', '--', '--%');
+            updateQualityCharts([]);
+        }
         
     } catch (error) {
         console.error('❌ Erro ao carregar dados de qualidade:', error);
+        updateQualityDisplay('--', '--', '--', '--', '--%');
+        updateQualityCharts([]);
     }
 }
 
@@ -4290,25 +5394,42 @@ function updateQualityDisplay(fat, protein, scc, tbc, quality) {
 }
 // Load sales data from database
 async function loadPaymentsData() {
-    // Aguardar Database estar disponível
-    if (!window.db) {
+    // Aguardar Supabase estar disponível
+    if (!window.supabase) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        if (!window.db) {
-            console.error('❌ Database não disponível para pagamentos');
+        if (!window.supabase) {
+            console.error('❌ Supabase não disponível para pagamentos');
             return;
         }
     }
     
+    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+    
     try {
-        // Usar API de financial
-        const response = await fetch('api/financial.php?action=select');
-        const result = await response.json();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .maybeSingle();
         
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar dados financeiros');
+        if (userError) {
+            throw userError;
         }
-        
-        const salesData = result.data?.filter(record => record.type === 'income') || [];
+
+        // Get sales data from financial records table
+        const { data: salesData, error: salesError } = await supabase
+            .from('financial_records')
+            .select('amount, type, record_date, created_at, description')
+            .eq('farm_id', userData.farm_id)
+            .eq('type', 'income')
+            .order('created_at', { ascending: false });
+
+        if (salesError) {
+            throw salesError;
+        }
 
         let completedAmount = 0;
         let pendingAmount = 0;
@@ -4347,39 +5468,42 @@ async function loadPaymentsData() {
 // Load users data from database
 async function loadUsersData() {
     try {
-        // Aguardar Database estar disponível
-        if (!window.db) {
+        // Aguardar Supabase estar disponível
+        if (!window.supabase) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            if (!window.db) {
-                console.error('❌ Database não disponível para usuários');
-                throw new Error('Database not available');
+            if (!window.supabase) {
+                console.error('❌ Supabase não disponível para usuários');
+                throw new Error('Supabase not available');
             }
         }
         
-        // Usar API de usuários
-        const response = await fetch('api/users.php?action=select');
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        let { data: usersUserData, error: userError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .maybeSingle();
+        
+        if (userError) {
+            console.error('❌ Erro ao buscar dados do usuário:', userError);
+            throw userError;
         }
-        
-        const responseText = await response.text();
-        let result;
-        
-        try {
-            result = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('❌ API retornou HTML em vez de JSON:', responseText.substring(0, 200));
-            throw new Error('API retornou HTML em vez de JSON');
+        if (!usersUserData) {
+            console.error('❌ Dados do usuário não encontrados para ID:', user.id);
+            throw new Error('User data not found');
         }
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar dados de usuários');
-        }
-        
-        const usersData = result.data || [];
-        
-        if (usersData && usersData.length > 0) {
+
+        const { data: usersData, error } = await supabase
+            .from('users')
+            .select('id, name, email, role, whatsapp, is_active, created_at, profile_photo_url')
+            .eq('farm_id', usersUserData.farm_id)
+            .order('created_at', { ascending: false });
+
+        if (usersData) {
             const employeesCount = usersData.filter(u => u.role === 'funcionario').length;
             const veterinariansCount = usersData.filter(u => u.role === 'veterinario').length;
             const managersCount = usersData.filter(u => u.role === 'gerente').length;
@@ -4424,22 +5548,22 @@ async function loadUsersData() {
 // Load weekly volume chart data
 async function loadWeeklyVolumeChart() {
     try {
-        // Aguardar Database estar disponível
-        if (!window.db) {
+        // Aguardar Supabase estar disponível
+        if (!window.supabase) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            if (!window.db) {
-                console.error('❌ Database não disponível para gráfico semanal');
+            if (!window.supabase) {
+                console.error('❌ Supabase não disponível para gráfico semanal');
                 return;
             }
         }
         
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .maybeSingle();
         
@@ -4452,10 +5576,10 @@ async function loadWeeklyVolumeChart() {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 6);
 
-        const { data: volumeData, error } = await db
+        const { data: volumeData, error } = await supabase
             .from('volume_records')
             .select('production_date, volume_liters')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .gte('production_date', startDate.toISOString().split('T')[0])
             .lte('production_date', endDate.toISOString().split('T')[0])
             .order('production_date', { ascending: true });
@@ -4505,13 +5629,13 @@ async function loadWeeklyVolumeChart() {
 // Load daily volume chart data
 async function loadDailyVolumeChart() {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
         
@@ -4521,10 +5645,10 @@ async function loadDailyVolumeChart() {
 
         // Get today's data by shift
         const today = new Date().toISOString().split('T')[0];
-        const { data: volumeData, error } = await db
+        const { data: volumeData, error } = await supabase
             .from('volume_records')
             .select('milking_type, volume_liters')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .eq('production_date', today)
             .order('milking_type', { ascending: true });
 
@@ -4574,12 +5698,12 @@ async function loadMonthlyVolumeChart() {
             return;
         }
         
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
         
@@ -4593,10 +5717,10 @@ async function loadMonthlyVolumeChart() {
         startDate.setMonth(startDate.getMonth() - 11);
         startDate.setDate(1);
 
-        const { data: volumeData, error } = await db
+        const { data: volumeData, error } = await supabase
             .from('volume_records')
             .select('production_date, volume_liters')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .gte('production_date', startDate.toISOString().split('T')[0])
             .lte('production_date', endDate.toISOString().split('T')[0])
             .order('production_date', { ascending: true });
@@ -4658,12 +5782,12 @@ async function loadWeeklySummaryChart() {
             return;
         }
         
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
         
@@ -4676,10 +5800,10 @@ async function loadWeeklySummaryChart() {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 56); // 8 weeks
 
-        const { data: volumeData, error } = await db
+        const { data: volumeData, error } = await supabase
             .from('volume_records')
             .select('production_date, volume_liters')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .gte('production_date', startDate.toISOString().split('T')[0])
             .lte('production_date', endDate.toISOString().split('T')[0])
             .order('production_date', { ascending: true });
@@ -4744,6 +5868,7 @@ async function loadDashboardVolumeChart() {
     try {
         console.log('🔄 Carregando gráfico Volume Semanal...');
         
+<<<<<<< HEAD
         // Wait for Chart.js to be available
         if (typeof Chart === 'undefined') {
             console.log('⏳ Aguardando Chart.js...');
@@ -4762,18 +5887,23 @@ async function loadDashboardVolumeChart() {
         // Usando MySQL direto através do objeto 'db'
         if (!db) {
             console.error('❌ Database não disponível para Volume Semanal');
+=======
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        if (!supabase) {
+            console.error('❌ Supabase não disponível para Volume Semanal');
+>>>>>>> parent of 0eb3d2f (.)
             return;
         }
 
         // Usar cache para dados do usuário
         const userData = await CacheManager.getUserData();
         
-        if (!userData) {
+        if (!userData?.farm_id) {
             console.error('❌ Farm ID não encontrado para Volume Semanal');
             return;
         }
 
-        console.log('🏡 Fazenda: Lagoa Do Mato');
+        console.log('🏡 Farm ID para Volume Semanal:', userData.farm_id);
 
         // Get last 7 days of data
         const endDate = new Date();
@@ -4782,16 +5912,18 @@ async function loadDashboardVolumeChart() {
 
         console.log('📅 Período Volume Semanal:', startDate.toISOString().split('T')[0], 'até', endDate.toISOString().split('T')[0]);
 
-        // Usar API de volume
-        const response = await fetch('api/volume.php?action=select');
-        const result = await response.json();
-        
-        if (!result.success) {
-            console.error('❌ Erro ao buscar dados de volume:', result.error);
+        const { data: volumeData, error } = await supabase
+            .from('volume_records')
+            .select('production_date, volume_liters')
+            .eq('farm_id', userData.farm_id)
+            .gte('production_date', startDate.toISOString().split('T')[0])
+            .lte('production_date', endDate.toISOString().split('T')[0])
+            .order('production_date', { ascending: true });
+
+        if (error) {
+            console.error('❌ Erro ao buscar dados de volume:', error);
             return;
         }
-        
-        const volumeData = result.data || [];
 
         console.log('📊 Dados de volume encontrados:', volumeData?.length || 0, 'registros');
 
@@ -4879,6 +6011,7 @@ async function loadDashboardWeeklyChart() {
     try {
         console.log('🔄 Carregando gráfico de produção semanal...');
         
+<<<<<<< HEAD
         // Wait for Chart.js to be available
         if (typeof Chart === 'undefined') {
             console.log('⏳ Aguardando Chart.js...');
@@ -4897,21 +6030,38 @@ async function loadDashboardWeeklyChart() {
         // Usando MySQL direto através do objeto 'db'
         if (!db) {
             console.error('❌ Database não disponível');
+=======
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        if (!supabase) {
+            console.error('❌ Supabase não disponível');
+>>>>>>> parent of 0eb3d2f (.)
             return;
         }
 
-        console.log('🏡 Fazenda: Lagoa Do Mato (ID=1)');
-
-        // Usar API de volume
-        const response = await fetch('api/volume.php?action=select');
-        const result = await response.json();
+        // Usar cache para dados do usuário
+        const userData = await CacheManager.getUserData();
         
-        if (!result.success) {
-            console.error('❌ Erro ao buscar dados de produção:', result.error);
+        if (!userData?.farm_id) {
+            console.error('❌ Farm ID não encontrado');
             return;
         }
-        
-        const productionData = result.data || [];
+
+        console.log('🏡 Farm ID:', userData.farm_id);
+
+        // Get last 7 days of data
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 6);
+
+        console.log('📅 Período:', startDate.toISOString().split('T')[0], 'até', endDate.toISOString().split('T')[0]);
+
+        // Usar cache para dados de volume semanal (forçar atualização se necessário)
+        const productionData = await CacheManager.getVolumeData(userData.farm_id, 'week', CacheManager.forceRefresh);
+
+        if (!productionData) {
+            console.error('❌ Erro ao buscar dados de produção');
+            return;
+        }
 
         console.log('📊 Dados de produção encontrados:', productionData?.length || 0, 'registros');
 
@@ -4921,11 +6071,6 @@ async function loadDashboardWeeklyChart() {
             localVolumeData = window.offlineSyncManager.getLocalData('volume');
             console.log(`📊 ${localVolumeData.length} registros locais de volume carregados`);
         }
-
-        // Get last 7 days of data
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 6);
 
         // Group by date and sum volumes
         const dailyProduction = {};
@@ -4953,7 +6098,7 @@ async function loadDashboardWeeklyChart() {
         // Adicionar dados locais (offline)
         if (localVolumeData && localVolumeData.length > 0) {
             localVolumeData.forEach(record => {
-                if (dailyProduction.hasOwnProperty(record.production_date) && record.farm_id === 1) {
+                if (dailyProduction.hasOwnProperty(record.production_date) && record.farm_id === userData.farm_id) {
                     dailyProduction[record.production_date] += record.volume_liters || 0;
                     console.log(`📊 Adicionando volume local: ${record.volume_liters}L para ${record.production_date}`);
                 }
@@ -5024,6 +6169,7 @@ async function loadMonthlyProductionChart() {
     try {
         console.log('🔄 Carregando gráfico de produção mensal...');
         
+<<<<<<< HEAD
         // Wait for Chart.js to be available
         if (typeof Chart === 'undefined') {
             console.log('⏳ Aguardando Chart.js...');
@@ -5042,37 +6188,50 @@ async function loadMonthlyProductionChart() {
         // Usando MySQL direto através do objeto 'db'
         if (!db) {
             console.error('❌ Cliente Database não disponível');
+=======
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        if (!supabase) {
+            console.error('❌ Cliente Supabase não disponível');
+>>>>>>> parent of 0eb3d2f (.)
             return;
         }
 
-        console.log('✅ Usuário autenticado - Fazenda: Lagoa Do Mato');
+        // Usar cache para dados do usuário
+        const userData = await CacheManager.getUserData();
 
-        // Usar API de volume
-        const response = await fetch('api/volume.php?action=select');
-        const result = await response.json();
-        
-        if (!result.success) {
-            console.error('❌ Erro ao buscar dados do gráfico mensal:', result.error);
+        if (!userData?.farm_id) {
+            console.error('❌ Farm ID não encontrado');
             return;
         }
-        
-        const dadosGrafico = result.data || [];
+
+        console.log('✅ Usuário autenticado, farm_id:', userData.farm_id);
+
+        // Get first day of current month
+        const hoje = new Date();
+        const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+        console.log('📅 Buscando dados de:', primeiroDiaMes.toISOString().split('T')[0], 'até hoje');
+
+        // Usar cache para dados de volume mensal
+        const dadosGrafico = await CacheManager.getVolumeData(userData.farm_id, 'month');
+
+        if (!dadosGrafico) {
+            console.error('❌ Erro ao buscar dados do gráfico mensal');
+            return;
+        }
 
         console.log('📊 Dados mensais encontrados:', dadosGrafico?.length || 0, 'registros');
-
-        // Get current date
-        const hoje = new Date();
 
         // Process monthly data
         const dadosPorDia = {};
 
         if (dadosGrafico && dadosGrafico.length > 0) {
             dadosGrafico.forEach(registro => {
-                const data = registro.collection_date || registro.production_date;
+                const data = registro.production_date;
                 if (!dadosPorDia[data]) {
                     dadosPorDia[data] = 0;
                 }
-                dadosPorDia[data] += parseFloat(registro.volume || 0);
+                dadosPorDia[data] += parseFloat(registro.volume_liters || 0);
             });
         }
 
@@ -5243,7 +6402,7 @@ function displayUsersList(users) {
     const usersHtml = users.map(user => {
         
         // Verificar se é conta secundária (mesmo email do gerente atual, mas role diferente)
-        // Obter email do usuário atual do Database se não estiver no sessionStorage
+        // Obter email do usuário atual do Supabase se não estiver no sessionStorage
         let currentUserEmail = sessionStorage.getItem('userEmail');
         if (!currentUserEmail) {
             // Tentar obter do localStorage ou sessionStorage como userData
@@ -5357,9 +6516,9 @@ function displayUsersList(users) {
 // Function to edit user
 async function editUser(userId) {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         // Buscar dados do funcionário pelo ID selecionado
-        const { data: user, error } = await db
+        const { data: user, error } = await supabase
             .from('users')
             .select('*')
             .eq('id', userId)
@@ -5406,7 +6565,7 @@ async function editUser(userId) {
 // Function to toggle user access
 async function toggleUserAccess(userId, currentStatus) {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
         // Validate inputs
         if (!userId) {
@@ -5417,7 +6576,7 @@ async function toggleUserAccess(userId, currentStatus) {
         const action = newStatus ? 'desbloqueado' : 'bloqueado';
         
         // First, let's check if the user exists and get current data
-        const { data: currentUser, error: fetchError } = await db
+        const { data: currentUser, error: fetchError } = await supabase
             .from('users')
             .select('*')
             .eq('id', userId)
@@ -5428,7 +6587,7 @@ async function toggleUserAccess(userId, currentStatus) {
         }
         
         // Now update the user status
-        const { data, error } = await db
+        const { data, error } = await supabase
             .from('users')
             .update({ is_active: newStatus })
             .eq('id', userId)
@@ -5455,9 +6614,9 @@ async function testUserBlocking() {
     try {
 
         
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         // Get current user data
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.error('No authenticated user');
             return;
@@ -5466,7 +6625,7 @@ async function testUserBlocking() {
         
 
         // Get farm users
-        const { data: usersData, error } = await db
+        const { data: usersData, error } = await supabase
             .from('users')
             .select('*')
             .eq('id', user.id)
@@ -5480,10 +6639,10 @@ async function testUserBlocking() {
 
         
         // Get all users from the same farm
-        const { data: farmUsers, error: farmUsersError } = await db
+        const { data: farmUsers, error: farmUsersError } = await supabase
             .from('users')
             .select('*')
-            .eq('farm_id', 1);
+            .eq('farm_id', usersData.farm_id);
             
         if (farmUsersError) {
             console.error('Error fetching farm users:', farmUsersError);
@@ -5531,10 +6690,10 @@ function deleteUser(userId, userName) {
 // Função para executar a exclusão
 async function executeDeleteUser(userId, userName) {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
         // Primeiro, buscar dados completos do usuário antes de excluir
-        const { data: userData, error: fetchError } = await db
+        const { data: userData, error: fetchError } = await supabase
             .from('users')
             .select('*')
             .eq('id', userId)
@@ -5552,14 +6711,14 @@ async function executeDeleteUser(userId, userName) {
             email: userData.email,
             whatsapp: userData.whatsapp,
             role: userData.role,
-            farm_id: 1,
+            farm_id: userData.farm_id,
             profile_photo_url: userData.profile_photo_url,
             is_active: userData.is_active,
             created_at: userData.created_at
         };
         
         // Agora excluir o usuário
-        const { data, error } = await db
+        const { data, error } = await supabase
             .from('users')
             .delete()
             .eq('id', userId);
@@ -5655,16 +6814,16 @@ async function undoDelete() {
     
     if (userToDelete) {
         try {
-            // Usando MySQL direto através do objeto 'db'
+            // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
             
             // Restaurar usuário usando RPC
-            const { data: result, error } = await db.rpc('restore_deleted_user', {
+            const { data: result, error } = await supabase.rpc('restore_deleted_user', {
                 p_user_id: userToDelete.id,
                 p_name: userToDelete.name,
                 p_email: userToDelete.email,
                 p_whatsapp: userToDelete.whatsapp,
                 p_role: userToDelete.role,
-                p_farm_id: 1, // Lagoa Do Mato
+                p_farm_id: userToDelete.farm_id,
                 p_profile_photo_url: userToDelete.profile_photo_url
             });
             
@@ -5828,10 +6987,10 @@ async function handleEditUser(e) {
             role: role
         };
         
-        // Nota: Senhas são gerenciadas pelo Database Auth, não pela tabela users
-        // Se uma nova senha foi fornecida, ela deve ser atualizada via db.auth.updateUser
+        // Nota: Senhas são gerenciadas pelo Supabase Auth, não pela tabela users
+        // Se uma nova senha foi fornecida, ela deve ser atualizada via supabase.auth.updateUser
         if (password && password.trim() !== '') {
-            // TODO: Implementar atualização de senha via Database Auth se necessário
+            // TODO: Implementar atualização de senha via Supabase Auth se necessário
 
         }
         
@@ -5852,8 +7011,8 @@ async function handleEditUser(e) {
             updateData.profile_photo_url = null;
         }
         
-        // Usando MySQL direto através do objeto 'db'
-        const { error } = await db
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { error } = await supabase
             .from('users')
             .update(updateData)
             .eq('id', userId);
@@ -6495,16 +7654,36 @@ let qualityDistributionChart = null;
 // Load volume records table
 async function loadVolumeRecords() {
     try {
-        // Usar API de volume
-        const response = await fetch('api/volume.php?action=select');
-        const result = await response.json();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar registros de volume');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .single();
+        
+        if (userError) {
+            throw userError;
         }
-        
-        const volumeRecords = result.data || [];
-        displayVolumeRecords(volumeRecords);
+
+        // Get volume records data - buscar dados mais recentes primeiro
+        const { data: volumeRecords, error } = await supabase
+            .from('volume_records')
+            .select(`
+                *,
+                users(name)
+            `)
+            .eq('farm_id', userData.farm_id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) {
+        }
+
+        displayVolumeRecords(volumeRecords || []);
         
     } catch (error) {
         console.error('Error loading volume records:', error);
@@ -6562,16 +7741,33 @@ function displayVolumeRecords(records) {
 // Load quality tests table
 async function loadQualityTests() {
     try {
-        // Usar API de qualidade
-        const response = await fetch('api/quality.php?action=select');
-        const result = await response.json();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar testes de qualidade');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+
+        const { data: qualityUserData, error: userError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .single();
+        
+        if (userError) {
+            throw userError;
         }
-        
-        const qualityTests = result.data || [];
-        displayQualityTests(qualityTests);
+
+        // Get quality tests data
+        const { data: qualityTests, error } = await supabase
+            .from('quality_tests')
+            .select('*')
+            .eq('farm_id', qualityUserData.farm_id)
+            .order('test_date', { ascending: false })
+            .limit(20);
+
+        if (error) {
+        }
+
+        displayQualityTests(qualityTests || []);
         
     } catch (error) {
         console.error('Error loading quality tests:', error);
@@ -6602,8 +7798,8 @@ function displayQualityTests(tests) {
     
     tbody.innerHTML = tests.map(test => {
         const testDate = new Date(test.test_date).toLocaleDateString('pt-BR');
-        const fatPercentage = test.fat_percentage && !isNaN(test.fat_percentage) ? `${parseFloat(test.fat_percentage).toFixed(1)}%` : '--';
-        const proteinPercentage = test.protein_percentage && !isNaN(test.protein_percentage) ? `${parseFloat(test.protein_percentage).toFixed(1)}%` : '--';
+        const fatPercentage = test.fat_percentage ? `${test.fat_percentage.toFixed(1)}%` : '--';
+        const proteinPercentage = test.protein_percentage ? `${test.protein_percentage.toFixed(1)}%` : '--';
                         const sccCount = test.scc ? `${Math.round(test.scc / 1000)}k` : '--';
                         const tbcCount = test.cbt ? `${Math.round(test.cbt / 1000)}k` : '--';
         const laboratory = test.laboratory || '--';
@@ -6657,23 +7853,21 @@ async function deleteVolumeRecord(recordId) {
     }
     
     try {
-        // Usar API para deletar
-        const response = await fetch('api/volume.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'delete',
-                id: recordId
-            })
-        });
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            showNotification('Usuário não autenticado', 'error');
+            return;
+        }
         
-        const result = await response.json();
+        // Delete the record
+        const { error } = await supabase
+            .from('volume_records')
+            .delete()
+            .eq('id', recordId);
         
-        if (!result.success) {
-            console.error('Error deleting volume record:', result.error);
-            showNotification('Erro ao excluir registro: ' + result.error, 'error');
+        if (error) {
+            console.error('Error deleting volume record:', error);
+            showNotification('Erro ao excluir registro: ' + error.message, 'error');
             return;
         }
         
@@ -6689,16 +7883,16 @@ async function deleteVolumeRecord(recordId) {
         await loadMonthlyVolumeChart();
         await loadQualityChart();
         await loadTemperatureChart();
-        // Usuário da fazenda Lagoa Do Mato for recent activities
+        // Get user's farm_id for recent activities
         if (user) {
-            const { data: userData } = await db
+            const { data: userData } = await supabase
                 .from('users')
-                .select('id')
+                .select('farm_id')
                 .eq('id', user.id)
                 .single();
             
-            if (userData) {
-                await loadRecentActivities(); // Lagoa Do Mato
+            if (userData?.farm_id) {
+                await loadRecentActivities(userData.farm_id);
             }
         }
         
@@ -6715,23 +7909,22 @@ async function deleteQualityTest(testId) {
     }
     
     try {
-        // Usar API para deletar
-        const response = await fetch('api/quality.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'delete',
-                id: testId
-            })
-        });
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            showNotification('Usuário não autenticado', 'error');
+            return;
+        }
         
-        const result = await response.json();
+        // Delete the test
+        const { error } = await supabase
+            .from('quality_tests')
+            .delete()
+            .eq('id', testId);
         
-        if (!result.success) {
-            console.error('Error deleting quality test:', result.error);
-            showNotification('Erro ao excluir teste: ' + result.error, 'error');
+        if (error) {
+            console.error('Error deleting quality test:', error);
+            showNotification('Erro ao excluir teste: ' + error.message, 'error');
             return;
         }
         
@@ -6750,22 +7943,22 @@ async function deleteQualityTest(testId) {
 // Load quality chart data
 async function loadQualityChart() {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userProfile } = await db
+        const { data: userProfile } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
 
-        if (!userProfile) return;
+        if (!userProfile?.farm_id) return;
 
-        const { data: qualityData, error } = await db
+        const { data: qualityData, error } = await supabase
             .from('quality_tests')
             .select('*')
-            .eq('farm_id', 1)
+            .eq('farm_id', userProfile.farm_id)
             .order('test_date', { ascending: false })
             .limit(7);
 
@@ -6797,6 +7990,7 @@ async function loadQualityChart() {
 async function loadTemperatureChart() {
     try {
         console.log('🌡️ Iniciando carregamento do gráfico de temperatura...');
+<<<<<<< HEAD
         
         // Wait for Chart.js to be available
         if (typeof Chart === 'undefined') {
@@ -6816,16 +8010,51 @@ async function loadTemperatureChart() {
         // Usar API de volume para dados de temperatura
         const response = await fetch('api/volume.php?action=select');
         const result = await response.json();
+=======
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+>>>>>>> parent of 0eb3d2f (.)
         
-        if (!result.success) {
-            console.error('❌ Erro ao carregar dados de temperatura:', result.error);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            console.log('❌ Usuário não autenticado');
+            return;
+        }
+
+        const { data: userData } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', user.id)
+            .single();
+
+        if (!userData?.farm_id) {
+            console.log('❌ Farm ID não encontrado');
             return;
         }
         
-        const volumeData = result.data || [];
-        const temperatureData = volumeData
-            .filter(record => record.temperature && !isNaN(record.temperature))
-            .slice(0, 7); // Últimos 7 registros
+        console.log('✅ Usuário autenticado, farm_id:', userData.farm_id);
+
+
+        
+        // First, let's check if there are any records with temperature
+        const { data: allRecords, error: checkError } = await supabase
+            .from('volume_records')
+            .select('production_date, temperature')
+            .eq('farm_id', userData.farm_id);
+            
+
+
+        const { data: temperatureData, error } = await supabase
+            .from('volume_records')
+            .select('production_date, temperature')
+            .eq('farm_id', userData.farm_id)
+            .not('temperature', 'is', null)
+            .order('production_date', { ascending: false })
+            .limit(7);
+
+        if (error) {
+            console.error('❌ Erro ao carregar dados de temperatura:', error);
+            return;
+        }
         
         console.log('📊 Dados de temperatura encontrados:', temperatureData?.length || 0, 'registros');
         console.log('📊 Dados brutos:', temperatureData);
@@ -6966,8 +8195,8 @@ async function loadTemperatureChart() {
                 const chartContainer = document.querySelector('#temperatureChart').parentElement;
 
                 if (chartContainer) {
-                    const totalRecords = volumeData?.length || 0;
-                    const recordsWithTemp = volumeData?.filter(r => r.temperature !== null).length || 0;
+                    const totalRecords = allRecords?.length || 0;
+                    const recordsWithTemp = allRecords?.filter(r => r.temperature !== null).length || 0;
                     
                     chartContainer.innerHTML = `
                         <div class="flex flex-col items-center justify-center h-64 text-center">
@@ -7048,31 +8277,39 @@ function updateQualityCharts(qualityData) {
 }
 
 // Load recent activities
-async function loadRecentActivities(farmId = 1) {
+async function loadRecentActivities(farmId) {
     try {
-        console.log('🔄 Carregando atividades recentes para fazenda: Lagoa Do Mato (ID=1)');
+        console.log('🔄 Carregando atividades recentes para fazenda:', farmId);
         
-        // Aguardar Database estar disponível
-        if (!window.db) {
+        // Aguardar Supabase estar disponível
+        if (!window.supabase) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            if (!window.db) {
-                console.error('❌ Database não disponível para atividades recentes');
+            if (!window.supabase) {
+                console.error('❌ Supabase não disponível para atividades recentes');
                 return;
             }
         }
         
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
-        // Usar API de atividades
-        const response = await fetch('api/activities.php?action=select');
-        const result = await response.json();
-        
-        if (!result.success) {
-            console.error('❌ Erro ao carregar atividades recentes:', result.error);
+        const { data: activities, error } = await supabase
+            .from('volume_records')
+            .select(`
+                id,
+                volume_liters,
+                production_date,
+                milking_type,
+                created_at,
+                users!inner(name)
+            `)
+            .eq('farm_id', farmId)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (error) {
+            console.error('❌ Erro ao carregar atividades recentes:', error);
             return;
         }
-        
-        const activities = result.data || [];
         
         console.log('📊 Atividades encontradas:', activities?.length || 0);
 
@@ -7135,7 +8372,7 @@ async function setupRealtimeUpdates() {
     try {
         console.log('🔌 Configurando atualizações em tempo real...');
         
-        // Sistema Lagoa Do Mato
+        // Obter farm_id do usuário atual
         const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
         if (!userData) {
             console.log('❌ Dados de usuário não encontrados para tempo real');
@@ -7143,17 +8380,17 @@ async function setupRealtimeUpdates() {
         }
         
         const parsedUserData = JSON.parse(userData);
-        const farmId = 1; // Lagoa Do Mato
+        const farmId = parsedUserData.farm_id;
         
-        // Obter cliente Database
-        // Usando MySQL direto através do objeto 'db'
-        if (!db) {
-            console.log('❌ Database não disponível para tempo real');
+        // Obter cliente Supabase
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        if (!supabase) {
+            console.log('❌ Supabase não disponível para tempo real');
             return;
         }
         
         // 1. Escutar mudanças na tabela volume_records (produção)
-        const volumeSubscription = db
+        const volumeSubscription = supabase
             .channel('volume_records_changes')
             .on(
                 'postgres_changes',
@@ -7161,7 +8398,7 @@ async function setupRealtimeUpdates() {
                     event: '*', // INSERT, UPDATE, DELETE
                     schema: 'public',
                     table: 'volume_records',
-                    filter: `farm_id=eq.1` // Lagoa Do Mato
+                    filter: `farm_id=eq.${farmId}`
                 },
                 async (payload) => {
                     console.log('📊 Mudança detectada em volume_records:', payload.eventType);
@@ -7236,7 +8473,7 @@ async function handleNewProduction(newProduction) {
         const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
         if (userData) {
             const parsedUserData = JSON.parse(userData);
-            await loadRecentActivities(); // Lagoa Do Mato
+            await loadRecentActivities(parsedUserData.farm_id);
         }
         
         // Mostrar notificação
@@ -7267,7 +8504,7 @@ async function handleProductionUpdate(newProduction, oldProduction) {
         const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
         if (userData) {
             const parsedUserData = JSON.parse(userData);
-            await loadRecentActivities(); // Lagoa Do Mato
+            await loadRecentActivities(parsedUserData.farm_id);
         }
         
         // Mostrar notificação
@@ -7289,7 +8526,7 @@ async function handleProductionDelete(deletedProduction) {
         const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
         if (userData) {
             const parsedUserData = JSON.parse(userData);
-            await loadRecentActivities(); // Lagoa Do Mato
+            await loadRecentActivities(parsedUserData.farm_id);
         }
         
         // Mostrar notificação
@@ -7307,12 +8544,12 @@ async function updateTodayVolume() {
         if (!userData) return;
         
         const parsedUserData = JSON.parse(userData);
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
-        const { data: volumeData, error: volumeError } = await db
+        const { data: volumeData, error: volumeError } = await supabase
             .from('volume_records')
             .select('volume_liters')
-            .eq('farm_id', 1)
+            .eq('farm_id', parsedUserData.farm_id)
             .gte('production_date', new Date().toISOString().split('T')[0]);
 
         if (!volumeError && volumeData && volumeData.length > 0) {
@@ -7337,20 +8574,11 @@ async function updateTodayVolume() {
 
 // Initialize charts
 function initializeCharts() {
-    // Verificar se Chart.js está disponível
-    if (typeof Chart === 'undefined') {
-        console.error('❌ Chart.js não está carregado!');
-        return;
-    }
-    
-    console.log('📊 Chart.js disponível, inicializando gráficos...');
-    
     // Volume Chart
     const volumeCtx = document.getElementById('volumeChart');
     if (volumeCtx) {
         console.log('✅ Inicializando gráfico volumeChart (Volume Semanal)...');
-        try {
-            window.volumeChart = new Chart(volumeCtx, {
+        window.volumeChart = new Chart(volumeCtx, {
             type: 'line',
             data: {
                 labels: [],
@@ -7377,11 +8605,8 @@ function initializeCharts() {
                     }
                 }
             }
-            });
-            console.log('✅ Gráfico volumeChart (Volume Semanal) inicializado com sucesso');
-        } catch (error) {
-            console.error('❌ Erro ao inicializar volumeChart:', error);
-        }
+        });
+        console.log('✅ Gráfico volumeChart (Volume Semanal) inicializado com sucesso');
     } else {
         console.error('❌ Elemento volumeChart não encontrado no DOM');
     }
@@ -7389,8 +8614,7 @@ function initializeCharts() {
     // Quality Chart
     const qualityCtx = document.getElementById('qualityChart');
     if (qualityCtx) {
-        try {
-            window.qualityChart = new Chart(qualityCtx, {
+        window.qualityChart = new Chart(qualityCtx, {
             type: 'bar',
             data: {
                 labels: [],
@@ -7416,21 +8640,13 @@ function initializeCharts() {
                     }
                 }
             }
-            });
-            console.log('✅ Gráfico qualityChart inicializado com sucesso');
-        } catch (error) {
-            console.error('❌ Erro ao inicializar qualityChart:', error);
-        }
-    } else {
-        console.error('❌ Elemento qualityChart não encontrado no DOM');
+        });
     }
-    
     // Temperature Chart
     const temperatureCtx = document.getElementById('temperatureChart');
     
     if (temperatureCtx) {
-        try {
-            window.temperatureChart = new Chart(temperatureCtx, {
+        window.temperatureChart = new Chart(temperatureCtx, {
             type: 'line',
             data: {
                 labels: [],
@@ -7503,13 +8719,7 @@ function initializeCharts() {
                     }
                 }
             }
-            });
-            console.log('✅ Gráfico temperatureChart inicializado com sucesso');
-        } catch (error) {
-            console.error('❌ Erro ao inicializar temperatureChart:', error);
-        }
-    } else {
-        console.error('❌ Elemento temperatureChart não encontrado no DOM');
+        });
     }
 
     // Dashboard Weekly Production Chart
@@ -7886,25 +9096,15 @@ function hideNotification() {
 
 // Profile modal functions
 function openProfileModal() {
-    const modal = document.getElementById('profileModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('show');
-        modal.style.display = 'flex';
-        // Configurar header dinâmico quando o modal for aberto
-        setTimeout(() => {
-            setupProfileModalHeader();
-        }, 100);
-    }
+    document.getElementById('profileModal').classList.add('show');
+    // Configurar header dinâmico quando o modal for aberto
+    setTimeout(() => {
+        setupProfileModalHeader();
+    }, 100);
 }
 
 function closeProfileModal() {
-    const modal = document.getElementById('profileModal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-    }
+    document.getElementById('profileModal').classList.remove('show');
 }
 
 // Profile edit functions
@@ -8067,7 +9267,7 @@ async function handleUpdateProfile(event) {
     
     try {
         const formData = new FormData(event.target);
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
             throw new Error('Usuário não autenticado');
@@ -8097,14 +9297,14 @@ async function handleUpdateProfile(event) {
         }
         
         // First, check if user exists in users table
-        const { data: existingUser, error: checkError } = await db
+        const { data: existingUser, error: checkError } = await supabase
             .from('users')
             .select('*')
             .eq('id', user.id)
             .single();
         
         // Update user table in database
-        const { data, error } = await db
+        const { data, error } = await supabase
             .from('users')
             .update(updateData)
             .eq('id', user.id)
@@ -8114,8 +9314,8 @@ async function handleUpdateProfile(event) {
             throw error;
         }
         
-        // Also update user metadata in Database Auth
-        const { error: authError } = await db.auth.updateUser({
+        // Also update user metadata in Supabase Auth
+        const { error: authError } = await supabase.auth.updateUser({
             data: {
                 name: updateData.name,
                 whatsapp: updateData.whatsapp
@@ -8811,55 +10011,158 @@ async function handleAddVolume(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     
-    console.log('📝 Registrando novo volume...');
+    // Mapear valores do turno para inglês (conforme constraint da tabela)
+    const shiftMapping = {
+        'manha': 'morning',
+        'tarde': 'afternoon', 
+        'noite': 'evening',
+        'madrugada': 'night'
+    };
+    
+    const volumeData = {
+        production_date: formData.get('production_date'),
+        shift: shiftMapping[formData.get('shift')] || formData.get('shift'),
+        volume: parseFloat(formData.get('volume')),
+        temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
+        observations: formData.get('observations') || null
+    };
+    
+    console.log('📅 Data do formulário:', formData.get('production_date'));
+    console.log('📅 Data processada:', volumeData.production_date);
 
     try {
-        // Preparar dados para enviar à API
-        const volumeData = {
-            volume: parseFloat(formData.get('volume')),
-            collection_date: formData.get('production_date'),
-            period: formData.get('shift'), // manha, tarde, noite, madrugada
-            temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) throw new Error('User not authenticated');
+
+        // Get current user's farm_id and name
+        const { data: managerData, error: managerError } = await supabase
+            .from('users')
+            .select('farm_id, name')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (managerError) throw managerError;
+        if (!managerData?.farm_id) throw new Error('Farm not found');
+
+        // Preparar dados para inserção
+        const insertData = {
+                farm_id: managerData.farm_id,
+                user_id: currentUser.id,
+                // Nome do funcionário será obtido via relacionamento com users
+                production_date: volumeData.production_date,
+                milking_type: volumeData.shift,
+                volume_liters: volumeData.volume,
+                temperature: volumeData.temperature,
+                notes: volumeData.observations,
+                created_at: new Date().toISOString()
         };
-        
-        console.log('📊 Dados do volume:', volumeData);
 
-        // Enviar para a API
-        const response = await fetch('api/manager.php?action=add_volume', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(volumeData)
-        });
+        // Verificar se está online ou offline
+        if (navigator.onLine && window.offlineSyncManager) {
+            // Tentar salvar online primeiro
+            try {
+                const { error: volumeError } = await supabase
+                    .from('volume_records')
+                    .insert(insertData);
 
-        const result = await response.json();
+        if (volumeError) throw volumeError;
 
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao adicionar volume');
-        }
-
-        console.log('✅ Volume registrado com sucesso:', result);
         showNotification('Registro de volume adicionado com sucesso!', 'success');
-        
-        // Notificação real do dispositivo
-        if (window.nativeNotifications) {
-            window.nativeNotifications.showRealDeviceNotification(
-                'Nova Produção Registrada',
-                `${volumeData.volume}L registrado com sucesso!`,
-                'production'
-            );
+                
+                // Notificação real do dispositivo
+                if (window.nativeNotifications) {
+                    window.nativeNotifications.showRealDeviceNotification(
+                        'Nova Produção Registrada',
+                        `${volumeData.volume}L registrado com sucesso!`,
+                        'production'
+                    );
+                }
+
+            } catch (onlineError) {
+                console.log('Erro online, salvando offline:', onlineError);
+                // Se falhar online, salvar offline
+                const result = await window.offlineSyncManager.addVolumeRecord(insertData);
+                if (result.success) {
+                    showNotification('Registro salvo offline - será sincronizado quando voltar online!', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            }
+        } else {
+            // Modo offline - usar sistema de sincronização
+            if (window.offlineSyncManager) {
+                const result = await window.offlineSyncManager.addVolumeRecord(insertData);
+                if (result.success) {
+                    showNotification('Registro salvo offline - será sincronizado quando voltar online!', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } else {
+                throw new Error('Sistema offline não disponível');
+            }
         }
-        
-        // Fechar modal
         closeVolumeModal();
         
-        // Atualizar dashboard
-        console.log('🔄 Atualizando dashboard...');
-        await loadDashboardData();
+        // Limpar cache para forçar atualização
+        CacheManager.clearCache();
         
-        console.log('✅ Atualização completa!');
+        // Reload volume data and charts - FORÇAR ATUALIZAÇÃO
+        console.log('🔄 Atualizando dados após registro de volume...');
+        
+        // Atualizar dados de volume
+        await loadVolumeData();
+        console.log('✅ Dados de volume carregados');
+        
+        // Atualizar todos os gráficos
+        await loadWeeklyVolumeChart();
+        console.log('✅ Gráfico semanal atualizado');
+        
+        await loadDailyVolumeChart();
+        console.log('✅ Gráfico diário atualizado');
+        
+        await loadDashboardWeeklyChart();
+        console.log('✅ Gráfico do dashboard atualizado');
+        
+        // Atualizar estatísticas do dashboard
+        await updateDashboardStats();
+        console.log('✅ Estatísticas do dashboard atualizadas');
+        
+        // Atualizar lista de registros de volume
+        await updateVolumeRecordsList();
+        console.log('✅ Lista de registros de volume atualizada');
+        
+        // Forçar atualização da interface
+        setTimeout(() => {
+            console.log('🔄 Forçando atualização final...');
+            loadVolumeData();
+            loadWeeklyVolumeChart();
+            loadDailyVolumeChart();
+            loadDashboardWeeklyChart();
+        }, 1000);
+
+        // Forçar atualização adicional após 2 segundos
+        setTimeout(() => {
+            console.log('🔄 Forçando atualização adicional...');
+            loadVolumeData();
+            loadDashboardWeeklyChart();
+        }, 2000);
+        // Get user's farm_id for recent activities
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('farm_id')
+                .eq('id', user.id)
+                .single();
+            
+            if (userData?.farm_id) {
+                await loadRecentActivities(userData.farm_id);
+            }
+        }
         
     } catch (error) {
-        console.error('❌ Erro ao adicionar volume:', error);
+        console.error('Error adding volume record:', error);
         showNotification('Erro ao adicionar registro de volume: ' + error.message, 'error');
     }
 }
@@ -8868,50 +10171,54 @@ async function handleAddQuality(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     
-    console.log('🧪 Registrando novo teste de qualidade...');
+    const qualityData = {
+        test_date: formData.get('test_date'),
+        fat_percentage: parseFloat(formData.get('fat_percentage')),
+        protein_percentage: parseFloat(formData.get('protein_percentage')),
+                        scc: parseInt(formData.get('scc')),
+                        cbt: parseInt(formData.get('total_bacterial_count')),
+        laboratory: formData.get('laboratory') || null,
+        observations: formData.get('notes') || null
+    };
 
     try {
-        // Preparar dados para enviar à API
-        const qualityData = {
-            test_date: formData.get('test_date'),
-            fat_percentage: parseFloat(formData.get('fat_percentage')) || null,
-            protein_percentage: parseFloat(formData.get('protein_percentage')) || null,
-            lactose_percentage: parseFloat(formData.get('lactose_percentage')) || null,
-            ccs: parseInt(formData.get('scc')) || null, // CCS = Contagem de Células Somáticas
-            cbt: parseInt(formData.get('total_bacterial_count')) || null, // CBT = Contagem Bacteriana Total
-            temperature: parseFloat(formData.get('temperature')) || null,
-            ph: parseFloat(formData.get('ph')) || null
-        };
-        
-        console.log('📊 Dados do teste:', qualityData);
-
-        // Enviar para a API
-        const response = await fetch('api/manager.php?action=add_quality_test', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(qualityData)
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        // Usar a nova função RPC para registrar o teste de qualidade
+        const { data, error } = await supabase.rpc('register_quality_test', {
+            p_test_date: qualityData.test_date,
+            p_fat_percentage: qualityData.fat_percentage,
+            p_protein_percentage: qualityData.protein_percentage,
+            p_scc: qualityData.scc,
+            p_cbt: qualityData.cbt,
+            p_laboratory: qualityData.laboratory,
+            p_observations: qualityData.observations
         });
 
-        const result = await response.json();
+        if (error) throw error;
 
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao adicionar teste de qualidade');
-        }
-
-        console.log('✅ Teste de qualidade registrado com sucesso:', result);
         showNotification('Teste de qualidade adicionado com sucesso!', 'success');
-        
-        // Fechar modal
         closeQualityModal();
         
-        // Atualizar dashboard
-        console.log('🔄 Atualizando dashboard...');
-        await loadDashboardData();
+        // Reload quality data and charts
+        await loadQualityData();
+        await loadQualityTests();
         
-        console.log('✅ Atualização completa!');
+        // Get user's farm_id for recent activities
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('farm_id')
+                .eq('id', user.id)
+                .single();
+            
+            if (userData?.farm_id) {
+                await loadRecentActivities(userData.farm_id);
+            }
+        }
         
     } catch (error) {
-        console.error('❌ Erro ao adicionar teste de qualidade:', error);
+        console.error('Error adding quality test:', error);
         showNotification('Erro ao adicionar teste de qualidade: ' + error.message, 'error');
     }
 }
@@ -8928,26 +10235,26 @@ async function handleAddPayment(event) {
     };
 
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user: currentUser } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (!currentUser) throw new Error('User not authenticated');
 
-        // Usuário da fazenda Lagoa Do Mato
-        const { data: managerData, error: managerError } = await db
+        // Get current user's farm_id
+        const { data: managerData, error: managerError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', currentUser.id)
             .single();
 
         if (managerError) throw managerError;
-        if (!managerData) throw new Error('Gerente não encontrado');
+        if (!managerData?.farm_id) throw new Error('Farm not found');
 
         // Insert financial record into database
-        const { error: paymentError } = await db
+        const { error: paymentError } = await supabase
             .from('financial_records')
             .insert({
                 ...paymentData,
-                farm_id: 1, // Lagoa Do Mato
+                farm_id: managerData.farm_id,
                 type: 'income'
             });
 
@@ -8959,16 +10266,16 @@ async function handleAddPayment(event) {
         // Reload sales data and recent activities
         await loadPaymentsData();
         
-        // Usuário da fazenda Lagoa Do Mato for recent activities
+        // Get user's farm_id for recent activities
         if (currentUser) {
-            const { data: userData } = await db
+            const { data: userData } = await supabase
                 .from('users')
-                .select('id')
+                .select('farm_id')
                 .eq('email', currentUser.email)
                 .single();
             
-            if (userData) {
-                await loadRecentActivities(); // Lagoa Do Mato
+            if (userData?.farm_id) {
+                await loadRecentActivities(userData.farm_id);
             }
         }
         
@@ -9018,15 +10325,39 @@ function closeAddUserModal() {
 }
 
 // Generate email based on name and farm
-async function generateUserEmail(name, farmId = 1) {
+async function generateUserEmail(name, farmId) {
     try {
         // Validate input parameters
         if (!name || typeof name !== 'string' || name.trim() === '') {
             throw new Error('Nome do usuário é obrigatório');
         }
         
-        // Farm fixo: Lagoa Do Mato -> lactech.com
-        const farmName = 'lactech';
+        if (!farmId) {
+            throw new Error('ID da fazenda é obrigatório');
+        }
+        
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        // Get farm name
+        const { data: farmData, error: farmError } = await supabase
+            .from('farms')
+            .select('name')
+            .eq('id', farmId)
+            .single();
+
+        if (farmError) throw farmError;
+        
+        if (!farmData || !farmData.name || typeof farmData.name !== 'string' || farmData.name.trim() === '') {
+            throw new Error('Nome da fazenda não encontrado ou inválido');
+        }
+        
+        // Sanitizar o nome da fazenda (tudo minúsculo, sem espaço, sem acento)
+        const farmName = farmData.name
+            .trim()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+            .replace(/\s+/g, '') // Remove espaços
+            .replace(/[^a-z0-9]/g, ''); // Remove caracteres especiais
         
         // Extrair o primeiro nome do usuário
         const firstName = name.trim().split(' ')[0]
@@ -9040,10 +10371,42 @@ async function generateUserEmail(name, farmId = 1) {
             throw new Error('Nome do usuário inválido após sanitização');
         }
         
-        // Gerar email simples: nome@lactech.com
-        let finalEmail = `${firstName}@${farmName}.com`;
+        let finalEmail;
+        let attempts = 0;
+        const maxAttempts = 50; // Evitar loop infinito
         
-        // Para simplificar, retornar o email sem verificar duplicatas
+        // Verificar se o e-mail já existe no banco
+        while (attempts < maxAttempts) {
+            // Gerar dois números aleatórios entre 10 e 99
+            const num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+            const num2 = Math.floor(Math.random() * 90) + 10; // 10-99
+            
+            finalEmail = `${firstName}${num1}${num2}@${farmName}.lactech.com`;
+            
+            // Verificar se email já existe
+            const { data: existingUser, error } = await supabase
+                .from('users')
+                .select('id')
+                .eq('email', finalEmail)
+                .maybeSingle(); // Use maybeSingle() em vez de single()
+            
+            if (error) {
+                console.error('Error checking email:', error);
+                throw error;
+            }
+            
+            if (!existingUser) {
+                // Email disponível, sair do loop
+                break;
+            }
+            
+            attempts++;
+        }
+        
+        if (attempts >= maxAttempts) {
+            throw new Error('Não foi possível gerar um email único após várias tentativas');
+        }
+        
         return finalEmail;
     } catch (error) {
         console.error('Error generating email:', error);
@@ -9066,7 +10429,27 @@ async function updateEmailPreview(name) {
     }
     
     try {
-        const email = await generateUserEmail(name);
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) {
+            emailPreview.textContent = 'Usuário não autenticado';
+            return;
+        }
+
+        const { data: managerData, error: managerError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (managerError) throw managerError;
+        
+        if (!managerData || !managerData.farm_id) {
+            emailPreview.textContent = 'Fazenda não encontrada';
+            return;
+        }
+        
+        const email = await generateUserEmail(name, managerData.farm_id);
         emailPreview.textContent = email;
     } catch (error) {
         console.error('Error in updateEmailPreview:', error);
@@ -9250,60 +10633,121 @@ async function copyMessageAgain(encodedMessage) {
  * Valida dados, gera email automático e envia credenciais via WhatsApp
  */
 async function handleAddUser(e) {
+    console.log('🔍 handleAddUser chamada!');
     e.preventDefault();
-    console.log('👤 Criando novo usuário...');
+    console.log('🔍 Evento prevenido');
 
+    
     const formData = new FormData(e.target);
     
+    const userData = {
+        name: formData.get('name'),
+        whatsapp: formData.get('whatsapp'),
+        password: formData.get('password'),
+        role: formData.get('role'),
+        photo_url: null
+    };
+    
     try {
-        // Gerar email automaticamente a partir do nome
-        const name = formData.get('name');
-        const email = await generateEmailFromName(name);
+        console.log('🔍 Iniciando criação do usuário...');
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        console.log('🔍 Cliente Supabase obtido');
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        console.log('🔍 Usuário atual:', currentUser);
+        if (!currentUser) throw new Error('Usuário não autenticado');
+
+        // Get current user's farm_id
+        const { data: managerData, error: managerError } = await supabase
+            .from('users')
+            .select('farm_id')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (managerError) throw managerError;
+        if (!managerData?.farm_id) throw new Error('Fazenda não encontrada');
         
-        // Preparar dados para enviar à API
-        const userData = {
-            name: name,
+        // Gerar email automaticamente
+        const email = await generateEmailFromName(userData.name);
+        
+        // Usar a senha fornecida pelo usuário ou gerar uma temporária
+        const password = userData.password || generateTempPassword();
+        
+        // Criar usuário no Supabase Auth primeiro
+        const { data: authData, error: authError } = await supabase.auth.signUp({
             email: email,
-            password: formData.get('password') || generateTempPassword(),
-            role: formData.get('role'),
-            phone: formData.get('whatsapp') || null,
-            cpf: formData.get('cpf') || null
-        };
-        
-        console.log('📊 Dados do usuário:', { ...userData, password: '***' });
-
-        // Enviar para a API
-        const response = await fetch('api/manager.php?action=create_user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-
-        const result = await response.json();
-
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao criar usuário');
-        }
-
-        console.log('✅ Usuário criado com sucesso:', result);
-        
-        // Tentar enviar WhatsApp com credenciais se tiver número
-        if (userData.phone) {
-            try {
-                await sendWhatsAppCredentials(
-                    userData.phone, 
-                    userData.name, 
-                    userData.email, 
-                    userData.password
-                );
-                showNotification(`Usuário ${userData.name} criado! Credenciais enviadas via WhatsApp.`, 'success');
-            } catch (whatsappError) {
-                // Se falhar WhatsApp, mostrar senha na notificação
-                showNotification(`Usuário ${userData.name} criado! Senha: ${userData.password}`, 'success');
+            password: password,
+            options: {
+                data: {
+                    name: userData.name,
+                    role: userData.role,
+                    whatsapp: userData.whatsapp
+                }
             }
-        } else {
-            showNotification(`Usuário ${userData.name} criado! Email: ${userData.email} - Senha: ${userData.password}`, 'success');
+        });
+        
+        if (authError) {
+            console.error('Erro ao criar usuário no Auth:', authError);
+            throw new Error('Erro ao criar conta de usuário: ' + authError.message);
         }
+        
+        if (!authData.user) {
+            throw new Error('Falha ao criar usuário no Auth');
+        }
+        
+        // Criar perfil do usuário na tabela users usando o ID do Auth
+        const { data: result, error: profileError } = await supabase.rpc('create_farm_user', {
+            p_user_id: authData.user.id,
+            p_email: email,
+            p_name: userData.name,
+            p_whatsapp: userData.whatsapp,
+            p_role: userData.role,
+            p_farm_id: managerData.farm_id,
+            p_profile_photo_url: null
+        });
+        
+        if (profileError) throw profileError;
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Falha ao criar usuário');
+        }
+        
+        // Fazer upload da foto se for funcionário
+        const profilePhotoFile = formData.get('profilePhoto');
+        if (userData.role === 'funcionario' && profilePhotoFile && profilePhotoFile.size > 0) {
+            console.log('🔍 Foto detectada, fazendo upload...');
+            try {
+                // Fazer upload da foto com o ID do usuário
+                const profilePhotoUrl = await uploadProfilePhoto(profilePhotoFile, authData.user.id);
+                
+                // Atualizar usuário com a URL da foto
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({ profile_photo_url: profilePhotoUrl })
+                    .eq('id', authData.user.id);
+                    
+                if (updateError) throw updateError;
+                
+                console.log('✅ Foto enviada com sucesso:', profilePhotoUrl);
+                
+            } catch (error) {
+                console.error('❌ Erro ao fazer upload da foto:', error);
+                // Continuar sem a foto se houver erro
+            }
+        }
+
+        // Enviar WhatsApp com credenciais
+        const whatsappSent = await sendWhatsAppCredentials(
+            userData.whatsapp, 
+            userData.name, 
+            email, 
+            password
+        );
+        
+        const successMessage = whatsappSent ? 
+            `Usuário ${userData.name} criado com sucesso! Credenciais enviadas via WhatsApp.` : 
+            `Usuário ${userData.name} criado com sucesso! Senha: ${password}`;
+            
+        showNotification(successMessage, 'success');
         
         // Notificação REAL do dispositivo para criação de usuário
         if (window.nativeNotifications) {
@@ -9316,12 +10760,13 @@ async function handleAddUser(e) {
         
         closeAddUserModal();
         
-        // Recarregar dados do dashboard
-        console.log('🔄 Atualizando dashboard...');
-        await loadDashboardData();
+        // Atualizar lista de usuários
+        setTimeout(() => {
+            loadUsersData();
+        }, 1000);
 
     } catch (error) {
-        console.error('❌ Erro ao criar usuário:', error);
+        console.error('Erro ao criar usuário:', error);
         showNotification('Erro ao criar usuário: ' + error.message, 'error');
     }
 }
@@ -9332,9 +10777,9 @@ function addUser() {
 
 async function exportVolumeReport() {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         // Buscar dados de volume de leite
-        const { data: volumeData, error } = await db
+        const { data: volumeData, error } = await supabase
             .from('volume_records')
             .select(`
                 *,
@@ -9357,9 +10802,9 @@ async function exportVolumeReport() {
 
 async function exportQualityReport() {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         // Buscar dados de qualidade
-        const { data: qualityData, error } = await db
+        const { data: qualityData, error } = await supabase
             .from('quality_records')
             .select('*')
             .order('created_at', { ascending: false });
@@ -9378,23 +10823,23 @@ async function exportQualityReport() {
 // Função para gerar relatório de vendas
 async function generatePaymentsReport() {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
         
         if (userError) throw userError;
 
         // Buscar dados de vendas
-        const { data: salesData, error } = await db
+        const { data: salesData, error } = await supabase
             .from('financial_records')
             .select('*')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .eq('type', 'income')
             .order('created_at', { ascending: false });
 
@@ -9516,12 +10961,12 @@ function removeFarmLogo() {
 
 async function saveReportSettings() {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
         // Usar o nome da fazenda das configurações globais ou padrão
         const farmName = window.reportSettings.farmName || 'Fazenda';
         
-        const { error } = await db.rpc('update_user_report_settings', {
+        const { error } = await supabase.rpc('update_user_report_settings', {
             p_report_farm_name: farmName,
             p_report_farm_logo_base64: window.reportSettings.farmLogo,
             p_report_footer_text: null,
@@ -9602,25 +11047,25 @@ async function generateEmailFromName(name) {
 // Função para obter próximo número sequencial de usuário
 async function getNextUserNumber(farmName) {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return '001';
 
-        // Sistema Lagoa Do Mato
-        const { data: userData, error: userError } = await db
+        // Obter farm_id do usuário atual
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .order('created_at', { ascending: true })
             .single();
         
-        if (userError || !userData) return '001';
+        if (userError || !userData?.farm_id) return '001';
 
         // Contar usuários existentes na mesma fazenda
-        const { data: existingUsers, error: countError } = await db
+        const { data: existingUsers, error: countError } = await supabase
             .from('users')
             .select('id')
-            .eq('farm_id', 1);
+            .eq('farm_id', userData.farm_id);
         
         if (countError) return '001';
 
@@ -9688,32 +11133,32 @@ function toggleUserPasswordVisibility(inputId, buttonId) {
 
 
 
-// Upload profile photo to Database Storage
+// Upload profile photo to Supabase Storage
 async function uploadProfilePhoto(file, userId) {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
         // Get current authenticated user
-        const { data: { user }, error: authError } = await db.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
         
         if (authError || !user) {
             console.error('DEBUG: Falha na autenticação:', authError);
             throw new Error('Usuário não autenticado');
         }
         
-        // Usuário da fazenda Lagoa Do Mato for organizing photos by farm
+        // Get current user's farm_id for organizing photos by farm
 
-        const { data: managerData, error: managerError } = await db
+        const { data: managerData, error: managerError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
         
 
         
-        if (managerError || !managerData) {
+        if (managerError || !managerData?.farm_id) {
             console.error('DEBUG: Fazenda não encontrada:', managerError);
-            throw new Error('Usuário não encontrado');
+            throw new Error('Farm not found');
         }
         
         const fileExt = file.name.split('.').pop();
@@ -9726,9 +11171,9 @@ async function uploadProfilePhoto(file, userId) {
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substr(2, 9);
         const fileName = `user_${userId}_${timestamp}_${randomId}.${fileExt}`;
-        const filePath = `lagoa-do-mato/${fileName}`; // Fazenda única
+        const filePath = `farm_${managerData.farm_id}/${fileName}`;
         
-        const { data, error } = await db.storage
+        const { data, error } = await supabase.storage
             .from('profile-photos')
             .upload(filePath, file, {
                 cacheControl: '3600',
@@ -9748,7 +11193,7 @@ async function uploadProfilePhoto(file, userId) {
         
 
         
-        const { data: { publicUrl } } = db.storage
+        const { data: { publicUrl } } = supabase.storage
             .from('profile-photos')
             .getPublicUrl(filePath);
         
@@ -9768,28 +11213,28 @@ async function uploadProfilePhoto(file, userId) {
 async function refreshUsersListOnly() {
 
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             return;
         }
         
-        // Usuário da fazenda Lagoa Do Mato
-        const { data: userData, error: userError } = await db
+        // Get current user's farm_id
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
         
-        if (userError || !userData) {
+        if (userError || !userData?.farm_id) {
             return;
         }
         
         // Get all users from the same farm (without photos to avoid cache issues)
-        const { data: allUsers, error } = await db
+        const { data: allUsers, error } = await supabase
             .from('users')
             .select('id, name, email, role, whatsapp, is_active, created_at')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .order('created_at', { ascending: false });
         
         if (error) {
@@ -9851,27 +11296,27 @@ async function updateUserPhotoInList(userId, newPhotoUrl) {
 async function debugCheckAllPhotos() {
 
     try {
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             return;
         }
         
-        // Usuário da fazenda Lagoa Do Mato
-        const { data: userData, error: userError } = await db
+        // Get current user's farm_id
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
         
-        if (userError || !userData) {
+        if (userError || !userData?.farm_id) {
             return;
         }
         
         // Get all users from the same farm
-        const { data: allUsers, error } = await db
+        const { data: allUsers, error } = await supabase
             .from('users')
             .select('id, name, email, role, profile_photo_url, created_at')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .order('created_at', { ascending: false });
         
         if (error) {
@@ -9987,8 +11432,8 @@ async function confirmLogout() {
         cleanupRealtimeUpdates();
         
         clearUserSession(); // Use new clearUserSession function
-        // Usando MySQL direto através do objeto 'db'
-        await db.auth.signOut();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        await supabase.auth.signOut();
         console.log('✅ Logout realizado com sucesso');
         
         // Notificação de logout concluído - REMOVIDA (não é crítica)
@@ -10004,16 +11449,16 @@ async function confirmLogout() {
 // Função para carregar dados da conta secundária existente
 async function loadSecondaryAccountData() {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         // Get current user data
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.error('Usuário não autenticado');
             return;
         }
         
         // Get user details from users table
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', user.id)
@@ -10027,7 +11472,7 @@ async function loadSecondaryAccountData() {
         // Verificar se existe uma conta secundária usando a tabela secondary_accounts
         let secondaryAccountRelation = null;
         try {
-            const { data: relationData, error: relationError } = await db
+            const { data: relationData, error: relationError } = await supabase
                 .from('secondary_accounts')
                 .select('secondary_account_id')
                 .eq('primary_account_id', user.id)
@@ -10046,11 +11491,11 @@ async function loadSecondaryAccountData() {
         if (!secondaryAccountRelation) {
             try {
                 // Check if secondary account exists by email
-                const { data: secondaryAccount, error: secondaryError } = await db
+                const { data: secondaryAccount, error: secondaryError } = await supabase
                     .from('users')
                     .select('*')
                     .eq('email', userData.email)
-                    .eq('farm_id', 1)
+                    .eq('farm_id', userData.farm_id)
                     .neq('id', userData.id)
                     .maybeSingle();
                 
@@ -10081,7 +11526,7 @@ async function loadSecondaryAccountData() {
                     
                     // Criar a relação na tabela secondary_accounts se não existir
                     try {
-                        const { error: insertError } = await db
+                        const { error: insertError } = await supabase
                             .from('secondary_accounts')
                             .insert([
                                 {
@@ -10121,7 +11566,7 @@ async function loadSecondaryAccountData() {
         } else {
             try {
                 // Buscar os dados da conta secundária usando o ID da relação
-                const { data: secondaryAccount, error: accountError } = await db
+                const { data: secondaryAccount, error: accountError } = await supabase
                     .from('users')
                     .select('*')
                     .eq('id', secondaryAccountRelation.secondary_account_id)
@@ -10172,14 +11617,14 @@ async function saveSecondaryAccount(event) {
         submitBtn.disabled = true;
         
         // Get current user data
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.error('Usuário não autenticado');
             return;
         }
         
         // Get user details from users table
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', user.id)
@@ -10200,18 +11645,18 @@ async function saveSecondaryAccount(event) {
         const secondaryEmail = userData.email + (secondaryRole === 'veterinario' ? '.vet' : '.func');
         
         // Verificar se já existe uma conta secundária com o mesmo email modificado
-        const { data: existingAccount, error: checkError } = await db
+        const { data: existingAccount, error: checkError } = await supabase
             .from('users')
             .select('*')
             .eq('email', secondaryEmail)
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .maybeSingle();
         
         let secondaryAccount;
         
         if (!checkError && existingAccount) {
             // Update existing account
-            const { data: updatedAccount, error: updateError } = await db
+            const { data: updatedAccount, error: updateError } = await supabase
                 .from('users')
                 .update({
                     name: secondaryName,
@@ -10232,7 +11677,7 @@ async function saveSecondaryAccount(event) {
             showNotification('Conta secundária atualizada com sucesso!', 'success');
             
             // Verificar se já existe uma relação na tabela secondary_accounts
-            const { data: existingRelation, error: relationError } = await db
+            const { data: existingRelation, error: relationError } = await supabase
                 .from('secondary_accounts')
                 .select('*')
                 .eq('primary_account_id', user.id)
@@ -10245,7 +11690,7 @@ async function saveSecondaryAccount(event) {
             
             // Se não existir relação, criar uma
             if (!existingRelation) {
-                const { error: insertError } = await db
+                const { error: insertError } = await supabase
                     .from('secondary_accounts')
                     .insert([
                         {
@@ -10261,12 +11706,12 @@ async function saveSecondaryAccount(event) {
         } else {
             // Create new secondary account
             
-            // Verificar se já existe um usuário com o mesmo email
-            const { data: existingUsers, error: existingError } = await db
+            // Verificar se já existe um usuário com o mesmo email e farm_id
+            const { data: existingUsers, error: existingError } = await supabase
                 .from('users')
                 .select('*')
                 .eq('email', secondaryEmail)
-                .eq('farm_id', 1)
+                .eq('farm_id', userData.farm_id)
                 .neq('id', userData.id);
                 
             if (existingError) {
@@ -10276,7 +11721,7 @@ async function saveSecondaryAccount(event) {
                 
                 // Se já existir um usuário secundário, atualizar em vez de criar
                 if (existingUsers && existingUsers.length > 0) {
-                    const { data: updatedAccount, error: updateError } = await db
+                    const { data: updatedAccount, error: updateError } = await supabase
                         .from('users')
                         .update({
                             name: secondaryName,
@@ -10297,7 +11742,7 @@ async function saveSecondaryAccount(event) {
                     showNotification('Conta secundária atualizada com sucesso!', 'success');
                     
                     // Verificar se já existe uma relação na tabela secondary_accounts
-                    const { data: existingRelation, error: relationError } = await db
+                    const { data: existingRelation, error: relationError } = await supabase
                         .from('secondary_accounts')
                         .select('*')
                         .eq('primary_account_id', user.id)
@@ -10310,7 +11755,7 @@ async function saveSecondaryAccount(event) {
                     
                     // Se não existir relação, criar uma
                     if (!existingRelation) {
-                        const { error: insertError } = await db
+                        const { error: insertError } = await supabase
                             .from('secondary_accounts')
                             .insert([
                                 {
@@ -10325,11 +11770,11 @@ async function saveSecondaryAccount(event) {
                     }
                 } else {
                     // Create new secondary account
-                    const { data: newAccount, error: createError } = await db
+                    const { data: newAccount, error: createError } = await supabase
                         .from('users')
                         .insert([
                             {
-                                farm_id: 1, // Lagoa Do Mato
+                                farm_id: userData.farm_id,
                                 name: secondaryName,
                                 email: secondaryEmail,
                                 role: secondaryRole,
@@ -10351,7 +11796,7 @@ async function saveSecondaryAccount(event) {
                     showNotification('Nova conta secundária criada com sucesso!', 'success');
                     
                     // Create relation in secondary_accounts table
-                    const { error: insertError } = await db
+                    const { error: insertError } = await supabase
                         .from('secondary_accounts')
                         .insert([
                             {
@@ -10392,14 +11837,14 @@ function toggleAccountsPanel() {
 async function loadAccountCards() {
     try {
         // Get current user data
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.error('Usuário não autenticado');
             return;
         }
         
         // Get user details from users table
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', user.id)
@@ -10440,7 +11885,7 @@ async function loadAccountCards() {
         cardsContainer.appendChild(primaryCard);
         
         // Buscar contas secundárias na tabela secondary_accounts
-        const { data: secondaryRelations, error: relError } = await db
+        const { data: secondaryRelations, error: relError } = await supabase
             .from('secondary_accounts')
             .select('secondary_account_id')
             .eq('primary_account_id', user.id);
@@ -10453,7 +11898,7 @@ async function loadAccountCards() {
         if (secondaryRelations && secondaryRelations.length > 0) {
             // Buscar detalhes de cada conta secundária
             for (const relation of secondaryRelations) {
-                const { data: secondaryAccount, error: accountError } = await db
+                const { data: secondaryAccount, error: accountError } = await supabase
                     .from('users')
                     .select('*')
                     .eq('id', relation.secondary_account_id)
@@ -10510,14 +11955,14 @@ async function loadAccountCards() {
 async function switchToAccount(accountId) {
     try {
         // Get current user data
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.error('Usuário não autenticado');
             return;
         }
         
         // Get user details from users table
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', user.id)
@@ -10532,7 +11977,7 @@ async function switchToAccount(accountId) {
         sessionStorage.setItem('previous_role', userData.role);
         
         // Get secondary account details
-        const { data: secondaryAccount, error: secondaryError } = await db
+        const { data: secondaryAccount, error: secondaryError } = await supabase
             .from('users')
             .select('*')
             .eq('id', accountId)
@@ -10558,7 +12003,7 @@ async function switchToAccount(accountId) {
             email: userData.email,
             name: userData.name,
             user_type: userData.role,
-            farm_id: 1,
+            farm_id: userData.farm_id,
             farm_name: sessionStorage.getItem('farm_name') || ''
         };
         
@@ -10568,7 +12013,7 @@ async function switchToAccount(accountId) {
             email: secondaryAccount.email,
             name: secondaryAccount.name,
             user_type: secondaryAccount.role,
-            farm_id: 1,
+            farm_id: secondaryAccount.farm_id,
             farm_name: sessionStorage.getItem('farm_name') || ''
         };
         // Save current session for later
@@ -10595,13 +12040,13 @@ async function switchToAccount(accountId) {
 async function switchToSecondaryAccount() {
     try {
         // Get current user data
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             console.error('Usuário não autenticado');
             return;
         }
         
-        const { data: secondaryRelations, error: relError } = await db
+        const { data: secondaryRelations, error: relError } = await supabase
             .from('secondary_accounts')
             .select('secondary_account_id')
             .eq('primary_account_id', user.id);
@@ -10627,10 +12072,10 @@ async function switchToSecondaryAccount() {
 
 async function checkIfSecondaryAccount() {
     try {
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
         
-        const { data: relation, error } = await db
+        const { data: relation, error } = await supabase
             .from('secondary_accounts')
             .select('primary_account_id')
             .eq('secondary_account_id', user.id)
@@ -10687,11 +12132,11 @@ function showAlterSecondaryAccountForm() {
 // Função para carregar dados atuais da conta secundária
 async function loadCurrentSecondaryAccountData() {
     try {
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
         // Buscar dados atuais do usuário
-        const { data: userData, error } = await db
+        const { data: userData, error } = await supabase
             .from('users')
             .select('name, email, role, is_active')
             .eq('id', user.id)
@@ -10723,7 +12168,7 @@ async function saveSecondaryAccountAlteration(event) {
     event.preventDefault();
     
     try {
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             showNotification('Usuário não autenticado', 'error');
             return;
@@ -10740,7 +12185,7 @@ async function saveSecondaryAccountAlteration(event) {
         }
         
         // Atualizar dados do usuário
-        const { data: updatedUser, error: updateError } = await db
+        const { data: updatedUser, error: updateError } = await supabase
             .from('users')
             .update({
                 name: name,
@@ -10763,7 +12208,7 @@ async function saveSecondaryAccountAlteration(event) {
             email: updatedUser.email,
             name: updatedUser.name,
             role: updatedUser.role,
-            farm_id: 1,
+            farm_id: updatedUser.farm_id,
             is_active: updatedUser.is_active
         };
         
@@ -10873,8 +12318,8 @@ async function loadUserProfileClean() {
             }
         }
         
-        // Fallback para Database Auth
-        const { data: { user } } = await db.auth.getUser();
+        // Fallback para Supabase Auth
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
             document.getElementById('profileEmail2').textContent = 'Não logado';
@@ -10883,7 +12328,7 @@ async function loadUserProfileClean() {
         }
 
         // Buscar dados do usuário no banco
-        const { data: userData, error } = await db
+        const { data: userData, error } = await supabase
             .from('users')
             .select('name, email, whatsapp')
             .eq('id', user.id)
@@ -11144,7 +12589,7 @@ async function saveManagerPhoto() {
     
     try {
         // Obter dados do usuário atual
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             showNotification('Usuário não autenticado.', 'error');
             return;
@@ -11155,7 +12600,7 @@ async function saveManagerPhoto() {
         
         if (photoUrl) {
             // Atualizar foto no banco de dados
-            const { error } = await db
+            const { error } = await supabase
                 .from('users')
                 .update({ profile_photo_url: photoUrl })
                 .eq('id', user.id);
@@ -11189,15 +12634,15 @@ async function uploadManagerProfilePhoto(file, userId) {
         const fileExtension = file.name.split('.').pop();
         const fileName = `manager_${userId}_${timestamp}_${randomId}.${fileExtension}`;
         
-        // Upload para Database Storage
-        const { data, error } = await db.storage
+        // Upload para Supabase Storage
+        const { data, error } = await supabase.storage
             .from('profile-photos')
             .upload(fileName, file);
         
         if (error) throw error;
         
         // Obter URL pública
-        const { data: urlData } = db.storage
+        const { data: urlData } = supabase.storage
             .from('profile-photos')
             .getPublicUrl(fileName);
         
@@ -11288,20 +12733,25 @@ function updateModalProfilePhoto(photoUrl) {
 // Função para carregar foto do gerente ao abrir o modal
 async function loadManagerPhoto() {
     try {
-        // Usar API de profile
-        const response = await fetch('api/profile.php?action=get_photo');
-        const result = await response.json();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
         
-        if (!result.success) {
-            console.error('Erro ao carregar foto do gerente:', result.error);
+        // Buscar dados do usuário incluindo foto
+        const { data: userData, error } = await supabase
+            .from('users')
+            .select('profile_photo_url')
+            .eq('id', user.id)
+            .single();
+        
+        if (error) {
+            console.error('Erro ao carregar foto do gerente:', error);
             return;
         }
         
-        const photoData = result.data || {};
-        
         // Atualizar exibição da foto
-        if (photoData.photo_url) {
-            updateManagerPhotoDisplay(photoData.photo_url);
+        if (userData && userData.profile_photo_url) {
+        updateManagerPhotoDisplay(userData.profile_photo_url);
         }
         
     } catch (error) {
@@ -11324,20 +12774,29 @@ async function loadHeaderPhoto() {
     try {
         console.log('🖼️ Carregando foto do header...');
         
-        // Usar API de profile
-        const response = await fetch('api/profile.php?action=get_photo');
-        const result = await response.json();
-        
-        if (!result.success) {
-            console.error('❌ Erro ao carregar foto do header:', result.error);
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            console.log('❌ Usuário não autenticado');
             return;
         }
         
-        const photoData = result.data || {};
-        console.log('📋 Dados da foto carregados:', photoData);
+        // Buscar dados do usuário incluindo foto
+        const { data: userData, error } = await supabase
+            .from('users')
+            .select('profile_photo_url')
+            .eq('id', user.id)
+            .single();
+        
+        if (error) {
+            console.error('❌ Erro ao carregar foto do header:', error);
+            return;
+        }
+        
+        console.log('📋 Dados do usuário carregados:', userData);
         
         // Atualizar foto no header
-        updateHeaderProfilePhoto(photoData.photo_url);
+        updateHeaderProfilePhoto(userData.profile_photo_url);
         
     } catch (error) {
         console.error('❌ Erro ao carregar foto do header:', error);
@@ -11357,14 +12816,14 @@ let reportTabSettings = {
 // Função para carregar configurações na aba de relatórios
 async function loadReportTabSettings() {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Buscar dados do usuário
-        const { data: userData, error: userError } = await db
+        // Buscar dados do usuário incluindo farm_id
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('report_farm_name, report_farm_logo_base64')
+            .select('report_farm_name, report_farm_logo_base64, farm_id')
             .eq('id', user.id)
             .single();
 
@@ -11372,11 +12831,11 @@ async function loadReportTabSettings() {
 
         // Se não tem nome da fazenda configurado, buscar do banco
         let farmName = userData.report_farm_name;
-        if (!farmName) {
-            const { data: farmData, error: farmError } = await db
+        if (!farmName && userData.farm_id) {
+            const { data: farmData, error: farmError } = await supabase
                 .from('farms')
                 .select('name')
-                .eq('id', 1)
+                .eq('id', userData.farm_id)
                 .single();
 
             if (!farmError && farmData) {
@@ -11567,7 +13026,7 @@ async function saveReportSettingsTab() {
     try {
         const farmName = document.getElementById('reportFarmNameTab').value || 'Fazenda';
         
-        const { error } = await db.rpc('update_user_report_settings', {
+        const { error } = await supabase.rpc('update_user_report_settings', {
             p_report_farm_name: farmName,
             p_report_farm_logo_base64: reportTabSettings.farmLogo,
             p_report_footer_text: null,
@@ -11594,16 +13053,16 @@ async function saveReportSettingsTab() {
 // Função para carregar estatísticas dos relatórios
 async function loadReportStats() {
     try {
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userData } = await db
+        const { data: userData } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
 
-        if (!userData) return;
+        if (!userData?.farm_id) return;
 
         const hoje = new Date().toISOString().split('T')[0];
         const inicioMes = new Date();
@@ -11612,10 +13071,10 @@ async function loadReportStats() {
         seteDiasAtras.setDate(seteDiasAtras.getDate() - 6);
 
         // Produção de hoje
-        const { data: producaoHoje } = await db
+        const { data: producaoHoje } = await supabase
             .from('volume_records')
             .select('volume_liters')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .eq('production_date', hoje);
 
         let volumeHoje = 0;
@@ -11624,10 +13083,10 @@ async function loadReportStats() {
         }
 
         // Média semanal
-        const { data: producaoSemana } = await db
+        const { data: producaoSemana } = await supabase
             .from('volume_records')
             .select('volume_liters, production_date')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .gte('production_date', seteDiasAtras.toISOString().split('T')[0]);
 
         let mediaSemana = 0;
@@ -11646,10 +13105,10 @@ async function loadReportStats() {
         }
 
         // Total do mês
-        const { data: producaoMes } = await db
+        const { data: producaoMes } = await supabase
             .from('volume_records')
             .select('volume_liters')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .gte('production_date', inicioMes.toISOString().split('T')[0]);
 
         let totalMes = 0;
@@ -11660,10 +13119,10 @@ async function loadReportStats() {
         }
 
         // Funcionários ativos
-        const { data: funcionarios } = await db
+        const { data: funcionarios } = await supabase
             .from('users')
             .select('id')
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .eq('role', 'funcionario');
 
         const funcionariosAtivos = funcionarios?.length || 0;
@@ -11681,7 +13140,7 @@ async function loadReportStats() {
             selectEmployee.innerHTML = '<option value="">Todos os funcionários</option>';
             
             for (const func of funcionarios) {
-                const { data: userData } = await db
+                const { data: userData } = await supabase
                     .from('users')
                     .select('name')
                     .eq('id', func.id)
@@ -11713,19 +13172,19 @@ async function exportExcelReport() {
             return;
         }
 
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userData } = await db
+        const { data: userData } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
 
-        if (!userData) return;
+        if (!userData?.farm_id) return;
 
         // Buscar dados
-        let query = db
+        let query = supabase
             .from('volume_records')
             .select(`
                 production_date,
@@ -11736,7 +13195,7 @@ async function exportExcelReport() {
                 created_at,
                 users!inner(name)
             `)
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .gte('production_date', startDate)
             .lte('production_date', endDate)
             .order('production_date', { ascending: true })
@@ -11923,18 +13382,18 @@ async function exportPDFReport() {
             return;
         }
 
-        const { data: { user } } = await db.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: userData } = await db
+        const { data: userData } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
 
-        if (!userData) return;
+        if (!userData?.farm_id) return;
 
-        let query = db
+        let query = supabase
             .from('volume_records')
             .select(`
                 production_date,
@@ -11945,7 +13404,7 @@ async function exportPDFReport() {
                 created_at,
                 users!inner(name)
             `)
-            .eq('farm_id', 1)
+            .eq('farm_id', userData.farm_id)
             .gte('production_date', startDate)
             .lte('production_date', endDate)
             .order('production_date', { ascending: true });
@@ -11982,9 +13441,9 @@ async function resetAccountPassword(userId, userName) {
         const newPassword = generateTempPassword();
 
         // Atualizar apenas a senha temporária na tabela
-        // Nota: O usuário precisará usar a função de recuperação de senha do Database
+        // Nota: O usuário precisará usar a função de recuperação de senha do Supabase
         // ou o administrador do sistema precisará resetar via painel admin
-        const { error: updateError } = await db
+        const { error: updateError } = await supabase
             .from('users')
             .update({ temp_password: newPassword })
             .eq('id', userId);
@@ -12038,12 +13497,12 @@ function cancelSecondaryAccountForm() {
 // Preencher formulário com dados do gerente atual
 async function fillSecondaryAccountForm() {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
             // Buscar dados do usuário atual (gerente principal)
-            const { data: userData, error } = await db
+            const { data: userData, error } = await supabase
                 .from('users')
                 .select('name, whatsapp, role')
                 .eq('id', user.id)
@@ -12080,15 +13539,15 @@ async function fillSecondaryAccountForm() {
 // Criar conta secundária
 async function createSecondaryAccount(formData) {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) throw new Error('Usuário não autenticado');
         
         // Obter dados do gerente atual
-        const { data: managerData, error: managerError } = await db
+        const { data: managerData, error: managerError } = await supabase
             .from('users')
-            .select('name, whatsapp')
+            .select('farm_id, name, whatsapp')
             .eq('id', user.id)
             .single();
             
@@ -12100,11 +13559,11 @@ async function createSecondaryAccount(formData) {
         const whatsapp = formData.get('whatsapp') || managerData.whatsapp;
         
         // Verificar se já existe uma conta secundária deste tipo
-        const { data: existingAccounts, error: checkError } = await db
+        const { data: existingAccounts, error: checkError } = await supabase
             .from('users')
             .select('id, role')
             .eq('email', email)
-            .eq('farm_id', 1);
+            .eq('farm_id', managerData.farm_id);
             
         if (checkError) throw checkError;
         
@@ -12117,13 +13576,13 @@ async function createSecondaryAccount(formData) {
         }
         
         // Criar conta secundária usando RPC
-        const { data: result, error } = await db.rpc('create_farm_user', {
+        const { data: result, error } = await supabase.rpc('create_farm_user', {
             p_user_id: authData.user.id,
             p_email: email,
             p_name: name,
             p_whatsapp: whatsapp,
             p_role: accountType,
-            p_farm_id: 1, // Lagoa Do Mato
+            p_farm_id: managerData.farm_id,
             p_profile_photo_url: null
         });
         
@@ -12156,13 +13615,13 @@ async function checkExistingSecondaryAccount(accountType) {
     }
     
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) return;
         
         // Buscar contas existentes com o mesmo email e role específico
-        const { data: existingAccounts, error } = await db
+        const { data: existingAccounts, error } = await supabase
             .from('users')
             .select('role')
             .eq('email', user.email)
@@ -12191,20 +13650,22 @@ async function checkExistingSecondaryAccount(accountType) {
 // Carregar contas secundárias
 async function loadSecondaryAccounts() {
     try {
-        // Usar API de usuários
-        const response = await fetch('api/users.php?action=select');
-        const result = await response.json();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         
-        if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar contas secundárias');
-        }
+        if (!user) return;
         
-        const allUsers = result.data || [];
+        // Buscar contas secundárias (mesmo email, diferentes roles)
+        const { data: secondaryAccounts, error } = await supabase
+            .from('users')
+            .select('id, name, email, role, whatsapp, is_active, created_at')
+            .eq('email', user.email) // Mesmo email do gerente
+            .neq('role', 'gerente') // Excluir a conta principal (gerente)
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
         
-        // Filtrar contas secundárias (excluir gerentes)
-        const secondaryAccounts = allUsers.filter(user => user.role !== 'gerente');
-        
-        displaySecondaryAccounts(secondaryAccounts);
+        displaySecondaryAccounts(secondaryAccounts || []);
         
     } catch (error) {
         console.error('Erro ao carregar contas secundárias:', error);
@@ -12289,25 +13750,25 @@ function displaySecondaryAccounts(accounts) {
     container.innerHTML = accountsHtml;
 }
 
-                // Sistema Lagoa Do Mato
+// Obter farm_id do usuário atual
 async function getCurrentUserFarmId() {
     try {
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) return null;
         
-        const { data: userData, error } = await db
+        const { data: userData, error } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
             
         if (error) return null;
         
-        return 1;
+        return userData.farm_id;
     } catch (error) {
-        console.error('Erro ao obter dados do usuário:', error);
+        console.error('Erro ao obter farm_id:', error);
         return null;
     }
 }
@@ -12859,15 +14320,15 @@ async function processManagerPhoto(file) {
         previewManagerProfilePhoto(file);
         
         // Upload da foto
-        // Usando MySQL direto através do objeto 'db'
-        const { data: { user } } = await db.auth.getUser();
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) throw new Error('Usuário não autenticado');
         
         const photoUrl = await uploadManagerProfilePhoto(file, user.id);
         
         // Atualizar perfil
-        const { error: updateError } = await db
+        const { error: updateError } = await supabase
             .from('users')
             .update({ profile_photo_url: photoUrl })
             .eq('id', user.id);
@@ -13036,22 +14497,22 @@ function updateManagerPhotoDisplay(photoUrl) {
     }
 }
 
-// Upload da foto do gerente para o Database
+// Upload da foto do gerente para o Supabase
 async function uploadManagerProfilePhoto(file, userId) {
     try {
-        // Usando MySQL direto através do objeto 'db'
+        // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
         
-        // Sistema Lagoa Do Mato
-        const { data: { user } } = await db.auth.getUser();
+        // Obter farm_id do usuário atual
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Usuário não autenticado');
         
-        const { data: userData, error: userError } = await db
+        const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('id')
+            .select('farm_id')
             .eq('id', user.id)
             .single();
             
-        if (userError || !userData) {
+        if (userError || !userData?.farm_id) {
             throw new Error('Farm ID não encontrado');
         }
         
@@ -13060,10 +14521,10 @@ async function uploadManagerProfilePhoto(file, userId) {
         const randomId = Math.random().toString(36).substr(2, 9);
         const fileExt = file.name.split('.').pop() || 'jpg';
         const fileName = `manager_${userId}_${timestamp}_${randomId}.${fileExt}`;
-        const filePath = `lagoa-do-mato/${fileName}`; // Fazenda única
+        const filePath = `farm_${userData.farm_id}/${fileName}`;
         
         // Upload do arquivo
-        const { data, error } = await db.storage
+        const { data, error } = await supabase.storage
             .from('profile-photos')
             .upload(filePath, file, {
                 cacheControl: '3600',
@@ -13076,7 +14537,7 @@ async function uploadManagerProfilePhoto(file, userId) {
         }
         
         // Obter URL pública
-        const { data: { publicUrl } } = db.storage
+        const { data: { publicUrl } } = supabase.storage
             .from('profile-photos')
             .getPublicUrl(filePath);
             
@@ -13193,13 +14654,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // DESABILITADO - função duplicada, usando apenas modal HTML
         function updateLoadingScreen() {
+<<<<<<< HEAD
             // Função desabilitada - usando apenas a modal de carregamento HTML
             return;
             // Código do sistema de carregamento removido
+=======
+            const loadingMessage = document.getElementById('loadingMessage');
+            const loadingSubMessage = document.getElementById('loadingSubMessage');
+            const loadingProgress = document.getElementById('loadingProgress');
+            const loadingPercentage = document.getElementById('loadingPercentage');
+            const farmNameLoading = document.getElementById('farmNameLoading');
+
+            if (currentStep < loadingSteps.length) {
+                const step = loadingSteps[currentStep];
+                
+                if (loadingMessage) loadingMessage.textContent = step.message;
+                if (loadingSubMessage) loadingSubMessage.textContent = step.subMessage;
+                if (loadingProgress) loadingProgress.style.width = step.progress + '%';
+                if (loadingPercentage) loadingPercentage.textContent = step.progress + '%';
+                
+                // Atualizar nome da fazenda quando disponível
+                if (currentStep === 2 && farmNameLoading) {
+                    // Tentar pegar o nome da fazenda do localStorage ou de outro lugar
+                    const farmName = localStorage.getItem('farmName') || 'Sistema de Gestão';
+                    farmNameLoading.textContent = farmName;
+                }
+                
+                currentStep++;
+            } else {
+                // Carregamento completo
+                clearInterval(loadingInterval);
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    if (loadingScreen) {
+                        loadingScreen.style.opacity = '0';
+                        loadingScreen.style.transition = 'opacity 0.5s ease-out';
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                            loadingScreen.style.visibility = 'hidden';
+                            loadingScreen.style.pointerEvents = 'none';
+                        }, 500);
+                    }
+                }, 500);
+            }
+>>>>>>> parent of 0eb3d2f (.)
         }
 
         // Iniciar sistema
         document.addEventListener('DOMContentLoaded', function() {
+<<<<<<< HEAD
             console.log('✅ Sistema carregado sem tela de loading');
             
             // GARANTIR que não haja tela de loading criada dinamicamente
@@ -13208,16 +14711,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('🗑️ Removendo tela de loading encontrada:', screen.id || screen.className);
                 screen.remove();
             });
+=======
+                    // Forçar fechamento do modal de foto do gerente
+        const managerPhotoChoiceModal = document.getElementById('managerPhotoChoiceModal');
+        if (managerPhotoChoiceModal) {
+            managerPhotoChoiceModal.style.display = 'none';
+            managerPhotoChoiceModal.style.visibility = 'hidden';
+            managerPhotoChoiceModal.style.opacity = '0';
+            managerPhotoChoiceModal.style.pointerEvents = 'none';
+            managerPhotoChoiceModal.classList.add('hidden');
+            managerPhotoChoiceModal.classList.remove('flex');
+        }
+        
+        // Garantir que o modal MAIS esteja fechado
+        const moreModal = document.getElementById('moreModal');
+        if (moreModal) {
+            moreModal.style.display = 'none';
+            moreModal.style.visibility = 'hidden';
+            moreModal.style.opacity = '0';
+            moreModal.style.pointerEvents = 'none';
+            moreModal.classList.add('hidden');
+        }
+        
+        // Garantir que o modal de foto do gerente esteja fechado
+        const managerPhotoModal = document.getElementById('managerPhotoChoiceModal');
+        if (managerPhotoModal) {
+            managerPhotoModal.classList.remove('show', 'flex', 'block');
+            managerPhotoModal.classList.add('hidden');
+            managerPhotoModal.style.display = 'none';
+            managerPhotoModal.style.visibility = 'hidden';
+            managerPhotoModal.style.opacity = '0';
+            managerPhotoModal.style.pointerEvents = 'none';
+            managerPhotoModal.style.position = 'fixed';
+            managerPhotoModal.style.zIndex = '-1';
+            console.log('✅ Modal de foto do gerente fechado na inicialização');
+        }
+>>>>>>> parent of 0eb3d2f (.)
             
-            // PASSO 1: Garantir que modais HTML estáticos estejam fechados
-            const criticalModals = [
-                'profileModal',
-                'moreModal', 
-                'managerPhotoChoiceModal',
-                'managerCameraModal',
-                'contactsModal'
-            ];
+            // Iniciar sequência de carregamento
+            loadingInterval = setInterval(updateLoadingScreen, 1000);
             
+<<<<<<< HEAD
             criticalModals.forEach(modalId => {
                 const modal = document.getElementById(modalId);
                 if (modal) {
@@ -13237,6 +14771,35 @@ document.addEventListener('DOMContentLoaded', function() {
             // Sistema de carregamento REMOVIDO - sem tela de loading
             
             console.log('✅ Sistema inicializado com sucesso!');
+=======
+                    // Garantir que os modais fiquem fechados na inicialização
+        const photoChoiceModal = document.getElementById('photoChoiceModal');
+        const cameraModal = document.getElementById('cameraModal');
+        const managerCameraModal = document.getElementById('managerCameraModal');
+        
+        if (photoChoiceModal) {
+            photoChoiceModal.classList.add('hidden');
+            photoChoiceModal.classList.remove('flex');
+            photoChoiceModal.style.display = 'none';
+        }
+        
+        if (cameraModal) {
+            cameraModal.classList.add('hidden');
+            cameraModal.style.display = 'none';
+        }
+        
+        if (managerCameraModal) {
+            managerCameraModal.style.display = 'none';
+        }
+        
+        // Garantir que as variáveis estejam limpas
+        isCameraOpen = false;
+        cameraStream = null;
+        currentPhotoMode = '';
+        
+        // Configurar header dinâmico do modal de perfil
+        setupProfileModalHeader();
+>>>>>>> parent of 0eb3d2f (.)
         });
         
         // Remover foto do gerente
@@ -13245,8 +14808,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const confirmed = confirm('Tem certeza que deseja remover sua foto de perfil?');
                 if (!confirmed) return;
                 
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
                     showNotification('Usuário não autenticado', 'error');
@@ -13254,7 +14817,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Remover foto do storage se existir
-                const { data: userData } = await db
+                const { data: userData } = await supabase
                     .from('users')
                     .select('profile_photo_url')
                     .eq('id', user.id)
@@ -13264,14 +14827,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Extrair o caminho do arquivo da URL
                     const photoPath = userData.profile_photo_url.split('/').pop();
                     if (photoPath) {
-                        await db.storage
+                        await supabase.storage
                             .from('profile-photos')
                             .remove([photoPath]);
                     }
                 }
                 
                 // Atualizar o banco de dados removendo a referência da foto
-                const { error: updateError } = await db
+                const { error: updateError } = await supabase
                     .from('users')
                     .update({ 
                         profile_photo_url: null,
@@ -13416,21 +14979,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Atualizar status online do usuário atual
                 try {
-                    // Usando MySQL direto através do objeto 'db'
-                    const { data: { user } } = await db.auth.getUser();
+                    // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                    const { data: { user } } = await supabase.auth.getUser();
                     if (user) {
                         await updateUserLastLogin(user.id);
                         
-                        // Sistema Lagoa Do Mato
-                        const { data: userData } = await db
+                        // Buscar farm_id para configurar real-time
+                        const { data: userData } = await supabase
                             .from('users')
-                            .select('id')
+                            .select('farm_id')
                             .eq('id', user.id)
                             .single();
                         
-                        if (userData) {
+                        if (userData?.farm_id) {
                             // Configurar real-time para chat
-                            setupChatRealtime() // Lagoa Do Mato;
+                            setupChatRealtime(userData.farm_id);
                         }
                     }
                 } catch (error) {
@@ -13470,8 +15033,8 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 console.log('🔄 Carregando funcionários...');
                 
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
                     console.error('❌ Usuário não autenticado');
@@ -13483,27 +15046,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Definir currentUser globalmente
                 window.currentUser = user;
 
-                // Sistema Lagoa Do Mato
-                const { data: userData, error: userError } = await db
+                // Buscar farm_id do usuário
+                const { data: userData, error: userError } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('farm_id')
                     .eq('id', user.id)
                     .single();
 
                 if (userError) {
-                    console.error('❌ Erro ao buscar dados do usuário:', userError);
+                    console.error('❌ Erro ao buscar farm_id:', userError);
                     return;
                 }
 
-                if (!userData) {
-                    console.error('❌ Dados do usuário não encontrados');
+                if (!userData?.farm_id) {
+                    console.error('❌ Farm ID não encontrado');
                     return;
                 }
 
-                console.log('🏡 Fazenda: Lagoa Do Mato');
+                console.log('🏢 Farm ID:', userData.farm_id);
 
                 // Usar o serviço de sincronização para buscar funcionários
-                const employees = await getFarmUsers() // Lagoa Do Mato;
+                const employees = await getFarmUsers(userData.farm_id);
                 console.log('👥 Funcionários encontrados:', employees.length);
                 
                 // Incluir todos os usuários (gerente + funcionários)
@@ -13925,8 +15488,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Limpando conversa...', 'info');
 
             try {
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
                     console.error('Usuário não autenticado');
@@ -13936,29 +15499,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 console.log('Usuário autenticado:', user.id);
 
-                const { data: userData } = await db
+                const { data: userData } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('farm_id')
                     .eq('id', user.id)
                     .single();
 
-                if (!userData) {
+                if (!userData?.farm_id) {
                     console.error('Farm ID não encontrado');
                     showNotification('Erro ao obter dados da fazenda', 'error');
                     return;
                 }
 
-                console.log('Fazenda: Lagoa Do Mato');
+                console.log('Farm ID:', userData.farm_id);
                 console.log('Funcionário selecionado:', window.selectedEmployee.id);
 
                 // Deletar todas as mensagens entre os usuários
                 console.log('Deletando mensagens do banco...');
                 
                 // Usar uma única query com OR para deletar todas as mensagens entre os dois usuários
-                const { error: deleteError } = await db
+                const { error: deleteError } = await supabase
                     .from('chat_messages')
                     .delete()
-                    .eq('farm_id', 1)
+                    .eq('farm_id', userData.farm_id)
                     .or(`and(sender_id.eq.${user.id},receiver_id.eq.${window.selectedEmployee.id}),and(sender_id.eq.${window.selectedEmployee.id},receiver_id.eq.${user.id})`);
 
                 if (deleteError) {
@@ -13969,10 +15532,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Todas as mensagens entre os usuários deletadas');
                 
                 // Verificar se as mensagens foram realmente deletadas
-                const { data: remainingMessages, error: checkError } = await db
+                const { data: remainingMessages, error: checkError } = await supabase
                     .from('chat_messages')
                     .select('id')
-                    .eq('farm_id', 1)
+                    .eq('farm_id', userData.farm_id)
                     .or(`and(sender_id.eq.${user.id},receiver_id.eq.${window.selectedEmployee.id}),and(sender_id.eq.${window.selectedEmployee.id},receiver_id.eq.${user.id})`);
 
                 if (checkError) {
@@ -14079,26 +15642,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function loadChatMessages(employeeId = null, isPolling = false) {
             try {
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
 
                 // Definir currentUser globalmente
                 window.currentUser = user;
 
-                // Sistema Lagoa Do Mato
-                const { data: userData } = await db
+                // Buscar farm_id do usuário
+                const { data: userData } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('farm_id')
                     .eq('id', user.id)
                     .single();
 
-                if (!userData) return;
+                if (!userData?.farm_id) return;
 
                 // Verificar cache apenas para polling (evitar recarregamento desnecessário)
                 if (isPolling) {
-                    const cacheKey = `lagoa-do-mato_${user.id}_${employeeId}`;
+                    const cacheKey = `${userData.farm_id}_${user.id}_${employeeId}`;
                     const cachedData = chatMessagesCache.get(cacheKey);
                     
                     if (cachedData && (Date.now() - cachedData.timestamp < 2000)) { // Cache reduzido para 2 segundos
@@ -14108,13 +15671,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Usar o serviço de sincronização para buscar mensagens
-                console.log('📨 Buscando mensagens para:', { userId: user.id, employeeId, isPolling });
-                const messages = await getChatMessages( user.id, employeeId);
+                console.log('📨 Buscando mensagens para:', { farmId: userData.farm_id, userId: user.id, employeeId, isPolling });
+                const messages = await getChatMessages(userData.farm_id, user.id, employeeId);
                 console.log('📨 Mensagens encontradas:', messages?.length || 0);
                 
                 // Atualizar cache
                 if (messages && messages.length > 0) {
-                    const cacheKey = `lagoa-do-mato_${user.id}_${employeeId}`;
+                    const cacheKey = `${userData.farm_id}_${user.id}_${employeeId}`;
                     chatMessagesCache.set(cacheKey, {
                         messages: messages,
                         timestamp: Date.now()
@@ -14619,23 +16182,23 @@ document.addEventListener('DOMContentLoaded', function() {
             showTypingIndicator(window.currentUser?.name || 'Você');
 
             try {
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
 
-                // Sistema Lagoa Do Mato
-                const { data: userData } = await db
+                // Buscar farm_id do usuário
+                const { data: userData } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('farm_id')
                     .eq('id', user.id)
                     .single();
 
-                if (!userData) return;
+                if (!userData?.farm_id) return;
 
                 // Usar o serviço de sincronização para enviar mensagem
                 await sendChatMessage({
-                    farm_id: 1, // Lagoa Do Mato
+                    farm_id: userData.farm_id,
                     sender_id: user.id,
                     receiver_id: window.selectedEmployee.id,
                     message: message
@@ -14746,29 +16309,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
 
-                // Sistema Lagoa Do Mato
-                const { data: userData } = await db
+                // Buscar farm_id do usuário
+                const { data: userData } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('farm_id')
                     .eq('id', user.id)
                     .single();
 
-                if (!userData) return;
+                if (!userData?.farm_id) return;
 
                 // Mostrar loading
                 showNotification('Enviando arquivo...', 'info');
 
-                // Upload do arquivo para Database Storage
+                // Upload do arquivo para Supabase Storage
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-                const filePath = `chat-files/lagoa-do-mato/${fileName}`;
+                const filePath = `chat-files/${userData.farm_id}/${fileName}`;
 
-                const { data: uploadData, error: uploadError } = await db.storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
                     .from('chat-files')
                     .upload(filePath, file);
 
@@ -14779,7 +16342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Obter URL pública do arquivo
-                const { data: { publicUrl } } = db.storage
+                const { data: { publicUrl } } = supabase.storage
                     .from('chat-files')
                     .getPublicUrl(filePath);
 
@@ -14793,7 +16356,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Enviar mensagem
                 await sendChatMessage({
-                    farm_id: 1, // Lagoa Do Mato
+                    farm_id: userData.farm_id,
                     sender_id: user.id,
                     receiver_id: window.selectedEmployee.id,
                     message: `📎 ${file.name}`,
@@ -14970,25 +16533,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) return;
 
-                // Sistema Lagoa Do Mato
-                const { data: userData } = await db
+                // Buscar farm_id do usuário
+                const { data: userData } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('farm_id')
                     .eq('id', user.id)
                     .single();
 
-                if (!userData) return;
+                if (!userData?.farm_id) return;
 
-                // Upload do áudio para Database Storage
+                // Upload do áudio para Supabase Storage
                 const fileName = `audio_${Date.now()}_${Math.random().toString(36).substring(2)}.wav`;
-                const filePath = `chat-files/lagoa-do-mato/${fileName}`;
+                const filePath = `chat-files/${userData.farm_id}/${fileName}`;
 
-                const { data: uploadData, error: uploadError } = await db.storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
                     .from('chat-files')
                     .upload(filePath, audioBlob);
 
@@ -14999,7 +16562,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Obter URL pública do áudio
-                const { data: { publicUrl } } = db.storage
+                const { data: { publicUrl } } = supabase.storage
                     .from('chat-files')
                     .getPublicUrl(filePath);
 
@@ -15013,7 +16576,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Enviar mensagem
                 await sendChatMessage({
-                    farm_id: 1, // Lagoa Do Mato
+                    farm_id: userData.farm_id,
                     sender_id: user.id,
                     receiver_id: window.selectedEmployee.id,
                     message: '🎵 Mensagem de voz',
@@ -15074,20 +16637,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             try {
-                // Usando MySQL direto através do objeto 'db'
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
                 
-                const { error: updateError } = await db
+                const { error: updateError } = await supabase
                     .from('password_requests')
                     .update({ 
                         status: 'approved',
                         approved_at: new Date().toISOString(),
-                        approved_by: (await db.auth.getUser()).data.user.id
+                        approved_by: (await supabase.auth.getUser()).data.user.id
                     })
                     .eq('id', requestId);
                 
                 if (updateError) throw updateError;
                 
-                const { data: request, error: fetchError } = await db
+                const { data: request, error: fetchError } = await supabase
                     .from('password_requests')
                     .select('*')
                     .eq('id', requestId)
@@ -15126,22 +16689,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             try {
-                // Usando MySQL direto através do objeto 'db'
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
                 
                 // Atualizar status da solicitação
-                const { error: updateError } = await db
+                const { error: updateError } = await supabase
                     .from('password_requests')
                     .update({ 
                         status: 'rejected',
                         rejected_at: new Date().toISOString(),
-                        rejected_by: (await db.auth.getUser()).data.user.id
+                        rejected_by: (await supabase.auth.getUser()).data.user.id
                     })
                     .eq('id', requestId);
                 
                 if (updateError) throw updateError;
                 
                 // Buscar dados da solicitação para notificar o usuário
-                const { data: request, error: fetchError } = await db
+                const { data: request, error: fetchError } = await supabase
                     .from('password_requests')
                     .select(`
                         *,
@@ -15216,8 +16779,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
 
-
-
+    </script>
+    
+    <!-- Script para funções de solicitações de senha (escopo global) -->
+    <script>
         // ==================== FUNÇÕES DE SOLICITAÇÕES DE SENHA (ESCOPO GLOBAL) ====================
         
         // Abrir modal de solicitações de senha
@@ -15267,32 +16832,32 @@ document.addEventListener('DOMContentLoaded', function() {
         // Carregar solicitações de senha
         async function loadPasswordRequests() {
             try {
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
                     showNotification('Usuário não autenticado', 'error');
                     return;
                 }
                 
-                // Sistema Lagoa Do Mato
-                const { data: userData, error: userError } = await db
+                // Buscar dados do usuário atual para obter farm_id
+                const { data: userData, error: userError } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('farm_id')
                     .eq('id', user.id)
                     .single();
                 
-                if (userError || !userData) {
+                if (userError || !userData?.farm_id) {
                     showNotification('Erro ao buscar dados da fazenda', 'error');
                     return;
                 }
                 
                 // Buscar solicitações de senha da fazenda (abordagem corrigida)
                 // Primeiro, buscar usuários da fazenda
-                const { data: farmUsers, error: usersError } = await db
+                const { data: farmUsers, error: usersError } = await supabase
                     .from('users')
                     .select('id, name, email, role, profile_photo_url')
-                    .eq('farm_id', 1);
+                    .eq('farm_id', userData.farm_id);
                 
                 if (usersError) {
                     console.error('❌ Erro ao buscar usuários da fazenda:', usersError);
@@ -15309,7 +16874,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const userIds = farmUsers.map(user => user.id);
                 
                 // Depois, buscar solicitações desses usuários
-                const { data: requests, error } = await db
+                const { data: requests, error } = await supabase
                     .from('password_requests')
                     .select('*')
                     .in('user_id', userIds)
@@ -15483,10 +17048,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Visualizar detalhes da solicitação (versão corrigida)
         async function viewPasswordRequestDetailsFixed(requestId) {
             try {
-                // Usando MySQL direto através do objeto 'db'
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
                 
                 // Buscar solicitação sem JOIN
-                const { data: request, error } = await db
+                const { data: request, error } = await supabase
                     .from('password_requests')
                     .select('*')
                     .eq('id', requestId)
@@ -15500,7 +17065,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Buscar dados do usuário separadamente
                 let userData = { name: 'Usuário não encontrado', email: 'Email não encontrado', role: 'N/A' };
                 try {
-                    const { data: user } = await db
+                    const { data: user } = await supabase
                         .from('users')
                         .select('name, email, role')
                         .eq('id', request.user_id)
@@ -15569,8 +17134,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
                     showNotification('Usuário não autenticado', 'error');
@@ -15578,7 +17143,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Atualizar status da solicitação
-                const { error } = await db
+                const { error } = await supabase
                     .from('password_requests')
                     .update({
                         status: 'approved',
@@ -15609,8 +17174,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Usando MySQL direto através do objeto 'db'
-                const { data: { user } } = await db.auth.getUser();
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
                 
                 if (!user) {
                     showNotification('Usuário não autenticado', 'error');
@@ -15618,7 +17183,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Atualizar status da solicitação
-                const { error } = await db
+                const { error } = await supabase
                     .from('password_requests')
                     .update({
                         status: 'rejected',
@@ -15713,6 +17278,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 requestsModal.style.zIndex = '-1';
             }
         });
+<<<<<<< HEAD
     
         // ==================== CONTINUAÇÃO DO JAVASCRIPT - FUNÇÕES DE NOTIFICAÇÕES ====================
         
@@ -19426,9 +20992,12 @@ Funcionalidades:
     </style>
     
 <!-- ========== HTML MODALS - MOVIDOS PARA FORA DO SCRIPT ========== -->
+=======
+    </script>
+>>>>>>> parent of 0eb3d2f (.)
     
     <!-- Modal de Escolha de Foto do Gerente (FORA do modal de perfil) -->
-    <div id="managerPhotoChoiceModal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-[999999] hidden" style="display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;">
+    <div id="managerPhotoChoiceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999999]" style="display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
             <div class="flex items-center justify-between mb-6">
                                             <h2 class="text-xl font-bold text-gray-900">Mudar Foto de Perfil</h2>
@@ -19522,66 +21091,6 @@ Funcionalidades:
                             </div>
                         </div>
                     </div>
-                    
-                        <!-- Gestão de Rebanho -->
-                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showAnimalManagement()">
-                            <div class="flex flex-col items-center text-center space-y-3">
-                                <div class="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Gestão de Rebanho</p>
-                                    <p class="text-xs text-gray-600">Animais e IA</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Gestão Sanitária -->
-                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showHealthManagement()">
-                            <div class="flex flex-col items-center text-center space-y-3">
-                                <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl flex items-center justify-center shadow-lg">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Gestão Sanitária</p>
-                                    <p class="text-xs text-gray-600">Saúde e vacinas</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Reprodução -->
-                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showReproductionManagement()">
-                            <div class="flex flex-col items-center text-center space-y-3">
-                                <div class="w-16 h-16 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Reprodução</p>
-                                    <p class="text-xs text-gray-600">Prenhez e DPP</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Dashboard Analítico -->
-                        <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showAnalyticsDashboard()">
-                            <div class="flex flex-col items-center text-center space-y-3">
-                                <div class="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center shadow-lg">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Dashboard Analítico</p>
-                                    <p class="text-xs text-gray-600">Indicadores e KPIs</p>
-                                </div>
-                            </div>
-                        </div>
                     
                         <!-- Suporte -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openSupportHub()">
@@ -20117,8 +21626,2280 @@ Funcionalidades:
         </div>
     </div>
     
-    
-<!-- ========== MAIS HTML MODALS ========== -->
+    <script>
+        // ==================== FUNÇÕES DE NOTIFICAÇÕES ====================
+        
+        // Abrir sidebar de notificações
+        function openNotificationsModal() {
+            const modal = document.getElementById('notificationsModal');
+            const content = document.getElementById('notificationsModalContent');
+            
+            if (modal && content) {
+                modal.classList.remove('hidden');
+                
+                // Pequeno delay para garantir que o modal está visível antes da animação
+                setTimeout(() => {
+                    content.classList.remove('translate-x-full');
+                    content.classList.add('translate-x-0');
+                }, 10);
+                
+                loadNotifications();
+            }
+        }
+        
+        // Fechar sidebar de notificações
+        function closeNotificationsModal() {
+            const modal = document.getElementById('notificationsModal');
+            const content = document.getElementById('notificationsModalContent');
+            
+            if (modal && content) {
+                content.classList.remove('translate-x-0');
+                content.classList.add('translate-x-full');
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+        
+        // Carregar notificações
+        async function loadNotifications() {
+            try {
+                const notificationsList = document.getElementById('notificationsList');
+                if (notificationsList) {
+                    notificationsList.innerHTML = '<p class="text-center text-gray-500 py-4">Nenhuma notificação</p>';
+                }
+                updateNotificationCounter(0);
+            } catch (error) {
+                // Silencioso
+            }
+        }
+        
+        // Atualizar contador de notificações
+        function updateNotificationCounter(count) {
+            const counter = document.getElementById('notificationCounter');
+            if (counter) {
+                if (count > 0) {
+                    counter.textContent = count;
+                    counter.classList.remove('hidden');
+                } else {
+                    counter.classList.add('hidden');
+                }
+            }
+        }
+        
+        // ==================== FUNÇÕES CORRIGIDAS DE SOLICITAÇÕES DE SENHA ====================
+        
+        // Função corrigida para carregar solicitações de senha
+        async function loadPasswordRequestsFixed() {
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                
+                console.log('🔄 Carregando solicitações de senha...');
+                
+                // Buscar todas as solicitações de senha (SEM join com users para evitar problemas de RLS)
+                const { data: requests, error } = await supabase
+                    .from('password_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('❌ Erro ao carregar solicitações:', error);
+                    showNotification('Erro ao carregar solicitações de senha: ' + error.message, 'error');
+                    return;
+                }
+                
+                console.log('✅ Solicitações carregadas:', requests);
+                
+                // Para cada solicitação, buscar os dados do usuário separadamente (com tratamento de erro melhorado)
+                if (requests && requests.length > 0) {
+                    for (let request of requests) {
+                        try {
+                            const { data: userData, error: userError } = await supabase
+                                .from('users')
+                                .select('email, name')
+                                .eq('id', request.user_id)
+                                .maybeSingle(); // Usar maybeSingle para evitar erro se não encontrar
+                            
+                            if (userError) {
+                                request.users = { email: 'Email indisponível', name: 'Usuário indisponível' };
+                            } else if (userData) {
+                                request.users = userData;
+                            } else {
+                                request.users = { email: 'Email não encontrado', name: 'Usuário não encontrado' };
+                            }
+                        } catch (userError) {
+                            request.users = { email: 'Email indisponível', name: 'Usuário indisponível' };
+                        }
+                    }
+                }
+                
+                displayPasswordRequests(requests || []);
+                updateRequestCounters(requests || []);
+                
+            } catch (error) {
+                console.error('❌ Erro geral ao carregar solicitações:', error);
+                showNotification('Erro ao carregar solicitações de senha: ' + error.message, 'error');
+            }
+        }
+        
+        // Função corrigida mantida para referência
+        // window.loadPasswordRequests será substituída pela versão otimizada mais abaixo
+        
+        // ==================== SISTEMA DE ATUALIZAÇÃO EM TEMPO REAL ====================
+        
+        // Variáveis para controle de WebSocket
+        let realTimeInterval = null;
+        let isRealTimeActive = false;
+        let updateCount = 0;
+        let lastUpdateTime = null;
+        
+        // Função para iniciar atualização em tempo real
+        function startRealTimeUpdates() {
+            if (isRealTimeActive) return;
+            
+            isRealTimeActive = true;
+            console.log('🔄 Iniciando atualizações em tempo real...');
+            
+            // Mostrar indicador de tempo real
+            const indicator = document.getElementById('realTimeIndicator');
+            if (indicator) {
+                indicator.classList.remove('hidden');
+            }
+            
+            // Atualizar a cada 5 segundos
+            realTimeInterval = setInterval(() => {
+                updateRealTimeData();
+            }, 5000);
+            
+            // Atualizar imediatamente
+            updateRealTimeData();
+        }
+        
+        // Função para parar atualização em tempo real
+        function stopRealTimeUpdates() {
+            if (realTimeInterval) {
+                clearInterval(realTimeInterval);
+                realTimeInterval = null;
+            }
+            isRealTimeActive = false;
+            console.log('⏹️ Parando atualizações em tempo real...');
+            
+            // Ocultar indicador de tempo real
+            const indicator = document.getElementById('realTimeIndicator');
+            if (indicator) {
+                indicator.classList.add('hidden');
+            }
+        }
+        
+        // Função principal de atualização em tempo real
+        async function updateRealTimeData() {
+            try {
+                // Atualizar notificações
+                await loadNotifications();
+                
+                // Atualizar solicitações de senha se o modal estiver aberto
+                const passwordModal = document.getElementById('passwordRequestsModal');
+                if (passwordModal && !passwordModal.classList.contains('hidden')) {
+                    await loadPasswordRequests();
+                }
+                
+                // Atualizar histórico se o modal estiver aberto
+                const historyModal = document.getElementById('passwordHistoryModal');
+                if (historyModal && !historyModal.classList.contains('hidden')) {
+                    await loadPasswordHistory();
+                }
+                
+                // Atualizar gráficos se necessário
+                await updateCharts();
+                
+                // Atualizar indicador de status
+                updateConnectionStatus('connected');
+                
+                // Atualizar estatísticas
+                updateCount++;
+                lastUpdateTime = new Date();
+                
+                console.log(`✅ Dados atualizados em tempo real (${updateCount} atualizações)`);
+                
+            } catch (error) {
+                console.error('❌ Erro na atualização em tempo real:', error);
+                updateConnectionStatus('error');
+            }
+        }
+        
+        // Função para atualizar status de conexão
+        function updateConnectionStatus(status) {
+            const indicator = document.getElementById('realTimeIndicator');
+            if (!indicator) return;
+            
+            // Remover classes anteriores
+            indicator.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500');
+            
+            switch (status) {
+                case 'connected':
+                    indicator.classList.add('bg-green-500');
+                    indicator.title = 'Sistema automático ativo - Dados atualizados a cada 5 segundos';
+                    break;
+                case 'error':
+                    indicator.classList.add('bg-red-500');
+                    indicator.title = 'Erro de conexão - Sistema tentando reconectar...';
+                    break;
+                case 'connecting':
+                    indicator.classList.add('bg-yellow-500');
+                    indicator.title = 'Iniciando sistema automático...';
+                    break;
+            }
+        }
+        
+        // Função para atualizar gráficos
+        async function updateCharts() {
+            try {
+                // Aqui você pode adicionar lógica para atualizar gráficos específicos
+                // Por exemplo, se houver gráficos de estatísticas
+                console.log('📊 Atualizando gráficos...');
+                
+                // Exemplo: atualizar contadores de estatísticas
+                await updateStatisticsCounters();
+                
+            } catch (error) {
+                console.error('❌ Erro ao atualizar gráficos:', error);
+            }
+        }
+        
+        // Função para atualizar contadores de estatísticas
+        async function updateStatisticsCounters() {
+            try {
+                console.log('📊 Atualizando contadores de estatísticas (MySQL)...');
+                
+                // Por enquanto, não há contadores no MySQL
+                // Definir valores padrão
+                const pendingCount = 0;
+                const approvedCount = 0;
+                const rejectedCount = 0;
+                
+                // Atualizar elementos na interface
+                updateCounterElement('pendingCount', pendingCount);
+                updateCounterElement('approvedCount', approvedCount);
+                updateCounterElement('rejectedCount', rejectedCount);
+                
+                console.log('✅ Contadores atualizados (MySQL)');
+                
+            } catch (error) {
+                console.error('❌ Erro ao atualizar contadores:', error);
+            }
+        }
+        
+        // Função para atualizar elemento de contador
+        function updateCounterElement(elementId, count) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                const currentCount = parseInt(element.textContent) || 0;
+                if (currentCount !== count) {
+                    element.textContent = count;
+                    
+                    // Adicionar animação de mudança
+                    element.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        element.classList.remove('animate-pulse');
+                    }, 1000);
+                }
+            }
+        }
+        
+        // Função para atualizar contador de notificações
+        function updateNotificationCounter(count) {
+            const countElement = document.getElementById('notificationCounter');
+            if (countElement) {
+                const currentCount = parseInt(countElement.textContent) || 0;
+                countElement.textContent = count;
+                countElement.style.display = count > 0 ? 'block' : 'none';
+                
+                // Adicionar animação quando há mudança
+                if (currentCount !== count && count > 0) {
+                    countElement.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        countElement.classList.remove('animate-pulse');
+                    }, 1000);
+                }
+            }
+        }
+        
+        // Iniciar atualizações em tempo real quando a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                startRealTimeUpdates();
+                loadNotifications();
+            }, 2000);
+        });
+        
+        // Parar atualizações quando a página for fechada
+        window.addEventListener('beforeunload', () => {
+            stopRealTimeUpdates();
+        });
+        
+        // Pausar atualizações quando a aba não estiver ativa
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopRealTimeUpdates();
+            } else {
+                startRealTimeUpdates();
+            }
+        });
+        
+        
+        // Função para mostrar informações de debug do sistema de tempo real
+        function showRealTimeDebugInfo() {
+            const status = isRealTimeActive ? 'Ativo' : 'Inativo';
+            const lastUpdate = lastUpdateTime ? lastUpdateTime.toLocaleTimeString('pt-BR') : 'Nunca';
+            
+            const debugInfo = `
+🔄 Sistema de Atualização em Tempo Real
+
+Status: ${status}
+Atualizações realizadas: ${updateCount}
+Última atualização: ${lastUpdate}
+Intervalo: 5 segundos
+Indicador visual: ${document.getElementById('realTimeIndicator')?.classList.contains('hidden') ? 'Oculto' : 'Visível'}
+
+Funcionalidades:
+✅ Contador de notificações
+✅ Lista de solicitações de senha
+✅ Contadores de estatísticas
+✅ Indicador de status de conexão
+✅ Pausa automática quando aba inativa
+✅ Sistema totalmente automático
+✅ Limpeza automática (24h)
+✅ Modal de histórico
+✅ Exclusão individual de solicitações (botão lixeira em cada card)
+            `;
+            
+            console.log(debugInfo);
+            showNotification(`Debug: ${status} - ${updateCount} atualizações`, 'info');
+        }
+        
+        // Adicionar função global para debug
+        window.showRealTimeDebugInfo = showRealTimeDebugInfo;
+        
+        // ==================== SISTEMA DE LIMPEZA AUTOMÁTICA E HISTÓRICO ====================
+        
+        // Função para limpeza automática de solicitações antigas (24 horas)
+        async function cleanupOldPasswordRequests() {
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const twentyFourHoursAgo = new Date();
+                twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+                
+                console.log('🧹 Iniciando limpeza automática de solicitações antigas...');
+                
+                // Buscar solicitações antigas
+                const { data: oldRequests, error: fetchError } = await supabase
+                    .from('password_requests')
+                    .select('id, status, created_at')
+                    .lt('created_at', twentyFourHoursAgo.toISOString());
+                
+                if (fetchError) {
+                    console.error('❌ Erro ao buscar solicitações antigas:', fetchError);
+                    return;
+                }
+                
+                if (oldRequests && oldRequests.length > 0) {
+                    console.log(`🗑️ Encontradas ${oldRequests.length} solicitações antigas para remover`);
+                    
+                    // Remover solicitações antigas
+                    const { error: deleteError } = await supabase
+                        .from('password_requests')
+                        .delete()
+                        .lt('created_at', twentyFourHoursAgo.toISOString());
+                    
+                    if (deleteError) {
+                        console.error('❌ Erro ao remover solicitações antigas:', deleteError);
+                    } else {
+                        console.log(`✅ ${oldRequests.length} solicitações antigas removidas com sucesso`);
+                        
+                        // Atualizar interface se necessário
+                        await loadNotifications();
+                        const passwordModal = document.getElementById('passwordRequestsModal');
+                        if (passwordModal && !passwordModal.classList.contains('hidden')) {
+                            await loadPasswordRequests();
+                        }
+                    }
+                } else {
+                    console.log('✅ Nenhuma solicitação antiga encontrada');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro na limpeza automática:', error);
+            }
+        }
+        
+        // Função para abrir modal de histórico
+        function openPasswordHistoryModal() {
+            const modal = document.getElementById('passwordHistoryModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.zIndex = '99999';
+                
+                // Carregar histórico automaticamente
+                loadPasswordHistory();
+            }
+        }
+        
+        // Função para fechar modal de histórico
+        function closePasswordHistoryModal() {
+            const modal = document.getElementById('passwordHistoryModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                modal.style.zIndex = '-1';
+            }
+        }
+        
+        // Função para carregar histórico de solicitações
+        async function loadPasswordHistory() {
+            const btn = document.getElementById('refreshPasswordHistoryBtn');
+            if (btn) {
+                // Adicionar animação de loading
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Atualizando...</span>
+                `;
+            }
+            
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const loadingElement = document.getElementById('historyLoading');
+                const emptyElement = document.getElementById('emptyHistory');
+                const listElement = document.getElementById('passwordHistoryList');
+                
+                // Mostrar loading
+                if (loadingElement) loadingElement.classList.remove('hidden');
+                if (emptyElement) emptyElement.classList.add('hidden');
+                
+                // Obter filtros
+                const statusFilter = document.getElementById('historyStatusFilter')?.value || '';
+                const daysFilter = parseInt(document.getElementById('historyDateFilter')?.value || '30');
+                
+                // Calcular data limite
+                const dateLimit = new Date();
+                dateLimit.setDate(dateLimit.getDate() - daysFilter);
+                
+                console.log('📚 Carregando histórico de solicitações...');
+                
+                // Buscar solicitações do histórico
+                let query = supabase
+                    .from('password_requests')
+                    .select('*')
+                    .gte('created_at', dateLimit.toISOString())
+                    .order('created_at', { ascending: false });
+                
+                if (statusFilter) {
+                    query = query.eq('status', statusFilter);
+                }
+                
+                const { data: requests, error } = await query;
+                
+                if (error) {
+                    console.error('❌ Erro ao carregar histórico:', error);
+                    throw error;
+                }
+                
+                console.log('📚 Histórico carregado:', requests);
+                
+                // Ocultar loading
+                if (loadingElement) loadingElement.classList.add('hidden');
+                
+                if (!requests || requests.length === 0) {
+                    // Mostrar empty state
+                    if (emptyElement) emptyElement.classList.remove('hidden');
+                    return;
+                }
+                
+                // Buscar dados dos usuários para cada solicitação (com tratamento de erro melhorado)
+                const historyWithUsers = [];
+                for (const request of requests) {
+                    try {
+                        // Tentar buscar dados do usuário com tratamento de erro
+                        const { data: userData, error: userError } = await supabase
+                            .from('users')
+                            .select('email, name')
+                            .eq('id', request.user_id)
+                            .maybeSingle(); // Usar maybeSingle para evitar erro se não encontrar
+                        
+                        if (userError) {
+                            historyWithUsers.push({
+                                ...request,
+                                user_email: 'Email indisponível',
+                                user_name: 'Usuário indisponível'
+                            });
+                        } else if (userData) {
+                            historyWithUsers.push({
+                                ...request,
+                                user_email: userData.email || 'Email não encontrado',
+                                user_name: userData.name || 'Usuário não encontrado'
+                            });
+                        } else {
+                            historyWithUsers.push({
+                                ...request,
+                                user_email: 'Email não encontrado',
+                                user_name: 'Usuário não encontrado'
+                            });
+                        }
+                    } catch (userError) {
+                        historyWithUsers.push({
+                            ...request,
+                            user_email: 'Email indisponível',
+                            user_name: 'Usuário indisponível'
+                        });
+                    }
+                }
+                
+                // Exibir histórico
+                displayPasswordHistory(historyWithUsers);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar histórico:', error);
+                const loadingElement = document.getElementById('historyLoading');
+                if (loadingElement) loadingElement.classList.add('hidden');
+            } finally {
+                if (btn) {
+                    // Restaurar botão
+                    btn.disabled = false;
+                    btn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Atualizar</span>
+                    `;
+                }
+            }
+        }
+        
+        // Função para exibir histórico de solicitações
+        function displayPasswordHistory(requests) {
+            const listElement = document.getElementById('passwordHistoryList');
+            const emptyElement = document.getElementById('emptyHistory');
+            
+            if (!listElement) return;
+            
+            if (!requests || requests.length === 0) {
+                if (emptyElement) emptyElement.classList.remove('hidden');
+                return;
+            }
+            
+            if (emptyElement) emptyElement.classList.add('hidden');
+            
+            listElement.innerHTML = requests.map(request => createHistoryCard(request)).join('');
+        }
+        
+        // Função para criar card de histórico
+        function createHistoryCard(request) {
+            const statusColors = {
+                approved: 'bg-green-100 text-green-800 bg-green-100/20 dark:text-green-400',
+                rejected: 'bg-red-100 text-red-800 bg-red-100/20 text-red-600',
+                pending: 'bg-yellow-100 text-yellow-800 bg-yellow-100/20 text-yellow-600'
+            };
+            
+            const statusTexts = {
+                approved: 'Aprovada',
+                rejected: 'Rejeitada',
+                pending: 'Pendente'
+            };
+            
+            const typeTexts = {
+                change: 'Alteração de Senha',
+                reset: 'Redefinição de Senha'
+            };
+            
+            const reasonTexts = {
+                forgot: 'Esqueci a senha',
+                security: 'Questões de segurança',
+                update: 'Atualização regular',
+                other: 'Outro motivo'
+            };
+            
+            const createdDate = new Date(request.created_at);
+            const formattedDate = createdDate.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `
+                <div class="bg-white  rounded-xl border border-gray-200 border-gray-200 p-4 hover:shadow-lg transition-all duration-200">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[request.status]}">
+                                    ${statusTexts[request.status]}
+                                </span>
+                                <span class="text-sm text-gray-500 ">
+                                    ${typeTexts[request.type] || 'Tipo não especificado'}
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-1">
+                                <p class="font-medium text-gray-900 ">
+                                    ${request.user_name || 'Usuário não encontrado'}
+                                </p>
+                                <p class="text-sm text-gray-600 ">
+                                    ${request.user_email || 'Email não encontrado'}
+                                </p>
+                                <p class="text-sm text-gray-500 ">
+                                    Motivo: ${reasonTexts[request.reason] || request.reason || 'Não especificado'}
+                                </p>
+                            </div>
+                            
+                            ${request.notes ? `
+                                <div class="mt-2 p-2 bg-gray-50 bg-white rounded-lg">
+                                    <p class="text-sm text-gray-700 ">
+                                        ${request.notes.length > 100 ? request.notes.substring(0, 100) + '...' : request.notes}
+                                    </p>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="text-right">
+                            <p class="text-sm text-gray-500 ">
+                                ${formattedDate}
+                            </p>
+                            ${request.approved_by ? `
+                                <p class="text-xs text-gray-400  mt-1">
+                                    Processado por: ${request.approved_by}
+                                </p>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Executar limpeza automática a cada hora
+        setInterval(cleanupOldPasswordRequests, 60 * 60 * 1000); // 1 hora
+        
+        // Executar limpeza inicial após 5 segundos
+        setTimeout(cleanupOldPasswordRequests, 5000);
+        
+        // Função para alternar visibilidade da senha
+        function togglePasswordVisibility(button) {
+            const input = button.previousElementSibling;
+            const icon = button.querySelector('svg');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                `;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                `;
+            }
+        }
+        
+        // Função para excluir solicitação individual
+        async function deletePasswordRequest(requestId) {
+            try {
+                // Mostrar confirmação
+                const confirmed = confirm('Tem certeza que deseja excluir esta solicitação? Esta ação não pode ser desfeita.');
+                if (!confirmed) return;
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                
+                console.log('🗑️ Excluindo solicitação:', requestId);
+                
+                // Excluir solicitação
+                const { error } = await supabase
+                    .from('password_requests')
+                    .delete()
+                    .eq('id', requestId);
+                
+                if (error) {
+                    console.error('❌ Erro ao excluir solicitação:', error);
+                    showNotification('Erro ao excluir solicitação', 'error');
+                    return;
+                }
+                
+                console.log('✅ Solicitação excluída com sucesso');
+                showNotification('Solicitação excluída com sucesso', 'success');
+                
+                // Atualizar interface
+                await loadNotifications();
+                await loadPasswordRequests();
+                
+                // Atualizar histórico se estiver aberto
+                const historyModal = document.getElementById('passwordHistoryModal');
+                if (historyModal && !historyModal.classList.contains('hidden')) {
+                    await loadPasswordHistory();
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao excluir solicitação:', error);
+                showNotification('Erro ao excluir solicitação', 'error');
+            }
+        }
+        
+        // Função para excluir múltiplas solicitações
+        async function deleteMultiplePasswordRequests(requestIds) {
+            try {
+                if (!requestIds || requestIds.length === 0) {
+                    showNotification('Nenhuma solicitação selecionada', 'warning');
+                    return;
+                }
+                
+                const confirmed = confirm(`Tem certeza que deseja excluir ${requestIds.length} solicitação(ões)? Esta ação não pode ser desfeita.`);
+                if (!confirmed) return;
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                
+                console.log('🗑️ Excluindo múltiplas solicitações:', requestIds);
+                
+                // Excluir múltiplas solicitações
+                const { error } = await supabase
+                    .from('password_requests')
+                    .delete()
+                    .in('id', requestIds);
+                
+                if (error) {
+                    console.error('❌ Erro ao excluir solicitações:', error);
+                    showNotification('Erro ao excluir solicitações', 'error');
+                    return;
+                }
+                
+                console.log(`✅ ${requestIds.length} solicitações excluídas com sucesso`);
+                showNotification(`${requestIds.length} solicitações excluídas com sucesso`, 'success');
+                
+                // Atualizar interface
+                await loadNotifications();
+                await loadPasswordRequests();
+                
+                // Atualizar histórico se estiver aberto
+                const historyModal = document.getElementById('passwordHistoryModal');
+                if (historyModal && !historyModal.classList.contains('hidden')) {
+                    await loadPasswordHistory();
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao excluir solicitações:', error);
+                showNotification('Erro ao excluir solicitações', 'error');
+            }
+        }
+        
+        
+        // Event listeners para filtros do histórico
+        document.addEventListener('DOMContentLoaded', () => {
+            const statusFilter = document.getElementById('historyStatusFilter');
+            const dateFilter = document.getElementById('historyDateFilter');
+            
+            if (statusFilter) {
+                statusFilter.addEventListener('change', loadPasswordHistory);
+            }
+            
+            if (dateFilter) {
+                dateFilter.addEventListener('change', loadPasswordHistory);
+            }
+        });
+        
+        // ==================== FUNÇÃO CORRIGIDA PARA EXIBIR SOLICITAÇÕES ====================
+        
+        // Função corrigida para exibir solicitações
+        function displayPasswordRequestsFixed(requests) {
+            console.log('📋 Exibindo solicitações:', requests);
+            console.log('📋 Número de solicitações:', requests?.length || 0);
+            
+            const container = document.getElementById('passwordRequestsList');
+            const emptyState = document.getElementById('emptyPasswordRequests');
+            const modal = document.getElementById('passwordRequestsModal');
+            
+            console.log('📋 Container encontrado:', !!container);
+            console.log('📋 Empty state encontrado:', !!emptyState);
+            console.log('📋 Modal encontrado:', !!modal);
+            console.log('📋 Modal visível:', modal ? !modal.classList.contains('hidden') : false);
+            
+            if (!container) {
+                console.error('❌ Container passwordRequestsList não encontrado');
+                return;
+            }
+            
+            if (!emptyState) {
+                console.error('❌ EmptyState emptyPasswordRequests não encontrado');
+                return;
+            }
+            
+            // Se o modal não estiver visível, não exibir as solicitações
+            if (modal && modal.classList.contains('hidden')) {
+                console.log('📋 Modal não está visível, não exibindo solicitações');
+                return;
+            }
+            
+            // Atualizar contadores
+            updateRequestCounters(requests || []);
+            
+            if (!requests || requests.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                console.log('📝 Nenhuma solicitação encontrada');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            container.innerHTML = '';
+            
+            requests.forEach((request, index) => {
+                console.log(`📄 Criando card para solicitação ${index + 1}:`, request);
+                
+                const card = document.createElement('div');
+                card.className = 'bg-white bg-white border border-gray-200 border-gray-200 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] hover:border-blue-300 hover:border-blue-300';
+                
+                const statusColors = {
+                    'pending': 'bg-yellow-100 text-yellow-800 bg-yellow-100/20 text-yellow-800',
+                    'approved': 'bg-green-100 text-green-800 bg-green-100/20 text-green-800',
+                    'rejected': 'bg-red-100 text-red-800 bg-red-100/20 text-red-800'
+                };
+                
+                const statusText = {
+                    'pending': 'Pendente',
+                    'approved': 'Aprovada',
+                    'rejected': 'Rejeitada'
+                };
+                
+                const userName = request.users?.name || request.users?.email || 'Usuário desconhecido';
+                const userEmail = request.users?.email || 'Email não disponível';
+                
+                // Extrair a nova senha das notas ou do campo new_password
+                let newPassword = '';
+                if (request.new_password) {
+                    newPassword = request.new_password;
+                } else if (request.notes && request.notes.includes('NOVA SENHA:')) {
+                    const passwordMatch = request.notes.match(/NOVA SENHA:\s*([^\n\r]+)/);
+                    newPassword = passwordMatch ? passwordMatch[1].trim() : '';
+                }
+                
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <!-- Header do card -->
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-base font-bold text-gray-900 ">${userName}</h4>
+                                        <p class="text-xs text-gray-600 ">${userEmail}</p>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColors[request.status] || statusColors.pending}">
+                                    ${statusText[request.status] || 'Pendente'}
+                                </span>
+                            </div>
+                            
+                            <!-- Motivo -->
+                            <div class="mb-3">
+                                <p class="text-sm text-gray-700 ">
+                                    <span class="font-semibold text-gray-900 ">Motivo:</span> ${request.reason || 'Não informado'}
+                                </p>
+                            </div>
+                            
+                            <!-- Nova Senha -->
+                            ${newPassword ? `
+                                <div class="bg-gradient-to-r from-blue-50 to-purple-50 from-blue-50 to-purple-50 border border-blue-200 border-blue-200 rounded-lg p-3 mb-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-semibold text-blue-800 text-blue-800">Nova Senha:</span>
+                                        <button onclick="togglePasswordVisibility('${request.id}')" class="p-1 text-blue-600 hover:text-blue-800 text-blue-600 hover:bg-blue-100 hover:bg-blue-100 rounded transition-all">
+                                            <svg id="eye-${request.id}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div id="password-${request.id}" class="text-sm text-blue-700 dark:text-blue-300 font-mono bg-white  rounded p-2 border" style="display: none;">
+                                        ${newPassword}
+                                    </div>
+                                    <div id="password-hidden-${request.id}" class="text-sm text-blue-700 dark:text-blue-300 font-mono bg-white  rounded p-2 border">
+                                        ••••••••
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Data -->
+                            <div class="flex items-center text-xs text-gray-500 ">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                ${new Date(request.created_at).toLocaleString('pt-BR')}
+                            </div>
+                        </div>
+                        
+                        <!-- Botões de ação -->
+                        <div class="flex flex-col space-y-2 ml-4">
+                            <button onclick="viewPasswordRequestDetails('${request.id}')" class="px-3 py-1.5 text-xs bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all font-medium shadow hover:shadow-md">
+                                Ver Detalhes
+                            </button>
+                            ${request.status === 'pending' ? `
+                                <button onclick="approvePasswordRequestDirect('${request.id}')" class="px-3 py-1.5 text-xs bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all font-medium shadow hover:shadow-md">
+                                    ✓ Aprovar
+                                </button>
+                                <button onclick="rejectPasswordRequestDirect('${request.id}')" class="px-3 py-1.5 text-xs bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all font-medium shadow hover:shadow-md">
+                                    ✗ Rejeitar
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            console.log(`✅ ${requests.length} solicitações exibidas com sucesso`);
+        }
+        
+        // Substituir as funções pelas versões corrigidas
+        window.displayPasswordRequests = displayPasswordRequestsFixed;
+        window.viewPasswordRequestDetails = viewPasswordRequestDetailsFixed;
+        
+        // Funções diretas para aprovar e rejeitar (sem depender de currentPasswordRequestId)
+        window.approvePasswordRequestDirect = async function(requestId) {
+            if (!requestId) {
+                showNotification('ID da solicitação não encontrado', 'error');
+                return;
+            }
+            
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    showNotification('Usuário não autenticado', 'error');
+                    return;
+                }
+                
+                // Primeiro, buscar a solicitação para obter a nova senha
+                const { data: request, error: fetchError } = await supabase
+                    .from('password_requests')
+                    .select('*')
+                    .eq('id', requestId)
+                    .single();
+                
+                if (fetchError || !request) {
+                    showNotification('Erro ao buscar solicitação', 'error');
+                    return;
+                }
+                
+                // Verificar se a solicitação ainda está pendente
+                if (request.status !== 'pending') {
+                    showNotification('Esta solicitação já foi processada', 'warning');
+                    return;
+                }
+                
+                // Obter a nova senha (pode estar em new_password ou em notes)
+                let newPassword = request.new_password;
+                if (!newPassword && request.notes && request.notes.includes('NOVA SENHA:')) {
+                    newPassword = request.notes.split('NOVA SENHA: ')[1]?.split('\n')[0];
+                }
+                
+                if (!newPassword) {
+                    showNotification('Nova senha não encontrada na solicitação', 'error');
+                    return;
+                }
+                
+                console.log('🔑 Aprovando solicitação e alterando senha...');
+                console.log('User ID:', request.user_id);
+                console.log('Nova senha:', newPassword);
+                
+                // Tentar atualizar a senha usando RPC function (alternativa ao admin)
+                try {
+                    const { error: updatePasswordError } = await supabase.rpc('update_user_password', {
+                        user_id: request.user_id,
+                        new_password: newPassword
+                    });
+                    
+                    if (updatePasswordError) {
+                        
+                        // Método alternativo: atualizar na tabela auth.users diretamente
+                        const { error: directUpdateError } = await supabase
+                            .from('auth.users')
+                            .update({ encrypted_password: newPassword })
+                            .eq('id', request.user_id);
+                        
+                        if (directUpdateError) {
+                            
+                            // Fallback: apenas marcar como aprovado e notificar o usuário
+                            showNotification('Solicitação aprovada. A senha será alterada pelo sistema automaticamente.', 'success');
+                        } else {
+                            console.log('✅ Senha atualizada via método direto');
+                            showNotification('Solicitação aprovada e senha alterada com sucesso!', 'success');
+                        }
+                    } else {
+                        console.log('✅ Senha atualizada via RPC function');
+                        showNotification('Solicitação aprovada e senha alterada com sucesso!', 'success');
+                    }
+                } catch (rpcError) {
+                    showNotification('Solicitação aprovada. A senha será alterada pelo sistema automaticamente.', 'success');
+                }
+                
+                // Atualizar status da solicitação
+                const { error: updateRequestError } = await supabase
+                    .from('password_requests')
+                    .update({
+                        status: 'approved',
+                        approved_at: new Date().toISOString(),
+                        approved_by: user.id
+                    })
+                    .eq('id', requestId);
+                
+                if (updateRequestError) {
+                    console.error('Erro ao atualizar solicitação:', updateRequestError);
+                    showNotification('Senha alterada, mas erro ao atualizar solicitação', 'warning');
+                    return;
+                }
+                
+                // Garantir que o usuário está ativo após aprovação
+                const { error: userError } = await supabase
+                    .from('users')
+                    .update({
+                        is_active: true,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', request.user_id);
+                
+                if (userError) {
+                    console.warn('Aviso: Não foi possível ativar o usuário:', userError);
+                } else {
+                    console.log('✅ Usuário ativado após aprovação da solicitação');
+                }
+                
+                console.log('✅ Solicitação aprovada com sucesso!');
+                
+                // Log de auditoria
+                logAuditEvent('password_request_approved', request.user_id, {
+                    requestId: requestId,
+                    managerId: user.id,
+                    newPasswordLength: newPassword.length,
+                    reason: request.reason
+                });
+                
+                // Notificar o usuário sobre a alteração de senha e logout automático
+                await notifyUserPasswordChanged(request.user_id, newPassword);
+                
+                // Limpar cache para forçar atualização
+                clearCache();
+                
+                // Mover card para baixo e marcar como aprovado
+                moveCardToBottom(requestId, 'approved');
+                
+                // Fechar modal se estiver aberto
+                closePasswordRequestDetailsModal();
+                
+                // Remover card após 10 minutos
+                setTimeout(() => {
+                    removeCard(requestId);
+                }, 10 * 60 * 1000); // 10 minutos
+                
+            } catch (error) {
+                console.error('Erro ao aprovar solicitação:', error);
+                showNotification('Erro ao aprovar solicitação: ' + error.message, 'error');
+            }
+        };
+        
+        window.rejectPasswordRequestDirect = async function(requestId) {
+            if (!requestId) {
+                showNotification('ID da solicitação não encontrado', 'error');
+                return;
+            }
+            
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    showNotification('Usuário não autenticado', 'error');
+                    return;
+                }
+                
+                // Validar sessão do gerente
+                const sessionValidation = await validateManagerSession();
+                if (!sessionValidation.valid) {
+                    showNotification('Sessão inválida. Faça login novamente.', 'error');
+                    return;
+                }
+                
+                // Atualizar status da solicitação
+                const { error } = await supabase
+                    .from('password_requests')
+                    .update({
+                        status: 'rejected',
+                        rejected_at: new Date().toISOString(),
+                        rejected_by: user.id
+                    })
+                    .eq('id', requestId);
+                
+                if (error) throw error;
+                
+                showNotification('Solicitação rejeitada com sucesso!', 'success');
+                
+                // Mover card para baixo e marcar como rejeitado
+                moveCardToBottom(requestId, 'rejected');
+                
+                // Fechar modal se estiver aberto
+                closePasswordRequestDetailsModal();
+                
+                // Remover card após 10 minutos
+                setTimeout(() => {
+                    removeCard(requestId);
+                }, 10 * 60 * 1000); // 10 minutos
+                
+            } catch (error) {
+                console.error('Erro ao rejeitar solicitação:', error);
+                showNotification('Erro ao rejeitar solicitação: ' + error.message, 'error');
+            }
+        };
+        
+        // Função para mover card para baixo
+        function moveCardToBottom(requestId, status) {
+            const container = document.getElementById('passwordRequestsList');
+            if (!container) return;
+            
+            // Encontrar o card pelo ID específico nos botões
+            const cards = Array.from(container.children);
+            const targetCard = cards.find(card => {
+                const buttons = card.querySelectorAll('button[onclick*="' + requestId + '"]');
+                return buttons.length > 0;
+            });
+            
+            if (targetCard) {
+                // Remover o card da posição atual
+                targetCard.remove();
+                
+                // Atualizar o visual do card para mostrar o novo status
+                updateCardStatus(targetCard, status);
+                
+                // Adicionar no final da lista
+                container.appendChild(targetCard);
+                
+                console.log(`📋 Card movido para baixo: ${requestId} - Status: ${status}`);
+            } else {
+            }
+        }
+        
+        // Função para atualizar o status visual do card
+        function updateCardStatus(card, status) {
+            const statusSpan = card.querySelector('span[class*="bg-"]');
+            if (statusSpan) {
+                const statusColors = {
+                    'approved': 'bg-green-100 text-green-800 bg-green-100/20 text-green-800',
+                    'rejected': 'bg-red-100 text-red-800 bg-red-100/20 text-red-800'
+                };
+                
+                const statusText = {
+                    'approved': 'APROVADA',
+                    'rejected': 'REJEITADA'
+                };
+                
+                statusSpan.className = `px-2 py-1 text-xs font-semibold rounded-full ${statusColors[status]}`;
+                statusSpan.textContent = statusText[status];
+            }
+            
+            // Remover botões de ação
+            const actionButtons = card.querySelector('.flex.flex-col.space-y-2.ml-4');
+            if (actionButtons) {
+                actionButtons.innerHTML = '<div class="text-xs text-gray-500 ">Processada</div>';
+            }
+        }
+        
+        // Função para remover card completamente
+        function removeCard(requestId) {
+            const container = document.getElementById('passwordRequestsList');
+            if (!container) return;
+            
+            const cards = Array.from(container.children);
+            const targetCard = cards.find(card => {
+                const buttons = card.querySelectorAll('button[onclick*="' + requestId + '"]');
+                return buttons.length > 0;
+            });
+            
+            if (targetCard) {
+                targetCard.remove();
+                console.log(`🗑️ Card removido após 10 minutos: ${requestId}`);
+            }
+        }
+        
+        // Funções principais para aprovar e rejeitar solicitações
+        window.approvePasswordRequest = async function(requestId) {
+            if (!requestId) {
+                requestId = window.currentPasswordRequestId;
+            }
+            
+            if (!requestId) {
+                showNotification('ID da solicitação não encontrado', 'error');
+                return;
+            }
+            
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    showNotification('Usuário não autenticado', 'error');
+                    return;
+                }
+                
+                // Primeiro, obter dados da solicitação para pegar o user_id
+                const { data: requestData, error: requestError } = await supabase
+                    .from('password_requests')
+                    .select('user_id')
+                    .eq('id', requestId)
+                    .single();
+                
+                if (requestError) throw requestError;
+                
+                // Atualizar status da solicitação
+                const { error } = await supabase
+                    .from('password_requests')
+                    .update({
+                        status: 'approved',
+                        approved_at: new Date().toISOString(),
+                        approved_by: user.id
+                    })
+                    .eq('id', requestId);
+                
+                if (error) throw error;
+                
+                // Garantir que o usuário está ativo após aprovação
+                if (requestData.user_id) {
+                    const { error: userError } = await supabase
+                        .from('users')
+                        .update({
+                            is_active: true,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', requestData.user_id);
+                    
+                    if (userError) {
+                        console.warn('Aviso: Não foi possível ativar o usuário:', userError);
+                    } else {
+                        console.log('✅ Usuário ativado após aprovação da solicitação');
+                    }
+                }
+                
+                // Log de auditoria
+                logAuditEvent('password_request_approved', requestId, {
+                    managerId: user.id,
+                    reason: 'manager_approval'
+                });
+                
+                // Limpar cache para forçar atualização
+                clearPasswordRequestsCache();
+                
+                // Recarregar lista
+                await displayPasswordRequests();
+                
+                // Fechar modal de detalhes se estiver aberto
+                const modal = document.getElementById('passwordRequestDetailsModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closePasswordRequestDetailsModal();
+                }
+                
+                showNotification('Solicitação aprovada com sucesso!', 'success');
+                
+            } catch (error) {
+                console.error('Erro ao aprovar solicitação:', error);
+                showNotification('Erro ao aprovar solicitação: ' + error.message, 'error');
+            }
+        };
+        
+        window.rejectPasswordRequest = async function(requestId) {
+            if (!requestId) {
+                requestId = window.currentPasswordRequestId;
+            }
+            
+            if (!requestId) {
+                showNotification('ID da solicitação não encontrado', 'error');
+                return;
+            }
+            
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    showNotification('Usuário não autenticado', 'error');
+                    return;
+                }
+                
+                // Atualizar status da solicitação
+                const { error } = await supabase
+                    .from('password_requests')
+                    .update({
+                        status: 'rejected',
+                        rejected_at: new Date().toISOString(),
+                        rejected_by: user.id
+                    })
+                    .eq('id', requestId);
+                
+                if (error) throw error;
+                
+                // Log de auditoria
+                logAuditEvent('password_request_rejected', requestId, {
+                    managerId: user.id,
+                    reason: 'manager_rejection'
+                });
+                
+                // Limpar cache para forçar atualização
+                clearPasswordRequestsCache();
+                
+                // Recarregar lista
+                await displayPasswordRequests();
+                
+                // Fechar modal de detalhes se estiver aberto
+                const modal = document.getElementById('passwordRequestDetailsModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closePasswordRequestDetailsModal();
+                }
+                
+                showNotification('Solicitação rejeitada com sucesso!', 'success');
+                
+            } catch (error) {
+                console.error('Erro ao rejeitar solicitação:', error);
+                showNotification('Erro ao rejeitar solicitação: ' + error.message, 'error');
+            }
+        };
+        
+        
+        function togglePasswordVisibility(requestId) {
+            const passwordElement = document.getElementById(`password-${requestId}`);
+            const passwordHiddenElement = document.getElementById(`password-hidden-${requestId}`);
+            const eyeIcon = document.getElementById(`eye-${requestId}`);
+            
+            if (passwordElement && passwordHiddenElement && eyeIcon) {
+                if (passwordElement.style.display === 'none') {
+                    passwordElement.style.display = 'block';
+                    passwordHiddenElement.style.display = 'none';
+                    eyeIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M9.878 9.878a3 3 0 00-.007 4.243m4.242-4.242L15.536 8.464M14.122 14.121a3 3 0 00-.007-4.243M14.122 14.121L15.536 15.536M14.122 14.121l-4.243 4.243m6.364-6.364L21.878 21.878m-6.364-6.364l-4.243-4.243m0 0L2.878 2.878 21.878 21.878"></path>
+                    `;
+                } else {
+                    passwordElement.style.display = 'none';
+                    passwordHiddenElement.style.display = 'block';
+                    eyeIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    `;
+                }
+            }
+        }
+        
+        window.togglePasswordVisibility = togglePasswordVisibility;
+        
+        
+        
+        // Logs de auditoria para o gerente
+        function logAuditEvent(action, userId, details = {}) {
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                action,
+                userId,
+                managerId: details.managerId || 'unknown',
+                ip: details.ip || 'unknown',
+                userAgent: navigator.userAgent,
+                details
+            };
+            
+            console.log(`[AUDIT] ${action} by manager:`, logEntry);
+            
+            // Armazenar no localStorage para persistência
+            const auditLogs = JSON.parse(localStorage.getItem('manager_audit_logs') || '[]');
+            auditLogs.push(logEntry);
+            
+            // Manter apenas os últimos 200 logs
+            if (auditLogs.length > 200) {
+                auditLogs.splice(0, auditLogs.length - 200);
+            }
+            
+            localStorage.setItem('manager_audit_logs', JSON.stringify(auditLogs));
+        }
+        
+        // Validação de sessão do gerente
+        async function validateManagerSession() {
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    return { valid: false, reason: 'not_authenticated' };
+                }
+                
+                // Verificar se o usuário ainda é um gerente ativo
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('role, is_active, last_activity')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (error || !userData) {
+                    return { valid: false, reason: 'user_not_found' };
+                }
+                
+                if (userData.role !== 'gerente') {
+                    return { valid: false, reason: 'not_manager' };
+                }
+                
+                if (!userData.is_active) {
+                    return { valid: false, reason: 'inactive_user' };
+                }
+                
+                return { valid: true, userData };
+                
+            } catch (error) {
+                console.error('Erro ao validar sessão do gerente:', error);
+                return { valid: false, reason: 'validation_error' };
+            }
+        }
+        
+        // Função para notificar usuário sobre alteração de senha
+        async function notifyUserPasswordChanged(userId, newPassword) {
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                
+                // Validar sessão do gerente
+                const sessionValidation = await validateManagerSession();
+                if (!sessionValidation.valid) {
+                    console.error('Sessão do gerente inválida:', sessionValidation.reason);
+                    return;
+                }
+                
+                // Buscar dados do usuário
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('email, name')
+                    .eq('id', userId)
+                    .single();
+                
+                if (userError || !userData) {
+                    console.error('Erro ao buscar dados do usuário:', userError);
+                    return;
+                }
+                
+                // Criar notificação para o usuário
+                const { error: notificationError } = await supabase
+                    .from('notifications')
+                    .insert([{
+                        user_id: userId,
+                        type: 'password_changed',
+                        title: 'Senha Alterada com Sucesso',
+                        message: `Sua senha foi alterada com sucesso. Por segurança, você será deslogado automaticamente. Use a nova senha para fazer login novamente.`,
+                        data: {
+                            new_password: newPassword,
+                            auto_logout: true,
+                            logout_reason: 'password_changed'
+                        },
+                        is_read: false
+                    }]);
+                
+                if (notificationError) {
+                    console.error('Erro ao criar notificação:', notificationError);
+                } else {
+                    console.log('✅ Notificação de alteração de senha criada para o usuário');
+                }
+                
+                // Criptografar a nova senha antes de armazenar
+                const encryptedPassword = await encryptPassword(newPassword);
+                
+                // Enviar sinal para logout automático (usando WebSocket ou Server-Sent Events se disponível)
+                // Por enquanto, vamos usar uma abordagem simples com localStorage
+                const logoutSignal = {
+                    userId: userId,
+                    reason: 'password_changed',
+                    timestamp: new Date().toISOString(),
+                    newPassword: encryptedPassword,
+                    encrypted: true
+                };
+                
+                // Armazenar sinal de logout no localStorage (será verificado pelos outros usuários)
+                const existingSignals = JSON.parse(localStorage.getItem('password_change_signals') || '[]');
+                existingSignals.push(logoutSignal);
+                localStorage.setItem('password_change_signals', JSON.stringify(existingSignals));
+                
+                console.log('🔔 Sinal de logout automático enviado para o usuário:', userId);
+                
+            } catch (error) {
+                console.error('Erro ao notificar usuário sobre alteração de senha:', error);
+            }
+        }
+        
+        // Tornar função global
+        window.notifyUserPasswordChanged = notifyUserPasswordChanged;
+        
+        // Sistema de indicadores de progresso
+        function showProgressIndicator(message, progress = 0) {
+            // Remover indicador existente
+            const existingIndicator = document.getElementById('progressIndicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
+            // Criar novo indicador
+            const indicator = document.createElement('div');
+            indicator.id = 'progressIndicator';
+            indicator.className = 'fixed top-4 right-4 bg-white  rounded-xl shadow-2xl p-4 z-[99999] min-w-[300px]';
+            indicator.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900 ">${message}</p>
+                        <div class="mt-2 bg-gray-200 bg-white rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(indicator);
+            return indicator;
+        }
+        
+        function updateProgressIndicator(progress, message = null) {
+            const indicator = document.getElementById('progressIndicator');
+            if (!indicator) return;
+            
+            const progressBar = indicator.querySelector('.bg-blue-500');
+            const messageElement = indicator.querySelector('p');
+            
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+            
+            if (message && messageElement) {
+                messageElement.textContent = message;
+            }
+        }
+        
+        function hideProgressIndicator() {
+            const indicator = document.getElementById('progressIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        // Confirmações inteligentes baseadas no contexto
+        function getConfirmationMessage(request, action) {
+            const userEmail = request.users?.email || 'usuário';
+            const requestAge = Math.floor((Date.now() - new Date(request.created_at)) / (1000 * 60 * 60)); // horas
+            
+            if (action === 'approve') {
+                if (requestAge < 1) {
+                    return `Aprovar solicitação de ${userEmail}? Esta solicitação foi feita há menos de 1 hora.`;
+                } else if (requestAge < 24) {
+                    return `Aprovar solicitação de ${userEmail}? Esta solicitação foi feita há ${requestAge} horas.`;
+                } else {
+                    return `Aprovar solicitação de ${userEmail}? Esta solicitação foi feita há ${Math.floor(requestAge / 24)} dias.`;
+                }
+            } else if (action === 'reject') {
+                return `Rejeitar solicitação de ${userEmail}? Esta ação não pode ser desfeita.`;
+            }
+            
+            return `Confirmar ${action} para ${userEmail}?`;
+        }
+        
+        // Atalhos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl + Enter para aprovar solicitação
+            if (e.ctrlKey && e.key === 'Enter') {
+                // Verificar se há uma solicitação selecionada
+                if (window.currentPasswordRequestId) {
+                const approveButton = document.querySelector('button[onclick*="approvePasswordRequest"]');
+                if (approveButton && !approveButton.disabled) {
+                    e.preventDefault();
+                    approveButton.click();
+                    }
+                } else {
+                    e.preventDefault();
+                    showNotification('Nenhuma solicitação selecionada. Abra o modal de solicitações primeiro.', 'warning');
+                }
+            }
+            
+            // Ctrl + R para rejeitar solicitação
+            if (e.ctrlKey && e.key === 'r') {
+                // Verificar se há uma solicitação selecionada
+                if (window.currentPasswordRequestId) {
+                const rejectButton = document.querySelector('button[onclick*="rejectPasswordRequest"]');
+                if (rejectButton && !rejectButton.disabled) {
+                    e.preventDefault();
+                    rejectButton.click();
+                    }
+                } else {
+                    e.preventDefault();
+                    showNotification('Nenhuma solicitação selecionada. Abra o modal de solicitações primeiro.', 'warning');
+                }
+            }
+            
+            // Escape para fechar modais
+            if (e.key === 'Escape') {
+                const openModal = document.querySelector('.modal:not(.hidden)');
+                if (openModal) {
+                    const closeButton = openModal.querySelector('button[onclick*="close"]');
+                    if (closeButton) {
+                        closeButton.click();
+                    }
+                }
+            }
+        });
+        
+        // Sistema de cache otimizado para melhorar performance
+        const requestsCache = new Map();
+        const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos em vez de 5
+        let lastCacheUpdate = 0;
+        const MIN_CACHE_UPDATE_INTERVAL = 2 * 60 * 1000; // 2 minutos mínimo entre atualizações
+        
+        function getCachedRequests() {
+            const cached = requestsCache.get('password_requests');
+            if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+                return cached.data;
+            }
+            return null;
+        }
+        
+        function setCachedRequests(data) {
+            const now = Date.now();
+            // Evitar atualizações muito frequentes do cache
+            if (now - lastCacheUpdate < MIN_CACHE_UPDATE_INTERVAL) {
+                return;
+            }
+            lastCacheUpdate = now;
+            
+            requestsCache.set('password_requests', {
+                data,
+                timestamp: now
+            });
+        }
+        
+        function clearCache() {
+            requestsCache.clear();
+            lastCacheUpdate = 0;
+        }
+        
+        // Função otimizada para carregar solicitações com cache
+        let isLoadingRequests = false;
+        
+        async function loadPasswordRequestsWithCache(forceRefresh = false) {
+            console.log('🔄 Iniciando carregamento de solicitações...', forceRefresh ? '(forçando refresh)' : '');
+            
+            // Evitar múltiplas chamadas simultâneas
+            if (isLoadingRequests) {
+                console.log('⏳ Carregamento já em andamento, aguardando...');
+                return;
+            }
+            
+            // Verificar cache primeiro (a menos que seja forçado)
+            if (!forceRefresh) {
+                const cached = getCachedRequests();
+                if (cached) {
+                    console.log('📦 Carregando solicitações do cache:', cached.length, 'solicitações');
+                    displayPasswordRequests(cached);
+                    return;
+                }
+            } else {
+                console.log('🔄 Forçando refresh - ignorando cache');
+                clearCache();
+            }
+            
+            console.log('🌐 Buscando dados do servidor...');
+            isLoadingRequests = true;
+            
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    console.error('❌ Usuário não autenticado');
+                    showNotification('Usuário não autenticado', 'error');
+                    return;
+                }
+                
+                console.log('👤 Usuário autenticado:', user.id);
+                
+                // Buscar dados do usuário atual para obter farm_id
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (userError || !userData?.farm_id) {
+                    console.error('❌ Erro ao buscar dados da fazenda:', userError);
+                    showNotification('Erro ao buscar dados da fazenda', 'error');
+                    return;
+                }
+                
+                console.log('🏡 Farm ID encontrado:', userData.farm_id);
+                
+                // Buscar solicitações de senha da fazenda (abordagem corrigida)
+                // Primeiro, buscar usuários da fazenda
+                const { data: farmUsers, error: usersError } = await supabase
+                    .from('users')
+                    .select('id, name, email, role, profile_photo_url')
+                    .eq('farm_id', userData.farm_id);
+                
+                if (usersError) {
+                    console.error('❌ Erro ao buscar usuários da fazenda:', usersError);
+                    showNotification('Erro ao buscar usuários da fazenda', 'error');
+                    return;
+                }
+                
+                if (!farmUsers || farmUsers.length === 0) {
+                    console.log('📝 Nenhum usuário encontrado na fazenda');
+                    displayPasswordRequests([]);
+                    return;
+                }
+                
+                const userIds = farmUsers.map(user => user.id);
+                
+                // Depois, buscar solicitações desses usuários
+                const { data: requests, error } = await supabase
+                    .from('password_requests')
+                    .select('*')
+                    .in('user_id', userIds)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('❌ Erro ao buscar solicitações:', error);
+                    showNotification('Erro ao carregar solicitações', 'error');
+                    return;
+                }
+                
+                console.log('✅ Solicitações carregadas:', requests?.length || 0, 'solicitações');
+                
+                // Combinar dados das solicitações com dados dos usuários
+                const requestsWithUsers = (requests || []).map(request => {
+                    const user = farmUsers.find(u => u.id === request.user_id);
+                    return {
+                        ...request,
+                        users: user || { name: 'Usuário não encontrado', email: '', role: 'unknown' }
+                    };
+                });
+                
+                console.log('✅ Solicitações combinadas com usuários:', requestsWithUsers.length);
+                
+                // Armazenar no cache
+                setCachedRequests(requestsWithUsers);
+                
+                displayPasswordRequests(requestsWithUsers);
+                
+            } catch (error) {
+                console.error('❌ Erro geral ao carregar solicitações:', error);
+                showNotification('Erro ao carregar solicitações', 'error');
+            } finally {
+                isLoadingRequests = false;
+            }
+        }
+        
+        // Substituir a função original
+        window.loadPasswordRequests = loadPasswordRequestsWithCache;
+        
+        // Função para limpar todos os intervalos e timers
+        function cleanupAllIntervals() {
+            stopBlockWatcher();
+            clearCache();
+            
+            // Limpar outros intervalos se existirem
+            const intervals = [
+                'blockWatcherInterval',
+                'logoutCheckInterval',
+                'requestRateLimitInterval'
+            ];
+            
+            intervals.forEach(intervalName => {
+                if (window[intervalName]) {
+                    clearInterval(window[intervalName]);
+                    window[intervalName] = null;
+                }
+            });
+        }
+        
+        // Limpar intervalos quando a página for descarregada
+        window.addEventListener('beforeunload', cleanupAllIntervals);
+        window.addEventListener('pagehide', cleanupAllIntervals);
+        
+        // Tornar função global para debug
+        window.cleanupAllIntervals = cleanupAllIntervals;
+        
+        // Função de debug para testar o carregamento
+        window.debugPasswordRequests = async function() {
+            console.log('🔍 Debug: Testando carregamento de solicitações...');
+            console.log('🔍 Modal existe:', !!document.getElementById('passwordRequestsModal'));
+            console.log('🔍 Lista existe:', !!document.getElementById('passwordRequestsList'));
+            console.log('🔍 Empty state existe:', !!document.getElementById('emptyPasswordRequests'));
+            
+            // Testar carregamento direto com refresh forçado
+            await loadPasswordRequestsWithCache(true);
+        };
+        
+        // Função de debug simples para testar exibição
+        window.testDisplayRequests = function() {
+            console.log('🧪 Testando exibição de solicitações...');
+            const testRequests = [
+                {
+                    id: 'test-1',
+                    status: 'pending',
+                    users: { name: 'Teste Usuário', email: 'teste@teste.com', role: 'funcionario' },
+                    created_at: new Date().toISOString(),
+                    reason: 'Teste de exibição'
+                }
+            ];
+            
+            displayPasswordRequests(testRequests);
+        };
+        
+        // Função para forçar refresh das solicitações
+        window.refreshPasswordRequests = function() {
+            loadPasswordRequestsWithCache(true);
+        };
+        
+        // Sistema de criptografia simples para senhas
+        async function encryptPassword(password) {
+            try {
+                // Usar Web Crypto API se disponível
+                if (window.crypto && window.crypto.subtle) {
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(password);
+                    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    return `enc_${hashHex}`;
+                } else {
+                    // Fallback para navegadores mais antigos
+                    return `enc_${btoa(password)}`;
+                }
+            } catch (error) {
+                console.error('Erro ao criptografar senha:', error);
+                // Fallback simples
+                return `enc_${btoa(password)}`;
+            }
+        }
+        
+        async function decryptPassword(encryptedPassword) {
+            try {
+                if (encryptedPassword.startsWith('enc_')) {
+                    const encrypted = encryptedPassword.substring(4);
+                    // Para SHA-256, não podemos descriptografar, então retornamos o hash
+                    // Em um sistema real, você usaria criptografia simétrica
+                    return encrypted;
+                }
+                return encryptedPassword;
+            } catch (error) {
+                console.error('Erro ao descriptografar senha:', error);
+                return encryptedPassword;
+            }
+        }
+        
+        // Tornar funções globais
+        window.encryptPassword = encryptPassword;
+        window.decryptPassword = decryptPassword;
+        
+        // ==================== SISTEMA PWA ====================
+        
+        let deferredPrompt;
+        const CURRENT_VERSION = '2.0.1';
+        
+        // Capturar o evento beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA pode ser instalada');
+            e.preventDefault();
+            deferredPrompt = e;
+            checkPWAStatus();
+        });
+        
+        // Função para verificar status da PWA
+        async function checkPWAStatus() {
+            const isInstalled = await isPWAInstalled();
+            const installedVersion = localStorage.getItem('pwa_version');
+            
+            console.log('PWA Status:', { 
+                isInstalled, 
+                installedVersion, 
+                currentVersion: CURRENT_VERSION,
+                displayMode: window.matchMedia('(display-mode: standalone)').matches
+            });
+            
+            if (isInstalled) {
+                showUninstallButton();
+            } else if (deferredPrompt) {
+                showInstallButton();
+            }
+        }
+        
+        // Verificar se PWA está instalada
+        async function isPWAInstalled() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const installData = localStorage.getItem('pwa_version');
+            const hasValidInstallData = installData && JSON.parse(installData).version === CURRENT_VERSION;
+            
+            return isStandalone || hasValidInstallData;
+        }
+        
+        // Função para instalar a PWA
+        async function installPWA() {
+            if (!deferredPrompt) {
+                showNotification('App já está instalado ou não pode ser instalado', 'error');
+                return;
+            }
+            
+            try {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('Usuário aceitou a instalação');
+                    
+                    setTimeout(async () => {
+                        const isReallyInstalled = await checkRealInstallation();
+                        
+                        if (isReallyInstalled) {
+                            showNotification('App instalado com sucesso!', 'success');
+                            
+                            const installData = {
+                                version: CURRENT_VERSION,
+                                timestamp: Date.now(),
+                                userInfo: getCurrentUserInfo(),
+                                url: window.location.href
+                            };
+                            localStorage.setItem('pwa_version', JSON.stringify(installData));
+                            
+                            showUninstallButton();
+                        } else {
+                            showNotification('Erro: App não foi instalado corretamente', 'error');
+                        }
+                    }, 2000);
+                    
+                } else {
+                    showNotification('Instalação cancelada', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Erro durante instalação:', error);
+                showNotification('Erro durante instalação: ' + error.message, 'error');
+            }
+            
+            deferredPrompt = null;
+        }
+        
+        // Verificar se realmente instalou
+        async function checkRealInstallation() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const hasServiceWorker = 'serviceWorker' in navigator && 
+                await navigator.serviceWorker.getRegistration() !== null;
+            
+            return isStandalone;
+        }
+        
+        // Obter informações do usuário atual
+        function getCurrentUserInfo() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            return {
+                role: 'gerente',
+                userId: currentUser?.id || 'unknown',
+                userName: currentUser?.name || 'unknown',
+                farmId: currentUser?.farm_id || 'unknown',
+                timestamp: Date.now()
+            };
+        }
+        
+        // Função para desinstalar a PWA
+        async function uninstallPWA() {
+            if (confirm('Tem certeza que deseja desinstalar o app?')) {
+                try {
+                    localStorage.removeItem('pwa_version');
+                    
+                    if ('serviceWorker' in navigator) {
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        for (let registration of registrations) {
+                            await registration.unregister();
+                        }
+                    }
+                    
+                    showNotification('App desinstalado com sucesso!', 'success');
+                    showInstallButton();
+                    
+                } catch (error) {
+                    console.error('Erro ao desinstalar:', error);
+                    showNotification('Erro ao desinstalar app', 'error');
+                }
+            }
+        }
+        
+        // Funções para mostrar/esconder botões
+        function showInstallButton() {
+            document.getElementById('pwaInstallButton')?.classList.remove('hidden');
+            document.getElementById('pwaUninstallButton')?.classList.add('hidden');
+        }
+        
+        function showUninstallButton() {
+            document.getElementById('pwaInstallButton')?.classList.add('hidden');
+            document.getElementById('pwaUninstallButton')?.classList.remove('hidden');
+        }
+        
+        // Detectar se o app já está instalado
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA foi instalada');
+            showUninstallButton();
+        });
+        
+        // Service Worker removido - sistema MySQL não precisa
+        console.log('ℹ️ Service Worker desabilitado - sistema MySQL');
+
+        // ==================== DETECÇÃO DE CONEXÃO COM INTERNET ====================
+        let wasOffline = false;
+        
+        // Detectar quando volta a conexão
+        window.addEventListener('online', () => {
+            console.log('🌐 Conexão com internet restaurada');
+            if (wasOffline) {
+                showServerConnectionLoading();
+                
+                // Simular sincronização (você pode adicionar lógica real aqui)
+                setTimeout(() => {
+                    hideServerConnectionLoading();
+                    showNotification('Conexão restaurada! Dados sincronizados.', 'success');
+                }, 3000);
+            }
+            wasOffline = false;
+        });
+        
+        // Detectar quando perde a conexão
+        window.addEventListener('offline', () => {
+            console.log('📴 Conexão com internet perdida');
+            wasOffline = true;
+            showNotification('Conexão perdida. Trabalhando offline...', 'warning');
+        });
+        
+        // ==================== FUNÇÕES DO MODAL PWA ====================
+        
+        // Abrir modal PWA
+        function openPWAModal() {
+            console.log('🔧 DEBUG: openPWAModal chamada');
+            const modal = document.getElementById('pwaModal');
+            console.log('🔧 DEBUG: Modal encontrado:', modal);
+            modal.classList.remove('hidden');
+            updatePWAStatusInModal();
+            console.log('🔧 DEBUG: Modal PWA aberto com sucesso');
+        }
+        
+        // Fechar modal PWA
+        function closePWAModal() {
+            const modal = document.getElementById('pwaModal');
+            modal.classList.add('hidden');
+        }
+        
+        // Atualizar status PWA no modal
+        async function updatePWAStatusInModal() {
+            const statusDiv = document.getElementById('pwaStatus');
+            const installButton = document.getElementById('modalInstallButton');
+            const uninstallButton = document.getElementById('modalUninstallButton');
+            
+            const isInstalled = await isPWAInstalled();
+            const installData = localStorage.getItem('pwa_version');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            if (isInstalled) {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center space-x-3 p-4 bg-green-100 dark:bg-green-900/20 rounded-xl">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-800 dark:text-green-200">App Instalado</h4>
+                            <p class="text-green-600 dark:text-green-300 text-sm">LacTech está instalado e pronto para uso</p>
+                        </div>
+                    </div>
+                `;
+                installButton.classList.add('hidden');
+                uninstallButton.classList.remove('hidden');
+            } else if (deferredPrompt) {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center space-x-3 p-4 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-800 dark:text-blue-200">Pronto para Instalar</h4>
+                            <p class="text-blue-600 dark:text-blue-300 text-sm">Clique em "Instalar App" para adicionar à tela inicial</p>
+                        </div>
+                    </div>
+                `;
+                installButton.classList.remove('hidden');
+                uninstallButton.classList.add('hidden');
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center space-x-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                        <div class="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 dark:text-gray-200">Instalação Indisponível</h4>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">Use o navegador para instalar o app</p>
+                        </div>
+                    </div>
+                `;
+                installButton.classList.add('hidden');
+                uninstallButton.classList.add('hidden');
+            }
+        }
+        
+        async function installPWAFromModal() {
+            await installPWA();
+            setTimeout(() => {
+                updatePWAStatusInModal();
+            }, 3000);
+        }
+        
+        async function uninstallPWAFromModal() {
+            await uninstallPWA();
+            setTimeout(() => {
+                updatePWAStatusInModal();
+            }, 1000);
+        }
+        
+        window.installPWA = installPWA;
+        window.uninstallPWA = uninstallPWA;
+        window.openPWAModal = openPWAModal;
+        window.closePWAModal = closePWAModal;
+        window.installPWAFromModal = installPWAFromModal;
+        window.uninstallPWAFromModal = uninstallPWAFromModal;
+        
+        async function loadProductionDataWithCache(farmId, dateRange = 'week') {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return null;
+            }
+            
+            const cacheKey = `production_${farmId}_${dateRange}`;
+            
+            const fetchOnlineData = async () => {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                let query = supabase
+                    .from('volume_records')
+                    .select('volume_liters, production_date, milking_type')
+                    .eq('farm_id', farmId);
+                
+                // Aplicar filtro de data
+                if (dateRange === 'today') {
+                    const today = new Date().toISOString().split('T')[0];
+                    query = query.eq('production_date', today);
+                } else if (dateRange === 'week') {
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    query = query.gte('production_date', weekAgo.toISOString().split('T')[0]);
+                } else if (dateRange === 'month') {
+                    const monthAgo = new Date();
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    query = query.gte('production_date', monthAgo.toISOString().split('T')[0]);
+                }
+                
+                const { data, error } = await query.order('production_date', { ascending: true });
+                
+                if (error) throw error;
+                return data;
+            };
+            
+            // Usar Offline Manager para obter dados
+            return await window.offlineManager.getData(cacheKey, fetchOnlineData);
+        }
+        
+        // Função para salvar dados de produção com sincronização
+        async function saveProductionDataWithSync(volumeData) {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return false;
+            }
+            
+            // Salvar usando Offline Manager
+            return await window.offlineManager.saveData('volume_record', volumeData, true);
+        }
+        
+        // Função para carregar dados do usuário com cache
+        async function loadUserDataWithCache() {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return null;
+            }
+            
+            const cacheKey = 'user_data';
+            
+            const fetchOnlineData = async () => {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) throw new Error('Usuário não autenticado');
+                
+                const { data: userData, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (error) throw error;
+                return userData;
+            };
+            
+            return await window.offlineManager.getData(cacheKey, fetchOnlineData);
+        }
+        
+        // Função para carregar dados da fazenda com cache
+        async function loadFarmDataWithCache(farmId) {
+            if (!window.offlineManager) {
+                console.error('Offline Manager não disponível');
+                return null;
+            }
+            
+            const cacheKey = `farm_data_${farmId}`;
+            
+            const fetchOnlineData = async () => {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: farmData, error } = await supabase
+                    .from('farms')
+                    .select('*')
+                    .eq('id', farmId)
+                    .single();
+                
+                if (error) throw error;
+                return farmData;
+            };
+            
+            return await window.offlineManager.getData(cacheKey, fetchOnlineData);
+        }
+        
+        // Service Worker listener removido - sistema MySQL
+        console.log('ℹ️ Service Worker listener desabilitado - sistema MySQL');
+        
+        // Tornar funções offline globais
+        window.loadProductionDataWithCache = loadProductionDataWithCache;
+        window.saveProductionDataWithSync = saveProductionDataWithSync;
+        window.loadUserDataWithCache = loadUserDataWithCache;
+        window.loadFarmDataWithCache = loadFarmDataWithCache;
+        
+        
+    </script>
 
     <!-- Modal PWA Full Screen - Estilo Xandria Store -->
     <div id="pwaModal" class="fixed inset-0 bg-gray-50 dark:bg-play-dark z-[9999] hidden dark">
@@ -20265,7 +24046,766 @@ Funcionalidades:
             </div>
         </div>
     </div>
-    
+
+    <!-- Modal de Clima com Backgrounds Animados -->
+    <div id="weatherModal" class="weather-modal hidden">
+        <!-- Background Animado -->
+        <div id="weatherBackground" class="weather-background">
+            <!-- Elementos animados baseados no clima -->
+            <div class="weather-particles"></div>
+        </div>
+        
+        <!-- Conteúdo do Modal -->
+        <div class="weather-content">
+            <!-- Header -->
+            <div class="weather-header">
+                <button class="close-btn" onclick="closeWeatherModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Informações Principais -->
+            <div class="weather-main">
+                <div class="location-info">
+                    <div class="location-name" id="weatherLocation">Carregando...</div>
+                    <div class="location-date" id="weatherDate">Loading...</div>
+                </div>
+                
+                <div class="temperature-section">
+                    <div class="temperature-display">
+                        <div class="temperature-value" id="weatherTemp">22°</div>
+                        <div class="weather-icon" id="weatherIcon">
+                            <!-- SVG será inserido aqui -->
+                        </div>
+                    </div>
+                    <div class="weather-condition" id="weatherCondition">Nublado</div>
+                </div>
+            </div>
+            
+            <!-- Estatísticas -->
+            <div class="weather-stats">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/>
+                            <path d="M9.6 4.6A2 2 0 1 1 11 8H2"/>
+                            <path d="M12.6 1.6A6 6 0 0 1 18 7.6H2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-label">Vento</div>
+                    <div class="stat-value" id="weatherWind">10 m/s</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-label">Umidade</div>
+                    <div class="stat-value" id="weatherHumidity">78%</div>
+                </div>
+            </div>
+            
+            <!-- Previsão por Hora -->
+            <div class="hourly-forecast">
+                <div class="forecast-item">
+                    <div class="forecast-time">10:00</div>
+                    <div class="forecast-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                        </svg>
+                    </div>
+                    <div class="forecast-temp">18°</div>
+                </div>
+                
+                <div class="forecast-item">
+                    <div class="forecast-time">11:00</div>
+                    <div class="forecast-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                        </svg>
+                    </div>
+                    <div class="forecast-temp">19°</div>
+                </div>
+                
+                <div class="forecast-item">
+                    <div class="forecast-time">12:00</div>
+                    <div class="forecast-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                    </div>
+                    <div class="forecast-temp">22°</div>
+                </div>
+                
+                <div class="forecast-item">
+                    <div class="forecast-time">13:00</div>
+                    <div class="forecast-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                    </div>
+                    <div class="forecast-temp">24°</div>
+                </div>
+                
+                <div class="forecast-item">
+                    <div class="forecast-time">14:00</div>
+                    <div class="forecast-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                    </div>
+                    <div class="forecast-temp">25°</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inicializar notificações nativas -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar notificações nativas
+        if (window.nativeNotifications) {
+            window.nativeNotifications.init();
+            
+            // Solicitar permissão de notificações automaticamente
+            setTimeout(() => {
+                window.nativeNotifications.requestNotificationPermission();
+            }, 3000);
+        }
+
+        // Inicializar sistema de sincronização offline
+        if (window.offlineSyncManager) {
+            console.log('🔄 Sistema de sincronização offline inicializado');
+        }
+
+        // Funções para atualização em tempo real dos gráficos
+        window.updateVolumeCharts = async function() {
+            try {
+                await loadWeeklyVolumeChart();
+                await loadDailyVolumeChart();
+                await loadDashboardWeeklyChart();
+                console.log('📊 Gráficos de volume atualizados');
+            } catch (error) {
+                console.error('❌ Erro ao atualizar gráficos de volume:', error);
+            }
+        };
+
+        window.updateVolumeStats = async function() {
+            try {
+                await loadVolumeData();
+                console.log('📈 Estatísticas de volume atualizadas');
+            } catch (error) {
+                console.error('❌ Erro ao atualizar estatísticas de volume:', error);
+            }
+        };
+
+        window.updateVolumeRecordsList = async function() {
+            try {
+                console.log('🔄 Atualizando lista de registros de volume...');
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!userData?.farm_id) return;
+
+                // Buscar registros do servidor
+                const { data: volumeRecords, error } = await supabase
+                    .from('volume_records')
+                    .select('*')
+                    .eq('farm_id', userData.farm_id)
+                    .order('production_date', { ascending: false })
+                    .limit(10);
+
+                if (error) {
+                    console.error('❌ Erro ao buscar registros:', error);
+                    return;
+                }
+
+                // Adicionar registros locais
+                let allRecords = [...(volumeRecords || [])];
+                if (window.offlineSyncManager) {
+                    const localRecords = window.offlineSyncManager.getLocalData('volume');
+                    const localFiltered = localRecords.filter(record => 
+                        record.farm_id === userData.farm_id && !record.synced
+                    );
+                    allRecords = [...localFiltered, ...allRecords];
+                }
+
+                // Atualizar interface
+                const tbody = document.getElementById('volumeRecords');
+                if (tbody) {
+                    if (allRecords.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                    Nenhum registro encontrado
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tbody.innerHTML = allRecords.map(record => `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4 text-sm text-gray-900">
+                                    ${new Date(record.production_date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                                </td>
+                                <td class="py-3 px-4 text-sm text-gray-900 font-medium">
+                                    ${record.volume_liters}L
+                                </td>
+                                <td class="py-3 px-4 text-sm text-gray-600">
+                                    ${record.users?.name || record.user_name || 'N/A'}
+                                </td>
+                                <td class="py-3 px-4 text-sm text-gray-600">
+                                    ${record.notes || '-'}
+                                </td>
+                                <td class="py-3 px-4 text-sm">
+                                    <button onclick="deleteVolumeRecord('${record.id}');" class="text-red-600 hover:text-red-800 font-medium">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                console.log(`✅ Lista de registros atualizada: ${allRecords.length} registros`);
+            } catch (error) {
+                console.error('❌ Erro ao atualizar lista de registros:', error);
+            }
+        };
+
+        window.updateDashboardStats = async function() {
+            try {
+                console.log('🔄 Atualizando estatísticas do dashboard...');
+                
+                // Atualizar volume de hoje
+                await loadVolumeData();
+                
+                // Atualizar gráfico semanal do dashboard
+                await loadDashboardWeeklyChart();
+                
+                // Atualizar estatísticas gerais
+                await loadDashboardData();
+                
+                console.log('✅ Estatísticas do dashboard atualizadas');
+            } catch (error) {
+                console.error('❌ Erro ao atualizar estatísticas do dashboard:', error);
+            }
+        };
+
+        // Função para forçar atualização completa dos registros de volume
+        window.forceRefreshVolumeRecords = async function() {
+            try {
+                console.log('🔄 Forçando atualização completa dos registros de volume...');
+                
+                // Limpar cache
+                if (CacheManager) {
+                    CacheManager.clearCache();
+                    CacheManager.forceRefresh = true;
+                }
+                
+                // Recarregar dados
+                await loadVolumeRecords();
+                await updateVolumeRecordsList();
+                
+                console.log('✅ Registros de volume atualizados com sucesso');
+            } catch (error) {
+                console.error('❌ Erro ao forçar atualização dos registros:', error);
+            }
+        };
+
+        // Função para corrigir registros existentes sem nome do funcionário
+        window.fixVolumeRecordsEmployeeNames = async function() {
+            try {
+                console.log('🔧 Corrigindo nomes de funcionários nos registros existentes...');
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!userData?.farm_id) return;
+
+                // Buscar registros para verificar se têm nomes de funcionários
+                const { data: recordsWithoutName, error: fetchError } = await supabase
+                    .from('volume_records')
+                    .select(`
+                        id,
+                        user_id,
+                        users(name)
+                    `)
+                    .eq('farm_id', userData.farm_id)
+                    .limit(10);
+
+                if (fetchError) {
+                    console.error('❌ Erro ao buscar registros:', fetchError);
+                    return;
+                }
+
+                if (recordsWithoutName && recordsWithoutName.length > 0) {
+                    console.log(`✅ Encontrados ${recordsWithoutName.length} registros com dados de funcionários`);
+                    console.log('ℹ️ Os nomes dos funcionários são obtidos automaticamente via relacionamento com a tabela users');
+                } else {
+                    console.log('ℹ️ Nenhum registro encontrado para verificação');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao corrigir nomes de funcionários:', error);
+            }
+        };
+        });
+
+        // ==================== RELATÓRIOS MODAL ====================
+        function openReportsModal() {
+            const modal = document.getElementById('reportsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeReportsModal() {
+            const modal = document.getElementById('reportsModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Funções de geração de relatórios
+        async function generateVolumeReport() {
+            try {
+                showCustomLoading('Gerando relatório de volume...', 'generate');
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    throw new Error('Usuário não autenticado');
+                }
+
+                // Buscar dados do usuário para obter farm_id
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!userData?.farm_id) {
+                    throw new Error('Farm ID não encontrado');
+                }
+
+                // Buscar dados de volume
+                const { data: volumeData, error } = await supabase
+                            .from('volume_records')
+                    .select('*')
+                    .eq('farm_id', userData.farm_id)
+                    .order('production_date', { ascending: false })
+                    .limit(100);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Gerar PDF
+                await generateVolumePDF(volumeData || []);
+                
+                hideCustomLoading();
+                showNotification('Relatório de volume gerado com sucesso!', 'success');
+                
+            } catch (error) {
+                hideCustomLoading();
+                console.error('Erro ao gerar relatório de volume:', error);
+                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+            }
+        }
+
+        async function generateQualityReport() {
+            try {
+                showCustomLoading('Gerando relatório de qualidade...', 'generate');
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    throw new Error('Usuário não autenticado');
+                }
+
+                // Buscar dados do usuário para obter farm_id
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!userData?.farm_id) {
+                    throw new Error('Farm ID não encontrado');
+                }
+
+                // Buscar dados de qualidade
+                const { data: qualityData, error } = await supabase
+                    .from('quality_tests')
+                    .select('*')
+                    .eq('farm_id', userData.farm_id)
+                    .order('test_date', { ascending: false })
+                    .limit(100);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Gerar PDF
+                await generateQualityPDF(qualityData || []);
+                
+                hideCustomLoading();
+                showNotification('Relatório de qualidade gerado com sucesso!', 'success');
+                
+            } catch (error) {
+                hideCustomLoading();
+                console.error('Erro ao gerar relatório de qualidade:', error);
+                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+            }
+        }
+
+        async function generateFinancialReport() {
+            try {
+                showCustomLoading('Gerando relatório financeiro...', 'generate');
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    throw new Error('Usuário não autenticado');
+                }
+
+                // Buscar dados do usuário para obter farm_id
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!userData?.farm_id) {
+                    throw new Error('Farm ID não encontrado');
+                }
+
+                // Buscar dados financeiros
+                const { data: financialData, error } = await supabase
+                    .from('financial_records')
+                    .select('*')
+                    .eq('farm_id', userData.farm_id)
+                    .order('record_date', { ascending: false })
+                    .limit(100);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Gerar PDF
+                await generatePaymentsPDF(financialData || []);
+                
+                hideCustomLoading();
+                showNotification('Relatório financeiro gerado com sucesso!', 'success');
+                
+            } catch (error) {
+                hideCustomLoading();
+                console.error('Erro ao gerar relatório financeiro:', error);
+                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+            }
+        }
+
+
+        // ==================== RELATÓRIO PERSONALIZADO ====================
+        function openCustomReportModal() {
+            const modal = document.getElementById('customReportModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                loadCustomReportSettings();
+            }
+        }
+
+        function closeCustomReportModal() {
+            const modal = document.getElementById('customReportModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        async function loadCustomReportSettings() {
+            try {
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) return;
+
+                // Buscar dados do usuário
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('report_farm_name, report_farm_logo_base64, farm_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (userError) {
+                    console.error('Erro ao buscar dados do usuário:', userError);
+                    return;
+                }
+
+                if (userData) {
+                    // Usar o nome personalizado salvo ou buscar o nome da fazenda
+                    let farmName = userData.report_farm_name;
+                    
+                    if (!farmName && userData.farm_id) {
+                        // Buscar nome da fazenda se não tiver personalizado
+                        const { data: farmData, error: farmError } = await supabase
+                            .from('farms')
+                            .select('name')
+                            .eq('id', userData.farm_id)
+                            .single();
+                        
+                        if (!farmError && farmData) {
+                            farmName = farmData.name;
+                        }
+                    }
+                    
+                    // Fallback para nome padrão
+                    if (!farmName) {
+                        farmName = await getFarmName() || 'Minha Fazenda';
+                    }
+                    
+                    document.getElementById('customReportFarmName').value = farmName;
+                    
+                    if (userData.report_farm_logo_base64) {
+                        updateCustomReportLogoPreview(userData.report_farm_logo_base64);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar configurações:', error);
+            }
+        }
+
+        async function handleCustomReportLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                showNotification('Por favor, selecione um arquivo de imagem válido', 'error');
+                return;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) {
+                showNotification('A imagem deve ter no máximo 2MB', 'error');
+                return;
+            }
+            
+            try {
+                const base64 = await fileToBase64(file);
+                updateCustomReportLogoPreview(base64);
+                showNotification('Logo carregada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro ao processar logo:', error);
+                showNotification('Erro ao processar a imagem', 'error');
+            }
+        }
+
+        function updateCustomReportLogoPreview(base64Logo) {
+            const preview = document.getElementById('customReportLogoPreview');
+            const placeholder = document.getElementById('customReportLogoPlaceholder');
+            const image = document.getElementById('customReportLogoImage');
+            const removeBtn = document.getElementById('removeCustomReportLogo');
+            
+            if (base64Logo) {
+                image.src = base64Logo;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                removeBtn.classList.remove('hidden');
+                } else {
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                removeBtn.classList.add('hidden');
+            }
+        }
+
+        function removeCustomReportLogo() {
+            updateCustomReportLogoPreview(null);
+            document.getElementById('customReportLogoUpload').value = '';
+            showNotification('Logo removida!', 'info');
+        }
+
+        async function saveCustomReportSettings() {
+            try {
+                showCustomLoading('Salvando configurações...', 'save');
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    throw new Error('Usuário não autenticado');
+                }
+
+                const farmName = document.getElementById('customReportFarmName').value;
+                const logoImage = document.getElementById('customReportLogoImage');
+                const farmLogo = logoImage.src.includes('data:image') ? logoImage.src : null;
+
+                // Atualizar diretamente na tabela users
+                const { error } = await supabase
+                    .from('users')
+                    .update({
+                        report_farm_name: farmName,
+                        report_farm_logo_base64: farmLogo
+                    })
+                    .eq('id', user.id);
+
+                if (error) {
+                    throw error;
+                }
+
+                // Atualizar configurações globais
+                if (window.reportSettings) {
+                    window.reportSettings.farmName = farmName;
+                    window.reportSettings.farmLogo = farmLogo;
+                }
+
+                hideCustomLoading();
+                showNotification('Configurações salvas com sucesso!', 'success');
+                closeCustomReportModal();
+                
+            } catch (error) {
+                hideCustomLoading();
+                console.error('Erro ao salvar configurações:', error);
+                showNotification('Erro ao salvar configurações: ' + error.message, 'error');
+            }
+        }
+
+        async function generateCustomReport() {
+            try {
+                showCustomLoading('Gerando relatório personalizado...', 'generate');
+                
+                // // const supabase = await getSupabaseClient(); // REMOVIDO // REMOVIDO - usando MySQL
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    throw new Error('Usuário não autenticado');
+                }
+
+                // Buscar dados do usuário para obter farm_id
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!userData?.farm_id) {
+                    throw new Error('Farm ID não encontrado');
+                }
+
+                // Obter configurações do modal
+                const farmName = document.getElementById('customReportFarmName').value;
+                const logoImage = document.getElementById('customReportLogoImage');
+                const farmLogo = logoImage.src.includes('data:image') ? logoImage.src : null;
+
+                // Configurar window.reportSettings com as configurações do modal
+                if (!window.reportSettings) {
+                    window.reportSettings = {};
+                }
+                window.reportSettings.farmName = farmName;
+                window.reportSettings.farmLogo = farmLogo;
+
+                console.log('Configurações do relatório personalizado:');
+                console.log('- Nome da fazenda:', farmName);
+                console.log('- Logo da fazenda:', farmLogo ? 'Carregada' : 'Não carregada');
+
+                // Buscar dados de volume (relatório personalizado combina volume + qualidade)
+                const { data: volumeData, error: volumeError } = await supabase
+                    .from('volume_records')
+                    .select('*')
+                    .eq('farm_id', userData.farm_id)
+                    .order('production_date', { ascending: false })
+                    .limit(50);
+
+                if (volumeError) {
+                    throw volumeError;
+                }
+
+                // Gerar PDF personalizado (usando função de volume como base)
+                await generateVolumePDF(volumeData || []);
+                
+                hideCustomLoading();
+                showNotification('Relatório personalizado gerado com sucesso!', 'success');
+                closeCustomReportModal();
+                
+            } catch (error) {
+                hideCustomLoading();
+                console.error('Erro ao gerar relatório personalizado:', error);
+                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+            }
+        }
+
+        // ==================== LOADING PERSONALIZADO ====================
+        function showCustomLoading(message, type) {
+            const loadingModal = document.getElementById('customLoadingModal');
+            const loadingMessage = document.getElementById('customLoadingMessage');
+            const loadingIcon = document.getElementById('customLoadingIcon');
+            
+            if (loadingModal && loadingMessage && loadingIcon) {
+                loadingMessage.textContent = message;
+                
+                // Definir ícone baseado no tipo
+                if (type === 'save') {
+                    loadingIcon.innerHTML = `
+                        <svg class="w-8 h-8 text-indigo-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    `;
+                } else if (type === 'generate') {
+                    loadingIcon.innerHTML = `
+                        <svg class="w-8 h-8 text-green-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    `;
+                }
+                
+                loadingModal.classList.remove('hidden');
+                loadingModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function hideCustomLoading() {
+            const loadingModal = document.getElementById('customLoadingModal');
+            if (loadingModal) {
+                loadingModal.classList.add('hidden');
+                loadingModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
+
     <!-- Modal de Relatórios Full Screen -->
     <div id="reportsModal" class="fixed inset-0 bg-white z-[99999] hidden flex flex-col" style="display: none;">
         <!-- Header -->
@@ -20766,6 +25306,7 @@ Funcionalidades:
         </div>
     </div>
 
+<<<<<<< HEAD
 <script>
 // ===============================================
 // JAVASCRIPT - FUNÇÕES AVANÇADAS (CONTINUAÇÃO)
@@ -23577,5 +28118,9 @@ window.addEventListener('load', function() {
 });
 </script>
 
+=======
+>>>>>>> parent of 0eb3d2f (.)
 </body>
 </html>
+
+

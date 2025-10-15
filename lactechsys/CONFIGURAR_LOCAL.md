@@ -266,4 +266,3 @@ Se tudo estiver funcionando corretamente, você verá:
 **Última atualização:** Outubro 2025  
 **Versão do sistema:** 2.0.0
 
-

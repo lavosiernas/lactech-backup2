@@ -1,5 +1,9 @@
 <?php
-// Sistema MySQL - Lagoa Do Mato
+require_once 'includes/config.php';
+require_once 'includes/auth.php';
+require_once 'includes/functions.php';
+
+// Esta página não requer autenticação, mas pode verificar se o usuário está bloqueado
 session_start();
 
 // Se o usuário não estiver bloqueado, redirecionar para login

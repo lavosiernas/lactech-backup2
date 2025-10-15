@@ -26,4 +26,3 @@ if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
 header("Location: login.php", true, 302);
 exit();
 ?>
-

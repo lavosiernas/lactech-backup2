@@ -1,59 +1,33 @@
 <?php
 // =====================================================
-// DETECÇÃO AUTOMÁTICA DE AMBIENTE (LOCAL OU PRODUÇÃO)
+// CONFIGURAÇÃO MYSQL - LAGOA DO MATO
+// =====================================================
+// Configurações específicas para MySQL/PHPMyAdmin
 // =====================================================
 
-// Detectar se está em localhost
-$isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']) ||
-           strpos($_SERVER['SERVER_NAME'] ?? '', '192.168.') === 0 ||
-           strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
-
-// Detectar URL base automaticamente
-function getBaseUrl() {
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $script = $_SERVER['SCRIPT_NAME'] ?? '';
-    $path = str_replace('\\', '/', dirname($script));
-    
-    // Remover index.php ou qualquer arquivo do final
-    $path = rtrim($path, '/') . '/';
-    
-    return $protocol . '://' . $host . $path;
-}
-
-// =====================================================
-// CONFIGURAÇÕES DO BANCO DE DADOS
-// =====================================================
-
-if ($isLocal) {
-    // AMBIENTE LOCAL (XAMPP/WAMP)
-    define('DB_HOST', 'localhost');
-    define('DB_NAME', 'lactech_lagoa_mato'); // Banco local
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
-    define('BASE_URL', getBaseUrl()); // Detecta automaticamente
-    ini_set('session.cookie_secure', 0); // HTTP local
-    define('ENVIRONMENT', 'LOCAL');
-} else {
-    // AMBIENTE DE PRODUÇÃO (HOSTINGER)
-    define('DB_HOST', 'localhost');
-    define('DB_NAME', 'u311882628_lactech_lgmato'); // Banco Hostinger
-    define('DB_USER', 'u311882628_xandriaAgro');
-    define('DB_PASS', 'Lavosier0012!');
-    define('BASE_URL', 'https://lactechsys.com/');
-    ini_set('session.cookie_secure', 1); // HTTPS em produção
-    define('ENVIRONMENT', 'PRODUCTION');
-}
-
+// Configurações do banco de dados
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'lactech_lagoa_mato');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
+
+// Configurações da aplicação
 define('APP_NAME', 'LacTech - Lagoa do Mato');
 define('APP_VERSION', '2.0.0');
 define('FARM_NAME', 'Lagoa do Mato');
+
+// URLs do sistema
+define('BASE_URL', 'http://localhost/lactechsys/');
 define('LOGIN_URL', 'login.php');
 define('DASHBOARD_URL', 'gerente.php');
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1); 
 
+// Configurações de sessão
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 0); // Mude para 1 em produção com HTTPS
+
+// Iniciar sessão se não estiver iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -109,6 +83,15 @@ function isDevelopment() {
            strpos($_SERVER['SERVER_NAME'], '192.168.') !== false;
 }
 
+// Função para obter URL base
+function getBaseUrl() {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $path = dirname($_SERVER['SCRIPT_NAME']);
+    
+    return $protocol . '://' . $host . $path . '/';
+}
+
 // Função para redirecionar
 function redirect($url) {
     header("Location: $url");
@@ -133,6 +116,7 @@ function generateToken($length = 32) {
     return bin2hex(random_bytes($length));
 }
 
+// Função para log de erro
 function logError($message, $context = []) {
     $logMessage = date('Y-m-d H:i:s') . " - $message";
     
@@ -143,11 +127,13 @@ function logError($message, $context = []) {
     error_log($logMessage);
 }
 
+// Função para verificar se é requisição AJAX
 function isAjax() {
     return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 }
 
+// Função para retornar resposta JSON
 function jsonResponse($data, $status = 200) {
     http_response_code($status);
     header('Content-Type: application/json');
@@ -155,6 +141,7 @@ function jsonResponse($data, $status = 200) {
     exit;
 }
 
+// Função para formatar data
 function formatDate($date, $format = 'd/m/Y') {
     if (empty($date)) return '';
     
@@ -162,12 +149,14 @@ function formatDate($date, $format = 'd/m/Y') {
     return date($format, $timestamp);
 }
 
+// Função para formatar valor monetário
 function formatCurrency($value, $currency = 'R$') {
     if (empty($value)) return $currency . ' 0,00';
     
     return $currency . ' ' . number_format($value, 2, ',', '.');
 }
 
+// Função para formatar volume
 function formatVolume($volume) {
     if (empty($volume)) return '0,00 L';
     
