@@ -7,7 +7,7 @@
     <title>Painel do Gerente - Sistema Leiteiro</title>
     
     <!-- PWA Meta Tags -->
-    <meta name="description" content="Painel do Gerente - Sistema completo para gestão de produção leiteira, controle de qualidade e relatórios">
+    <meta name="description" content="Painel do Gerente - Sistema completo para gest�o de produ��o leiteira, controle de qualidade e relat�rios">
     <meta name="theme-color" content="#166534">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -39,216 +39,6 @@
         /* .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; } REMOVIDO - usando apenas modal HTML */
         .main-content { opacity: 0; transition: opacity 0.5s ease-in; }
         .main-content.loaded { opacity: 1; }
-        .header-logo { width: 40px; height: 40px; object-fit: contain; }
-        .header-logo-container { display: flex; align-items: center; justify-content: center; }
-        
-        /* Loading Screen Styles */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            transition: opacity 0.5s ease-out;
-        }
-        
-        .loading-screen.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        .loading-content {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .loading-logo {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 2rem auto;
-            display: block;
-        }
-        
-        .loading-text {
-            color: #166534;
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0 auto 0.5rem auto;
-            text-align: center;
-            width: 100%;
-        }
-        
-        .loading-subtext {
-            color: #6b7280;
-            font-size: 1rem;
-            text-align: center;
-            margin: 0 auto 3rem auto;
-            width: 100%;
-        }
-        
-        .loading-progress {
-            width: 300px;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 0 auto 2rem auto;
-        }
-        
-        .loading-progress-bar {
-            height: 100%;
-            background: #16a34a;
-            border-radius: 4px;
-            animation: progress 4s ease-in-out infinite;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e5e7eb;
-            border-top: 3px solid #16a34a;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-            display: block;
-        }
-        
-        /* CRITICAL FIX: Prevent FOUC (Flash of Unstyled Content) - Modal */
-        #profileModal {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-            z-index: -1 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background: transparent !important;
-            transition: none !important;
-            animation: none !important;
-        }
-        
-        /* Only allow modal to show when explicitly enabled - PROPER MODAL STYLES */
-        #profileModal.modal-enabled {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-            z-index: 9999 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background: rgba(0, 0, 0, 0.5) !important;
-            align-items: center !important;
-            justify-content: center !important;
-            transition: opacity 0.3s ease-in-out !important;
-        }
-        
-        /* Modal content positioning - FULLSCREEN for profile modal */
-        #profileModal.modal-enabled .modal-content {
-            background: white !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            max-width: 100vw !important;
-            max-height: 100vh !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            overflow-y: auto !important;
-            position: relative !important;
-            margin: 0 !important;
-        }
-        
-        /* Block all modal content until enabled */
-        #profileModal:not(.modal-enabled) * {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-        }
-        
-        /* Fix user modals - make them responsive and fullscreen - PREVENT FLASH */
-        #addUserModal,
-        #editUserModal,
-        #deleteUserModal {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            background: rgba(0, 0, 0, 0.5) !important;
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: -1 !important;
-            pointer-events: none !important;
-            transition: none !important;
-        }
-        
-        #addUserModal.show,
-        #editUserModal.show,
-        #deleteUserModal.show {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            z-index: 9999 !important;
-            pointer-events: auto !important;
-            transition: opacity 0.3s ease-in-out !important;
-        }
-        
-        /* User modal content - responsive */
-        #addUserModal .modal-content,
-        #editUserModal .modal-content,
-        #deleteUserModal .modal-content {
-            background: white !important;
-            border-radius: 12px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-            max-width: 95vw !important;
-            max-height: 95vh !important;
-            width: 100% !important;
-            min-width: 400px !important;
-            overflow-y: auto !important;
-            position: relative !important;
-            margin: 20px !important;
-        }
-        
-        /* Mobile responsive */
-        @media (max-width: 768px) {
-            #addUserModal .modal-content,
-            #editUserModal .modal-content,
-            #deleteUserModal .modal-content {
-                width: 95vw !important;
-                max-width: 95vw !important;
-                margin: 10px !important;
-                border-radius: 8px !important;
-            }
-        }
-        
-        @keyframes progress {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
     
     <!-- Preload critical resources -->
@@ -317,75 +107,7 @@
         });
     </script>
     
-    <script>
-        // CRITICAL FIX: Prevent modal flash based on web research
-        window.pageFullyLoaded = false;
-        window.modalEnabled = false;
-        
-        // Function to disable modal completely
-        function disableModal() {
-            const modal = document.getElementById('profileModal');
-            if (modal) {
-                // Remove any classes that might show the modal
-                modal.classList.remove('show', 'active', 'visible', 'open', 'modal-enabled');
-                modal.classList.add('hidden');
-                
-                // Ensure modal is completely hidden
-                modal.style.display = 'none';
-                modal.style.visibility = 'hidden';
-                modal.style.opacity = '0';
-                modal.style.pointerEvents = 'none';
-                modal.style.zIndex = '-1';
-            }
-        }
-        
-        // Function to enable modal only when needed
-        function enableModal() {
-            const modal = document.getElementById('profileModal');
-            if (modal) {
-                modal.classList.add('modal-enabled');
-                modal.style.display = 'flex';
-                modal.style.visibility = 'visible';
-                modal.style.opacity = '1';
-                modal.style.pointerEvents = 'auto';
-                modal.style.zIndex = '9999';
-                modal.style.position = 'fixed';
-                modal.style.top = '0';
-                modal.style.left = '0';
-                modal.style.width = '100%';
-                modal.style.height = '100%';
-                modal.style.background = 'rgba(0, 0, 0, 0.5)';
-                modal.style.alignItems = 'center';
-                modal.style.justifyContent = 'center';
-            }
-        }
-        
-        // Disable modal immediately on page load
-        disableModal();
-        
-        // Monitor for any attempts to show the modal during page load
-        const modalObserver = new MutationObserver(function(mutations) {
-            if (!window.pageFullyLoaded) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        const modal = document.getElementById('profileModal');
-                        if (modal && modal.classList.contains('show')) {
-                            console.log('Modal show attempt blocked during page load');
-                            modal.classList.remove('show');
-                            disableModal();
-                        }
-                    }
-                });
-            }
-        });
-        
-        // Start observing the modal for changes
-        const modal = document.getElementById('profileModal');
-        if (modal) {
-            modalObserver.observe(modal, { attributes: true, attributeFilter: ['class', 'style'] });
-        }
-        
-        // Alert shim for custom notifications - PRIORIDADE MÁXIMA
+        // Alert shim for custom notifications - PRIORIDADE M�XIMA
         (function(){
             var originalAlert = window.alert;
             window.alert = function(message){
@@ -393,26 +115,26 @@
                     var msg = String(message);
                     console.log('?? Alert interceptado:', msg);
                     
-                    // Tentar usar showNotification se disponível
+                    // Tentar usar showNotification se dispon�vel
                     if (typeof showNotification === 'function') {
                         showNotification(msg, 'warning');
                         return;
                     }
                     
-                    // Fallback: usar modal system se disponível
+                    // Fallback: usar modal system se dispon�vel
                     if (typeof window.modalSystem !== 'undefined' && window.modalSystem.showAlert) {
                         window.modalSystem.showAlert(msg);
                         return;
                     }
                     
-                    // último recurso: console.warn
+                    // �ltimo recurso: console.warn
                     console.warn('Alert (fallback):', msg);
                 } catch(e){
                     console.error('Erro no alert shim:', e);
                 }
             };
             
-            // Garantir que nossa função não seja sobrescrita
+            // Garantir que nossa fun��o n�o seja sobrescrita
             Object.defineProperty(window, 'alert', {
                 value: window.alert,
                 writable: false,
@@ -428,12 +150,12 @@
                     var msg = String(message);
                     console.log('?? Confirm interceptado:', msg);
                     
-                    // Usar modal system se disponível
+                    // Usar modal system se dispon�vel
                     if (typeof window.modalSystem !== 'undefined' && window.modalSystem.showConfirm) {
                         return window.modalSystem.showConfirm(msg);
                     }
                     
-                    // Fallback: usar alert nativo (temporário)
+                    // Fallback: usar alert nativo (tempor�rio)
                     console.warn('Confirm (fallback para alert nativo):', msg);
                     return originalConfirm(msg);
                 } catch(e){
@@ -442,7 +164,7 @@
                 }
             };
             
-            // Garantir que nossa função não seja sobrescrita
+            // Garantir que nossa fun��o n�o seja sobrescrita
             Object.defineProperty(window, 'confirm', {
                 value: window.confirm,
                 writable: false,
@@ -452,9 +174,9 @@
     </script>
     
     <style>
-        /* CRITICAL: Prevenir bugs de inicializaçãoo */
+        /* CRITICAL: Prevenir bugs de inicializa��o */
         
-        /* Body e conteúdo principal sempre visíveis */
+        /* Body e conte�do principal sempre vis�veis */
         html, body {
             visibility: visible !important;
             opacity: 1 !important;
@@ -464,7 +186,7 @@
             display: block !important;
         }
         
-        /* APENAS modals HTML estáticos começam escondidos */
+        /* APENAS modals HTML est�ticos come�am escondidos */
         #profileModal,
         #moreModal,
         #managerPhotoChoiceModal,
@@ -479,36 +201,23 @@
         
         /* Sistema de loading REMOVIDO - sem tela de carregamento */
         
-        /* Quando modal está com classe 'show', mostrar */
+        /* Quando modal est� com classe 'show', mostrar */
         .fullscreen-modal.show {
             display: flex !important;
             visibility: visible !important;
             opacity: 1 !important;
         }
         
-        /* Quando modal NÃO tem classe 'hidden', ele pode ser mostrado via JS */
+        /* Quando modal N�O tem classe 'hidden', ele pode ser mostrado via JS */
         .fullscreen-modal:not(.hidden).show {
             display: flex !important;
         }
     </style>
 
 </head>
-<!-- Loading Screen Implemented -->
+<!-- Tela de Carregamento - REMOVIDA - sem tela de loading -->
 
 <body class="gradient-mesh antialiased transition-colors duration-300 main-content" id="mainBody" data-non-critical>
-
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-content">
-            <img src="assets/img/lactech-logo.png" alt="LacTech Logo" class="loading-logo">
-            <div class="loading-text">LacTech</div>
-            <div class="loading-subtext">Sistema de Gestão Leiteira</div>
-            <div class="loading-progress">
-                <div class="loading-progress-bar"></div>
-            </div>
-            <div class="loading-spinner"></div>
-        </div>
-    </div>
 
     <!-- Header -->
     <header class="gradient-forest shadow-xl sticky top-0 z-40 border-b border-forest-800 header-compact">
@@ -539,7 +248,7 @@
                         Financeiro
                     </button>
                     <button class="nav-item relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="users">
-                        Usuários
+                        Usu�rios
                     </button>
                     <button onclick="openMoreModal()" class="relative px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg">
                         MAIS
@@ -547,23 +256,23 @@
                 </nav>
 
                 <div class="flex items-center space-x-4">
-                    <!-- Botão de Notificações -->
+                    <!-- Bot�o de Notifica��es -->
                     <button onclick="openNotificationsModal()" class="relative p-2 text-white hover:text-forest-200 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-5 5v-5zM9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <span id="notificationCounter" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                         <!-- Indicador de tempo real -->
-                        <div id="realTimeIndicator" class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse hidden" title="Sistema de atualização automática ativo"></div>
+                        <div id="realTimeIndicator" class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse hidden" title="Sistema de atualiza��o autom�tica ativo"></div>
                     </button>
                     
                     
                     
-                    <button onclick="openProfileModalManually()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all" id="profileButton">
+                    <button onclick="openProfileModal()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all">
                         <div class="relative w-8 h-8">
-                            <!-- Foto do usuário -->
+                            <!-- Foto do usu�rio -->
                             <img id="headerProfilePhoto" src="" alt="Foto de Perfil" class="w-8 h-8 object-cover rounded-full hidden">
-                            <!-- ícone padrão -->
+                            <!-- �cone padr�o -->
                             <div id="headerProfileIcon" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -592,7 +301,7 @@
                             <h2 class="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Bem-vindo, <span id="managerWelcome">Carregando...</span>!</h2>
                             <p class="text-forest-200 text-sm sm:text-base font-medium mb-2 sm:mb-3">Painel de controle gerencial</p>
                             <div class="flex items-center space-x-2 sm:space-x-4">
-                                <div class="text-xs font-medium">última atualização: <span id="lastUpdate">Agora</span></div>
+                                <div class="text-xs font-medium">�ltima atualiza��o: <span id="lastUpdate">Agora</span></div>
                             </div>
                         </div>
                         <div class="hidden sm:block">
@@ -626,7 +335,7 @@
                         </svg>
                     </div>
                     <div class="metric-value font-bold text-slate-900 mb-1" id="qualityAverage">--%</div>
-                    <div class="metric-label text-slate-500 font-medium">Qualidade Média</div>
+                    <div class="metric-label text-slate-500 font-medium">Qualidade M�dia</div>
                     <div class="metric-label text-slate-600 font-semibold mt-1">Hoje</div>
                 </div>
                 
@@ -638,7 +347,7 @@
                     </div>
                     <div class="metric-value font-bold text-slate-900 mb-1" id="pendingPayments">R$ --</div>
                     <div class="metric-label text-slate-500 font-medium">Pagamentos Pendentes</div>
-                    <div class="metric-label text-slate-600 font-semibold mt-1">Este Mês</div>
+                    <div class="metric-label text-slate-600 font-semibold mt-1">Este M�s</div>
                 </div>
                 
                 <div class="metric-card rounded-2xl p-3 sm:p-4 text-center card-compact">
@@ -648,7 +357,7 @@
                         </svg>
                     </div>
                     <div class="metric-value font-bold text-slate-900 mb-1" id="activeUsers">--</div>
-                    <div class="metric-label text-slate-500 font-medium">Usuários Ativos</div>
+                    <div class="metric-label text-slate-500 font-medium">Usu�rios Ativos</div>
                     <div class="metric-label text-slate-600 font-semibold mt-1">Sistema</div>
                 </div>
             </div>
@@ -665,7 +374,7 @@
 
                 <!-- Weekly Production Chart -->
                 <div class="data-card rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Produção dos últimos 7 Dias</h3>
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Produ��o dos �ltimos 7 Dias</h3>
                     <div class="chart-container">
                         <canvas id="dashboardWeeklyChart"></canvas>
                     </div>
@@ -684,7 +393,7 @@
 
             <!-- Monthly Production Chart -->
             <div class="data-card rounded-2xl p-6 mb-6">
-                <h3 class="text-lg font-bold text-slate-900 mb-4">Volume de Produção do Mês</h3>
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Volume de Produ��o do M�s</h3>
                 <div class="h-64 relative">
                     <canvas id="monthlyProductionChart" width="800" height="256"></canvas>
                 </div>
@@ -704,7 +413,7 @@
                             </svg>
                         </div>
                         <p class="text-gray-500 text-sm">Nenhuma atividade recente</p>
-                        <p class="text-gray-400 text-xs">Registros aparecerão aqui</p>
+                        <p class="text-gray-400 text-xs">Registros aparecer�o aqui</p>
                     </div>
                 </div>
             </div>
@@ -719,13 +428,13 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                         <div>
                             <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-1">Controle de Volume</h2>
-            <p class="text-slate-600 text-sm">Monitore a produção de leite em tempo real</p>
+            <p class="text-slate-600 text-sm">Monitore a produ��o de leite em tempo real</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                             <select id="volumePeriod" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white">
                                 <option value="today">Hoje</option>
                                 <option value="week">Esta Semana</option>
-                                <option value="month">Este Mês</option>
+                                <option value="month">Este M�s</option>
                             </select>
                             <button onclick="showAddVolumeModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -769,7 +478,7 @@
                             </svg>
                         </div>
                         <div class="text-xl font-bold text-slate-900 mb-1" id="volumeWeekAvg">-- L</div>
-                    <div class="text-xs text-slate-500 font-medium">Média Semanal</div>
+                    <div class="text-xs text-slate-500 font-medium">M�dia Semanal</div>
                     <div class="text-xs text-slate-600 font-semibold mt-1">Por Dia</div>
                     </div>
                     
@@ -791,7 +500,7 @@
                             </svg>
                         </div>
                         <div class="text-lg font-bold text-slate-900 mb-1" id="lastCollection">--/--/---- - --:--</div>
-                    <div class="text-xs text-slate-500 font-medium">última Coleta</div>
+                    <div class="text-xs text-slate-500 font-medium">�ltima Coleta</div>
                     <div class="text-xs text-slate-600 font-semibold mt-1">Data e Hora</div>
                     </div>
                 </div>
@@ -800,7 +509,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Daily Production Chart -->
                     <div class="data-card rounded-2xl p-6">
-                        <h3 class="text-lg font-bold text-slate-900 mb-4">Produção Diária</h3>
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Produ��o Di�ria</h3>
                         <div class="chart-container">
                             <canvas id="dailyVolumeChart"></canvas>
                         </div>
@@ -808,7 +517,7 @@
 
                     <!-- Weekly Production Chart -->
                     <div class="data-card rounded-2xl p-6">
-                        <h3 class="text-lg font-bold text-slate-900 mb-4">Produção Semanal</h3>
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Produ��o Semanal</h3>
                         <div class="chart-container">
                             <canvas id="weeklyVolumeChart"></canvas>
                         </div>
@@ -825,7 +534,7 @@
 
                 <!-- Monthly Volume Chart (only visible on last day of month) -->
                 <div id="monthlyVolumeChartContainer" class="data-card rounded-2xl p-6" style="display: none;">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Produção Mensal</h3>
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Produ��o Mensal</h3>
                     <div class="chart-container">
                         <canvas id="monthlyVolumeChart"></canvas>
                     </div>
@@ -848,9 +557,9 @@
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Data/Hora</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Volume (L)</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Funcionário</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Observações</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Açãoes</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Funcion�rio</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Observa��es</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">A��es</th>
                                 </tr>
                             </thead>
                             <tbody id="volumeRecords">
@@ -874,13 +583,13 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                         <div>
                             <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-1">Controle de Qualidade</h2>
-            <p class="text-slate-600 text-sm">Monitore os parâmetros de qualidade do leite</p>
+            <p class="text-slate-600 text-sm">Monitore os par�metros de qualidade do leite</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                             <select id="qualityPeriod" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white">
                                 <option value="today">Hoje</option>
                                 <option value="week">Esta Semana</option>
-                                <option value="month">Este Mês</option>
+                                <option value="month">Este M�s</option>
                             </select>
                             <button onclick="showAddQualityModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -892,7 +601,7 @@
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Relatário
+                                Relat�rio
                             </button>
                         </div>
                     </div>
@@ -913,7 +622,7 @@
 
                     <div class="data-card rounded-2xl p-4">
                         <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-semibold text-slate-900">Proteína</h4>
+                            <h4 class="font-semibold text-slate-900">Prote�na</h4>
                             <span class="text-lg font-bold text-slate-900" id="proteinContent">-</span>
                         </div>
                         <div class="quality-indicator">
@@ -947,14 +656,14 @@
                 <!-- Quality Trends -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="data-card rounded-2xl p-6">
-                        <h3 class="text-lg font-bold text-slate-900 mb-4">Tendência de Qualidade</h3>
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Tend�ncia de Qualidade</h3>
                         <div class="chart-container">
                             <canvas id="qualityTrendChart"></canvas>
                         </div>
                     </div>
 
                     <div class="data-card rounded-2xl p-6">
-                        <h3 class="text-lg font-bold text-slate-900 mb-4">Distribuiçãoo de Qualidade</h3>
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Distribui��o de Qualidade</h3>
                         <div class="chart-container">
                             <canvas id="qualityDistributionChart"></canvas>
                         </div>
@@ -985,13 +694,13 @@
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Data</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Gordura</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Proteína</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Prote�na</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">CCS</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">CBT</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Laboratário</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Observações</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Laborat�rio</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Observa��es</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Status</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Açãoes</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">A��es</th>
                                 </tr>
                             </thead>
                             <tbody id="qualityTests">
@@ -1019,7 +728,7 @@
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                             <select id="paymentPeriod" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white">
-                                <option value="month">Este Mês</option>
+                                <option value="month">Este M�s</option>
                                 <option value="quarter">Trimestre</option>
                                 <option value="year">Ano</option>
                             </select>
@@ -1027,7 +736,7 @@
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Relatário
+                                Relat�rio
                             </button>
                             <button onclick="addPayment()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                         <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1049,7 +758,7 @@
                         </div>
                         <div class="text-2xl font-bold text-slate-900 mb-2" id="paidAmount">-</div>
                         <div class="text-sm text-slate-600 font-medium">Vendas Realizadas</div>
-                        <div class="text-xs text-green-600 font-semibold mt-2">Este Mês</div>
+                        <div class="text-xs text-green-600 font-semibold mt-2">Este M�s</div>
                     </div>
 
                     <div class="data-card rounded-2xl p-6 text-center">
@@ -1099,12 +808,12 @@
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Beneficiário</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Benefici�rio</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Tipo</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Valor</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Vencimento</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Status</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Açãoes</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">A��es</th>
                                 </tr>
                             </thead>
                             <tbody id="paymentsList">
@@ -1127,21 +836,21 @@
                 <div class="data-card rounded-2xl p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
                         <div>
-                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-1">Gestão de Usuários</h2>
-                            <p class="text-slate-600 text-xs sm:text-sm">Gerencie funcionários e suas permissões</p>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-1">Gest�o de Usu�rios</h2>
+                            <p class="text-slate-600 text-xs sm:text-sm">Gerencie funcion�rios e suas permiss�es</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                             <select id="userFilter" class="px-3 sm:px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white">
-                                <option value="all">Todos os usuários</option>
-                                <option value="funcionario">Funcionários</option>
-                                <option value="veterinario">Veterinários</option>
-                                <option value="proprietario">Proprietários</option>
+                                <option value="all">Todos os usu�rios</option>
+                                <option value="funcionario">Funcion�rios</option>
+                                <option value="veterinario">Veterin�rios</option>
+                                <option value="proprietario">Propriet�rios</option>
                             </select>
                             <button onclick="addUser()" class="px-3 sm:px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
-                                Adicionar Usuário
+                                Adicionar Usu�rio
                             </button>
                         </div>
                     </div>
@@ -1157,7 +866,7 @@
                         </div>
                         <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="totalUsers">--</div>
                         <div class="text-xs text-slate-500 font-medium">Total</div>
-                        <div class="text-xs text-slate-600 font-semibold mt-1">Usuários</div>
+                        <div class="text-xs text-slate-600 font-semibold mt-1">Usu�rios</div>
                     </div>
                     
                     <div class="data-card rounded-2xl p-4 sm:p-6 text-center metric-card-responsive">
@@ -1167,7 +876,7 @@
                             </svg>
                         </div>
                         <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="employeesCount">--</div>
-                        <div class="text-xs text-slate-500 font-medium">Funcionários</div>
+                        <div class="text-xs text-slate-500 font-medium">Funcion�rios</div>
                         <div class="text-xs text-slate-600 font-semibold mt-1">Ativos</div>
                     </div>
                     
@@ -1178,7 +887,7 @@
                             </svg>
                         </div>
                         <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="veterinariansCount">--</div>
-                        <div class="text-xs text-slate-500 font-medium">Veterinários</div>
+                        <div class="text-xs text-slate-500 font-medium">Veterin�rios</div>
                         <div class="text-xs text-slate-600 font-semibold mt-1">Ativos</div>
                     </div>
                     
@@ -1196,7 +905,7 @@
 
                 <!-- Users List -->
                 <div class="data-card rounded-2xl p-4 sm:p-6">
-                    <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-4 sm:mb-6">Lista de Usuários</h3>
+                    <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-4 sm:mb-6">Lista de Usu�rios</h3>
                     <div class="space-y-4 sm:space-y-6" id="usersList">
                         <div class="text-center py-8 sm:py-12">
                             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
@@ -1204,13 +913,13 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">Nenhum Usuário Cadastrado</h3>
-                            <p class="text-gray-600 mb-3 sm:mb-4 text-sm">Adicione usuários para gerenciar sua equipe</p>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">Nenhum Usu�rio Cadastrado</h3>
+                            <p class="text-gray-600 mb-3 sm:mb-4 text-sm">Adicione usu�rios para gerenciar sua equipe</p>
                             <button onclick="addUser()" class="px-4 sm:px-6 py-2 sm:py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
-                                Adicionar Primeiro Usuário
+                                Adicionar Primeiro Usu�rio
                             </button>
                         </div>
                     </div>
@@ -1251,7 +960,7 @@
                 <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"></path>
                 </svg>
-                <span class="text-xs font-semibold">Usuários</span>
+                <span class="text-xs font-semibold">Usu�rios</span>
             </button>
             <button class="mobile-nav-item flex flex-col items-center py-2 px-1 transition-all" data-tab="animals">
                 <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -1275,7 +984,7 @@
             <div class="data-card rounded-2xl p-4 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
                     <div>
-                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-1">Gestão de Animais</h2>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-1">Gest�o de Animais</h2>
                         <p class="text-slate-600 text-xs sm:text-sm">Gerencie o rebanho da Lagoa do Mato</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
@@ -1309,7 +1018,7 @@
                         </svg>
                     </div>
                     <div class="text-lg sm:text-xl font-bold text-slate-900 mb-1" id="healthyAnimals">--</div>
-                    <div class="text-xs text-slate-500 font-medium">Saudáveis</div>
+                    <div class="text-xs text-slate-500 font-medium">Saud�veis</div>
                     <div class="text-xs text-slate-600 font-semibold mt-1">Animais</div>
                 </div>
                 
@@ -1351,7 +1060,7 @@
                             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
-                            Inseminaçãoo
+                            Insemina��o
                         </button>
                     </div>
                 </div>
@@ -1371,9 +1080,9 @@
     <div id="reports-tab" class="tab-content hidden">
         <div class="px-4 sm:px-6 lg:px-8 py-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <!-- Configurações de Relatórios -->
+            <!-- Configura��es de Relat�rios -->
             <div class="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 border border-slate-200 shadow-lg">
-                <!-- Header da Seção -->
+                <!-- Header da Se��o -->
                 <div class="flex items-center mb-6">
                     <div class="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl mr-4">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1382,8 +1091,8 @@
                             </svg>
                         </div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-900">Configurações de Relatórios</h3>
-                        <p class="text-sm text-slate-600">Personalize a aparência dos seus relatórios</p>
+                        <h3 class="text-xl font-bold text-slate-900">Configura��es de Relat�rios</h3>
+                        <p class="text-sm text-slate-600">Personalize a apar�ncia dos seus relat�rios</p>
                     </div>
                     </div>
                     
@@ -1416,7 +1125,7 @@
                                     <div id="farmLogoPreviewTab" class="w-20 h-20 border-2 border-dashed border-green-300 rounded-xl flex items-center justify-center bg-green-50 hidden">
                                         <img id="farmLogoImageTab" src="" alt="Logo da Fazenda" class="w-full h-full object-cover rounded-xl">
                         </div>
-                                    <!-- Placeholder quando não há logo -->
+                                    <!-- Placeholder quando n�o h� logo -->
                                     <div id="farmLogoPlaceholderTab" class="w-20 h-20 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center bg-slate-50">
                                         <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -1443,26 +1152,26 @@
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
-                                        PNG, JPG, JPEG (máx. 2MB) - Preferência: formato quadrado
+                                        PNG, JPG, JPEG (m�x. 2MB) - Prefer�ncia: formato quadrado
                                     </p>
                 </div>
                             </div>
                     </div>
                 </div>
 
-                    <!-- Botão Salvar -->
+                    <!-- Bot�o Salvar -->
                     <div class="pt-4 border-t border-slate-200">
                         <button onclick="saveReportSettingsTab()" class="w-full sm:w-auto flex items-center justify-center px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            Salvar Configurações
+                            Salvar Configura��es
                         </button>
                 </div>
             </div>
         </div>
 
-            <!-- Estatísticas Rápidas -->
+            <!-- Estat�sticas R�pidas -->
             <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 sm:p-6 lg:p-8 border border-green-200 shadow-lg relative overflow-hidden">
                 <!-- Background Pattern -->
                 <div class="absolute inset-0 opacity-5">
@@ -1475,7 +1184,7 @@
                     </svg>
                         </div>
                 
-                <!-- Header da Seção -->
+                <!-- Header da Se��o -->
                 <div class="relative flex flex-col sm:flex-row items-start sm:items-center mb-4 sm:mb-6">
                     <div class="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg sm:rounded-xl mr-0 sm:mr-4 mb-3 sm:mb-0">
                         <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1483,13 +1192,13 @@
                                 </svg>
                         </div>
                     <div>
-                        <h3 class="text-lg sm:text-xl font-bold text-slate-900">Resumo de Produção</h3>
+                        <h3 class="text-lg sm:text-xl font-bold text-slate-900">Resumo de Produ��o</h3>
                         <p class="text-xs sm:text-sm text-slate-600">Indicadores em tempo real</p>
                     </div>
                 </div>
 
                 <div class="relative space-y-3 sm:space-y-4">
-                    <!-- Produção de Hoje - Destaque -->
+                    <!-- Produ��o de Hoje - Destaque -->
                     <div class="bg-white/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/50 shadow-sm hover:shadow-md transition-all duration-300">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                             <div class="flex items-center space-x-2 sm:space-x-3">
@@ -1499,7 +1208,7 @@
                                     </svg>
                         </div>
                                 <div>
-                                    <p class="text-sm sm:text-base font-medium text-slate-600">Produção de Hoje</p>
+                                    <p class="text-sm sm:text-base font-medium text-slate-600">Produ��o de Hoje</p>
                                     <p class="text-xs text-slate-500">Volume registrado</p>
                         </div>
                     </div>
@@ -1510,7 +1219,7 @@
                         </div>
                     </div>
 
-                    <!-- Outras Métricas -->
+                    <!-- Outras M�tricas -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                         <div class="bg-white/60 backdrop-blur-sm rounded-lg p-2 sm:p-3 border border-white/30 hover:bg-white/80 transition-all duration-300">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
@@ -1520,7 +1229,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                                         </svg>
                         </div>
-                                    <span class="text-xs sm:text-sm font-medium text-slate-700">Média Semanal</span>
+                                    <span class="text-xs sm:text-sm font-medium text-slate-700">M�dia Semanal</span>
                         </div>
                                 <span class="text-sm sm:text-base font-bold text-blue-600" id="reportWeekAverage">0.0 L</span>
                             </div>
@@ -1534,7 +1243,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                         </svg>
                         </div>
-                                    <span class="text-xs sm:text-sm font-medium text-slate-700">Total do Mês</span>
+                                    <span class="text-xs sm:text-sm font-medium text-slate-700">Total do M�s</span>
                         </div>
                                 <span class="text-sm sm:text-base font-bold text-emerald-600" id="reportMonthTotal">0.0 L</span>
                             </div>
@@ -1562,7 +1271,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                                         </svg>
                         </div>
-                                    <span class="text-xs sm:text-sm font-medium text-slate-700">Funcionários</span>
+                                    <span class="text-xs sm:text-sm font-medium text-slate-700">Funcion�rios</span>
                     </div>
                                 <span class="text-sm sm:text-base font-bold text-teal-600" id="reportActiveEmployees">0</span>
                 </div>
@@ -1572,9 +1281,9 @@
             </div>
         </div>
 
-        <!-- Exportar Relatórios -->
+        <!-- Exportar Relat�rios -->
         <div class="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-8 border border-slate-200 shadow-lg">
-            <!-- Header da Seção -->
+            <!-- Header da Se��o -->
             <div class="flex items-center mb-8">
                 <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl mr-4">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1582,8 +1291,8 @@
                                 </svg>
                         </div>
                 <div>
-                    <h3 class="text-xl font-bold text-slate-900">Exportar Relatórios</h3>
-                    <p class="text-sm text-slate-600">Gere relatórios personalizados da produção</p>
+                    <h3 class="text-xl font-bold text-slate-900">Exportar Relat�rios</h3>
+                    <p class="text-sm text-slate-600">Gere relat�rios personalizados da produ��o</p>
                     </div>
                 </div>
 
@@ -1593,7 +1302,7 @@
                     <svg class="w-5 h-5 mr-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
                     </svg>
-                    Filtros de Relatário
+                    Filtros de Relat�rio
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="space-y-2">
@@ -1615,10 +1324,10 @@
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-slate-700">Funcionário</label>
+                        <label class="block text-sm font-semibold text-slate-700">Funcion�rio</label>
                         <div class="relative">
                             <select id="reportEmployee" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm appearance-none">
-                                <option value="">Todos os funcionários</option>
+                                <option value="">Todos os funcion�rios</option>
                             </select>
                             <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -1628,8 +1337,8 @@
                     </div>
                 </div>
 
-            <!-- Botões de Exportação - Design Responsivo -->
-            <!-- Botões de Exportação - Design Simples -->
+            <!-- Bot�es de Exporta��o - Design Responsivo -->
+            <!-- Bot�es de Exporta��o - Design Simples -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <!-- PDF -->
                 <button onclick="exportPDFReport()" class="bg-red-600 hover:bg-red-700 text-white rounded-lg p-4 transition-colors duration-200 shadow-md">
@@ -1639,7 +1348,7 @@
                         </svg>
                         <div class="text-center">
                             <h4 class="font-bold">Exportar PDF</h4>
-                            <p class="text-sm opacity-90">Relatário completo formatado</p>
+                            <p class="text-sm opacity-90">Relat�rio completo formatado</p>
                         </div>
                     </div>
                 </button>
@@ -1652,12 +1361,12 @@
                         </svg>
                         <div class="text-center">
                             <h4 class="font-bold">Exportar Excel</h4>
-                            <p class="text-sm opacity-90">Planilha para análise</p>
+                            <p class="text-sm opacity-90">Planilha para an�lise</p>
                         </div>
                     </div>
                 </button>
                 
-                <!-- Prévia -->
+                <!-- Pr�via -->
                 <button onclick="previewReportTab()" class="bg-purple-600 hover:bg-purple-700 text-white rounded-lg p-4 transition-colors duration-200 shadow-md">
                     <div class="flex flex-col items-center space-y-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1665,8 +1374,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
                         <div class="text-center">
-                            <h4 class="font-bold">Visualizar Prévia</h4>
-                            <p class="text-sm opacity-90">Amostra do relatório</p>
+                            <h4 class="font-bold">Visualizar Pr�via</h4>
+                            <p class="text-sm opacity-90">Amostra do relat�rio</p>
                         </div>
                     </div>
                 </button>
@@ -1674,17 +1383,17 @@
                     </div>
                 </div>
                 
-                <!-- Espaço adicional para rolagem -->
+                <!-- Espa�o adicional para rolagem -->
                 <div class="h-32"></div>
             </div>
         </div>
-    <!-- Modal de Adicionar Usuário -->
-    <div id="addUserModal" class="fullscreen-modal" style="display: none !important; visibility: hidden !important; opacity: 0 !important; z-index: -1 !important; pointer-events: none !important;">
+    <!-- Modal de Adicionar Usu�rio -->
+    <div id="addUserModal" class="fullscreen-modal">
         <div class="modal-content">
             <!-- Header do Modal -->
             <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-bold text-gray-900">Adicionar Novo Usuário</h2>
+                    <h2 class="text-xl font-bold text-gray-900">Adicionar Novo Usu�rio</h2>
                     <button onclick="closeAddUserModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
                         <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
@@ -1693,11 +1402,11 @@
                 </div>
             </div>
             
-            <!-- Conteúdo do Modal -->
+            <!-- Conte�do do Modal -->
             <div class="p-6 space-y-6">
-                <!-- Formulário de Adicionar Usuário -->
+                <!-- Formul�rio de Adicionar Usu�rio -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Informações do Usuário</h4>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Informa��es do Usu�rio</h4>
                     <form id="addUserFormModal" class="space-y-4">
                         <div class="form-floating">
                             <input type="text" id="userName" name="name" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder=" " required>
@@ -1711,7 +1420,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V5a2 2 0 00-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                                 <div>
-                                    <h5 class="text-sm font-semibold text-gray-900 mb-1">Email será gerado automaticamente:</h5>
+                                    <h5 class="text-sm font-semibold text-gray-900 mb-1">Email ser� gerado automaticamente:</h5>
                                     <p class="text-sm text-gray-600" id="emailPreview">Digite o nome para ver o email</p>
                                 </div>
                             </div>
@@ -1725,14 +1434,14 @@
                             <div class="form-floating">
                                 <select id="userRole" name="role" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required onchange="togglePhotoSection();">
                                     <option value="">Selecione o cargo</option>
-                                    <option value="funcionario">Funcionário</option>
-                                    <option value="veterinario">Veterinário</option>
+                                    <option value="funcionario">Funcion�rio</option>
+                                    <option value="veterinario">Veterin�rio</option>
                                 </select>
                                 <label for="userRole" class="text-slate-600">Cargo *</label>
                             </div>
                         </div>
                         
-                        <!-- Seção de Foto de Perfil para Add User (funcionários e veterinários) -->
+                        <!-- Se��o de Foto de Perfil para Add User (funcion�rios e veterin�rios) -->
                         <div id="addPhotoSection" class="hidden" style="display: none !important;">
                             <label class="block text-sm font-semibold text-gray-800 mb-2">Foto de Perfil (Opcional)</label>
                             <div class="flex items-center space-x-4">
@@ -1749,7 +1458,7 @@
                                         Escolher Foto
                                     </button>
                                     <input type="file" id="profilePhotoInput" name="profilePhoto" accept="image/*" class="hidden" onchange="previewProfilePhoto(this)">
-                                    <p class="text-xs text-gray-500 mt-1">Formatos: JPG, PNG (máx. 2MB) - Opcional</p>
+                                    <p class="text-xs text-gray-500 mt-1">Formatos: JPG, PNG (m�x. 2MB) - Opcional</p>
                                 </div>
                             </div>
                         </div>
@@ -1771,12 +1480,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div>
-                                    <h5 class="text-sm font-semibold text-blue-900 mb-1">Informações Importantes</h5>
-                                    <p class="text-sm text-blue-700">• Como gerente, você pode criar perfis de funcionários e veterinários</p>
-                                    <p class="text-sm text-blue-700">• O usuário receberá as credenciais por WhatsApp</p>
-                                    <p class="text-sm text-blue-700">• O email será gerado automaticamente baseado no nome da fazenda</p>
-                                    <p class="text-sm text-blue-700">• Recomenda-se que o usuário altere a senha no primeiro acesso</p>
-                                    <p class="text-sm text-blue-700">• O acesso será ativado imediatamente após a criação</p>
+                                    <h5 class="text-sm font-semibold text-blue-900 mb-1">Informa��es Importantes</h5>
+                                    <p class="text-sm text-blue-700">� Como gerente, voc� pode criar perfis de funcion�rios e veterin�rios</p>
+                                    <p class="text-sm text-blue-700">� O usu�rio receber� as credenciais por WhatsApp</p>
+                                    <p class="text-sm text-blue-700">� O email ser� gerado automaticamente baseado no nome da fazenda</p>
+                                    <p class="text-sm text-blue-700">� Recomenda-se que o usu�rio altere a senha no primeiro acesso</p>
+                                    <p class="text-sm text-blue-700">� O acesso ser� ativado imediatamente ap�s a cria��o</p>
                                 </div>
                             </div>
                         </div>
@@ -1789,7 +1498,7 @@
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
-                                Criar Usuário
+                                Criar Usu�rio
                             </button>
                         </div>
                     </form>
@@ -1798,13 +1507,13 @@
         </div>
     </div>
 
-    <!-- Modal de Editar Usuário -->
+    <!-- Modal de Editar Usu�rio -->
     <div id="editUserModal" class="fullscreen-modal">
         <div class="modal-content">
             <!-- Header do Modal -->
             <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-bold text-gray-900">Editar Usuário</h2>
+                    <h2 class="text-xl font-bold text-gray-900">Editar Usu�rio</h2>
                     <button onclick="closeEditUserModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
                         <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
@@ -1813,11 +1522,11 @@
                 </div>
             </div>
             
-            <!-- Conteúdo do Modal -->
+            <!-- Conte�do do Modal -->
             <div class="p-6 space-y-6">
-                <!-- Formulário de Editar Usuário -->
+                <!-- Formul�rio de Editar Usu�rio -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Informações do Usuário</h4>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Informa��es do Usu�rio</h4>
                     <form id="editUserFormModal" class="space-y-4">
                         <input type="hidden" id="editUserId" name="id">
                         
@@ -1839,14 +1548,14 @@
                             <div class="form-floating">
                                 <select id="editUserRole" name="role" class="w-full px-3 py-4 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" required>
                                     <option value="">Selecione o cargo</option>
-                                    <option value="funcionario">Funcionário</option>
-                                    <option value="veterinario">Veterinário</option>
+                                    <option value="funcionario">Funcion�rio</option>
+                                    <option value="veterinario">Veterin�rio</option>
                                 </select>
                                 <label for="editUserRole" class="text-slate-600">Cargo *</label>
                             </div>
                         </div>
                         
-                        <!-- Seção de Foto de Perfil para Edit User -->
+                        <!-- Se��o de Foto de Perfil para Edit User -->
                         <div id="editPhotoSection" class="hidden">
                             <label class="block text-sm font-semibold text-gray-800 mb-2">Foto de Perfil</label>
                             <div class="flex items-center space-x-4">
@@ -1863,7 +1572,7 @@
                                         Alterar Foto
                                     </button>
                                     <input type="file" id="editProfilePhoto" name="profilePhoto" accept="image/*" class="hidden" onchange="previewEditProfilePhoto(this)">
-                                    <p class="text-xs text-gray-500 mt-1">Formatos: JPG, PNG (máx. 2MB)</p>
+                                    <p class="text-xs text-gray-500 mt-1">Formatos: JPG, PNG (m�x. 2MB)</p>
                                 </div>
                             </div>
                         </div>
@@ -1885,11 +1594,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div>
-                                    <h5 class="text-sm font-semibold text-blue-900 mb-1">Informações sobre Ediçãoo</h5>
-                                    <p class="text-sm text-blue-700">• O email não pode ser alterado após a criação</p>
-                                    <p class="text-sm text-blue-700">• Deixe o campo senha em branco para manter a senha atual</p>
-                                    <p class="text-sm text-blue-700">• As alterações serão aplicadas imediatamente</p>
-                                    <p class="text-sm text-blue-700">• O usuário será notificado sobre as mudan�as por WhatsApp</p>
+                                    <h5 class="text-sm font-semibold text-blue-900 mb-1">Informa��es sobre Edi��o</h5>
+                                    <p class="text-sm text-blue-700">� O email n�o pode ser alterado ap�s a cria��o</p>
+                                    <p class="text-sm text-blue-700">� Deixe o campo senha em branco para manter a senha atual</p>
+                                    <p class="text-sm text-blue-700">� As altera��es ser�o aplicadas imediatamente</p>
+                                    <p class="text-sm text-blue-700">� O usu�rio ser� notificado sobre as mudan�as por WhatsApp</p>
                                 </div>
                             </div>
                         </div>
@@ -1902,7 +1611,7 @@
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                Salvar Alterações
+                                Salvar Altera��es
                             </button>
                         </div>
                     </form>
@@ -1918,7 +1627,7 @@
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
             <div class="text-center mb-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-2">Adicionar Foto</h3>
-                <p class="text-gray-600 text-sm">Escolha como adicionar a foto do funcionário</p>
+                <p class="text-gray-600 text-sm">Escolha como adicionar a foto do funcion�rio</p>
             </div> 
     
             <div class="space-y-3">
@@ -1955,11 +1664,11 @@
                         <img src="assets/img/lactech-logo.png" alt="LacTech" class="w-8 h-8 rounded-lg">
                         <div class="text-white">
                             <div class="text-sm font-semibold">LacTech</div>
-                            <div class="text-xs opacity-70">Verificaçãoo Facial</div>
+                            <div class="text-xs opacity-70">Verifica��o Facial</div>
                         </div>
                     </div>
                     
-                    <!-- Botão Fechar -->
+                    <!-- Bot�o Fechar -->
                     <button onclick="closeCamera()" class="p-2 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-all">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1971,7 +1680,7 @@
             <!-- Video da C�mera -->
             <video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline></video>
             
-            <!-- Overlay de Verificaçãoo Facial -->
+            <!-- Overlay de Verifica��o Facial -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <!-- C�rculo de Foco Principal -->
                 <div id="focusCircle" class="relative">
@@ -1989,7 +1698,7 @@
                         </div>
                     </div>
                     
-                    <!-- Instruçãoes -->
+                    <!-- Instru��es -->
                     <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2 text-center">
                         <div id="focusText" class="text-white text-lg font-medium mb-2">Posicione o rosto no centro</div>
                         <div id="focusTimer" class="text-white/70 text-sm hidden">Focando em <span id="timerCount">3</span>s...</div>
@@ -2000,14 +1709,14 @@
             <!-- Controles Minimalistas -->
             <div class="absolute bottom-0 left-0 right-0 z-20 p-8">
                 <div class="flex items-center justify-center space-x-12">
-                    <!-- Botão Trocar C�mera -->
+                    <!-- Bot�o Trocar C�mera -->
                     <button onclick="switchCamera()" class="p-4 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-all">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                     </button>
                     
-                    <!-- Botão de Captura -->
+                    <!-- Bot�o de Captura -->
                     <button id="captureBtn" onclick="startFaceVerification()" class="p-6 bg-white rounded-full hover:bg-gray-100 transition-all shadow-2xl transform hover:scale-105">
                         <div class="w-20 h-20 border-4 border-gray-200 rounded-full flex items-center justify-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
@@ -2019,7 +1728,7 @@
                         </div>
                     </button>
                     
-                    <!-- Botão Cancelar -->
+                    <!-- Bot�o Cancelar -->
                     <button onclick="closeCamera()" class="p-4 bg-black/30 backdrop-blur-md rounded-full hover:bg-black/50 transition-all">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -2043,7 +1752,7 @@
     </div>
 
 <!-- Modal de Perfil do Gerente -->
-    <div id="profileModal" class="fullscreen-modal hidden" style="display: none !important; visibility: hidden !important; opacity: 0 !important;">
+    <div id="profileModal" class="fullscreen-modal hidden">
         <div class="modal-content overflow-y-auto">
             <!-- Header do Modal -->
             <div id="profileModalHeader" class="sticky top-0 left-0 right-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 z-20 transition-transform duration-300 ease-in-out -mx-4 sm:mx-0">
@@ -2057,14 +1766,14 @@
                 </div>
             </div>
             
-            <!-- Conteúdo do Perfil -->
+            <!-- Conte�do do Perfil -->
             <div class="p-4 sm:p-6 pb-8">
                 <div class="flex items-center justify-between mb-6">
                                             <div class="flex items-center space-x-4">
                             <div class="relative">
-                                <!-- Foto do usuário -->
+                                <!-- Foto do usu�rio -->
                                 <img id="modalProfilePhoto" src="" alt="Foto de Perfil" class="w-16 h-16 object-cover rounded-2xl shadow-lg hidden">
-                                <!-- ícone padrão -->
+                                <!-- �cone padr�o -->
                                 <div id="modalProfileIcon" class="w-16 h-16 gradient-forest rounded-2xl flex items-center justify-center shadow-lg">
                                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -2079,10 +1788,10 @@
                     </div>
                 </div>
                 
-                <!-- Informações Pessoais -->
+                <!-- Informa��es Pessoais -->
                 <div class="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200 mt-4">
                     <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-lg font-semibold text-gray-900">Informações Pessoais</h4>
+                        <h4 class="text-lg font-semibold text-gray-900">Informa��es Pessoais</h4>
                         <button id="editProfileBtn" onclick="toggleProfileEdit()" class="px-4 py-2 text-sm bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-lg transition-all">
                             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -2091,7 +1800,7 @@
                         </button>
                     </div>
                     
-                    <!-- Modo Visualizaçãoo -->
+                    <!-- Modo Visualiza��o -->
                     <div id="profileViewMode" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-800 mb-1">Nome Completo</label>
@@ -2111,7 +1820,7 @@
                         </div>
                     </div>
                     
-                    <!-- Modo Ediçãoo -->
+                    <!-- Modo Edi��o -->
                     <div id="profileEditMode" class="hidden">
                         <form id="updateProfileForm" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2121,7 +1830,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-2">Email</label>
-                                    <input type="email" id="editProfileEmail" name="email" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-gray-100 text-gray-500" readonly placeholder="Email não pode ser alterado">
+                                    <input type="email" id="editProfileEmail" name="email" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-gray-100 text-gray-500" readonly placeholder="Email n�o pode ser alterado">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-2">WhatsApp</label>
@@ -2135,7 +1844,7 @@
                             
                             </div>
                             
-                            <!-- Seção de Foto de Perfil do Gerente -->
+                            <!-- Se��o de Foto de Perfil do Gerente -->
                             <div class="border-t border-gray-200 pt-6 mt-6">
                                 <h5 class="text-lg font-semibold text-gray-900 mb-4">Foto de Perfil</h5>
                                 <div class="flex flex-col space-y-3">
@@ -2148,7 +1857,7 @@
                                         </button>
                                     </div>
                                     <input type="file" id="managerProfilePhotoInput" name="managerProfilePhoto" accept="image/*" class="hidden" onchange="handleManagerGallerySelection(this)">
-                                    <p class="text-xs text-gray-500">Formatos: JPG, PNG (máx. 2MB)</p>
+                                    <p class="text-xs text-gray-500">Formatos: JPG, PNG (m�x. 2MB)</p>
                                 </div>
                             </div>
                             
@@ -2160,7 +1869,7 @@
                                     <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                                     </svg>
-                                    Salvar Alterações
+                                    Salvar Altera��es
                                 </button>
                             </div>
                         </form>
@@ -2185,7 +1894,7 @@
                     </div>
                 </div>
                 
-                <!-- Criaçãoo de Contas Secund�rias -->
+                <!-- Cria��o de Contas Secund�rias -->
                 <div class="bg-white rounded-2xl p-4 sm:p-8 border border-gray-200 mx-0 sm:mx-4 mb-8">
                     <div class="flex items-center justify-between mb-4">
                         <h4 class="text-lg font-semibold text-gray-900">Contas Secund�rias</h4>
@@ -2197,14 +1906,14 @@
                         </button>
                     </div>
                     
-                    <p class="text-sm text-gray-600 mb-4">Crie contas de funcionário ou veterinário usando seus dados como base</p>
+                    <p class="text-sm text-gray-600 mb-4">Crie contas de funcion�rio ou veterin�rio usando seus dados como base</p>
                     
                     <!-- Lista de Contas Secund�rias -->
                     <div id="secondaryAccountsList" class="space-y-3 mb-4 overflow-hidden">
-                        <!-- Contas serão carregadas aqui -->
+                        <!-- Contas ser�o carregadas aqui -->
                     </div>
                     
-                    <!-- Formulário de Nova Conta -->
+                    <!-- Formul�rio de Nova Conta -->
                     <div id="secondaryAccountForm" class="hidden border-t border-gray-200 pt-4">
                         <form id="createSecondaryAccountForm" class="space-y-4">
                             <div class="space-y-4">
@@ -2212,8 +1921,8 @@
                                     <label class="block text-sm font-semibold text-gray-800 mb-2">Tipo de Conta</label>
                                     <select name="account_type" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" onchange="checkExistingSecondaryAccount(this.value)">
                                         <option value="">Selecione o tipo</option>
-                                        <option value="funcionario">Funcionário</option>
-                                        <option value="veterinario">Veterinário</option>
+                                        <option value="funcionario">Funcion�rio</option>
+                                        <option value="veterinario">Veterin�rio</option>
                                     </select>
                                     <div id="existingAccountMessage" class="mt-2 text-sm hidden"></div>
                                 </div>
@@ -2249,9 +1958,9 @@
                                     <div>
                                         <h5 class="text-sm font-semibold text-blue-800 mb-1">Contas Secund�rias - Para Voc� Mesmo</h5>
                                         <ul class="text-sm text-blue-700 space-y-1">
-                                            <li>� Crie contas para você mesmo (ex: veterinário, funcionário)</li>
+                                            <li>� Crie contas para voc� mesmo (ex: veterin�rio, funcion�rio)</li>
                                             <li>� Use o mesmo email da sua conta principal</li>
-                                            <li>� �til para fazendas menores onde você faz m�ltiplas funçãoes</li>
+                                            <li>� �til para fazendas menores onde voc� faz m�ltiplas fun��es</li>
                                             <li>� Acesso r�pido entre diferentes perfis</li>
                                         </ul>
                                     </div>
@@ -2314,7 +2023,7 @@
             <!-- Video da C�mera -->
             <video id="managerCameraVideo" class="w-full h-full object-cover" autoplay playsinline></video>
             
-            <!-- Overlay de Verificaçãoo Facial -->
+            <!-- Overlay de Verifica��o Facial -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div id="managerFocusCircle" class="relative">
                     <div id="managerFaceCircle" class="w-80 h-80 border-4 border-red-500 rounded-full flex items-center justify-center animate-pulse transition-colors duration-300">
@@ -2335,7 +2044,7 @@
                 </div>
             </div>
             
-            <!-- Aviso de Centralizaçãoo -->
+            <!-- Aviso de Centraliza��o -->
             <div id="managerFaceWarning" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none">
                 Centralize o rosto no c�rculo para tirar a foto
             </div>
@@ -2390,7 +2099,7 @@
                 <p class="text-gray-600">Sincronizando dados...</p>
             </div>
             
-            <!-- Espaço para o SVG - COLOQUE SEU SVG AQUI -->
+            <!-- Espa�o para o SVG - COLOQUE SEU SVG AQUI -->
             <div class="flex justify-center mb-6">
               <!-- From Uiverse.io by Juanes200122 --> 
 <svg
@@ -3070,7 +2779,7 @@
                     return { data: { session: userData ? { user: JSON.parse(userData) } : null }, error: null };
                 },
                 updateUser: async (updates) => {
-                    // Atualizar usuário
+                    // Atualizar usu�rio
                     return { data: null, error: null };
                 },
                 signUp: async (credentials) => {
@@ -3182,7 +2891,7 @@
                                     console.error('Erro ao buscar dados:', error);
                                     // Verificar se � erro de JSON
                                     if (error.message.includes('Unexpected token')) {
-                                        console.error('? API retornou HTML em vez de JSON. Verifique se a API está funcionando.');
+                                        console.error('? API retornou HTML em vez de JSON. Verifique se a API est� funcionando.');
                                     }
                                     const errorResult = { data: null, error: error.message };
                                     if (callback) callback(errorResult);
@@ -3274,7 +2983,7 @@
             },
             
             rpc: async (funcName, params) => {
-                // RPC functions - implementar conforme necessário
+                // RPC functions - implementar conforme necess�rio
                 console.log('RPC chamado:', funcName, params);
                 return { data: null, error: null };
             },
@@ -3297,7 +3006,7 @@
             })
         };
         
-        // Tornar disponível globalmente
+        // Tornar dispon�vel globalmente
         window.db = db;
         
         // ==================== CONTROLE DE TELA DE CARREGAMENTO DE CONEX�O ====================
@@ -3324,10 +3033,10 @@
             farmData: null,
             lastUserFetch: 0,
             lastFarmFetch: 0,
-            forceRefresh: false, // Flag para for�ar atualização
+            forceRefresh: false, // Flag para for�ar atualiza��o
             CACHE_DURATION: 5 * 60 * 1000, // 5 minutos
             
-            // Limpar cache após registros
+            // Limpar cache ap�s registros
             clearCache() {
                 console.log('??? Limpando cache...');
                 this.cache.clear();
@@ -3339,14 +3048,14 @@
                 console.log('? Cache limpo');
             },
 
-            // For�ar atualização do cache
+            // For�ar atualiza��o do cache
             forceCacheRefresh() {
-                console.log('?? For�ando atualização do cache...');
+                console.log('?? For�ando atualiza��o do cache...');
                 this.forceRefresh = true;
                 this.cache.clear();
             },
             
-            // Cache de dados do usuário
+            // Cache de dados do usu�rio
             async getUserData(forceRefresh = false) {
                 const now = Date.now();
                 if (!forceRefresh && this.userData && (now - this.lastUserFetch) < this.CACHE_DURATION) {
@@ -3422,11 +3131,11 @@
             
             // Cache para dados de volume (MySQL - stub)
             async getVolumeData(farmId, dateRange, forceRefresh = false) {
-                return null; // MySQL: implementar API se necessário
+                return null; // MySQL: implementar API se necess�rio
             }
         };
         
-    // Funçãoo para verificar autenticaçãoo MySQL
+    // Fun��o para verificar autentica��o MySQL
     async function checkAuthentication() {
         try {
             const userData = localStorage.getItem('user_data');
@@ -3467,7 +3176,7 @@
         }
     }
     
-    // Funçãoo para limpar completamente a sess�o MySQL
+    // Fun��o para limpar completamente a sess�o MySQL
 function clearUserSession() {
     localStorage.removeItem('user_data');
     localStorage.removeItem('user_token');
@@ -3489,7 +3198,7 @@ function clearUserSession() {
     }
 }
 
-// Funçãoo para gerenciar redirecionamentos
+// Fun��o para gerenciar redirecionamentos
 function safeRedirect(url) {
     const currentCount = parseInt(sessionStorage.getItem('redirectCount') || '0');
     sessionStorage.setItem('redirectCount', (currentCount + 1).toString());
@@ -3497,7 +3206,7 @@ function safeRedirect(url) {
     window.location.replace(url);
     }
     
-    // Funçãoo para monitorar bloqueio de usuário (otimizada)
+    // Fun��o para monitorar bloqueio de usu�rio (otimizada)
     let blockWatcherInterval = null;
     let lastBlockCheck = 0;
     const BLOCK_CHECK_INTERVAL = 60000; // 1 minuto em vez de 15 segundos
@@ -3511,13 +3220,13 @@ function safeRedirect(url) {
         blockWatcherInterval = setInterval(async () => {
             try {
                 const now = Date.now();
-                // Evitar verificações muito frequentes
+                // Evitar verifica��es muito frequentes
                 if (now - lastBlockCheck < BLOCK_CHECK_INTERVAL) {
                     return;
                 }
                 lastBlockCheck = now;
                 
-                // Verificaçãoo MySQL removida - não precisa
+                // Verifica��o MySQL removida - n�o precisa
             } catch (error) {
                 // Em caso de erro persistente, limpar sess�o
                 clearUserSession();
@@ -3535,7 +3244,7 @@ function safeRedirect(url) {
     }
     
     document.addEventListener('DOMContentLoaded', async function() {
-        // Flag para evitar m�ltiplas inicializações
+        // Flag para evitar m�ltiplas inicializa��es
         if (window.pageInitialized) {
             return;
         }
@@ -3544,14 +3253,14 @@ function safeRedirect(url) {
         
         // FAILSAFE REMOVIDO - sem tela de loading
         
-        // Verificar se h� dados de sess�o válidos (MySQL)
+        // Verificar se h� dados de sess�o v�lidos (MySQL)
         const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data');
         if (!userData) {
             safeRedirect('login.php');
             return;
         }
         
-        // Verificar se não estamos em um loop de redirecionamento
+        // Verificar se n�o estamos em um loop de redirecionamento
         const redirectCount = sessionStorage.getItem('redirectCount') || 0;
         if (redirectCount > 3) {
             clearUserSession();
@@ -3574,13 +3283,13 @@ function safeRedirect(url) {
         }
         
         // Check authentication first
-        console.log('?? Verificando autenticaçãoo...');
+        console.log('?? Verificando autentica��o...');
         const isAuthenticated = await checkAuthentication();
         if (!isAuthenticated) {
-            console.error('? Autenticaçãoo falhou');
+            console.error('? Autentica��o falhou');
             return; // Stop execution if not authenticated
         }
-        console.log('? Autenticaçãoo OK');
+        console.log('? Autentica��o OK');
         
         console.log('?? Inicializando gr�ficos...');
         
@@ -3591,7 +3300,7 @@ function safeRedirect(url) {
                 if (typeof Chart !== 'undefined') {
                     initializeCharts();
                 } else {
-                    console.error('? Chart.js não carregou após timeout');
+                    console.error('? Chart.js n�o carregou ap�s timeout');
                 }
             }, 1000);
         } else {
@@ -3609,7 +3318,7 @@ function safeRedirect(url) {
         // Carregar foto do header
         await loadHeaderPhoto();
         
-        // Garantir que o modal de foto esteja fechado na inicializaçãoo
+        // Garantir que o modal de foto esteja fechado na inicializa��o
         const photoModal = document.getElementById('photoChoiceModal');
         if (photoModal) {
             photoModal.classList.remove('show');
@@ -3642,15 +3351,15 @@ function safeRedirect(url) {
         
         updateDateTime();
         setInterval(updateDateTime, 60000); // Update every minute
-        // Iniciar verificaçãoo de bloqueio durante a sess�o (otimizada)
+        // Iniciar verifica��o de bloqueio durante a sess�o (otimizada)
         startBlockWatcher();
         
     });
     
-    // Funçãoo para limpar todos os event listeners (�til para debugging)
+    // Fun��o para limpar todos os event listeners (�til para debugging)
     window.clearAllEventListeners = function() {
         
-        // Limpar listeners de formulários
+        // Limpar listeners de formul�rios
         const forms = [
             'addUserFormModal', 
             'updateProfileForm',
@@ -3670,8 +3379,8 @@ function safeRedirect(url) {
 
 /**
  * Inicializa a p�gina do gerente
- * Carrega dados do dashboard, volume, qualidade, pagamentos e usuários
- * Configura autenticaçãoo e verifica status do usuário
+ * Carrega dados do dashboard, volume, qualidade, pagamentos e usu�rios
+ * Configura autentica��o e verifica status do usu�rio
  */
 // =====================================================
 // DATABASE CLIENT (removido mock do Database)
@@ -3679,13 +3388,13 @@ function safeRedirect(url) {
 // Agora usando conex�o direta com MySQL atrav�s do objeto 'db'
 
 // =====================================================
-// FUNçãoES MYSQL
+// FUN��ES MYSQL
 // =====================================================
 
 async function getCurrentUser() {
     const userData = localStorage.getItem('user_data');
     if (!userData) {
-        throw new Error('Usuário não autenticado');
+        throw new Error('Usu�rio n�o autenticado');
     }
     return JSON.parse(userData);
 }
@@ -3706,7 +3415,7 @@ async function mysqlRequest(endpoint, data = null) {
     const result = await response.json();
     
     if (!result.success) {
-        throw new Error(result.message || 'Erro na requisiçãoo');
+        throw new Error(result.message || 'Erro na requisi��o');
     }
     
     return result;
@@ -3760,10 +3469,10 @@ async function initializePage() {
         try {
             await loadVolumeData();
             await loadVolumeRecords();
-            // For�ar atualização da lista de registros para garantir dados corretos
+            // For�ar atualiza��o da lista de registros para garantir dados corretos
             setTimeout(async () => {
                 await updateVolumeRecordsList();
-                // Corrigir registros existentes sem nome do funcionário
+                // Corrigir registros existentes sem nome do funcion�rio
                 await fixVolumeRecordsEmployeeNames();
             }, 1000);
         } catch (error) {
@@ -3816,21 +3525,21 @@ async function initializePage() {
         } catch (error) {
         }
         
-        // Configurar atualizações em tempo real
+        // Configurar atualiza��es em tempo real
         try {
             await setupRealtimeUpdates();
         } catch (error) {
         }
     } catch (error) {
         // Show user-friendly message
-        showNotification('Algumas informações não puderam ser carregadas. Verifique sua conex�o.', 'warning');
+        showNotification('Algumas informa��es n�o puderam ser carregadas. Verifique sua conex�o.', 'warning');
     }
 }
 // Function to create user if not exists - MySQL stub
 async function createUserIfNotExists(authUser) {
-    // MySQL: não precisa criar usuário automaticamente
-    // O usuário � criado diretamente pelo gerente na interface
-    console.log('MySQL: Usuário será criado manualmente pelo gerente');
+    // MySQL: n�o precisa criar usu�rio automaticamente
+    // O usu�rio � criado diretamente pelo gerente na interface
+    console.log('MySQL: Usu�rio ser� criado manualmente pelo gerente');
     return;
 }
 
@@ -3859,7 +3568,7 @@ async function getFarmName() {
             return 'Minha Fazenda';
         }
 
-        // Usuário da fazenda Lagoa Do Mato from users table - SEMPRE USAR CONTA PRIM�RIA
+        // Usu�rio da fazenda Lagoa Do Mato from users table - SEMPRE USAR CONTA PRIM�RIA
         const { data: userDbData, error: userError } = await db
             .from('users')
             .select('id')
@@ -3897,7 +3606,7 @@ async function getFarmName() {
 }
 
 
-// Funçãoo utilit�ria para sempre buscar a conta prim�ria
+// Fun��o utilit�ria para sempre buscar a conta prim�ria
 async function getPrimaryUserAccount(email) {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
@@ -3915,13 +3624,13 @@ async function getPrimaryUserAccount(email) {
         
         return usersData?.[0] || null; // Sempre retorna a primeira conta
     } catch (error) {
-        console.error('Erro na função getPrimaryUserAccount:', error);
+        console.error('Erro na fun��o getPrimaryUserAccount:', error);
         return null;
     }
 }
 
 
-// Chamar a inicializaçãoo quando a p�gina carregar
+// Chamar a inicializa��o quando a p�gina carregar
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar logo da Xandria Store
     setTimeout(updateXandriaStoreIcon, 200);
@@ -3930,7 +3639,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Show notification function melhorada
 function showNotification(message, type = 'info') {
     // Verificar se � uma mensagem especial que merece modal
-    if (message.includes('Logo carregada') || message.includes('Configurações salvas com sucesso')) {
+    if (message.includes('Logo carregada') || message.includes('Configura��es salvas com sucesso')) {
         showSuccessModal(message, type);
         return;
     }
@@ -3939,7 +3648,7 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `fixed top-4 right-4 p-4 rounded-xl shadow-2xl z-50 max-w-sm transform transition-all duration-300 border-l-4`;
     
-    // Definir cores e ícones baseados no tipo
+    // Definir cores e �cones baseados no tipo
     let bgColor, textColor, borderColor, icon;
     switch(type) {
         case 'error':
@@ -3969,7 +3678,7 @@ function showNotification(message, type = 'info') {
     
     notification.className += ` ${bgColor} ${textColor} ${borderColor}`;
     
-    // Criar conteúdo com ícone
+    // Criar conte�do com �cone
     notification.innerHTML = `
         <div class="flex items-start space-x-3">
             <span class="text-lg flex-shrink-0">${icon}</span>
@@ -3984,7 +3693,7 @@ function showNotification(message, type = 'info') {
         </div>
     `;
     
-    // Adicionar animaçãoo de entrada
+    // Adicionar anima��o de entrada
     notification.style.transform = 'translateX(100%)';
     notification.style.opacity = '0';
     
@@ -4023,15 +3732,15 @@ function showSuccessModal(message, type = 'success') {
     modal.id = 'successModal';
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
     
-    // Determinar ícone e cores baseado na mensagem
+    // Determinar �cone e cores baseado na mensagem
     let icon, title, bgColor;
     if (message.includes('Logo carregada')) {
         icon = '???';
         title = 'Logo Carregada!';
         bgColor = 'from-blue-500 to-blue-600';
-    } else if (message.includes('Configurações salvas')) {
+    } else if (message.includes('Configura��es salvas')) {
         icon = '??';
-        title = 'Configurações Salvas!';
+        title = 'Configura��es Salvas!';
         bgColor = 'from-green-500 to-green-600';
     } else {
         icon = '?';
@@ -4055,7 +3764,7 @@ function showSuccessModal(message, type = 'success') {
                 <p class="text-gray-600 leading-relaxed">${message}</p>
             </div>
             
-            <!-- Botão -->
+            <!-- Bot�o -->
             <div class="text-center">
                 <button onclick="closeSuccessModal()" class="bg-gradient-to-r ${bgColor} text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
                     Entendi
@@ -4082,13 +3791,13 @@ function showSuccessModal(message, type = 'success') {
         }
     });
     
-    // Auto-fechar após 4 segundos
+    // Auto-fechar ap�s 4 segundos
     setTimeout(() => {
         closeSuccessModal();
     }, 4000);
 }
 
-// Funçãoo para fechar modal de sucesso
+// Fun��o para fechar modal de sucesso
 function closeSuccessModal() {
     const modal = document.getElementById('successModal');
     if (modal) {
@@ -4156,22 +3865,8 @@ async function getManagerName() {
 
 // Function to set farm name in header
 async function setFarmName() {
-    try {
-        const farmName = await getFarmName();
-        const farmNameElement = document.getElementById('farmNameHeader');
-        if (farmNameElement) {
-            farmNameElement.textContent = farmName || 'Minha Fazenda';
-            console.log('Farm name set to:', farmName);
-        } else {
-            console.log('Farm name element not found');
-        }
-    } catch (error) {
-        console.log('Error setting farm name:', error);
-        const farmNameElement = document.getElementById('farmNameHeader');
-        if (farmNameElement) {
-            farmNameElement.textContent = 'Minha Fazenda';
-        }
-    }
+    const farmName = await getFarmName();
+    document.getElementById('farmNameHeader').textContent = farmName;
 }
 
 // Function to extract formal name (second name)
@@ -4313,7 +4008,7 @@ async function loadUserProfile() {
         // If user not found, just show error - don't create automatically
         if (error && error.code === 'PGRST116') {
             document.getElementById('profileEmail2').textContent = user.email || '';
-            document.getElementById('profileWhatsApp').textContent = 'Usuário não encontrado';
+            document.getElementById('profileWhatsApp').textContent = 'Usu�rio n�o encontrado';
             return;
         }
         
@@ -4331,14 +4026,14 @@ async function loadUserProfile() {
             document.getElementById('profileEmail2').textContent = email;
             document.getElementById('profileWhatsApp').textContent = whatsapp;
             
-            // Armazenar email no sessionStorage para identificaçãoo de contas secund�rias
+            // Armazenar email no sessionStorage para identifica��o de contas secund�rias
             sessionStorage.setItem('userEmail', email);
         } else {
             const email = user.email || '';
             document.getElementById('profileEmail2').textContent = email;
             document.getElementById('profileWhatsApp').textContent = 'N�o informado';
             
-            // Armazenar email no sessionStorage mesmo se não encontrar dados completos
+            // Armazenar email no sessionStorage mesmo se n�o encontrar dados completos
             sessionStorage.setItem('userEmail', email);
         }
     } catch (error) {
@@ -4382,8 +4077,8 @@ async function loadDashboardData() {
             jsonData = JSON.parse(responseText);
         } catch (parseError) {
             console.error('? Erro ao fazer parse do JSON:', parseError);
-            console.error('?? Conteúdo recebido:', responseText);
-            throw new Error('API retornou dados inválidos');
+            console.error('?? Conte�do recebido:', responseText);
+            throw new Error('API retornou dados inv�lidos');
         }
         
         const { success, data } = jsonData;
@@ -4401,17 +4096,17 @@ async function loadDashboardData() {
         localStorage.setItem('todayVolume', volumeToday.toString());
         localStorage.setItem('todayVolumeDate', new Date().toISOString().split('T')[0]);
         
-        // Atualizar volume do mês
+        // Atualizar volume do m�s
         if (document.getElementById('monthVolume')) {
             const volumeMonth = data.volume_month || 0;
             document.getElementById('monthVolume').textContent = `${volumeMonth} L`;
         }
         
-        // Atualizar qualidade média
+        // Atualizar qualidade m�dia
         const avgFat = data.avg_fat || 0;
         const avgProtein = data.avg_protein || 0;
         if (avgFat > 0 || avgProtein > 0) {
-            // Calcular score de qualidade baseado em gordura e proteína
+            // Calcular score de qualidade baseado em gordura e prote�na
             const fatScore = Math.min(100, Math.max(0, (avgFat / 4.0) * 100));
             const proteinScore = Math.min(100, Math.max(0, (avgProtein / 3.5) * 100));
             const avgQuality = (fatScore + proteinScore) / 2;
@@ -4424,7 +4119,7 @@ async function loadDashboardData() {
         const pendingPayments = data.pending_payments || 0;
         document.getElementById('pendingPayments').textContent = `R$ ${pendingPayments.toLocaleString('pt-BR')}`;
         
-        // Atualizar usuários ativos
+        // Atualizar usu�rios ativos
         const activeUsers = data.active_users || 0;
         document.getElementById('activeUsers').textContent = activeUsers;
         
@@ -4432,7 +4127,7 @@ async function loadDashboardData() {
         
     } catch (error) {
         console.error('? Erro ao carregar dashboard:', error);
-        // Valores padrão em caso de erro
+        // Valores padr�o em caso de erro
         document.getElementById('todayVolume').textContent = '0 L';
         document.getElementById('qualityAverage').textContent = '--%';
         document.getElementById('pendingPayments').textContent = 'R$ 0';
@@ -4440,7 +4135,7 @@ async function loadDashboardData() {
     }
 }
 
-// Funçãoo para restaurar volume salvo do localStorage
+// Fun��o para restaurar volume salvo do localStorage
 function restoreSavedVolume() {
     try {
         const savedVolume = localStorage.getItem('todayVolume');
@@ -4464,11 +4159,11 @@ function restoreSavedVolume() {
 
 // Load volume data from database and local storage
 async function loadVolumeData() {
-    // Aguardar Database estar disponível
+    // Aguardar Database estar dispon�vel
     if (!window.db) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         if (!window.db) {
-            console.error('? Database não disponível para volume');
+            console.error('? Database n�o dispon�vel para volume');
             return;
         }
     }
@@ -4507,28 +4202,28 @@ async function loadVolumeData() {
             volumeTodayElement.textContent = `${todayVolume.toFixed(0)} L`;
             console.log(`?? Volume hoje atualizado: ${todayVolume.toFixed(0)} L`);
         } else {
-            console.error('? Elemento volumeToday não encontrado');
+            console.error('? Elemento volumeToday n�o encontrado');
         }
         
         if (volumeWeekAvgElement) {
             volumeWeekAvgElement.textContent = `${weekAvg.toFixed(0)} L`;
-            console.log(`?? Média semanal atualizada: ${weekAvg.toFixed(0)} L`);
+            console.log(`?? M�dia semanal atualizada: ${weekAvg.toFixed(0)} L`);
         } else {
-            console.error('? Elemento volumeWeekAvg não encontrado');
+            console.error('? Elemento volumeWeekAvg n�o encontrado');
         }
         
         if (volumeGrowthElement) {
             volumeGrowthElement.textContent = `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
             console.log(`?? Crescimento atualizado: ${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`);
         } else {
-            console.error('? Elemento volumeGrowth não encontrado');
+            console.error('? Elemento volumeGrowth n�o encontrado');
         }
         
-        // última coleta
+        // �ltima coleta
         const lastCollectionElement = document.getElementById('lastCollection');
         if (lastCollectionElement) {
             if (volumeData.length > 0) {
-                const lastRecord = volumeData[0]; // Assumindo que está ordenado
+                const lastRecord = volumeData[0]; // Assumindo que est� ordenado
                 lastCollectionElement.textContent = `${lastRecord.collection_date || '--/--/----'} - --:--`;
             } else {
                 lastCollectionElement.textContent = '--/--/---- - --:--';
@@ -4548,11 +4243,11 @@ async function loadVolumeData() {
 // Load quality data from database
 async function loadQualityData() {
     try {
-        // Aguardar Database estar disponível
+        // Aguardar Database estar dispon�vel
         if (!window.db) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             if (!window.db) {
-                console.error('? Database não disponível para qualidade');
+                console.error('? Database n�o dispon�vel para qualidade');
                 throw new Error('Database not available');
             }
         }
@@ -4575,7 +4270,7 @@ async function loadQualityData() {
     }
 }
 
-// Funçãoo auxiliar para atualizar elementos de qualidade com verificaçãoo de existência
+// Fun��o auxiliar para atualizar elementos de qualidade com verifica��o de exist�ncia
 function updateQualityDisplay(fat, protein, scc, tbc, quality) {
     const elements = {
         'fatContent': fat,
@@ -4596,11 +4291,11 @@ function updateQualityDisplay(fat, protein, scc, tbc, quality) {
 }
 // Load sales data from database
 async function loadPaymentsData() {
-    // Aguardar Database estar disponível
+    // Aguardar Database estar dispon�vel
     if (!window.db) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         if (!window.db) {
-            console.error('? Database não disponível para pagamentos');
+            console.error('? Database n�o dispon�vel para pagamentos');
             return;
         }
     }
@@ -4622,7 +4317,7 @@ async function loadPaymentsData() {
 
         if (salesData && salesData.length > 0) {
             // Para financial_records, consideramos todas as receitas como "pagas"
-            // pois s�o registros de transações j� realizadas
+            // pois s�o registros de transa��es j� realizadas
             salesData.forEach(sale => {
                 const amount = parseFloat(sale.amount) || 0;
                 completedAmount += amount;
@@ -4653,16 +4348,16 @@ async function loadPaymentsData() {
 // Load users data from database
 async function loadUsersData() {
     try {
-        // Aguardar Database estar disponível
+        // Aguardar Database estar dispon�vel
         if (!window.db) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             if (!window.db) {
-                console.error('? Database não disponível para usuários');
+                console.error('? Database n�o dispon�vel para usu�rios');
                 throw new Error('Database not available');
             }
         }
         
-        // Usar API de usuários
+        // Usar API de usu�rios
         const response = await fetch('api/users.php?action=select');
         
         if (!response.ok) {
@@ -4680,7 +4375,7 @@ async function loadUsersData() {
         }
         
         if (!result.success) {
-            throw new Error(result.error || 'Erro ao carregar dados de usuários');
+            throw new Error(result.error || 'Erro ao carregar dados de usu�rios');
         }
         
         const usersData = result.data || [];
@@ -4730,11 +4425,11 @@ async function loadUsersData() {
 // Load weekly volume chart data
 async function loadWeeklyVolumeChart() {
     try {
-        // Aguardar Database estar disponível
+        // Aguardar Database estar dispon�vel
         if (!window.db) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             if (!window.db) {
-                console.error('? Database não disponível para gr�fico semanal');
+                console.error('? Database n�o dispon�vel para gr�fico semanal');
                 return;
             }
         }
@@ -5067,15 +4762,15 @@ async function loadDashboardVolumeChart() {
         
         // Usando MySQL direto atrav�s do objeto 'db'
         if (!db) {
-            console.error('? Database não disponível para Volume Semanal');
+            console.error('? Database n�o dispon�vel para Volume Semanal');
             return;
         }
 
-        // Usar cache para dados do usuário
+        // Usar cache para dados do usu�rio
         const userData = await CacheManager.getUserData();
         
         if (!userData) {
-            console.error('? Farm ID não encontrado para Volume Semanal');
+            console.error('? Farm ID n�o encontrado para Volume Semanal');
             return;
         }
 
@@ -5137,7 +4832,7 @@ async function loadDashboardVolumeChart() {
             window.volumeChart.update();
             console.log('? Gr�fico Volume Semanal atualizado com sucesso');
         } else {
-            console.error('? Gr�fico volumeChart não encontrado, tentando reinicializar...');
+            console.error('? Gr�fico volumeChart n�o encontrado, tentando reinicializar...');
             // Tentar reinicializar o gr�fico
                 const volumeCtx = document.getElementById('volumeChart');
                 if (volumeCtx) {
@@ -5171,7 +4866,7 @@ async function loadDashboardVolumeChart() {
                     });
                 console.log('? Gr�fico Volume Semanal reinicializado com sucesso');
             } else {
-                console.error('? Elemento volumeChart não encontrado no DOM');
+                console.error('? Elemento volumeChart n�o encontrado no DOM');
             }
         }
 
@@ -5183,7 +4878,7 @@ async function loadDashboardVolumeChart() {
 // Load dashboard weekly production chart (last 7 days)
 async function loadDashboardWeeklyChart() {
     try {
-        console.log('?? Carregando gr�fico de produção semanal...');
+        console.log('?? Carregando gr�fico de produ��o semanal...');
         
         // Wait for Chart.js to be available
         if (typeof Chart === 'undefined') {
@@ -5202,7 +4897,7 @@ async function loadDashboardWeeklyChart() {
         
         // Usando MySQL direto atrav�s do objeto 'db'
         if (!db) {
-            console.error('? Database não disponível');
+            console.error('? Database n�o dispon�vel');
             return;
         }
 
@@ -5213,15 +4908,15 @@ async function loadDashboardWeeklyChart() {
         const result = await response.json();
         
         if (!result.success) {
-            console.error('? Erro ao buscar dados de produção:', result.error);
+            console.error('? Erro ao buscar dados de produ��o:', result.error);
             return;
         }
         
         const productionData = result.data || [];
 
-        console.log('?? Dados de produção encontrados:', productionData?.length || 0, 'registros');
+        console.log('?? Dados de produ��o encontrados:', productionData?.length || 0, 'registros');
 
-        // Carregar dados locais se disponível
+        // Carregar dados locais se dispon�vel
         let localVolumeData = [];
         if (window.offlineSyncManager) {
             localVolumeData = window.offlineSyncManager.getLocalData('volume');
@@ -5268,7 +4963,7 @@ async function loadDashboardWeeklyChart() {
 
         const data = Object.values(dailyProduction);
         console.log('?? Dados processados (online + offline):', { labels, data });
-        console.log('?? Produção diária:', dailyProduction);
+        console.log('?? Produ��o di�ria:', dailyProduction);
 
         // Update chart
         if (window.dashboardWeeklyChart) {
@@ -5278,7 +4973,7 @@ async function loadDashboardWeeklyChart() {
             window.dashboardWeeklyChart.update();
             console.log('? Gr�fico atualizado com sucesso');
         } else {
-            console.error('? Gr�fico dashboardWeeklyChart não encontrado, tentando reinicializar...');
+            console.error('? Gr�fico dashboardWeeklyChart n�o encontrado, tentando reinicializar...');
             // Tentar reinicializar o gr�fico
             const dashboardWeeklyCtx = document.getElementById('dashboardWeeklyChart');
             if (dashboardWeeklyCtx) {
@@ -5287,7 +4982,7 @@ async function loadDashboardWeeklyChart() {
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Produção (L)',
+                            label: 'Produ��o (L)',
                             data: data,
                             backgroundColor: '#5bb85b',
                             borderRadius: 8
@@ -5304,7 +4999,7 @@ async function loadDashboardWeeklyChart() {
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                // Escala din�mica - sem limite máximo
+                                // Escala din�mica - sem limite m�ximo
                                 ticks: {
                                     callback: function(value) {
                                         return value + 'L';
@@ -5316,19 +5011,19 @@ async function loadDashboardWeeklyChart() {
                 });
                 console.log('? Gr�fico reinicializado com sucesso');
             } else {
-                console.error('? Elemento dashboardWeeklyChart não encontrado no DOM');
+                console.error('? Elemento dashboardWeeklyChart n�o encontrado no DOM');
             }
         }
 
     } catch (error) {
-        console.error('? Erro ao carregar gr�fico de produção semanal:', error);
+        console.error('? Erro ao carregar gr�fico de produ��o semanal:', error);
     }
 }
 
 // Load monthly production chart
 async function loadMonthlyProductionChart() {
     try {
-        console.log('?? Carregando gr�fico de produção mensal...');
+        console.log('?? Carregando gr�fico de produ��o mensal...');
         
         // Wait for Chart.js to be available
         if (typeof Chart === 'undefined') {
@@ -5347,11 +5042,11 @@ async function loadMonthlyProductionChart() {
         
         // Usando MySQL direto atrav�s do objeto 'db'
         if (!db) {
-            console.error('? Cliente Database não disponível');
+            console.error('? Cliente Database n�o dispon�vel');
             return;
         }
 
-        console.log('? Usuário autenticado - Fazenda: Lagoa Do Mato');
+        console.log('? Usu�rio autenticado - Fazenda: Lagoa Do Mato');
 
         // Usar API de volume
         const response = await fetch('api/volume.php?action=select');
@@ -5479,7 +5174,7 @@ async function loadMonthlyProductionChart() {
 
             console.log('? Gr�fico mensal criado com sucesso!');
         } else {
-            console.error('? Elemento monthlyProductionChart não encontrado');
+            console.error('? Elemento monthlyProductionChart n�o encontrado');
         }
 
     } catch (error) {
@@ -5519,8 +5214,8 @@ function getTimeAgoFromDate(date) {
 
 // Function to display users list
 /**
- * Exibe a lista de usuários na interface
- * Renderiza cards com informações e ações para cada usuário
+ * Exibe a lista de usu�rios na interface
+ * Renderiza cards com informa��es e a��es para cada usu�rio
  */
 function displayUsersList(users) {
     const usersList = document.getElementById('usersList');
@@ -5533,13 +5228,13 @@ function displayUsersList(users) {
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900    mb-2">Nenhum Usuário Cadastrado</h3>
-                <p class="text-gray-600    mb-4">Adicione usuários para gerenciar sua equipe</p>
+                <h3 class="text-lg font-semibold text-gray-900    mb-2">Nenhum Usu�rio Cadastrado</h3>
+                <p class="text-gray-600    mb-4">Adicione usu�rios para gerenciar sua equipe</p>
                 <button onclick="addUser()" class="px-6 py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all">
                     <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    Adicionar Primeiro Usuário
+                    Adicionar Primeiro Usu�rio
                 </button>
             </div>
         `;
@@ -5549,7 +5244,7 @@ function displayUsersList(users) {
     const usersHtml = users.map(user => {
         
         // Verificar se � conta secund�ria (mesmo email do gerente atual, mas role diferente)
-        // Obter email do usuário atual do Database se não estiver no sessionStorage
+        // Obter email do usu�rio atual do Database se n�o estiver no sessionStorage
         let currentUserEmail = sessionStorage.getItem('userEmail');
         if (!currentUserEmail) {
             // Tentar obter do localStorage ou sessionStorage como userData
@@ -5569,9 +5264,9 @@ function displayUsersList(users) {
         
         const roleText = {
             'gerente': 'Gerente',
-            'funcionario': 'Funcionário',
-            'veterinario': 'Veterinário',
-            'proprietario': 'Proprietário'
+            'funcionario': 'Funcion�rio',
+            'veterinario': 'Veterin�rio',
+            'proprietario': 'Propriet�rio'
         }[user.role] || user.role;
         
         const roleColor = {
@@ -5619,7 +5314,7 @@ function displayUsersList(users) {
                                 ${isSecondaryAccount ? '<span class="ml-2 text-orange-600"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></span>' : ''}
                             </div>
                             <div class="user-email">${user.email}</div>
-                            <div class="user-phone">${user.whatsapp || 'WhatsApp não informado'}</div>
+                            <div class="user-phone">${user.whatsapp || 'WhatsApp n�o informado'}</div>
                         </div>
                     </div>
                     <div class="user-status">
@@ -5631,7 +5326,7 @@ function displayUsersList(users) {
                 <div class="user-card-footer">
                     <div class="user-created">Criado em: ${new Date(user.created_at).toLocaleDateString('pt-BR')}</div>
                     <div class="user-actions">
-                        <button onclick="editUser('${user.id}');" class="action-button edit" title="Editar usuário">
+                        <button onclick="editUser('${user.id}');" class="action-button edit" title="Editar usu�rio">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
@@ -5645,7 +5340,7 @@ function displayUsersList(users) {
                         </button>
                         ` : ''}
                         ${user.role !== 'gerente' ? `
-                        <button onclick="deleteUser('${user.id}', '${user.name}');" class="action-button delete" title="Excluir usuário">
+                        <button onclick="deleteUser('${user.id}', '${user.name}');" class="action-button delete" title="Excluir usu�rio">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
@@ -5664,7 +5359,7 @@ function displayUsersList(users) {
 async function editUser(userId) {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
-        // Buscar dados do funcionário pelo ID selecionado
+        // Buscar dados do funcion�rio pelo ID selecionado
         const { data: user, error } = await db
             .from('users')
             .select('*')
@@ -5673,7 +5368,7 @@ async function editUser(userId) {
         if (error) throw error;
         // Sempre criar uma c�pia do objeto
         const funcionario = { ...user };
-        // Preencher campos do modal de ediçãoo
+        // Preencher campos do modal de edi��o
         document.getElementById('editUserId').value = funcionario.id;
         document.getElementById('editUserName').value = funcionario.name;
         document.getElementById('editUserEmail').value = funcionario.email;
@@ -5705,7 +5400,7 @@ async function editUser(userId) {
         openEditUserModal();
     } catch (error) {
         console.error('Error loading user data:', error);
-        showNotification('Erro ao carregar dados do usuário', 'error');
+        showNotification('Erro ao carregar dados do usu�rio', 'error');
     }
 }
 
@@ -5730,7 +5425,7 @@ async function toggleUserAccess(userId, currentStatus) {
             .single();
             
         if (fetchError) {
-            throw new Error('Usuário não encontrado');
+            throw new Error('Usu�rio n�o encontrado');
         }
         
         // Now update the user status
@@ -5744,7 +5439,7 @@ async function toggleUserAccess(userId, currentStatus) {
             throw error;
         }
         
-        showNotification(`Acesso do usuário ${action} com sucesso!`, 'success');
+        showNotification(`Acesso do usu�rio ${action} com sucesso!`, 'success');
         
         // Reload users list with a small delay to ensure the update is processed
         setTimeout(async () => {
@@ -5752,7 +5447,7 @@ async function toggleUserAccess(userId, currentStatus) {
         }, 500);
         
     } catch (error) {
-        showNotification('Erro ao alterar acesso do usuário: ' + (error.message || error), 'error');
+        showNotification('Erro ao alterar acesso do usu�rio: ' + (error.message || error), 'error');
     }
 }
 
@@ -5816,30 +5511,30 @@ async function testUserBlocking() {
 // Make test function available globally
 window.testUserBlocking = testUserBlocking;
 
-// Variível para armazenar dados do usuário a ser exclu�do
+// Vari�vel para armazenar dados do usu�rio a ser exclu�do
 let userToDelete = null;
 
 // Function to delete user com modal estilizado
 function deleteUser(userId, userName) {
-    // Verificar se os parâmetros s�o válidos
+    // Verificar se os par�metros s�o v�lidos
     if (!userId || !userName) {
-        console.error('deleteUser: Par�metros inválidos', { userId, userName });
+        console.error('deleteUser: Par�metros inv�lidos', { userId, userName });
         return;
     }
     
-    // Armazenar dados do usuário para exclus�o
+    // Armazenar dados do usu�rio para exclus�o
     userToDelete = { id: userId, name: userName };
     
-    // Mostrar modal de confirmaçãoo
+    // Mostrar modal de confirma��o
     showDeleteConfirmationModal(userName);
 }
 
-// Funçãoo para executar a exclus�o
+// Fun��o para executar a exclus�o
 async function executeDeleteUser(userId, userName) {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
         
-        // Primeiro, buscar dados completos do usuário antes de excluir
+        // Primeiro, buscar dados completos do usu�rio antes de excluir
         const { data: userData, error: fetchError } = await db
             .from('users')
             .select('*')
@@ -5847,11 +5542,11 @@ async function executeDeleteUser(userId, userName) {
             .single();
             
         if (fetchError) {
-            showNotification('Erro ao buscar dados do usuário: ' + fetchError.message, 'error');
+            showNotification('Erro ao buscar dados do usu�rio: ' + fetchError.message, 'error');
             return;
         }
         
-        // Armazenar dados completos para possível restauraçãoo
+        // Armazenar dados completos para poss�vel restaura��o
         userToDelete = {
             id: userData.id,
             name: userData.name,
@@ -5864,33 +5559,33 @@ async function executeDeleteUser(userId, userName) {
             created_at: userData.created_at
         };
         
-        // Agora excluir o usuário
+        // Agora excluir o usu�rio
         const { data, error } = await db
             .from('users')
             .delete()
             .eq('id', userId);
             
         if (error) {
-            showNotification('Erro ao excluir usuário: ' + error.message, 'error');
+            showNotification('Erro ao excluir usu�rio: ' + error.message, 'error');
             return;
         }
         
-        showNotification(`Usuário "${userName}" exclu�do com sucesso!`, 'success');
+        showNotification(`Usu�rio "${userName}" exclu�do com sucesso!`, 'success');
         await loadUsersData(); // Reload users list
         
     } catch (error) {
-        showNotification('Erro ao excluir usuário: ' + error.message, 'error');
+        showNotification('Erro ao excluir usu�rio: ' + error.message, 'error');
     }
 }
 
-// Modal de confirmaçãoo de exclus�o
+// Modal de confirma��o de exclus�o
 function showDeleteConfirmationModal(userName) {
     // Criar modal dinamicamente
     const modalHTML = `
         <div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="deleteModalContent">
                 <div class="text-center">
-                    <!-- ícone de aviso -->
+                    <!-- �cone de aviso -->
                     <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
@@ -5902,10 +5597,10 @@ function showDeleteConfirmationModal(userName) {
                     
                     <!-- Mensagem -->
                     <p class="text-gray-600 mb-6">
-                        Tem certeza que deseja excluir o usuário <strong>"${userName}"</strong>?
+                        Tem certeza que deseja excluir o usu�rio <strong>"${userName}"</strong>?
                     </p>
                     
-                    <!-- Botões -->
+                    <!-- Bot�es -->
                     <div class="flex space-x-3">
                         <button onclick="cancelDelete()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all">
                             Cancelar
@@ -5930,7 +5625,7 @@ function showDeleteConfirmationModal(userName) {
     }, 10);
 }
 
-// Funçãoo para iniciar timer de desfazer
+// Fun��o para iniciar timer de desfazer
 function startUndoTimer() {
     let timeLeft = 3;
     const timerElement = document.getElementById('undoTimer');
@@ -5951,7 +5646,7 @@ function startUndoTimer() {
     window.undoTimer = timer;
 }
 
-// Funçãoo para desfazer exclus�o
+// Fun��o para desfazer exclus�o
 async function undoDelete() {
     // Limpar timer
     if (window.undoTimer) {
@@ -5963,7 +5658,7 @@ async function undoDelete() {
         try {
             // Usando MySQL direto atrav�s do objeto 'db'
             
-            // Restaurar usuário usando RPC
+            // Restaurar usu�rio usando RPC
             const { data: result, error } = await db.rpc('restore_deleted_user', {
                 p_user_id: userToDelete.id,
                 p_name: userToDelete.name,
@@ -5979,14 +5674,14 @@ async function undoDelete() {
             }
             
             if (result.success) {
-                showNotification(`Usuário "${userToDelete.name}" restaurado com sucesso!`, 'success');
+                showNotification(`Usu�rio "${userToDelete.name}" restaurado com sucesso!`, 'success');
                 
-                // Recarregar lista de usuários
+                // Recarregar lista de usu�rios
                 setTimeout(() => {
                     loadUsersData();
                 }, 500);
             } else {
-                throw new Error(result.error || 'Falha ao restaurar usuário');
+                throw new Error(result.error || 'Falha ao restaurar usu�rio');
             }
             
         } catch (error) {
@@ -5998,11 +5693,11 @@ async function undoDelete() {
     // Fechar modal
     closeUndoModal();
     
-    // Limpar dados do usuário
+    // Limpar dados do usu�rio
     userToDelete = null;
 }
 
-// Funçãoo para fechar modal de desfazer
+// Fun��o para fechar modal de desfazer
 function closeUndoModal() {
     const modal = document.getElementById('undoModal');
     if (modal) {
@@ -6014,27 +5709,27 @@ function closeUndoModal() {
         }, 300);
     }
     
-    // Limpar dados do usuário
+    // Limpar dados do usu�rio
     userToDelete = null;
 }
 
-// Funçãoo para cancelar exclus�o
+// Fun��o para cancelar exclus�o
 function cancelDelete() {
     // Fechar modal
     closeDeleteConfirmationModal();
     
-    // Limpar dados do usuário
+    // Limpar dados do usu�rio
     userToDelete = null;
 }
 
-// Funçãoo para confirmar exclus�o
+// Fun��o para confirmar exclus�o
 function confirmDelete() {
     // Executar exclus�o imediatamente
     if (userToDelete) {
         executeDeleteUser(userToDelete.id, userToDelete.name);
     }
     
-    // Fechar modal de confirmaçãoo
+    // Fechar modal de confirma��o
     closeDeleteConfirmationModal();
     
     // Mostrar modal de desfazer com timer
@@ -6047,7 +5742,7 @@ function showUndoModal() {
         <div id="undoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="undoModalContent">
                 <div class="text-center">
-                    <!-- ícone de sucesso -->
+                    <!-- �cone de sucesso -->
                     <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
@@ -6055,11 +5750,11 @@ function showUndoModal() {
                     </div>
                     
                     <!-- T�tulo -->
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Usuário Exclu�do</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Usu�rio Exclu�do</h3>
                     
                     <!-- Mensagem -->
                     <p class="text-gray-600 mb-6">
-                        O usuário <strong>"${userToDelete?.name}"</strong> foi exclu�do com sucesso!
+                        O usu�rio <strong>"${userToDelete?.name}"</strong> foi exclu�do com sucesso!
                     </p>
                     
                     <!-- Timer para desfazer -->
@@ -6073,7 +5768,7 @@ function showUndoModal() {
                         </div>
                     </div>
                     
-                    <!-- Botão para desfazer -->
+                    <!-- Bot�o para desfazer -->
                     <button onclick="undoDelete()" class="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all">
                         Desfazer Exclus�o
                     </button>
@@ -6096,7 +5791,7 @@ function showUndoModal() {
     startUndoTimer();
 }
 
-// Funçãoo para fechar modal de confirmaçãoo
+// Fun��o para fechar modal de confirma��o
 function closeDeleteConfirmationModal() {
     const modal = document.getElementById('deleteConfirmationModal');
     if (modal) {
@@ -6127,17 +5822,17 @@ async function handleEditUser(e) {
     const password = formData.get('password');
     
     try {
-        // Preparar dados para atualização
+        // Preparar dados para atualiza��o
         const updateData = {
             name: name,
             whatsapp: whatsapp || null,
             role: role
         };
         
-        // Nota: Senhas s�o gerenciadas pelo Database Auth, não pela tabela users
+        // Nota: Senhas s�o gerenciadas pelo Database Auth, n�o pela tabela users
         // Se uma nova senha foi fornecida, ela deve ser atualizada via db.auth.updateUser
         if (password && password.trim() !== '') {
-            // TODO: Implementar atualização de senha via Database Auth se necessário
+            // TODO: Implementar atualiza��o de senha via Database Auth se necess�rio
 
         }
         
@@ -6151,7 +5846,7 @@ async function handleEditUser(e) {
                 } catch (photoError) {
                     console.error('Error uploading profile photo:', photoError);
                     // Don't show error notification for photo upload - user update is more important
-                    // showNotification('Erro ao fazer upload da foto de perfil, mas outros dados serão atualizados', 'warning');
+                    // showNotification('Erro ao fazer upload da foto de perfil, mas outros dados ser�o atualizados', 'warning');
                 }
             }
         } else {
@@ -6166,7 +5861,7 @@ async function handleEditUser(e) {
             
         if (error) throw error;
         
-        showNotification('Usuário atualizado com sucesso!', 'success');
+        showNotification('Usu�rio atualizado com sucesso!', 'success');
         closeEditUserModal();
         
         // Update users list without reloading photos to prevent conflicts
@@ -6183,7 +5878,7 @@ async function handleEditUser(e) {
         
     } catch (error) {
         console.error('Error updating user:', error);
-        showNotification('Erro ao atualizar usuário', 'error');
+        showNotification('Erro ao atualizar usu�rio', 'error');
     }
 }
 
@@ -6198,7 +5893,7 @@ function closeEditUserModal() {
     document.getElementById('editUserForm').reset();
 }
 
-// Funçãoo para preview de foto no add user
+// Fun��o para preview de foto no add user
 function previewProfilePhoto(input) {
     
     let file = null;
@@ -6212,9 +5907,9 @@ function previewProfilePhoto(input) {
         return;
     }
     
-    // Validar tamanho do arquivo (5MB máximo)
+    // Validar tamanho do arquivo (5MB m�ximo)
     if (file.size > 5 * 1024 * 1024) {
-        showNotification('A foto deve ter no máximo 5MB', 'error');
+        showNotification('A foto deve ter no m�ximo 5MB', 'error');
         if (input.files) input.value = '';
         return;
     }
@@ -6239,13 +5934,13 @@ function previewProfilePhoto(input) {
             placeholder.style.display = 'none';
             placeholder.classList.add('hidden');
         } else {
-            console.error('? Elementos de preview não encontrados');
+            console.error('? Elementos de preview n�o encontrados');
         }
     };
     reader.readAsDataURL(file);
 }
 
-// Funçãoo para preview de foto no edit user
+// Fun��o para preview de foto no edit user
 function previewEditProfilePhoto(input) {
     let file = null;
     
@@ -6258,9 +5953,9 @@ function previewEditProfilePhoto(input) {
         return;
     }
     
-    // Validar tamanho do arquivo (5MB máximo)
+    // Validar tamanho do arquivo (5MB m�ximo)
     if (file.size > 5 * 1024 * 1024) {
-        showNotification('A foto deve ter no máximo 5MB', 'error');
+        showNotification('A foto deve ter no m�ximo 5MB', 'error');
         if (input.files) input.value = '';
         return;
     }
@@ -6297,13 +5992,13 @@ let currentPhotoMode = '';
 
 
 
-// Funçãoes da C�mera - REFORMULADAS
+// Fun��es da C�mera - REFORMULADAS
 let cameraStream = null;
 let isCameraOpen = false;
 
 async function openCamera() {
     
-    // Verificar se j� está aberta
+    // Verificar se j� est� aberta
     if (isCameraOpen) {
         return;
     }
@@ -6314,7 +6009,7 @@ async function openCamera() {
         const processingScreen = document.getElementById('photoProcessingScreen');
         
         if (!modal || !video) {
-            console.error('? Modal ou v�deo não encontrado');
+            console.error('? Modal ou v�deo n�o encontrado');
             return;
         }
         
@@ -6337,7 +6032,7 @@ async function openCamera() {
         isCameraOpen = true;
         
         
-        // Resetar estado da verificaçãoo facial
+        // Resetar estado da verifica��o facial
         resetFaceVerification();
         
         // Iniciar c�mera (funciona no desktop tamb�m)
@@ -6356,7 +6051,7 @@ async function openCamera() {
         
     } catch (error) {
         console.error('? Erro ao acessar c�mera:', error);
-        showNotification('N�o foi possível acessar a c�mera. Verifique as permissões.', 'error');
+        showNotification('N�o foi poss�vel acessar a c�mera. Verifique as permiss�es.', 'error');
         closeCamera();
     }
 }
@@ -6366,7 +6061,7 @@ function closeCamera() {
     const modal = document.getElementById('cameraModal');
     
     if (!modal) {
-        console.error('? Modal não encontrado');
+        console.error('? Modal n�o encontrado');
         return;
     }
     
@@ -6420,7 +6115,7 @@ async function switchCamera() {
     }
 }
 
-// Funçãoo para resetar verificaçãoo facial
+// Fun��o para resetar verifica��o facial
 function resetFaceVerification() {
     const focusText = document.getElementById('focusText');
     const focusTimer = document.getElementById('focusTimer');
@@ -6439,7 +6134,7 @@ function resetFaceVerification() {
     }
 }
 
-// Funçãoo para iniciar verificaçãoo facial
+// Fun��o para iniciar verifica��o facial
 function startFaceVerification() {
     
     const focusText = document.getElementById('focusText');
@@ -6449,11 +6144,11 @@ function startFaceVerification() {
     const captureBtn = document.getElementById('captureBtn');
     
     if (!focusText || !focusTimer || !timerCount || !focusIndicator || !captureBtn) {
-        console.error('? Elementos de foco não encontrados');
+        console.error('? Elementos de foco n�o encontrados');
         return;
     }
     
-    // Desabilitar bot�o durante verificaçãoo
+    // Desabilitar bot�o durante verifica��o
     captureBtn.disabled = true;
     captureBtn.style.opacity = '0.5';
     
@@ -6476,7 +6171,7 @@ function startFaceVerification() {
             focusIndicator.classList.remove('opacity-0');
             focusIndicator.classList.add('focus-success');
             
-            // Capturar foto após 0.5s
+            // Capturar foto ap�s 0.5s
             setTimeout(() => {
                 capturePhoto();
             }, 500);
@@ -6490,7 +6185,7 @@ function capturePhoto() {
     const canvas = document.getElementById('cameraCanvas');
     
     if (!video || !canvas) {
-        console.error('? V�deo ou canvas não encontrado');
+        console.error('? V�deo ou canvas n�o encontrado');
         return;
     }
     
@@ -6526,7 +6221,7 @@ function capturePhoto() {
                     placeholder.style.display = 'none';
                     placeholder.classList.add('hidden');
     } else {
-                    console.error('? Elementos de preview não encontrados para novo usuário');
+                    console.error('? Elementos de preview n�o encontrados para novo usu�rio');
                 }
             } else if (currentPhotoMode === 'edit') {
                 const preview = document.getElementById('editProfilePreview');
@@ -6540,10 +6235,10 @@ function capturePhoto() {
                     placeholder.style.display = 'none';
                     placeholder.classList.add('hidden');
                 } else {
-                    console.error('? Elementos de preview não encontrados para ediçãoo');
+                    console.error('? Elementos de preview n�o encontrados para edi��o');
                 }
             } else {
-                console.error('? currentPhotoMode inválido:', currentPhotoMode);
+                console.error('? currentPhotoMode inv�lido:', currentPhotoMode);
             }
             
             // Fechar c�mera
@@ -6557,7 +6252,7 @@ function capturePhoto() {
     }
 }
 
-// Funçãoo para abrir galeria
+// Fun��o para abrir galeria
 function openGallery() {
     const inputId = currentPhotoMode === 'add' ? 'profilePhotoInput' : 'editProfilePhoto';
     const input = document.getElementById(inputId);
@@ -6570,7 +6265,7 @@ function openGallery() {
     closePhotoChoiceModal();
 }
 
-// Funçãoes para adicionar foto
+// Fun��es para adicionar foto
 function addPhotoToNewUser() {
     openPhotoChoiceModal('add');
 }
@@ -6579,7 +6274,7 @@ function addPhotoToEditUser() {
     openPhotoChoiceModal('edit');
 }
 
-// Funçãoes do novo modal de foto
+// Fun��es do novo modal de foto
 function openPhotoChoiceModal(mode) {
     currentPhotoMode = mode;
     
@@ -6594,12 +6289,12 @@ function openPhotoChoiceModal(mode) {
         modal.style.opacity = '1';
         modal.style.pointerEvents = 'auto';
         
-        // Verificar se realmente está visível
+        // Verificar se realmente est� vis�vel
         setTimeout(() => {
             const rect = modal.getBoundingClientRect();
         }, 100);
     } else {
-        console.error('? Modal não encontrado');
+        console.error('? Modal n�o encontrado');
     }
 }
 
@@ -6612,7 +6307,7 @@ function closePhotoChoiceModal() {
         modal.style.visibility = 'hidden';
         modal.style.opacity = '0';
         modal.style.pointerEvents = 'none';
-        // NÃO limpar currentPhotoMode aqui, pois precisamos dele na c�mera
+        // N�O limpar currentPhotoMode aqui, pois precisamos dele na c�mera
         console.log('? Modal fechado, currentPhotoMode mantido:', currentPhotoMode);
     }
 }
@@ -6640,7 +6335,7 @@ function selectFromGallery() {
 }
 
 function processPhotoForNewUser(photoData) {
-    // Simular o input file para o novo usuário
+    // Simular o input file para o novo usu�rio
     const input = document.getElementById('profilePhotoInput');
     if (input) {
         // Criar um arquivo a partir da foto
@@ -6660,7 +6355,7 @@ function processPhotoForNewUser(photoData) {
 }
 
 function processPhotoForEditUser(photoData) {
-    // Simular o input file para ediçãoo de usuário
+    // Simular o input file para edi��o de usu�rio
     const input = document.getElementById('editProfilePhoto');
     if (input) {
         // Criar um arquivo a partir da foto
@@ -6689,7 +6384,7 @@ function takePhoto() {
 function setupEventListeners() {
     console.log('?? Configurando event listeners...');
     
-    // Funçãoo para limpar listeners existentes
+    // Fun��o para limpar listeners existentes
     function clearExistingListeners(element, eventType, handler) {
         if (element) {
             element.removeEventListener(eventType, handler);
@@ -6701,14 +6396,14 @@ function setupEventListeners() {
         userRoleSelect.addEventListener('change', function() {
             const addPhotoSection = document.getElementById('addPhotoSection');
             console.log('?? Role selecionado:', this.value);
-            console.log('?? Seção de foto:', addPhotoSection ? 'encontrada' : 'n�o encontrada');
+            console.log('?? Se��o de foto:', addPhotoSection ? 'encontrada' : 'n�o encontrada');
             
             if (this.value === 'funcionario') {
                 addPhotoSection.classList.remove('hidden');
-                console.log('? Seção de foto mostrada');
+                console.log('? Se��o de foto mostrada');
             } else {
                 addPhotoSection.classList.add('hidden');
-                console.log('? Seção de foto ocultada');
+                console.log('? Se��o de foto ocultada');
             }
         });
     }
@@ -6760,11 +6455,11 @@ function setupEventListeners() {
     // Add user form submission
     const addUserForm = document.getElementById('addUserFormModal');
     if (addUserForm) {
-        console.log('?? Formulário encontrado, adicionando listener');
+        console.log('?? Formul�rio encontrado, adicionando listener');
         clearExistingListeners(addUserForm, 'submit', handleAddUser);
         addUserForm.addEventListener('submit', handleAddUser);
     } else {
-        console.error('? Formulário addUserFormModal não encontrado!');
+        console.error('? Formul�rio addUserFormModal n�o encontrado!');
     }
         
 
@@ -6830,7 +6525,7 @@ function displayVolumeRecords(records) {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         <p class="text-lg font-medium mb-2">Nenhum registro de volume encontrado</p>
-                        <p class="text-sm">Adicione registros de produção para monitorar o volume</p>
+                        <p class="text-sm">Adicione registros de produ��o para monitorar o volume</p>
                     </div>
                 </td>
             </tr>
@@ -6843,7 +6538,7 @@ function displayVolumeRecords(records) {
         const recordDate = new Date(record.production_date + 'T00:00:00').toLocaleDateString('pt-BR');
         const recordTime = new Date(record.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         const volume = record.volume_liters ? `${record.volume_liters.toFixed(1)}L` : '--';
-        // Obter nome do funcionário via relacionamento
+        // Obter nome do funcion�rio via relacionamento
         const userName = record.users?.name || record.user_name || 'N/A';
         const notes = record.notes || '-';
         
@@ -6995,7 +6690,7 @@ async function deleteVolumeRecord(recordId) {
         await loadMonthlyVolumeChart();
         await loadQualityChart();
         await loadTemperatureChart();
-        // Usuário da fazenda Lagoa Do Mato for recent activities
+        // Usu�rio da fazenda Lagoa Do Mato for recent activities
         if (user) {
             const { data: userData } = await db
                 .from('users')
@@ -7131,7 +6826,7 @@ async function loadTemperatureChart() {
         const volumeData = result.data || [];
         const temperatureData = volumeData
             .filter(record => record.temperature && !isNaN(record.temperature))
-            .slice(0, 7); // últimos 7 registros
+            .slice(0, 7); // �ltimos 7 registros
         
         console.log('?? Dados de temperatura encontrados:', temperatureData?.length || 0, 'registros');
         console.log('?? Dados brutos:', temperatureData);
@@ -7208,9 +6903,9 @@ async function loadTemperatureChart() {
                                             color: 'rgba(0, 0, 0, 0.1)'
                                         },
                                         ticks: {
-                                            maxTicksLimit: 7, // Limitar número de ticks no eixo X
+                                            maxTicksLimit: 7, // Limitar n�mero de ticks no eixo X
                                             callback: function(value, index, ticks) {
-                                                // Garantir que não haja labels duplicados
+                                                // Garantir que n�o haja labels duplicados
                                                 const label = this.getLabelForValue(value);
                                                 return label;
                                             }
@@ -7283,11 +6978,11 @@ async function loadTemperatureChart() {
                                 </svg>
                             </div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Sem Dados de Temperatura</h3>
-                            <p class="text-gray-500 text-sm">Nenhum registro com temperatura foi encontrado nos últimos 7 dias.</p>
+                            <p class="text-gray-500 text-sm">Nenhum registro com temperatura foi encontrado nos �ltimos 7 dias.</p>
                             <p class="text-gray-400 text-xs mt-1">
                                 Total de registros: ${totalRecords} | Com temperatura: ${recordsWithTemp}
                             </p>
-                            <p class="text-gray-400 text-xs mt-1">Os dados aparecerão aqui quando houver registros com temperatura.</p>
+                            <p class="text-gray-400 text-xs mt-1">Os dados aparecer�o aqui quando houver registros com temperatura.</p>
                         </div>
                     `;
                 }
@@ -7358,11 +7053,11 @@ async function loadRecentActivities(farmId = 1) {
     try {
         console.log('?? Carregando atividades recentes para fazenda: Lagoa Do Mato (ID=1)');
         
-        // Aguardar Database estar disponível
+        // Aguardar Database estar dispon�vel
         if (!window.db) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             if (!window.db) {
-                console.error('? Database não disponível para atividades recentes');
+                console.error('? Database n�o dispon�vel para atividades recentes');
                 return;
             }
         }
@@ -7385,7 +7080,7 @@ async function loadRecentActivities(farmId = 1) {
         const activitiesContainer = document.getElementById('recentActivities');
         
         if (!activities || activities.length === 0) {
-            console.log('?? Nenhuma atividade encontrada, mostrando mensagem padrão');
+            console.log('?? Nenhuma atividade encontrada, mostrando mensagem padr�o');
             activitiesContainer.innerHTML = `
                 <div class="text-center py-8">
                     <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -7394,7 +7089,7 @@ async function loadRecentActivities(farmId = 1) {
                         </svg>
                     </div>
                     <p class="text-gray-500 text-sm">Nenhuma atividade recente</p>
-                    <p class="text-gray-400 text-xs">Registros aparecerão aqui</p>
+                    <p class="text-gray-400 text-xs">Registros aparecer�o aqui</p>
                 </div>
             `;
             return;
@@ -7404,7 +7099,7 @@ async function loadRecentActivities(farmId = 1) {
 
         activitiesContainer.innerHTML = activities.map(activity => {
             const timeAgo = getTimeAgoFromDate(new Date(activity.created_at));
-            const userName = activity.users?.name || 'Usuário';
+            const userName = activity.users?.name || 'Usu�rio';
             
             return `
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -7430,21 +7125,21 @@ async function loadRecentActivities(farmId = 1) {
         console.error('? Erro ao carregar atividades recentes:', error);
     }
     
-            console.log('? Funçãoo loadRecentActivities conclu�da');
+            console.log('? Fun��o loadRecentActivities conclu�da');
 }
 
 // ==================== REAL-TIME UPDATES ====================
 let realtimeSubscriptions = [];
 
-// Funçãoo para configurar atualizações em tempo real
+// Fun��o para configurar atualiza��es em tempo real
 async function setupRealtimeUpdates() {
     try {
-        console.log('?? Configurando atualizações em tempo real...');
+        console.log('?? Configurando atualiza��es em tempo real...');
         
         // Sistema Lagoa Do Mato
         const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
         if (!userData) {
-            console.log('? Dados de usuário não encontrados para tempo real');
+            console.log('? Dados de usu�rio n�o encontrados para tempo real');
             return;
         }
         
@@ -7454,11 +7149,11 @@ async function setupRealtimeUpdates() {
         // Obter cliente Database
         // Usando MySQL direto atrav�s do objeto 'db'
         if (!db) {
-            console.log('? Database não disponível para tempo real');
+            console.log('? Database n�o dispon�vel para tempo real');
             return;
         }
         
-        // 1. Escutar mudan�as na tabela volume_records (produção)
+        // 1. Escutar mudan�as na tabela volume_records (produ��o)
         const volumeSubscription = db
             .channel('volume_records_changes')
             .on(
@@ -7472,7 +7167,7 @@ async function setupRealtimeUpdates() {
                 async (payload) => {
                     console.log('?? Mudan�a detectada em volume_records:', payload.eventType);
                     
-                    // Atualizar apenas os componentes necessários
+                    // Atualizar apenas os componentes necess�rios
                     switch (payload.eventType) {
                         case 'INSERT':
                             await handleNewProduction(payload.new);
@@ -7488,10 +7183,10 @@ async function setupRealtimeUpdates() {
             )
             .subscribe();
 
-        // Armazenar referência da subscription
+        // Armazenar refer�ncia da subscription
         realtimeSubscriptions = [volumeSubscription];
 
-        console.log('? Atualizações em tempo real configuradas com sucesso!');
+        console.log('? Atualiza��es em tempo real configuradas com sucesso!');
         
         // Mostrar indicador visual
         const indicator = document.getElementById('realtimeIndicator');
@@ -7500,14 +7195,14 @@ async function setupRealtimeUpdates() {
         }
         
     } catch (error) {
-        console.error('? Erro ao configurar atualizações em tempo real:', error.message);
+        console.error('? Erro ao configurar atualiza��es em tempo real:', error.message);
     }
 }
 
-// Funçãoo para limpar todas as subscriptions
+// Fun��o para limpar todas as subscriptions
 function cleanupRealtimeUpdates() {
     try {
-        console.log('?? Limpando atualizações em tempo real...');
+        console.log('?? Limpando atualiza��es em tempo real...');
         
         realtimeSubscriptions.forEach(subscription => {
             if (subscription && subscription.unsubscribe) {
@@ -7523,17 +7218,17 @@ function cleanupRealtimeUpdates() {
             indicator.classList.add('hidden');
         }
         
-        console.log('? Atualizações em tempo real limpas');
+        console.log('? Atualiza��es em tempo real limpas');
         
     } catch (error) {
-        console.error('? Erro ao limpar atualizações em tempo real:', error.message);
+        console.error('? Erro ao limpar atualiza��es em tempo real:', error.message);
     }
 }
 
 // Handlers para mudan�as em tempo real
 async function handleNewProduction(newProduction) {
     try {
-        console.log('?? Nova produção detectada:', newProduction);
+        console.log('?? Nova produ��o detectada:', newProduction);
         
         // Atualizar volume de hoje
         await updateTodayVolume();
@@ -7545,26 +7240,26 @@ async function handleNewProduction(newProduction) {
             await loadRecentActivities(); // Lagoa Do Mato
         }
         
-        // Mostrar notificaçãoo
-        showNotification(`Nova produção registrada: ${newProduction.volume_liters}L`, 'success');
+        // Mostrar notifica��o
+        showNotification(`Nova produ��o registrada: ${newProduction.volume_liters}L`, 'success');
         
-        // Notificaçãoo REAL do dispositivo para registro de produção
+        // Notifica��o REAL do dispositivo para registro de produ��o
         if (window.nativeNotifications) {
             window.nativeNotifications.showRealDeviceNotification(
-                'Nova Produção Registrada',
+                'Nova Produ��o Registrada',
                 `Volume: ${newProduction.volume_liters}L registrado com sucesso!`,
                 'production'
             );
         }
         
     } catch (error) {
-        console.error('? Erro ao processar nova produção:', error.message);
+        console.error('? Erro ao processar nova produ��o:', error.message);
     }
 }
 
 async function handleProductionUpdate(newProduction, oldProduction) {
     try {
-        console.log('?? Produção atualizada:', { old: oldProduction, new: newProduction });
+        console.log('?? Produ��o atualizada:', { old: oldProduction, new: newProduction });
         
         // Atualizar volume de hoje
         await updateTodayVolume();
@@ -7576,17 +7271,17 @@ async function handleProductionUpdate(newProduction, oldProduction) {
             await loadRecentActivities(); // Lagoa Do Mato
         }
         
-        // Mostrar notificaçãoo
-        showNotification('Produção atualizada com sucesso!', 'info');
+        // Mostrar notifica��o
+        showNotification('Produ��o atualizada com sucesso!', 'info');
         
     } catch (error) {
-        console.error('? Erro ao processar atualização de produção:', error.message);
+        console.error('? Erro ao processar atualiza��o de produ��o:', error.message);
     }
 }
 
 async function handleProductionDelete(deletedProduction) {
     try {
-        console.log('??? Produção deletada:', deletedProduction);
+        console.log('??? Produ��o deletada:', deletedProduction);
         
         // Atualizar volume de hoje
         await updateTodayVolume();
@@ -7598,15 +7293,15 @@ async function handleProductionDelete(deletedProduction) {
             await loadRecentActivities(); // Lagoa Do Mato
         }
         
-        // Mostrar notificaçãoo
-        showNotification('Produção removida com sucesso!', 'info');
+        // Mostrar notifica��o
+        showNotification('Produ��o removida com sucesso!', 'info');
         
     } catch (error) {
-        console.error('? Erro ao processar remoçãoo de produção:', error.message);
+        console.error('? Erro ao processar remo��o de produ��o:', error.message);
     }
 }
 
-// Funçãoo para atualizar volume de hoje
+// Fun��o para atualizar volume de hoje
 async function updateTodayVolume() {
     try {
         const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
@@ -7643,13 +7338,13 @@ async function updateTodayVolume() {
 
 // Initialize charts
 function initializeCharts() {
-    // Verificar se Chart.js está disponível
+    // Verificar se Chart.js est� dispon�vel
     if (typeof Chart === 'undefined') {
-        console.error('? Chart.js não está carregado!');
+        console.error('? Chart.js n�o est� carregado!');
         return;
     }
     
-    console.log('?? Chart.js disponível, inicializando gr�ficos...');
+    console.log('?? Chart.js dispon�vel, inicializando gr�ficos...');
     
     // Volume Chart
     const volumeCtx = document.getElementById('volumeChart');
@@ -7689,7 +7384,7 @@ function initializeCharts() {
             console.error('? Erro ao inicializar volumeChart:', error);
         }
     } else {
-        console.error('? Elemento volumeChart não encontrado no DOM');
+        console.error('? Elemento volumeChart n�o encontrado no DOM');
     }
 
     // Quality Chart
@@ -7728,7 +7423,7 @@ function initializeCharts() {
             console.error('? Erro ao inicializar qualityChart:', error);
         }
     } else {
-        console.error('? Elemento qualityChart não encontrado no DOM');
+        console.error('? Elemento qualityChart n�o encontrado no DOM');
     }
     
     // Temperature Chart
@@ -7815,7 +7510,7 @@ function initializeCharts() {
             console.error('? Erro ao inicializar temperatureChart:', error);
         }
     } else {
-        console.error('? Elemento temperatureChart não encontrado no DOM');
+        console.error('? Elemento temperatureChart n�o encontrado no DOM');
     }
 
     // Dashboard Weekly Production Chart
@@ -7827,7 +7522,7 @@ function initializeCharts() {
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Produção (L)',
+                    label: 'Produ��o (L)',
                     data: [],
                     backgroundColor: '#5bb85b',
                     borderRadius: 8
@@ -7844,7 +7539,7 @@ function initializeCharts() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        // Escala din�mica - sem limite máximo
+                        // Escala din�mica - sem limite m�ximo
                         ticks: {
                             callback: function(value) {
                                 return value + 'L';
@@ -7856,7 +7551,7 @@ function initializeCharts() {
         });
         console.log('? Gr�fico dashboardWeeklyChart inicializado com sucesso');
     } else {
-        console.error('? Elemento dashboardWeeklyChart não encontrado no DOM');
+        console.error('? Elemento dashboardWeeklyChart n�o encontrado no DOM');
     }
 
     // Weekly Volume Chart
@@ -7935,7 +7630,7 @@ function initializeCharts() {
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Volume por Horário (L)',
+                    label: 'Volume por Hor�rio (L)',
                     data: [],
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -7954,7 +7649,7 @@ function initializeCharts() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        // Escala din�mica - sem limite máximo
+                        // Escala din�mica - sem limite m�ximo
                         ticks: {
                             callback: function(value) {
                                 return value + 'L';
@@ -7989,7 +7684,7 @@ function initializeCharts() {
                         fill: false
                     },
                     {
-                        label: 'Proteína (%)',
+                        label: 'Prote�na (%)',
                         data: [],
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -8224,7 +7919,7 @@ function toggleProfileEdit() {
         // Switch to edit mode
         viewMode.classList.add('hidden');
         editMode.classList.remove('hidden');
-        // NÃO mostrar bot�es automaticamente - s� quando h� mudan�as
+        // N�O mostrar bot�es automaticamente - s� quando h� mudan�as
         editButtons.classList.add('hidden');
         editBtn.innerHTML = `
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -8243,7 +7938,7 @@ function toggleProfileEdit() {
 }
 
 function cancelProfileEdit() {
-    console.log('? Cancelando ediçãoo do perfil...');
+    console.log('? Cancelando edi��o do perfil...');
     
     const viewMode = document.getElementById('profileViewMode');
     const editMode = document.getElementById('profileEditMode');
@@ -8268,11 +7963,11 @@ function cancelProfileEdit() {
     `;
     editBtn.onclick = toggleProfileEdit;
     
-    console.log('? Ediçãoo cancelada, bot�es ocultados');
+    console.log('? Edi��o cancelada, bot�es ocultados');
 }
 
 function populateEditForm() {
-    console.log('?? Preenchendo formulário de ediçãoo...');
+    console.log('?? Preenchendo formul�rio de edi��o...');
     
     // Get current values from view mode
     const currentName = document.getElementById('profileFullName').textContent;
@@ -8318,7 +8013,7 @@ function populateEditForm() {
             editButtons.style.visibility = 'hidden';
             editButtons.style.opacity = '0';
             editButtons.style.pointerEvents = 'none';
-            console.log('? Botões de ediçãoo ocultados inicialmente');
+            console.log('? Bot�es de edi��o ocultados inicialmente');
         }
 }
 
@@ -8330,7 +8025,7 @@ function checkForChanges() {
     
     // Verificar se os valores originais existem
     if (!window.originalProfileValues) {
-        console.log('?? Valores originais não encontrados, ocultando bot�es');
+        console.log('?? Valores originais n�o encontrados, ocultando bot�es');
         editButtons.classList.add('hidden');
         editButtons.style.display = 'none';
         editButtons.style.visibility = 'hidden';
@@ -8376,13 +8071,13 @@ async function handleUpdateProfile(event) {
         const { data: { user } } = await db.auth.getUser();
         
         if (!user) {
-            throw new Error('Usuário não autenticado');
+            throw new Error('Usu�rio n�o autenticado');
         }
         
         const updateData = {
             name: formData.get('name'),
             whatsapp: formData.get('whatsapp') || null,
-            // Campos de relatório adicionados
+            // Campos de relat�rio adicionados
             report_farm_name: formData.get('report_farm_name') || null,
             report_farm_logo_base64: formData.get('report_farm_logo_base64') || null,
             report_footer_text: formData.get('report_footer_text') || null,
@@ -8513,8 +8208,8 @@ function addVolumeRecord() {
                         <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent      " placeholder="4.0">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700    mb-2">Observações</label>
-                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent      " placeholder="Observações adicionais (opcional)"></textarea>
+                        <label class="block text-sm font-medium text-gray-700    mb-2">Observa��es</label>
+                        <textarea name="observations" rows="3" class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent      " placeholder="Observa��es adicionais (opcional)"></textarea>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -8542,7 +8237,7 @@ function addQualityTest() {
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 quality-modal-backdrop py-8 px-4';
     modal.innerHTML = `
         <div class="bg-white rounded-3xl p-8 w-full max-w-lg mx-4 shadow-2xl transform transition-all duration-300 scale-100">
-            <!-- Header com ícone -->
+            <!-- Header com �cone -->
             <div class="flex items-center justify-between mb-8 quality-modal-header p-6 -m-8 mb-8 rounded-t-3xl">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
@@ -8552,7 +8247,7 @@ function addQualityTest() {
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-900">Novo Teste de Qualidade</h3>
-                        <p class="text-sm text-gray-500">Registre os parâmetros de qualidade do leite</p>
+                        <p class="text-sm text-gray-500">Registre os par�metros de qualidade do leite</p>
                     </div>
                 </div>
                 <button onclick="closeQualityModal()" class="quality-close-btn text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg">
@@ -8603,11 +8298,11 @@ function addQualityTest() {
                         <div class="quality-standards">Padr�o: 3.0 - 6.0%</div>
                     </div>
 
-                    <!-- Proteína -->
+                    <!-- Prote�na -->
                     <div class="relative">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <div class="w-3 h-3 bg-blue-400 rounded-full inline-block mr-2"></div>
-                            Proteína (%)
+                            Prote�na (%)
                         </label>
                         <div class="relative">
                             <input type="number" name="protein_percentage" step="0.01" min="0" max="100" required 
@@ -8682,33 +8377,33 @@ function addQualityTest() {
                     </div>
                 </div>
 
-                <!-- Laboratário -->
+                <!-- Laborat�rio -->
                 <div class="relative">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
                         </svg>
-                        Laboratário
+                        Laborat�rio
                     </label>
                     <input type="text" name="laboratory" 
                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white" 
-                           placeholder="Nome do laboratário">
+                           placeholder="Nome do laborat�rio">
                 </div>
 
-                <!-- Observações -->
+                <!-- Observa��es -->
                 <div class="relative">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
-                        Observações
+                        Observa��es
                     </label>
                     <textarea name="notes" rows="3" 
                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white resize-none" 
-                              placeholder="Observações adicionais (opcional)"></textarea>
+                              placeholder="Observa��es adicionais (opcional)"></textarea>
                 </div>
 
-                <!-- Botões -->
+                <!-- Bot�es -->
                 <div class="flex gap-4 pt-4">
                     <button type="button" onclick="closeQualityModal()" 
                             class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
@@ -8744,12 +8439,12 @@ function addQualityTest() {
     modal.style.justifyContent = 'center';
     modal.style.zIndex = '9999';
     
-    // Adicionar animaçãoo de entrada
+    // Adicionar anima��o de entrada
     setTimeout(() => {
         modal.querySelector('.bg-white').classList.add('scale-100');
     }, 10);
     
-    // Ativar validaçãoo em tempo real
+    // Ativar valida��o em tempo real
     setTimeout(() => {
         validateQualityInputs();
         addQualitySummary();
@@ -8773,7 +8468,7 @@ function addPayment() {
             <form id="paymentForm" onsubmit="handleAddPayment(event)">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700    mb-2">Descriçãoo</label>
+                        <label class="block text-sm font-medium text-gray-700    mb-2">Descri��o</label>
                         <input type="text" name="description" required class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent      " placeholder="Ex: Venda para Latic�nio ABC">
                     </div>
                     <div>
@@ -8788,7 +8483,7 @@ function addPayment() {
                             <option value="cooperativa">Cooperativa</option>
                             <option value="distribuidor">Distribuidor</option>
                             <option value="consumidor_final">Consumidor Final</option>
-                            <option value="exportacao">Exportação</option>
+                            <option value="exportacao">Exporta��o</option>
                             <option value="outros">Outros</option>
                         </select>
                     </div>
@@ -8805,8 +8500,8 @@ function addPayment() {
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700    mb-2">Observações</label>
-                        <textarea name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent      " placeholder="Observações adicionais (opcional)"></textarea>
+                        <label class="block text-sm font-medium text-gray-700    mb-2">Observa��es</label>
+                        <textarea name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300    rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-transparent      " placeholder="Observa��es adicionais (opcional)"></textarea>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -8846,7 +8541,7 @@ function closeVolumeModal() {
 function closeQualityModal() {
     const modal = document.getElementById('qualityModal');
     if (modal) {
-        // Adicionar animaçãoo de sa�da
+        // Adicionar anima��o de sa�da
         modal.querySelector('.bg-white').classList.add('scale-95', 'opacity-0');
         setTimeout(() => {
             modal.remove();
@@ -8854,14 +8549,14 @@ function closeQualityModal() {
     }
 }
 
-// Funçãoo para ajustar valores dos campos num�ricos
+// Fun��o para ajustar valores dos campos num�ricos
 function adjustValue(fieldName, increment) {
     const field = document.querySelector(`input[name="${fieldName}"]`);
     if (field) {
         const currentValue = parseFloat(field.value) || 0;
         const newValue = Math.max(0, currentValue + increment);
         
-        // Determinar número de casas decimais baseado no campo
+        // Determinar n�mero de casas decimais baseado no campo
         let decimalPlaces = 0;
         if (fieldName === 'fat_percentage' || fieldName === 'protein_percentage') {
             decimalPlaces = 2;
@@ -8876,12 +8571,12 @@ function adjustValue(fieldName, increment) {
             field.style.backgroundColor = '';
         }, 300);
         
-        // Disparar evento de input para validaçãoo
+        // Disparar evento de input para valida��o
         field.dispatchEvent(new Event('input'));
     }
 }
 
-// Funçãoo para validar valores em tempo real
+// Fun��o para validar valores em tempo real
 function validateQualityInputs() {
     const inputs = document.querySelectorAll('#qualityForm input[type="number"]');
     inputs.forEach(input => {
@@ -8889,7 +8584,7 @@ function validateQualityInputs() {
             const value = parseFloat(this.value);
             const fieldName = this.name;
             
-            // Validações espec�ficas por campo
+            // Valida��es espec�ficas por campo
             switch(fieldName) {
                 case 'fat_percentage':
                     if (value < 0 || value > 100) {
@@ -8950,7 +8645,7 @@ function validateQualityInputs() {
                     break;
             }
             
-            // Reset após 2 segundos
+            // Reset ap�s 2 segundos
             setTimeout(() => {
                 this.style.borderColor = '';
                 this.style.backgroundColor = '';
@@ -8959,7 +8654,7 @@ function validateQualityInputs() {
     });
 }
 
-// Funçãoo para adicionar resumo visual dos valores
+// Fun��o para adicionar resumo visual dos valores
 function addQualitySummary() {
     const inputs = document.querySelectorAll('#qualityForm input[type="number"]');
     const summaryContainer = document.createElement('div');
@@ -8975,7 +8670,7 @@ function addQualitySummary() {
                 <span class="quality-fat-status font-semibold">--%</span>
             </div>
             <div class="quality-summary-item">
-                <span class="text-gray-600">Proteína:</span>
+                <span class="text-gray-600">Prote�na:</span>
                 <span class="quality-protein-status font-semibold">--%</span>
             </div>
             <div class="quality-summary-item">
@@ -8989,7 +8684,7 @@ function addQualitySummary() {
         </div>
     `;
     
-    // Inserir o resumo após o grid de parâmetros
+    // Inserir o resumo ap�s o grid de par�metros
     const gridContainer = document.querySelector('.quality-modal-grid').parentElement;
     gridContainer.insertBefore(summaryContainer, gridContainer.querySelector('div:last-child'));
     
@@ -8999,7 +8694,7 @@ function addQualitySummary() {
     });
 }
 
-// Funçãoo para atualizar o resumo
+// Fun��o para atualizar o resumo
 function updateQualitySummary() {
     const fatValue = parseFloat(document.querySelector('input[name="fat_percentage"]')?.value || 0);
     const proteinValue = parseFloat(document.querySelector('input[name="protein_percentage"]')?.value || 0);
@@ -9040,7 +8735,7 @@ function updateQualitySummary() {
     }
 }
 
-// Funçãoo para calcular status de qualidade
+// Fun��o para calcular status de qualidade
 function getQualityStatusClass(type, value) {
     const baseClass = 'font-semibold';
     
@@ -9070,7 +8765,7 @@ function getQualityStatusClass(type, value) {
     }
 }
 
-// Funçãoo para calcular qualidade geral
+// Fun��o para calcular qualidade geral
 function calculateOverallQuality(fat, protein, scc, cbt) {
     let score = 0;
     let count = 0;
@@ -9106,7 +8801,7 @@ function calculateOverallQuality(fat, protein, scc, cbt) {
     return count > 0 ? score / count : 0;
 }
 
-// Funçãoo para obter classe do status geral
+// Fun��o para obter classe do status geral
 function getOverallStatusClass(score) {
     if (score >= 80) return 'bg-green-500';
     if (score >= 60) return 'bg-yellow-500';
@@ -9146,10 +8841,10 @@ async function handleAddVolume(event) {
         console.log('? Volume registrado com sucesso:', result);
         showNotification('Registro de volume adicionado com sucesso!', 'success');
         
-        // Notificaçãoo real do dispositivo
+        // Notifica��o real do dispositivo
         if (window.nativeNotifications) {
             window.nativeNotifications.showRealDeviceNotification(
-                'Nova Produção Registrada',
+                'Nova Produ��o Registrada',
                 `${volumeData.volume}L registrado com sucesso!`,
                 'production'
             );
@@ -9162,7 +8857,7 @@ async function handleAddVolume(event) {
         console.log('?? Atualizando dashboard...');
         await loadDashboardData();
         
-        console.log('? Atualizaçãoo completa!');
+        console.log('? Atualiza��o completa!');
         
     } catch (error) {
         console.error('? Erro ao adicionar volume:', error);
@@ -9214,7 +8909,7 @@ async function handleAddQuality(event) {
         console.log('?? Atualizando dashboard...');
         await loadDashboardData();
         
-        console.log('? Atualizaçãoo completa!');
+        console.log('? Atualiza��o completa!');
         
     } catch (error) {
         console.error('? Erro ao adicionar teste de qualidade:', error);
@@ -9229,7 +8924,7 @@ async function handleAddPayment(event) {
         record_date: formData.get('due_date'), // Data do registro
         type: 'income', // Tipo de registro financeiro (income = receita)
         amount: parseFloat(formData.get('amount')), // Valor
-        description: `${formData.get('description')} - Tipo: ${formData.get('payment_type')}${formData.get('notes') ? ' - ' + formData.get('notes') : ''}`, // Descriçãoo
+        description: `${formData.get('description')} - Tipo: ${formData.get('payment_type')}${formData.get('notes') ? ' - ' + formData.get('notes') : ''}`, // Descri��o
         category: formData.get('payment_type') || 'venda_leite' // Categoria
     };
 
@@ -9238,7 +8933,7 @@ async function handleAddPayment(event) {
         const { data: { user: currentUser } } = await db.auth.getUser();
         if (!currentUser) throw new Error('User not authenticated');
 
-        // Usuário da fazenda Lagoa Do Mato
+        // Usu�rio da fazenda Lagoa Do Mato
         const { data: managerData, error: managerError } = await db
             .from('users')
             .select('id')
@@ -9246,7 +8941,7 @@ async function handleAddPayment(event) {
             .single();
 
         if (managerError) throw managerError;
-        if (!managerData) throw new Error('Gerente não encontrado');
+        if (!managerData) throw new Error('Gerente n�o encontrado');
 
         // Insert financial record into database
         const { error: paymentError } = await db
@@ -9265,7 +8960,7 @@ async function handleAddPayment(event) {
         // Reload sales data and recent activities
         await loadPaymentsData();
         
-        // Usuário da fazenda Lagoa Do Mato for recent activities
+        // Usu�rio da fazenda Lagoa Do Mato for recent activities
         if (currentUser) {
             const { data: userData } = await db
                 .from('users')
@@ -9286,70 +8981,38 @@ async function handleAddPayment(event) {
 
 // Modal functions
 function openAddUserModal() {
-    const modal = document.getElementById('addUserModal');
-    if (modal) {
-        // Apply all styles to prevent flash
-        modal.classList.add('show');
-        modal.style.display = 'flex';
-        modal.style.visibility = 'visible';
-        modal.style.opacity = '1';
-        modal.style.zIndex = '9999';
-        modal.style.pointerEvents = 'auto';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100vw';
-        modal.style.height = '100vh';
-        modal.style.background = 'rgba(0, 0, 0, 0.5)';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
+    document.getElementById('addUserModal').classList.add('show');
+    
+    // Reset do select para "Selecione o cargo" e esconder a se��o de foto
+    const userRoleSelect = document.getElementById('userRole');
+    const addPhotoSection = document.getElementById('addPhotoSection');
+    
+    if (userRoleSelect && addPhotoSection) {
+        // Definir como vazio para mostrar "Selecione o cargo"
+        userRoleSelect.value = '';
         
-        document.body.style.overflow = 'hidden';
-        
-        // Reset do select para "Selecione o cargo" e esconder a seçãoo de foto
-        const userRoleSelect = document.getElementById('userRole');
-        const addPhotoSection = document.getElementById('addPhotoSection');
-        
-        if (userRoleSelect && addPhotoSection) {
-            // Definir como vazio para mostrar "Selecione o cargo"
-            userRoleSelect.value = '';
-            
-            // Esconder a seçãoo de foto por padrão
-            addPhotoSection.style.display = 'none';
-            addPhotoSection.style.visibility = 'hidden';
-            addPhotoSection.style.opacity = '0';
-        }
+        // Esconder a se��o de foto por padr�o
+        addPhotoSection.style.display = 'none';
+        addPhotoSection.style.visibility = 'hidden';
+        addPhotoSection.style.opacity = '0';
     }
 }
 
 function closeAddUserModal() {
-    const modal = document.getElementById('addUserModal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.style.display = 'none';
-        modal.style.visibility = 'hidden';
-        modal.style.opacity = '0';
-        modal.style.zIndex = '-1';
-        modal.style.pointerEvents = 'none';
-        document.body.style.overflow = 'auto';
-        
-        // Reset form
-        const form = document.getElementById('addUserFormModal');
-        if (form) {
-            form.reset();
-        }
-        
-        // Reset profile photo preview
-        const preview = document.getElementById('profilePreview');
-        const placeholder = document.getElementById('profilePlaceholder');
-        if (preview && placeholder) {
-            preview.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-            preview.src = '';
-        }
-        
-        // Reset email preview
-        const emailPreview = document.getElementById('emailPreview');
+    document.getElementById('addUserModal').classList.remove('show');
+    document.getElementById('addUserFormModal').reset();
+    
+    // Reset profile photo preview
+    const preview = document.getElementById('profilePreview');
+    const placeholder = document.getElementById('profilePlaceholder');
+    if (preview && placeholder) {
+        preview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        preview.src = '';
+    }
+    
+    // Reset email preview
+    const emailPreview = document.getElementById('emailPreview');
     if (emailPreview) {
         emailPreview.textContent = 'Digite o nome para ver o email';
     }
@@ -9360,22 +9023,22 @@ async function generateUserEmail(name, farmId = 1) {
     try {
         // Validate input parameters
         if (!name || typeof name !== 'string' || name.trim() === '') {
-            throw new Error('Nome do usuário � obrigatário');
+            throw new Error('Nome do usu�rio � obrigat�rio');
         }
         
         // Farm fixo: Lagoa Do Mato -> lactech.com
         const farmName = 'lactech';
         
-        // Extrair o primeiro nome do usuário
+        // Extrair o primeiro nome do usu�rio
         const firstName = name.trim().split(' ')[0]
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '') // Remove acentos
             .replace(/[^a-z0-9]/g, ''); // Remove caracteres especiais
             
-        // Validar se o primeiro nome não está vazio após sanitizaçãoo
+        // Validar se o primeiro nome n�o est� vazio ap�s sanitiza��o
         if (!firstName) {
-            throw new Error('Nome do usuário inválido após sanitizaçãoo');
+            throw new Error('Nome do usu�rio inv�lido ap�s sanitiza��o');
         }
         
         // Gerar email simples: nome@lactech.com
@@ -9428,31 +9091,31 @@ async function sendWhatsAppCredentials(whatsapp, name, email, password) {
             formattedNumber = '55' + formattedNumber;
         }
         
-        const message = `?? *LACTECH - Sistema de Gestão Leiteira* ??\n\n` +
+        const message = `?? *LACTECH - Sistema de Gest�o Leiteira* ??\n\n` +
             `?? *Ol� ${name}!*\n\n` +
             `Suas credenciais de acesso foram criadas com sucesso:\n\n` +
             `?? *Email:* ${email}\n` +
             `?? *Senha:* ${password}\n\n` +
-            `?? *INSTRUçãoES IMPORTANTES:*\n` +
+            `?? *INSTRU��ES IMPORTANTES:*\n` +
             `? Mantenha suas credenciais seguras\n` +
             `? N�o compartilhe com terceiros\n\n` +
             `?? *Acesse o sistema:*\n` +
             `https://lacteste.netlify.app/\n\n` +
-            `?? *Suporte técnico disponível*\n` +
+            `?? *Suporte t�cnico dispon�vel*\n` +
             `Em caso de d�vidas, entre em contato\n\n` +
             `?? *Bem-vindo(a) � equipe LacTech!*\n` +
-            `Juntos, vamos revolucionar a gestão leiteira! ????`;
+            `Juntos, vamos revolucionar a gest�o leiteira! ????`;
         
-        // Copiar mensagem para �rea de transferência
+        // Copiar mensagem para �rea de transfer�ncia
         try {
             await navigator.clipboard.writeText(message);
             
-            // Mostrar modal com instruçãoes
+            // Mostrar modal com instru��es
             showWhatsAppInstructions(formattedNumber, name, message);
             
             return true;
         } catch (clipboardError) {
-            console.error('Erro ao copiar para �rea de transferência:', clipboardError);
+            console.error('Erro ao copiar para �rea de transfer�ncia:', clipboardError);
             // Fallback: mostrar modal mesmo sem copiar
             showWhatsAppInstructions(formattedNumber, name, message);
             return true;
@@ -9464,9 +9127,9 @@ async function sendWhatsAppCredentials(whatsapp, name, email, password) {
     }
 }
 
-// Mostrar modal com instruçãoes para envio manual
+// Mostrar modal com instru��es para envio manual
 function showWhatsAppInstructions(phoneNumber, userName, message) {
-    // Criar modal se não existir
+    // Criar modal se n�o existir
     let modal = document.getElementById('whatsappInstructionsModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -9487,7 +9150,7 @@ function showWhatsAppInstructions(phoneNumber, userName, message) {
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                         <p class="text-sm text-green-800">
                             ? <strong>Mensagem copiada!</strong><br>
-                            As credenciais foram copiadas para sua �rea de transferência.
+                            As credenciais foram copiadas para sua �rea de transfer�ncia.
                         </p>
                     </div>
                     
@@ -9534,7 +9197,7 @@ function showWhatsAppInstructions(phoneNumber, userName, message) {
         }
     });
     
-    // Atualizar conteúdo do modal
+    // Atualizar conte�do do modal
     const phoneElement = modal.querySelector('strong');
     if (phoneElement) {
         phoneElement.textContent = phoneNumber;
@@ -9553,7 +9216,7 @@ function showWhatsAppInstructions(phoneNumber, userName, message) {
     document.addEventListener('keydown', handleEscape);
 }
 
-// Fechar modal de instruçãoes
+// Fechar modal de instru��es
 function closeWhatsAppInstructions() {
     const modal = document.getElementById('whatsappInstructionsModal');
     if (modal) {
@@ -9563,7 +9226,7 @@ function closeWhatsAppInstructions() {
     }
 }
 
-// Abrir WhatsApp Web (opçãoo alternativa)
+// Abrir WhatsApp Web (op��o alternativa)
 function openWhatsAppWeb(phoneNumber, encodedMessage) {
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
@@ -9584,12 +9247,12 @@ async function copyMessageAgain(encodedMessage) {
 
 // Handle add user - VERS�O SIMPLES
 /**
- * Manipula a criação de novos usuários
+ * Manipula a cria��o de novos usu�rios
  * Valida dados, gera email autom�tico e envia credenciais via WhatsApp
  */
 async function handleAddUser(e) {
     e.preventDefault();
-    console.log('?? Criando novo usuário...');
+    console.log('?? Criando novo usu�rio...');
 
     const formData = new FormData(e.target);
     
@@ -9608,7 +9271,7 @@ async function handleAddUser(e) {
             cpf: formData.get('cpf') || null
         };
         
-        console.log('?? Dados do usuário:', { ...userData, password: '***' });
+        console.log('?? Dados do usu�rio:', { ...userData, password: '***' });
 
         // Enviar para a API
         const response = await fetch('api/manager.php?action=create_user', {
@@ -9620,12 +9283,12 @@ async function handleAddUser(e) {
         const result = await response.json();
 
         if (!result.success) {
-            throw new Error(result.error || 'Erro ao criar usuário');
+            throw new Error(result.error || 'Erro ao criar usu�rio');
         }
 
-        console.log('? Usuário criado com sucesso:', result);
+        console.log('? Usu�rio criado com sucesso:', result);
         
-        // Tentar enviar WhatsApp com credenciais se tiver número
+        // Tentar enviar WhatsApp com credenciais se tiver n�mero
         if (userData.phone) {
             try {
                 await sendWhatsAppCredentials(
@@ -9634,20 +9297,20 @@ async function handleAddUser(e) {
                     userData.email, 
                     userData.password
                 );
-                showNotification(`Usuário ${userData.name} criado! Credenciais enviadas via WhatsApp.`, 'success');
+                showNotification(`Usu�rio ${userData.name} criado! Credenciais enviadas via WhatsApp.`, 'success');
             } catch (whatsappError) {
-                // Se falhar WhatsApp, mostrar senha na notificaçãoo
-                showNotification(`Usuário ${userData.name} criado! Senha: ${userData.password}`, 'success');
+                // Se falhar WhatsApp, mostrar senha na notifica��o
+                showNotification(`Usu�rio ${userData.name} criado! Senha: ${userData.password}`, 'success');
             }
         } else {
-            showNotification(`Usuário ${userData.name} criado! Email: ${userData.email} - Senha: ${userData.password}`, 'success');
+            showNotification(`Usu�rio ${userData.name} criado! Email: ${userData.email} - Senha: ${userData.password}`, 'success');
         }
         
-        // Notificaçãoo REAL do dispositivo para criação de usuário
+        // Notifica��o REAL do dispositivo para cria��o de usu�rio
         if (window.nativeNotifications) {
             window.nativeNotifications.showRealDeviceNotification(
-                'Novo Usuário Criado',
-                `Usuário ${userData.name} (${userData.role}) foi criado no sistema`,
+                'Novo Usu�rio Criado',
+                `Usu�rio ${userData.name} (${userData.role}) foi criado no sistema`,
                 'user_created'
             );
         }
@@ -9659,8 +9322,8 @@ async function handleAddUser(e) {
         await loadDashboardData();
 
     } catch (error) {
-        console.error('? Erro ao criar usuário:', error);
-        showNotification('Erro ao criar usuário: ' + error.message, 'error');
+        console.error('? Erro ao criar usu�rio:', error);
+        showNotification('Erro ao criar usu�rio: ' + error.message, 'error');
     }
 }
 
@@ -9682,14 +9345,14 @@ async function exportVolumeReport() {
 
         if (error) throw error;
 
-        // Gerar relatório em formato PDF
+        // Gerar relat�rio em formato PDF
         await generateVolumePDF(volumeData);
         
-        showNotification('Relatário de Volume exportado com sucesso!', 'success');
+        showNotification('Relat�rio de Volume exportado com sucesso!', 'success');
         
-        // Notificaçãoo de exportaçãoo de relatório - REMOVIDA (n�o � cr�tica)
+        // Notifica��o de exporta��o de relat�rio - REMOVIDA (n�o � cr�tica)
     } catch (error) {
-        showNotification('Erro ao exportar relatório de volume', 'error');
+        showNotification('Erro ao exportar relat�rio de volume', 'error');
     }
 }
 
@@ -9704,16 +9367,16 @@ async function exportQualityReport() {
 
         if (error) throw error;
 
-        // Gerar relatório em formato PDF
+        // Gerar relat�rio em formato PDF
         await generateQualityPDF(qualityData);
         
-        showNotification('Relatário de Qualidade exportado com sucesso!', 'success');
+        showNotification('Relat�rio de Qualidade exportado com sucesso!', 'success');
     } catch (error) {
-        showNotification('Erro ao exportar relatório de qualidade', 'error');
+        showNotification('Erro ao exportar relat�rio de qualidade', 'error');
     }
 }
 
-// Funçãoo para gerar relatório de vendas
+// Fun��o para gerar relat�rio de vendas
 async function generatePaymentsReport() {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
@@ -9738,27 +9401,27 @@ async function generatePaymentsReport() {
 
         if (error) throw error;
 
-        // Gerar relatório em formato PDF
+        // Gerar relat�rio em formato PDF
         await generatePaymentsPDF(salesData);
         
-        showNotification('Relatário de Vendas gerado com sucesso!', 'success');
+        showNotification('Relat�rio de Vendas gerado com sucesso!', 'success');
     } catch (error) {
-        showNotification('Erro ao gerar relatório de vendas', 'error');
+        showNotification('Erro ao gerar relat�rio de vendas', 'error');
     }
 }
 
 // Helper functions for PDF generation
-// Definiçãoo da logo do sistema (Base64 ou URL)
-// Logo do sistema em SVG Base64 para uso nos relatórios
+// Defini��o da logo do sistema (Base64 ou URL)
+// Logo do sistema em SVG Base64 para uso nos relat�rios
 const systemLogo = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzJhN2YyYSIvPgo8cGF0aCBkPSJNMTIgMjhIMjhWMjRIMTJWMjhaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTYgMjBIMjRWMTZIMTZWMjBaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMjAgMTJWMzJNMTIgMjBIMjhNMTYgMTZIMjQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=';
 
-// Configurações de Relatórios - variível global
+// Configura��es de Relat�rios - vari�vel global
 window.reportSettings = {
     farmName: 'Fazenda',
     farmLogo: null
 };
 
-// Carregar configurações salvas
+// Carregar configura��es salvas
 async function loadReportSettings() {
     try {
         window.reportSettings.farmName = 'Lagoa do Mato';
@@ -9768,20 +9431,20 @@ async function loadReportSettings() {
     }
 }
 
-// Funçãoo para lidar com upload da logo da fazenda
+// Fun��o para lidar com upload da logo da fazenda
 async function handleFarmLogoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
     
     // Validar tipo de arquivo
     if (!file.type.startsWith('image/')) {
-        showNotification('Por favor, selecione um arquivo de imagem válido', 'error');
+        showNotification('Por favor, selecione um arquivo de imagem v�lido', 'error');
         return;
     }
     
-    // Validar tamanho do arquivo (máx. 2MB)
+    // Validar tamanho do arquivo (m�x. 2MB)
     if (file.size > 2 * 1024 * 1024) {
-        showNotification('A imagem deve ter no máximo 2MB', 'error');
+        showNotification('A imagem deve ter no m�ximo 2MB', 'error');
         return;
     }
     
@@ -9793,14 +9456,14 @@ async function handleFarmLogoUpload(event) {
         // Atualizar preview
         updateFarmLogoPreview(base64);
         
-        showNotification('Logo carregada com sucesso! Clique em "Salvar Configurações" para aplicar', 'success');
+        showNotification('Logo carregada com sucesso! Clique em "Salvar Configura��es" para aplicar', 'success');
     } catch (error) {
         console.error('Erro ao processar logo:', error);
         showNotification('Erro ao processar a imagem', 'error');
     }
 }
 
-// Funçãoo para converter arquivo para base64
+// Fun��o para converter arquivo para base64
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -9810,7 +9473,7 @@ function fileToBase64(file) {
     });
 }
 
-// Funçãoo para atualizar preview da logo (compatibilidade com elementos que podem não existir)
+// Fun��o para atualizar preview da logo (compatibilidade com elementos que podem n�o existir)
 function updateFarmLogoPreview(base64Logo) {
     const preview = document.getElementById('farmLogoPreview');
     const placeholder = document.getElementById('farmLogoPlaceholder');
@@ -9819,7 +9482,7 @@ function updateFarmLogoPreview(base64Logo) {
     
     // Verificar se os elementos existem antes de tentar atualiz�-los
     if (!preview || !placeholder || !image || !removeBtn) {
-        // Elementos não existem (modal foi removido), não fazer nada
+        // Elementos n�o existem (modal foi removido), n�o fazer nada
         return;
     }
     
@@ -9835,7 +9498,7 @@ function updateFarmLogoPreview(base64Logo) {
         removeBtn.classList.add('hidden');
     }
 }
-// Funçãoo para remover logo da fazenda (compatibilidade)
+// Fun��o para remover logo da fazenda (compatibilidade)
 function removeFarmLogo() {
     window.reportSettings.farmLogo = null;
     updateFarmLogoPreview(null);
@@ -9846,9 +9509,9 @@ function removeFarmLogo() {
         fileInput.value = '';
     }
     
-    // S� mostrar notificaçãoo se a função existir
+    // S� mostrar notifica��o se a fun��o existir
     if (typeof showNotification === 'function') {
-    showNotification('Logo removida! Clique em "Salvar Configurações" para aplicar', 'info');
+    showNotification('Logo removida! Clique em "Salvar Configura��es" para aplicar', 'info');
     }
 }
 
@@ -9856,7 +9519,7 @@ async function saveReportSettings() {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
         
-        // Usar o nome da fazenda das configurações globais ou padrão
+        // Usar o nome da fazenda das configura��es globais ou padr�o
         const farmName = window.reportSettings.farmName || 'Fazenda';
         
         const { error } = await db.rpc('update_user_report_settings', {
@@ -9872,19 +9535,19 @@ async function saveReportSettings() {
 
         window.reportSettings.farmName = farmName;
         
-        showNotification('Configurações salvas com sucesso!', 'success');
+        showNotification('Configura��es salvas com sucesso!', 'success');
     } catch (error) {
         console.error('Error saving report settings:', error);
-        showNotification('Erro ao salvar configurações', 'error');
+        showNotification('Erro ao salvar configura��es', 'error');
     }
 }
 
-// Carregar configurações ao inicializar
+// Carregar configura��es ao inicializar
 document.addEventListener('DOMContentLoaded', function() {
     loadReportSettings();
 });
 
-// Funçãoo para traduzir milking_type de ingl�s para portugu�s
+// Fun��o para traduzir milking_type de ingl�s para portugu�s
 function getMilkingTypeInPortuguese(milkingType) {
     const translation = {
         'morning': 'Manh�',
@@ -9895,7 +9558,7 @@ function getMilkingTypeInPortuguese(milkingType) {
     return translation[milkingType] || milkingType;
 }
 
-// Funçãoo para traduzir type de financial_records de ingl�s para portugu�s
+// Fun��o para traduzir type de financial_records de ingl�s para portugu�s
 function getFinancialTypeInPortuguese(type) {
     const translation = {
         'income': 'Receita',
@@ -9904,14 +9567,14 @@ function getFinancialTypeInPortuguese(type) {
     return translation[type] || type;
 }
 
-// Funçãoo para gerar email a partir do nome
+// Fun��o para gerar email a partir do nome
 async function generateEmailFromName(name) {
     try {
         const cleanName = name.toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '') // Remove acentos
             .replace(/[^a-z0-9]/g, '') // Remove caracteres especiais
-            .replace(/\s+/g, '.'); // Substitui espaços por pontos
+            .replace(/\s+/g, '.'); // Substitui espa�os por pontos
         
         // Obter nome da fazenda
         const farmName = await getFarmName();
@@ -9919,9 +9582,9 @@ async function generateEmailFromName(name) {
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '') // Remove acentos
             .replace(/[^a-z0-9]/g, '') // Remove caracteres especiais
-            .replace(/\s+/g, ''); // Remove espaços
+            .replace(/\s+/g, ''); // Remove espa�os
         
-        // Obter pr�ximo número sequencial para esta fazenda
+        // Obter pr�ximo n�mero sequencial para esta fazenda
         const nextNumber = await getNextUserNumber(farmName);
         
         return `${cleanName}${nextNumber}@${cleanFarmName}.lactech.com`;
@@ -9937,7 +9600,7 @@ async function generateEmailFromName(name) {
     }
 }
 
-// Funçãoo para obter pr�ximo número sequencial de usuário
+// Fun��o para obter pr�ximo n�mero sequencial de usu�rio
 async function getNextUserNumber(farmName) {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
@@ -9954,7 +9617,7 @@ async function getNextUserNumber(farmName) {
         
         if (userError || !userData) return '001';
 
-        // Contar usuários existentes na mesma fazenda
+        // Contar usu�rios existentes na mesma fazenda
         const { data: existingUsers, error: countError } = await db
             .from('users')
             .select('id')
@@ -9962,17 +9625,17 @@ async function getNextUserNumber(farmName) {
         
         if (countError) return '001';
 
-        // Pr�ximo número será o total + 1
+        // Pr�ximo n�mero ser� o total + 1
         const nextNumber = (existingUsers?.length || 0) + 1;
         return nextNumber.toString().padStart(3, '0');
         
     } catch (error) {
-        console.error('Erro ao obter pr�ximo número:', error);
+        console.error('Erro ao obter pr�ximo n�mero:', error);
         return '001';
     }
 }
 
-// Funçãoo para gerar senha tempor�ria
+// Fun��o para gerar senha tempor�ria
 function generateTempPassword() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let password = '';
@@ -9982,20 +9645,20 @@ function generateTempPassword() {
     return password;
 }
 
-// Funçãoo para prévia do relatório
+// Fun��o para pr�via do relat�rio
 function previewReport() {
-    // Gerar um relatório de exemplo com as configurações atuais
+    // Gerar um relat�rio de exemplo com as configura��es atuais
     const sampleData = [
         {
             production_date: new Date().toISOString(),
             volume_liters: 150.5,
             milking_type: 'morning',
             notes: 'Registro de exemplo',
-            users: { name: 'Funcionário Exemplo' }
+            users: { name: 'Funcion�rio Exemplo' }
         }
     ];
     
-    generateVolumePDF(sampleData, true); // true indica que � uma prévia
+    generateVolumePDF(sampleData, true); // true indica que � uma pr�via
 }
 
 
@@ -10035,11 +9698,11 @@ async function uploadProfilePhoto(file, userId) {
         const { data: { user }, error: authError } = await db.auth.getUser();
         
         if (authError || !user) {
-            console.error('DEBUG: Falha na autenticaçãoo:', authError);
-            throw new Error('Usuário não autenticado');
+            console.error('DEBUG: Falha na autentica��o:', authError);
+            throw new Error('Usu�rio n�o autenticado');
         }
         
-        // Usuário da fazenda Lagoa Do Mato for organizing photos by farm
+        // Usu�rio da fazenda Lagoa Do Mato for organizing photos by farm
 
         const { data: managerData, error: managerError } = await db
             .from('users')
@@ -10050,14 +9713,14 @@ async function uploadProfilePhoto(file, userId) {
 
         
         if (managerError || !managerData) {
-            console.error('DEBUG: Fazenda não encontrada:', managerError);
-            throw new Error('Usuário não encontrado');
+            console.error('DEBUG: Fazenda n�o encontrada:', managerError);
+            throw new Error('Usu�rio n�o encontrado');
         }
         
         const fileExt = file.name.split('.').pop();
         // Ensure we always use the target userId, never fallback to current user
         if (!userId) {
-            throw new Error('userId � obrigatário para upload de foto');
+            throw new Error('userId � obrigat�rio para upload de foto');
         }
         
         // Create unique filename with more specific naming
@@ -10112,7 +9775,7 @@ async function refreshUsersListOnly() {
             return;
         }
         
-        // Usuário da fazenda Lagoa Do Mato
+        // Usu�rio da fazenda Lagoa Do Mato
         const { data: userData, error: userError } = await db
             .from('users')
             .select('id')
@@ -10194,7 +9857,7 @@ async function debugCheckAllPhotos() {
             return;
         }
         
-        // Usuário da fazenda Lagoa Do Mato
+        // Usu�rio da fazenda Lagoa Do Mato
         const { data: userData, error: userError } = await db
             .from('users')
             .select('id')
@@ -10219,20 +9882,20 @@ async function debugCheckAllPhotos() {
 
         
     } catch (error) {
-        console.error('DEBUG: Erro na verificaçãoo:', error);
+        console.error('DEBUG: Erro na verifica��o:', error);
     }
 }
 
 // Sign out function
 async function signOut() {
-        // Notificaçãoo de logout iniciado - REMOVIDA (n�o � cr�tica)
+        // Notifica��o de logout iniciado - REMOVIDA (n�o � cr�tica)
     
     showLogoutConfirmationModal();
 }
 
-// Funçãoo para mostrar modal de confirmaçãoo de logout
+// Fun��o para mostrar modal de confirma��o de logout
 function showLogoutConfirmationModal() {
-    // Criar modal se não existir
+    // Criar modal se n�o existir
     let modal = document.getElementById('logoutConfirmationModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -10241,7 +9904,7 @@ function showLogoutConfirmationModal() {
         modal.innerHTML = `
             <div class="bg-white  rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
                 <div class="text-center">
-                    <!-- ícone de logout -->
+                    <!-- �cone de logout -->
                     <div class="w-16 h-16 bg-red-100 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-8 h-8 text-red-600 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
@@ -10258,7 +9921,7 @@ function showLogoutConfirmationModal() {
                         Tem certeza que deseja sair do sistema?
                     </p>
                     
-                    <!-- Botões -->
+                    <!-- Bot�es -->
                     <div class="flex space-x-3">
                         <button onclick="closeLogoutModal()" 
                                 class="flex-1 px-4 py-3 border border-gray-300 border-gray-300 text-gray-700  font-medium rounded-xl hover:bg-gray-50 hover:bg-gray-50 transition-all">
@@ -10295,7 +9958,7 @@ function showLogoutConfirmationModal() {
     modal.style.display = 'flex';
 }
 
-// Funçãoo para fechar modal de logout
+// Fun��o para fechar modal de logout
 function closeLogoutModal() {
     console.log('?? Fechando modal de logout...');
     const modal = document.getElementById('logoutConfirmationModal');
@@ -10306,11 +9969,11 @@ function closeLogoutModal() {
         modal.style.pointerEvents = 'none';
         console.log('? Modal de logout fechado');
     } else {
-        console.error('? Modal de logout não encontrado');
+        console.error('? Modal de logout n�o encontrado');
     }
 }
 
-// Funçãoo para confirmar logout
+// Fun��o para confirmar logout
 async function confirmLogout() {
     try {
         console.log('?? Iniciando logout...');
@@ -10319,9 +9982,9 @@ async function confirmLogout() {
         // Mostrar loading
         showNotification('Saindo do sistema...', 'info');
         
-        // Notificaçãoo de logout em progresso - REMOVIDA (n�o � cr�tica)
+        // Notifica��o de logout em progresso - REMOVIDA (n�o � cr�tica)
         
-        // Limpar atualizações em tempo real
+        // Limpar atualiza��es em tempo real
         cleanupRealtimeUpdates();
         
         clearUserSession(); // Use new clearUserSession function
@@ -10329,7 +9992,7 @@ async function confirmLogout() {
         await db.auth.signOut();
         console.log('? Logout realizado com sucesso');
         
-        // Notificaçãoo de logout conclu�do - REMOVIDA (n�o � cr�tica)
+        // Notifica��o de logout conclu�do - REMOVIDA (n�o � cr�tica)
         
         safeRedirect('index.php'); // Use new safeRedirect function
     } catch (error) {
@@ -10339,14 +10002,14 @@ async function confirmLogout() {
     }
 }
 
-// Funçãoo para carregar dados da conta secund�ria existente
+// Fun��o para carregar dados da conta secund�ria existente
 async function loadSecondaryAccountData() {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
         // Get current user data
         const { data: { user } } = await db.auth.getUser();
         if (!user) {
-            console.error('Usuário não autenticado');
+            console.error('Usu�rio n�o autenticado');
             return;
         }
         
@@ -10358,7 +10021,7 @@ async function loadSecondaryAccountData() {
             .single();
             
         if (userError) {
-            console.error('Erro ao buscar dados do usuário:', userError);
+            console.error('Erro ao buscar dados do usu�rio:', userError);
             return;
         }
         
@@ -10372,7 +10035,7 @@ async function loadSecondaryAccountData() {
                 .maybeSingle();
                 
             if (relationError) {
-                console.error('Erro ao verificar relaçãoo de conta secund�ria:', relationError);
+                console.error('Erro ao verificar rela��o de conta secund�ria:', relationError);
             } else {
                 secondaryAccountRelation = relationData;
             }
@@ -10380,7 +10043,7 @@ async function loadSecondaryAccountData() {
             console.error('Erro ao acessar tabela secondary_accounts:', error);
         }
         
-        // Se não encontrou na tabela de relações, tenta o m�todo antigo
+        // Se n�o encontrou na tabela de rela��es, tenta o m�todo antigo
         if (!secondaryAccountRelation) {
             try {
                 // Check if secondary account exists by email
@@ -10397,7 +10060,7 @@ async function loadSecondaryAccountData() {
                 }
                 
                 if (secondaryAccount) {
-                    // Preencher o formulário com os dados da conta secund�ria
+                    // Preencher o formul�rio com os dados da conta secund�ria
                     const nameField = document.getElementById('secondaryAccountName');
                     const roleField = document.getElementById('secondaryAccountRole');
                     const activeField = document.getElementById('secondaryAccountActive');
@@ -10417,7 +10080,7 @@ async function loadSecondaryAccountData() {
                     if (nameDisplay) nameDisplay.textContent = secondaryAccount.name;
                     if (switchBtn) switchBtn.disabled = false;
                     
-                    // Criar a relaçãoo na tabela secondary_accounts se não existir
+                    // Criar a rela��o na tabela secondary_accounts se n�o existir
                     try {
                         const { error: insertError } = await db
                             .from('secondary_accounts')
@@ -10429,13 +10092,13 @@ async function loadSecondaryAccountData() {
                             ]);
                             
                         if (insertError && !insertError.message.includes('duplicate key')) {
-                            console.error('Erro ao criar relaçãoo de conta secund�ria:', insertError);
+                            console.error('Erro ao criar rela��o de conta secund�ria:', insertError);
                         }
                     } catch (error) {
-                        console.error('Erro ao criar relaçãoo:', error);
+                        console.error('Erro ao criar rela��o:', error);
                     }
                 } else {
-                    // Limpar o formulário
+                    // Limpar o formul�rio
                     const nameField = document.getElementById('secondaryAccountName');
                     const roleField = document.getElementById('secondaryAccountRole');
                     const activeField = document.getElementById('secondaryAccountActive');
@@ -10458,7 +10121,7 @@ async function loadSecondaryAccountData() {
             }
         } else {
             try {
-                // Buscar os dados da conta secund�ria usando o ID da relaçãoo
+                // Buscar os dados da conta secund�ria usando o ID da rela��o
                 const { data: secondaryAccount, error: accountError } = await db
                     .from('users')
                     .select('*')
@@ -10470,7 +10133,7 @@ async function loadSecondaryAccountData() {
                     return;
                 }
                 
-                // Preencher o formulário com os dados da conta secund�ria
+                // Preencher o formul�rio com os dados da conta secund�ria
                 const nameField = document.getElementById('secondaryAccountName');
                 const roleField = document.getElementById('secondaryAccountRole');
                 const activeField = document.getElementById('secondaryAccountActive');
@@ -10498,7 +10161,7 @@ async function loadSecondaryAccountData() {
     }
 }
 
-// Funçãoo para salvar a conta secund�ria
+// Fun��o para salvar a conta secund�ria
 async function saveSecondaryAccount(event) {
     event.preventDefault();
     
@@ -10512,7 +10175,7 @@ async function saveSecondaryAccount(event) {
         // Get current user data
         const { data: { user } } = await db.auth.getUser();
         if (!user) {
-            console.error('Usuário não autenticado');
+            console.error('Usu�rio n�o autenticado');
             return;
         }
         
@@ -10524,13 +10187,13 @@ async function saveSecondaryAccount(event) {
             .single();
             
         if (userError) {
-            console.error('Erro ao buscar dados do usuário:', userError);
+            console.error('Erro ao buscar dados do usu�rio:', userError);
             return;
         }
         
         // Get form data
         const secondaryRole = document.getElementById('secondaryAccountRole').value;
-        const roleSuffix = secondaryRole === 'veterinario' ? ' (Veterinário)' : ' (Funcionário)';
+        const roleSuffix = secondaryRole === 'veterinario' ? ' (Veterin�rio)' : ' (Funcion�rio)';
         const secondaryName = document.getElementById('secondaryAccountName').value.trim() || userData.name + roleSuffix;
         const isActive = document.getElementById('secondaryAccountActive').checked;
         
@@ -10569,7 +10232,7 @@ async function saveSecondaryAccount(event) {
             secondaryAccount = updatedAccount;
             showNotification('Conta secund�ria atualizada com sucesso!', 'success');
             
-            // Verificar se j� existe uma relaçãoo na tabela secondary_accounts
+            // Verificar se j� existe uma rela��o na tabela secondary_accounts
             const { data: existingRelation, error: relationError } = await db
                 .from('secondary_accounts')
                 .select('*')
@@ -10578,10 +10241,10 @@ async function saveSecondaryAccount(event) {
                 .single();
                 
             if (relationError && relationError.code !== 'PGRST116') {
-                console.error('Erro ao verificar relaçãoo de conta secund�ria:', relationError);
+                console.error('Erro ao verificar rela��o de conta secund�ria:', relationError);
             }
             
-            // Se não existir relaçãoo, criar uma
+            // Se n�o existir rela��o, criar uma
             if (!existingRelation) {
                 const { error: insertError } = await db
                     .from('secondary_accounts')
@@ -10593,13 +10256,13 @@ async function saveSecondaryAccount(event) {
                     ]);
                     
                 if (insertError) {
-                    console.error('Erro ao criar relaçãoo de conta secund�ria:', insertError);
+                    console.error('Erro ao criar rela��o de conta secund�ria:', insertError);
                 }
             }
         } else {
             // Create new secondary account
             
-            // Verificar se j� existe um usuário com o mesmo email
+            // Verificar se j� existe um usu�rio com o mesmo email
             const { data: existingUsers, error: existingError } = await db
                 .from('users')
                 .select('*')
@@ -10608,11 +10271,11 @@ async function saveSecondaryAccount(event) {
                 .neq('id', userData.id);
                 
             if (existingError) {
-                console.error('Erro ao verificar usuários existentes:', existingError);
+                console.error('Erro ao verificar usu�rios existentes:', existingError);
             } else {
 
                 
-                // Se j� existir um usuário secundário, atualizar em vez de criar
+                // Se j� existir um usu�rio secund�rio, atualizar em vez de criar
                 if (existingUsers && existingUsers.length > 0) {
                     const { data: updatedAccount, error: updateError } = await db
                         .from('users')
@@ -10634,7 +10297,7 @@ async function saveSecondaryAccount(event) {
                     secondaryAccount = updatedAccount;
                     showNotification('Conta secund�ria atualizada com sucesso!', 'success');
                     
-                    // Verificar se j� existe uma relaçãoo na tabela secondary_accounts
+                    // Verificar se j� existe uma rela��o na tabela secondary_accounts
                     const { data: existingRelation, error: relationError } = await db
                         .from('secondary_accounts')
                         .select('*')
@@ -10643,10 +10306,10 @@ async function saveSecondaryAccount(event) {
                         .single();
                         
                     if (relationError && relationError.code !== 'PGRST116') {
-                        console.error('Erro ao verificar relaçãoo de conta secund�ria:', relationError);
+                        console.error('Erro ao verificar rela��o de conta secund�ria:', relationError);
                     }
                     
-                    // Se não existir relaçãoo, criar uma
+                    // Se n�o existir rela��o, criar uma
                     if (!existingRelation) {
                         const { error: insertError } = await db
                             .from('secondary_accounts')
@@ -10658,7 +10321,7 @@ async function saveSecondaryAccount(event) {
                             ]);
                             
                         if (insertError) {
-                            console.error('Erro ao criar relaçãoo de conta secund�ria:', insertError);
+                            console.error('Erro ao criar rela��o de conta secund�ria:', insertError);
                         }
                     }
                 } else {
@@ -10699,7 +10362,7 @@ async function saveSecondaryAccount(event) {
                         ]);
                         
                     if (insertError) {
-                        console.error('Erro ao criar relaçãoo de conta secund�ria:', insertError);
+                        console.error('Erro ao criar rela��o de conta secund�ria:', insertError);
                     }
                 }
             }
@@ -10715,7 +10378,7 @@ async function saveSecondaryAccount(event) {
     }
 }
 
-// Funçãoo para alternar a visibilidade do painel de contas
+// Fun��o para alternar a visibilidade do painel de contas
 function toggleAccountsPanel() {
     const panel = document.getElementById('accountsPanel');
     if (panel.classList.contains('hidden')) {
@@ -10726,13 +10389,13 @@ function toggleAccountsPanel() {
     }
 }
 
-// Funçãoo para carregar os cards de contas
+// Fun��o para carregar os cards de contas
 async function loadAccountCards() {
     try {
         // Get current user data
         const { data: { user } } = await db.auth.getUser();
         if (!user) {
-            console.error('Usuário não autenticado');
+            console.error('Usu�rio n�o autenticado');
             return;
         }
         
@@ -10744,7 +10407,7 @@ async function loadAccountCards() {
             .single();
             
         if (userError) {
-            console.error('Erro ao buscar dados do usuário:', userError);
+            console.error('Erro ao buscar dados do usu�rio:', userError);
             return;
         }
         
@@ -10784,7 +10447,7 @@ async function loadAccountCards() {
             .eq('primary_account_id', user.id);
             
         if (relError) {
-            console.error('Erro ao buscar relações de contas secund�rias:', relError);
+            console.error('Erro ao buscar rela��es de contas secund�rias:', relError);
             return;
         }
         
@@ -10828,11 +10491,11 @@ async function loadAccountCards() {
                 cardsContainer.appendChild(secondaryCard);
             }
         } else {
-            // Se não encontrou contas secund�rias, mostrar mensagem
+            // Se n�o encontrou contas secund�rias, mostrar mensagem
             const noAccountsMessage = document.createElement('div');
             noAccountsMessage.className = 'text-center p-4 text-blue-600';
             noAccountsMessage.innerHTML = `
-                <p>Voc� ainda não possui contas secund�rias configuradas.</p>
+                <p>Voc� ainda n�o possui contas secund�rias configuradas.</p>
                 <button onclick="showSecondaryAccountForm();" class="mt-2 px-3 py-1 bg-forest-500 hover:bg-forest-600 text-white text-sm font-medium rounded-lg transition-all">
                     Configurar Conta
                 </button>
@@ -10844,13 +10507,13 @@ async function loadAccountCards() {
     }
 }
 
-// Funçãoo para alternar para uma conta espec�fica
+// Fun��o para alternar para uma conta espec�fica
 async function switchToAccount(accountId) {
     try {
         // Get current user data
         const { data: { user } } = await db.auth.getUser();
         if (!user) {
-            console.error('Usuário não autenticado');
+            console.error('Usu�rio n�o autenticado');
             return;
         }
         
@@ -10862,7 +10525,7 @@ async function switchToAccount(accountId) {
             .single();
             
         if (userError) {
-            console.error('Erro ao buscar dados do usuário:', userError);
+            console.error('Erro ao buscar dados do usu�rio:', userError);
             return;
         }
         
@@ -10882,7 +10545,7 @@ async function switchToAccount(accountId) {
         }
         
         if (!secondaryAccount.is_active) {
-            showNotification('Esta conta está desativada. Por favor, ative-a nas configurações.', 'warning');
+            showNotification('Esta conta est� desativada. Por favor, ative-a nas configura��es.', 'warning');
             showSecondaryAccountForm();
             return;
         }
@@ -10921,7 +10584,7 @@ async function switchToAccount(accountId) {
         } else if (secondaryAccount.role === 'veterinario') {
             window.location.href = 'veterinario.php';
         } else {
-            showNotification('Conta secund�ria encontrada, mas o tipo não � reconhecido.', 'warning');
+            showNotification('Conta secund�ria encontrada, mas o tipo n�o � reconhecido.', 'warning');
         }
     } catch (error) {
         console.error('Erro ao alternar conta:', error);
@@ -10935,7 +10598,7 @@ async function switchToSecondaryAccount() {
         // Get current user data
         const { data: { user } } = await db.auth.getUser();
         if (!user) {
-            console.error('Usuário não autenticado');
+            console.error('Usu�rio n�o autenticado');
             return;
         }
         
@@ -11000,14 +10663,14 @@ async function showAlterSecondaryAccountSection() {
     }
 }
 
-// Funçãoo para mostrar formulário de alteraçãoo de conta secund�ria
+// Fun��o para mostrar formul�rio de altera��o de conta secund�ria
 function showAlterSecondaryAccountForm() {
     const form = document.getElementById('secondaryAccountForm');
     const alterBtn = document.getElementById('alterSecondaryAccountBtn');
     
     if (form) {
         form.style.display = 'block';
-        // Mudar o texto do bot�o para indicar que � uma alteraçãoo
+        // Mudar o texto do bot�o para indicar que � uma altera��o
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.innerHTML = 'Alterar Conta Secund�ria';
@@ -11022,13 +10685,13 @@ function showAlterSecondaryAccountForm() {
     }
 }
 
-// Funçãoo para carregar dados atuais da conta secund�ria
+// Fun��o para carregar dados atuais da conta secund�ria
 async function loadCurrentSecondaryAccountData() {
     try {
         const { data: { user } } = await db.auth.getUser();
         if (!user) return;
         
-        // Buscar dados atuais do usuário
+        // Buscar dados atuais do usu�rio
         const { data: userData, error } = await db
             .from('users')
             .select('name, email, role, is_active')
@@ -11040,7 +10703,7 @@ async function loadCurrentSecondaryAccountData() {
             return;
         }
         
-        // Preencher formulário com dados atuais
+        // Preencher formul�rio com dados atuais
         const nameField = document.getElementById('secondaryAccountName');
         const roleField = document.getElementById('secondaryAccountRole');
         const activeField = document.getElementById('secondaryAccountActive');
@@ -11056,18 +10719,18 @@ async function loadCurrentSecondaryAccountData() {
     }
 }
 
-// Funçãoo para salvar alterações da conta secund�ria
+// Fun��o para salvar altera��es da conta secund�ria
 async function saveSecondaryAccountAlteration(event) {
     event.preventDefault();
     
     try {
         const { data: { user } } = await db.auth.getUser();
         if (!user) {
-            showNotification('Usuário não autenticado', 'error');
+            showNotification('Usu�rio n�o autenticado', 'error');
             return;
         }
         
-        // Obter dados do formulário
+        // Obter dados do formul�rio
         const name = document.getElementById('secondaryAccountName').value.trim();
         const role = document.getElementById('secondaryAccountRole').value;
         const isActive = document.getElementById('secondaryAccountActive').checked;
@@ -11077,7 +10740,7 @@ async function saveSecondaryAccountAlteration(event) {
             return;
         }
         
-        // Atualizar dados do usuário
+        // Atualizar dados do usu�rio
         const { data: updatedUser, error: updateError } = await db
             .from('users')
             .update({
@@ -11107,7 +10770,7 @@ async function saveSecondaryAccountAlteration(event) {
         
         localStorage.setItem('userData', JSON.stringify(sessionData));
         
-        // Esconder formulário
+        // Esconder formul�rio
         hideSecondaryAccountForm();
         
         // Mostrar modal de sucesso
@@ -11125,7 +10788,7 @@ async function saveSecondaryAccountAlteration(event) {
     }
 }
 
-// Modificar a função showSecondaryAccountSuccessModal para suportar alterações
+// Modificar a fun��o showSecondaryAccountSuccessModal para suportar altera��es
 function showSecondaryAccountSuccessModal(account, action = 'criacao') {
     const modal = document.getElementById('secondaryAccountSuccessModal');
     const title = document.getElementById('successModalTitle');
@@ -11137,7 +10800,7 @@ function showSecondaryAccountSuccessModal(account, action = 'criacao') {
     if (modal && title && message && name && role && email) {
         if (action === 'alteracao') {
             title.textContent = 'Conta Secund�ria Alterada!';
-            message.textContent = 'Suas informações foram atualizadas com sucesso.';
+            message.textContent = 'Suas informa��es foram atualizadas com sucesso.';
         } else {
             title.textContent = 'Conta Secund�ria Criada!';
             message.textContent = 'Sua conta secund�ria foi configurada com sucesso.';
@@ -11149,14 +10812,14 @@ function showSecondaryAccountSuccessModal(account, action = 'criacao') {
         
         modal.classList.remove('hidden');
         
-        // Auto-close após 5 segundos
+        // Auto-close ap�s 5 segundos
         setTimeout(() => {
             closeSecondaryAccountSuccessModal();
         }, 5000);
     }
 }
 
-// Funçãoo para lidar com submiss�o do formulário (criação ou alteraçãoo)
+// Fun��o para lidar com submiss�o do formul�rio (cria��o ou altera��o)
 async function handleSecondaryAccountSubmit(event) {
     event.preventDefault();
     
@@ -11165,16 +10828,16 @@ async function handleSecondaryAccountSubmit(event) {
         const isSecondary = await checkIfSecondaryAccount();
         
         if (isSecondary) {
-            // Se � conta secund�ria, usar função de alteraçãoo
+            // Se � conta secund�ria, usar fun��o de altera��o
             await saveSecondaryAccountAlteration(event);
         } else {
-            // Se não � conta secund�ria, usar função de criação
+            // Se n�o � conta secund�ria, usar fun��o de cria��o
             await saveSecondaryAccount(event);
         }
         
     } catch (error) {
-        console.error('Erro ao processar submiss�o do formulário:', error);
-        showNotification('Ocorreu um erro ao processar a solicitaçãoo.', 'error');
+        console.error('Erro ao processar submiss�o do formul�rio:', error);
+        showNotification('Ocorreu um erro ao processar a solicita��o.', 'error');
     }
 }
 
@@ -11182,10 +10845,10 @@ async function handleSecondaryAccountSubmit(event) {
 
 
 
-// LIMPEZA DAS FUNçãoES DE CARREGAMENTO
+// LIMPEZA DAS FUN��ES DE CARREGAMENTO
 // Remove console.logs e corrige problemas de carregamento
 
-// Funçãoo limpa para carregar dados do usuário
+// Fun��o limpa para carregar dados do usu�rio
 async function loadUserProfileClean() {
     try {
         const whatsappElement = document.getElementById('profileWhatsApp');
@@ -11220,17 +10883,17 @@ async function loadUserProfileClean() {
             return;
         }
 
-        // Buscar dados do usuário no banco
+        // Buscar dados do usu�rio no banco
         const { data: userData, error } = await db
             .from('users')
             .select('name, email, whatsapp')
             .eq('id', user.id)
             .single();
         
-        // Se usuário não encontrado, mostrar erro
+        // Se usu�rio n�o encontrado, mostrar erro
         if (error && error.code === 'PGRST116') {
             document.getElementById('profileEmail2').textContent = user.email || '';
-            document.getElementById('profileWhatsApp').textContent = 'Usuário não encontrado';
+            document.getElementById('profileWhatsApp').textContent = 'Usu�rio n�o encontrado';
             return;
         }
         
@@ -11252,7 +10915,7 @@ async function loadUserProfileClean() {
             document.getElementById('profileWhatsApp').textContent = 'N�o informado';
         }
         
-        // Atualizar foto do perfil se disponível
+        // Atualizar foto do perfil se dispon�vel
         if (userData?.profile_photo_url) {
             updateProfilePhotoDisplay(userData.profile_photo_url + '?t=' + Date.now());
         }
@@ -11262,7 +10925,7 @@ async function loadUserProfileClean() {
     }
 }
 
-// Funçãoo limpa para definir nome da fazenda
+// Fun��o limpa para definir nome da fazenda
 async function setFarmNameClean() {
     try {
         const farmName = await getFarmName();
@@ -11278,7 +10941,7 @@ async function setFarmNameClean() {
     }
 }
 
-// Funçãoo limpa para definir nome do gerente
+// Fun��o limpa para definir nome do gerente
 async function setManagerNameClean() {
     try {
         const managerName = await getManagerName();
@@ -11317,7 +10980,7 @@ async function setManagerNameClean() {
             farmElement.textContent = finalFarmName;
         }
     } catch (error) {
-        // Definir valores padrão em caso de erro
+        // Definir valores padr�o em caso de erro
         const defaultName = 'Gerente';
         const defaultFarm = 'Minha Fazenda';
         
@@ -11350,15 +11013,15 @@ async function setManagerNameClean() {
     }
 }
 
-// Substituir funçãoes originais pelas vers�es limpas
+// Substituir fun��es originais pelas vers�es limpas
 window.loadUserProfile = loadUserProfileClean;
 window.setFarmName = setFarmNameClean;
 window.setManagerName = setManagerNameClean;
 
-// Funçãoes do gerente substitu�das pelas vers�es limpas
+// Fun��es do gerente substitu�das pelas vers�es limpas
 
-// REMOçãoO COMPLETA DE TODOS OS CONSOLE.LOGS PARA PROTEGER O BANCO
-// Substituir console.log por função vazia para evitar sobrecarga
+// REMO��O COMPLETA DE TODOS OS CONSOLE.LOGS PARA PROTEGER O BANCO
+// Substituir console.log por fun��o vazia para evitar sobrecarga
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
 
@@ -11376,9 +11039,9 @@ window.restoreConsoleLogs = function() {
     console.error = originalConsoleError;
 };
 
-// Funçãoo para verificar se h� muitas requisiçãoes
+// Fun��o para verificar se h� muitas requisi��es
 window.checkDatabaseRequests = function() {
-    // Monitorar requisiçãoes ao banco
+    // Monitorar requisi��es ao banco
     const originalFetch = window.fetch;
     let requestCount = 0;
     
@@ -11395,37 +11058,37 @@ window.checkDatabaseRequests = function() {
     }, 5000);
 };
 
-// Ativar proteçãoo contra muitas requisiçãoes
+// Ativar prote��o contra muitas requisi��es
 checkDatabaseRequests();
 
 
 
-// ===== FUNçãoES PARA FOTO DO GERENTE =====
+// ===== FUN��ES PARA FOTO DO GERENTE =====
 
-// Variível global para armazenar a foto selecionada
+// Vari�vel global para armazenar a foto selecionada
 let selectedManagerPhoto = null;
 
-// Funçãoo para alternar modo de ediçãoo da foto do gerente
+// Fun��o para alternar modo de edi��o da foto do gerente
 function toggleManagerPhotoEdit() {
     const viewMode = document.getElementById('managerPhotoViewMode');
     const editMode = document.getElementById('managerPhotoEditMode');
     const editBtn = document.getElementById('editManagerPhotoBtn');
     
     if (viewMode.classList.contains('hidden')) {
-        // Voltar para modo visualizaçãoo
+        // Voltar para modo visualiza��o
         viewMode.classList.remove('hidden');
         editMode.classList.add('hidden');
         editBtn.textContent = 'Alterar Foto';
         selectedManagerPhoto = null;
     } else {
-        // Ir para modo ediçãoo
+        // Ir para modo edi��o
         viewMode.classList.add('hidden');
         editMode.classList.remove('hidden');
         editBtn.textContent = 'Cancelar';
     }
 }
 
-// Funçãoo para cancelar ediçãoo da foto do gerente
+// Fun��o para cancelar edi��o da foto do gerente
 function cancelManagerPhotoEdit() {
     toggleManagerPhotoEdit();
     // Limpar preview
@@ -11436,7 +11099,7 @@ function cancelManagerPhotoEdit() {
     selectedManagerPhoto = null;
 }
 
-// Funçãoo para lidar com upload da foto do gerente
+// Fun��o para lidar com upload da foto do gerente
 function handleManagerPhotoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -11444,14 +11107,14 @@ function handleManagerPhotoUpload(event) {
     // Validar tipo de arquivo
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-        showNotification('Formato de arquivo não suportado. Use PNG, JPG, JPEG, GIF ou WEBP.', 'error');
+        showNotification('Formato de arquivo n�o suportado. Use PNG, JPG, JPEG, GIF ou WEBP.', 'error');
         return;
     }
     
     // Validar tamanho (5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-        showNotification('Arquivo muito grande. Tamanho máximo: 5MB.', 'error');
+        showNotification('Arquivo muito grande. Tamanho m�ximo: 5MB.', 'error');
         return;
     }
     
@@ -11473,7 +11136,7 @@ function handleManagerPhotoUpload(event) {
     reader.readAsDataURL(file);
 }
 
-// Funçãoo para salvar foto do gerente
+// Fun��o para salvar foto do gerente
 async function saveManagerPhoto() {
     if (!selectedManagerPhoto) {
         showNotification('Selecione uma foto primeiro.', 'error');
@@ -11481,14 +11144,14 @@ async function saveManagerPhoto() {
     }
     
     try {
-        // Obter dados do usuário atual
+        // Obter dados do usu�rio atual
         const { data: { user } } = await db.auth.getUser();
         if (!user) {
-            showNotification('Usuário não autenticado.', 'error');
+            showNotification('Usu�rio n�o autenticado.', 'error');
             return;
         }
         
-        // Upload da foto usando função espec�fica para gerente
+        // Upload da foto usando fun��o espec�fica para gerente
         const photoUrl = await uploadManagerProfilePhoto(selectedManagerPhoto, user.id);
         
         if (photoUrl) {
@@ -11503,10 +11166,10 @@ async function saveManagerPhoto() {
             // Atualizar interface
             updateManagerPhotoDisplay(photoUrl);
             
-            // Atualizar lista de usuários
+            // Atualizar lista de usu�rios
             await loadUsersData();
             
-            // Voltar para modo visualizaçãoo
+            // Voltar para modo visualiza��o
             toggleManagerPhotoEdit();
             
             showNotification('Foto de perfil atualizada com sucesso!', 'success');
@@ -11518,7 +11181,7 @@ async function saveManagerPhoto() {
     }
 }
 
-// Funçãoo espec�fica para upload de foto do gerente
+// Fun��o espec�fica para upload de foto do gerente
 async function uploadManagerProfilePhoto(file, userId) {
     try {
         // Gerar nome �nico para o arquivo
@@ -11547,7 +11210,7 @@ async function uploadManagerProfilePhoto(file, userId) {
     }
 }
 
-// Funçãoo para atualizar exibiçãoo da foto do gerente
+// Fun��o para atualizar exibi��o da foto do gerente
 function updateManagerPhotoDisplay(photoUrl) {
     const photoImage = document.getElementById('managerPhotoImage');
     const photoPlaceholder = document.getElementById('managerPhotoPlaceholder');
@@ -11558,7 +11221,7 @@ function updateManagerPhotoDisplay(photoUrl) {
         photoImage.classList.remove('hidden');
         photoPlaceholder.classList.add('hidden');
     } else if (photoPlaceholder) {
-        // Mostrar placeholder se não há foto
+        // Mostrar placeholder se n�o h� foto
         if (photoImage) photoImage.classList.add('hidden');
         photoPlaceholder.classList.remove('hidden');
     }
@@ -11570,7 +11233,7 @@ function updateManagerPhotoDisplay(photoUrl) {
     updateModalProfilePhoto(photoUrl);
 }
 
-// Funçãoo para atualizar foto no header
+// Fun��o para atualizar foto no header
 function updateHeaderProfilePhoto(photoUrl) {
     console.log('??? Atualizando foto do header:', photoUrl);
     
@@ -11590,21 +11253,21 @@ function updateHeaderProfilePhoto(photoUrl) {
             headerIcon.classList.add('hidden');
             console.log('? Foto do header atualizada com sucesso');
         } else {
-            // Mostrar ícone padrão se não há foto
+            // Mostrar �cone padr�o se n�o h� foto
             headerPhoto.style.display = 'none';
             headerPhoto.style.visibility = 'hidden';
             headerPhoto.classList.add('hidden');
             headerIcon.style.display = 'block';
             headerIcon.style.visibility = 'visible';
             headerIcon.classList.remove('hidden');
-            console.log('? ícone padrão do header exibido');
+            console.log('? �cone padr�o do header exibido');
         }
     } else {
-        console.error('? Elementos do header não encontrados');
+        console.error('? Elementos do header n�o encontrados');
     }
 }
 
-// Funçãoo para atualizar foto no modal de perfil
+// Fun��o para atualizar foto no modal de perfil
 function updateModalProfilePhoto(photoUrl) {
     const modalPhoto = document.getElementById('modalProfilePhoto');
     const modalIcon = document.getElementById('modalProfileIcon');
@@ -11617,13 +11280,13 @@ function updateModalProfilePhoto(photoUrl) {
             modalPhoto.classList.remove('hidden');
             modalIcon.classList.add('hidden');
         } else {
-            // Mostrar ícone padrão se não há foto
+            // Mostrar �cone padr�o se n�o h� foto
             modalPhoto.classList.add('hidden');
             modalIcon.classList.remove('hidden');
         }
     }
 }
-// Funçãoo para carregar foto do gerente ao abrir o modal
+// Fun��o para carregar foto do gerente ao abrir o modal
 async function loadManagerPhoto() {
     try {
         // Usar API de profile
@@ -11637,7 +11300,7 @@ async function loadManagerPhoto() {
         
         const photoData = result.data || {};
         
-        // Atualizar exibiçãoo da foto
+        // Atualizar exibi��o da foto
         if (photoData.photo_url) {
             updateManagerPhotoDisplay(photoData.photo_url);
         }
@@ -11647,7 +11310,7 @@ async function loadManagerPhoto() {
     }
 }
 
-// Modificar função openProfileModal para carregar foto
+// Modificar fun��o openProfileModal para carregar foto
 const originalOpenProfileModal = window.openProfileModal;
 window.openProfileModal = function() {
     originalOpenProfileModal();
@@ -11657,7 +11320,7 @@ window.openProfileModal = function() {
     }, 100);
 };
 
-// Funçãoo para carregar foto no header ao inicializar a p�gina
+// Fun��o para carregar foto no header ao inicializar a p�gina
 async function loadHeaderPhoto() {
     try {
         console.log('??? Carregando foto do header...');
@@ -11682,24 +11345,24 @@ async function loadHeaderPhoto() {
     }
 }
 
-// Funçãoo j� � chamada no DOMContentLoaded principal
+// Fun��o j� � chamada no DOMContentLoaded principal
 
-// ==================== FUNçãoES DA ABA DE RELAT�RIOS ====================
+// ==================== FUN��ES DA ABA DE RELAT�RIOS ====================
 
-// Vari�veis globais para a aba de relatórios
+// Vari�veis globais para a aba de relat�rios
 let reportTabSettings = {
     farmName: '',
     farmLogo: null
 };
 
-// Funçãoo para carregar configurações na aba de relatórios
+// Fun��o para carregar configura��es na aba de relat�rios
 async function loadReportTabSettings() {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
         const { data: { user } } = await db.auth.getUser();
         if (!user) return;
 
-        // Buscar dados do usuário
+        // Buscar dados do usu�rio
         const { data: userData, error: userError } = await db
             .from('users')
             .select('report_farm_name, report_farm_logo_base64')
@@ -11708,7 +11371,7 @@ async function loadReportTabSettings() {
 
         if (userError) throw userError;
 
-        // Se não tem nome da fazenda configurado, buscar do banco
+        // Se n�o tem nome da fazenda configurado, buscar do banco
         let farmName = userData.report_farm_name;
         if (!farmName) {
             const { data: farmData, error: farmError } = await db
@@ -11722,7 +11385,7 @@ async function loadReportTabSettings() {
             }
         }
 
-        // Se ainda não tem nome, usar padrão
+        // Se ainda n�o tem nome, usar padr�o
         if (!farmName) {
             farmName = 'Fazenda';
         }
@@ -11734,31 +11397,31 @@ async function loadReportTabSettings() {
         document.getElementById('reportFarmNameTab').value = farmName;
         updateFarmLogoPreviewTab(reportTabSettings.farmLogo);
         
-        // Corrigir duplicaçãoo da logo
+        // Corrigir duplica��o da logo
         setTimeout(() => {
             fixLogoDuplication();
         }, 100);
         
 
     } catch (error) {
-        console.error('Erro ao carregar configurações:', error);
-        // Em caso de erro, usar nome padrão
+        console.error('Erro ao carregar configura��es:', error);
+        // Em caso de erro, usar nome padr�o
         document.getElementById('reportFarmNameTab').value = 'Fazenda';
     }
 }
 
-// Funçãoo para upload da logo na aba
+// Fun��o para upload da logo na aba
 async function handleFarmLogoUploadTab(event) {
     const file = event.target.files[0];
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-        showNotification('Por favor, selecione um arquivo de imagem válido', 'error');
+        showNotification('Por favor, selecione um arquivo de imagem v�lido', 'error');
         return;
     }
     
     if (file.size > 2 * 1024 * 1024) {
-        showNotification('A imagem deve ter no máximo 2MB', 'error');
+        showNotification('A imagem deve ter no m�ximo 2MB', 'error');
         return;
     }
     
@@ -11766,14 +11429,14 @@ async function handleFarmLogoUploadTab(event) {
         const base64 = await fileToBase64(file);
         reportTabSettings.farmLogo = base64;
         updateFarmLogoPreviewTab(base64);
-        showNotification('Logo carregada com sucesso! Clique em "Salvar Configurações" para aplicar', 'success');
+        showNotification('Logo carregada com sucesso! Clique em "Salvar Configura��es" para aplicar', 'success');
     } catch (error) {
         console.error('Erro ao processar logo:', error);
         showNotification('Erro ao processar a imagem', 'error');
     }
 }
 
-// Funçãoo para atualizar preview da logo na aba
+// Fun��o para atualizar preview da logo na aba
 function updateFarmLogoPreviewTab(base64Logo) {
     const preview = document.getElementById('farmLogoPreviewTab');
     const placeholder = document.getElementById('farmLogoPlaceholderTab');
@@ -11786,7 +11449,7 @@ function updateFarmLogoPreviewTab(base64Logo) {
         placeholder.classList.add('hidden');
         removeBtn.classList.remove('hidden');
         
-        // For�ar ocultaçãoo do placeholder via CSS
+        // For�ar oculta��o do placeholder via CSS
         placeholder.style.display = 'none';
         placeholder.style.visibility = 'hidden';
         placeholder.style.opacity = '0';
@@ -11797,7 +11460,7 @@ function updateFarmLogoPreviewTab(base64Logo) {
         placeholder.style.height = '0';
         placeholder.style.overflow = 'hidden';
         
-        // Garantir que o bot�o remover seja visível
+        // Garantir que o bot�o remover seja vis�vel
         removeBtn.style.display = 'flex';
         removeBtn.style.visibility = 'visible';
         removeBtn.style.opacity = '1';
@@ -11813,7 +11476,7 @@ function updateFarmLogoPreviewTab(base64Logo) {
         placeholder.classList.remove('hidden');
         removeBtn.classList.add('hidden');
         
-        // For�ar exibiçãoo do placeholder via CSS
+        // For�ar exibi��o do placeholder via CSS
         placeholder.style.display = 'flex';
         placeholder.style.visibility = 'visible';
         placeholder.style.opacity = '1';
@@ -11824,7 +11487,7 @@ function updateFarmLogoPreviewTab(base64Logo) {
         placeholder.style.height = 'auto';
         placeholder.style.overflow = 'visible';
         
-        // For�ar ocultaçãoo completa do bot�o remover via CSS
+        // For�ar oculta��o completa do bot�o remover via CSS
         removeBtn.style.display = 'none';
         removeBtn.style.visibility = 'hidden';
         removeBtn.style.opacity = '0';
@@ -11837,7 +11500,7 @@ function updateFarmLogoPreviewTab(base64Logo) {
     }
 }
 
-// Funçãoo para corrigir duplicaçãoo da logo na inicializaçãoo
+// Fun��o para corrigir duplica��o da logo na inicializa��o
 function fixLogoDuplication() {
     const preview = document.getElementById('farmLogoPreviewTab');
     const placeholder = document.getElementById('farmLogoPlaceholderTab');
@@ -11845,7 +11508,7 @@ function fixLogoDuplication() {
     
     if (preview && placeholder && removeBtn) {
         if (preview.classList.contains('hidden')) {
-            // Se preview está oculta, mostrar placeholder e ocultar bot�o remover
+            // Se preview est� oculta, mostrar placeholder e ocultar bot�o remover
             placeholder.style.display = 'flex';
             placeholder.style.visibility = 'visible';
             placeholder.style.opacity = '1';
@@ -11867,7 +11530,7 @@ function fixLogoDuplication() {
             removeBtn.style.height = '0';
             removeBtn.style.overflow = 'hidden';
         } else {
-            // Se preview está visível, ocultar placeholder e mostrar bot�o remover
+            // Se preview est� vis�vel, ocultar placeholder e mostrar bot�o remover
             placeholder.style.display = 'none';
             placeholder.style.visibility = 'hidden';
             placeholder.style.opacity = '0';
@@ -11892,15 +11555,15 @@ function fixLogoDuplication() {
     }
 }
 
-// Funçãoo para remover logo da aba
+// Fun��o para remover logo da aba
 function removeFarmLogoTab() {
     reportTabSettings.farmLogo = null;
     updateFarmLogoPreviewTab(null);
     document.getElementById('farmLogoUploadTab').value = '';
-    showNotification('Logo removida! Clique em "Salvar Configurações" para aplicar', 'info');
+    showNotification('Logo removida! Clique em "Salvar Configura��es" para aplicar', 'info');
 }
 
-// Funçãoo para salvar configurações da aba
+// Fun��o para salvar configura��es da aba
 async function saveReportSettingsTab() {
     try {
         const farmName = document.getElementById('reportFarmNameTab').value || 'Fazenda';
@@ -11915,21 +11578,21 @@ async function saveReportSettingsTab() {
         if (error) throw error;
 
         reportTabSettings.farmName = farmName;
-        showNotification('Configurações salvas com sucesso!', 'success');
+        showNotification('Configura��es salvas com sucesso!', 'success');
         
-        // Sincronizar com as configurações do modal
+        // Sincronizar com as configura��es do modal
         if (window.reportSettings) {
             window.reportSettings.farmName = farmName;
             window.reportSettings.farmLogo = reportTabSettings.farmLogo;
         }
         
     } catch (error) {
-        console.error('Erro ao salvar configurações:', error);
-        showNotification('Erro ao salvar configurações', 'error');
+        console.error('Erro ao salvar configura��es:', error);
+        showNotification('Erro ao salvar configura��es', 'error');
     }
 }
 
-// Funçãoo para carregar estat�sticas dos relatórios
+// Fun��o para carregar estat�sticas dos relat�rios
 async function loadReportStats() {
     try {
         const { data: { user } } = await db.auth.getUser();
@@ -11949,7 +11612,7 @@ async function loadReportStats() {
         const seteDiasAtras = new Date();
         seteDiasAtras.setDate(seteDiasAtras.getDate() - 6);
 
-        // Produção de hoje
+        // Produ��o de hoje
         const { data: producaoHoje } = await db
             .from('volume_records')
             .select('volume_liters')
@@ -11961,7 +11624,7 @@ async function loadReportStats() {
             volumeHoje = producaoHoje.reduce((sum, item) => sum + parseFloat(item.volume_liters || 0), 0);
         }
 
-        // Média semanal
+        // M�dia semanal
         const { data: producaoSemana } = await db
             .from('volume_records')
             .select('volume_liters, production_date')
@@ -11983,7 +11646,7 @@ async function loadReportStats() {
             mediaSemana = totalDias > 0 ? totalVolume / totalDias : 0;
         }
 
-        // Total do mês
+        // Total do m�s
         const { data: producaoMes } = await db
             .from('volume_records')
             .select('volume_liters')
@@ -11997,7 +11660,7 @@ async function loadReportStats() {
             registrosMes = producaoMes.length;
         }
 
-        // Funcionários ativos
+        // Funcion�rios ativos
         const { data: funcionarios } = await db
             .from('users')
             .select('id')
@@ -12013,10 +11676,10 @@ async function loadReportStats() {
         document.getElementById('reportMonthRecords').textContent = registrosMes.toString();
         document.getElementById('reportActiveEmployees').textContent = funcionariosAtivos.toString();
 
-        // Carregar lista de funcionários no select
+        // Carregar lista de funcion�rios no select
         const selectEmployee = document.getElementById('reportEmployee');
         if (selectEmployee && funcionarios) {
-            selectEmployee.innerHTML = '<option value="">Todos os funcionários</option>';
+            selectEmployee.innerHTML = '<option value="">Todos os funcion�rios</option>';
             
             for (const func of funcionarios) {
                 const { data: userData } = await db
@@ -12039,7 +11702,7 @@ async function loadReportStats() {
     }
 }
 
-// Funçãoo para exportar Excel
+// Fun��o para exportar Excel
 async function exportExcelReport() {
     try {
         const startDate = document.getElementById('reportStartDate').value;
@@ -12091,10 +11754,10 @@ async function exportExcelReport() {
         }
 
         if (!dadosExcel || dadosExcel.length === 0) {
-            showNotification('Nenhum dado encontrado para o período selecionado', 'info');
+            showNotification('Nenhum dado encontrado para o per�odo selecionado', 'info');
             return;
         }
-        // Obter informações da fazenda para o cabe�alho
+        // Obter informa��es da fazenda para o cabe�alho
         const farmName = reportTabSettings.farmName || 'Fazenda';
         const dataInicio = new Date(startDate).toLocaleDateString('pt-BR');
         const dataFim = new Date(endDate).toLocaleDateString('pt-BR');
@@ -12108,17 +11771,17 @@ async function exportExcelReport() {
         // Criar dados para Excel com design limpo
         const excelData = [
             // Cabe�alho Principal
-            [`RELAT�RIO DE PRODUçãoO DE LEITE - ${farmName.toUpperCase()}`],
+            [`RELAT�RIO DE PRODU��O DE LEITE - ${farmName.toUpperCase()}`],
             [''],
-            ['INFORMAçãoES DO RELAT�RIO'],
+            ['INFORMA��ES DO RELAT�RIO'],
             ['Per�odo:', `${dataInicio} at� ${dataFim}`],
-            ['Data de Geraçãoo:', dataGeracao],
+            ['Data de Gera��o:', dataGeracao],
             ['Total de Registros:', totalRegistros],
             ['Volume Total Produzido:', `${totalVolume.toFixed(2)} L`],
-            ['Média por Registro:', `${mediaVolume.toFixed(2)} L`],
+            ['M�dia por Registro:', `${mediaVolume.toFixed(2)} L`],
             [''],
             // Cabe�alho da Tabela
-            ['Data', 'Funcionário', 'Turno', 'Volume (L)', 'Temperatura (�C)', 'Observações', 'Data/Hora Registro']
+            ['Data', 'Funcion�rio', 'Turno', 'Volume (L)', 'Temperatura (�C)', 'Observa��es', 'Data/Hora Registro']
         ];
 
         dadosExcel.forEach(item => {
@@ -12144,16 +11807,16 @@ async function exportExcelReport() {
         // Criar workbook e worksheet
         const ws = XLSX.utils.aoa_to_sheet(excelData);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Produção de Leite');
+        XLSX.utils.book_append_sheet(wb, ws, 'Produ��o de Leite');
 
         // Definir larguras das colunas melhoradas
         ws['!cols'] = [
             { width: 15 }, // Data
-            { width: 25 }, // Funcionário
+            { width: 25 }, // Funcion�rio
             { width: 15 }, // Turno
             { width: 15 }, // Volume
             { width: 18 }, // Temperatura
-            { width: 35 }, // Observações
+            { width: 35 }, // Observa��es
             { width: 22 }  // Data/Hora Registro
         ];
 
@@ -12169,10 +11832,10 @@ async function exportExcelReport() {
         // Merge das c�lulas do t�tulo
         ws['!merges'] = [
             { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, // T�tulo principal
-            { s: { r: 2, c: 0 }, e: { r: 2, c: 6 } }  // Subt�tulo informações
+            { s: { r: 2, c: 0 }, e: { r: 2, c: 6 } }  // Subt�tulo informa��es
         ];
 
-        // Estilizar linha de informações
+        // Estilizar linha de informa��es
         for (let i = 3; i <= 8; i++) {
             const cellA = `A${i}`;
             const cellB = `B${i}`;
@@ -12228,7 +11891,7 @@ async function exportExcelReport() {
                         }
                     };
                     
-                    // Destacar volumes acima da média
+                    // Destacar volumes acima da m�dia
                     if (col === 3 && parseFloat(cell.v) > mediaVolume) {
                         cell.s.font = { bold: true, color: { rgb: "059669" } };
                     }
@@ -12237,7 +11900,7 @@ async function exportExcelReport() {
         }
 
         // Download
-        const fileName = `Relatário_${farmName}_${startDate}_${endDate}.xlsx`;
+        const fileName = `Relat�rio_${farmName}_${startDate}_${endDate}.xlsx`;
         XLSX.writeFile(wb, fileName);
 
         showNotification('Arquivo Excel exportado com sucesso!', 'success');
@@ -12245,11 +11908,11 @@ async function exportExcelReport() {
     } catch (error) {
         console.error('Erro ao exportar Excel:', error);
         
-        showNotification('Erro ao exportar relatório: ' + error.message, 'error');
+        showNotification('Erro ao exportar relat�rio: ' + error.message, 'error');
     }
 }
 
-// Funçãoo para exportar PDF
+// Fun��o para exportar PDF
 async function exportPDFReport() {
     try {
         const startDate = document.getElementById('reportStartDate').value;
@@ -12297,11 +11960,11 @@ async function exportPDFReport() {
         if (error) throw error;
 
         if (!dadosPDF || dadosPDF.length === 0) {
-            showNotification('Nenhum dado encontrado para o período selecionado', 'info');
+            showNotification('Nenhum dado encontrado para o per�odo selecionado', 'info');
             return;
         }
 
-        // Gerar PDF usando a função existente
+        // Gerar PDF usando a fun��o existente
         generateVolumePDF(dadosPDF, false);
 
     } catch (error) {
@@ -12320,7 +11983,7 @@ async function resetAccountPassword(userId, userName) {
         const newPassword = generateTempPassword();
 
         // Atualizar apenas a senha tempor�ria na tabela
-        // Nota: O usuário precisar� usar a função de recuperaçãoo de senha do Database
+        // Nota: O usu�rio precisar� usar a fun��o de recupera��o de senha do Database
         // ou o administrador do sistema precisar� resetar via painel admin
         const { error: updateError } = await db
             .from('users')
@@ -12329,7 +11992,7 @@ async function resetAccountPassword(userId, userName) {
 
         if (updateError) throw updateError;
 
-        showNotification('Nova senha tempor�ria gerada! O usuário deve usar a recuperaçãoo de senha do sistema.', 'warning');
+        showNotification('Nova senha tempor�ria gerada! O usu�rio deve usar a recupera��o de senha do sistema.', 'warning');
         showTempPasswordModal(userName, '', newPassword);
 
     } catch (error) {
@@ -12338,10 +12001,10 @@ async function resetAccountPassword(userId, userName) {
     }
 }
 
-// Event listener para formulário de conta secund�ria
+// Event listener para formul�rio de conta secund�ria
 const createSecondaryAccountForm = document.getElementById('createSecondaryAccountForm');
 if (createSecondaryAccountForm) {
-    // Funçãoo para lidar com o submit
+    // Fun��o para lidar com o submit
     const handleSecondaryAccountSubmit = async function(e) {
     e.preventDefault();
     const formData = new FormData(this);
@@ -12353,7 +12016,7 @@ if (createSecondaryAccountForm) {
     createSecondaryAccountForm.addEventListener('submit', handleSecondaryAccountSubmit);
 }
 
-// Funçãoes para gerenciar contas secund�rias
+// Fun��es para gerenciar contas secund�rias
 function toggleSecondaryAccountForm() {
     const form = document.getElementById('secondaryAccountForm');
     if (form) {
@@ -12373,14 +12036,14 @@ function cancelSecondaryAccountForm() {
     }
 }
 
-// Preencher formulário com dados do gerente atual
+// Preencher formul�rio com dados do gerente atual
 async function fillSecondaryAccountForm() {
     try {
         // Usando MySQL direto atrav�s do objeto 'db'
         const { data: { user } } = await db.auth.getUser();
         
         if (user) {
-            // Buscar dados do usuário atual (gerente principal)
+            // Buscar dados do usu�rio atual (gerente principal)
             const { data: userData, error } = await db
                 .from('users')
                 .select('name, whatsapp, role')
@@ -12394,7 +12057,7 @@ async function fillSecondaryAccountForm() {
                 document.getElementById('secondaryAccountWhatsApp').value = userData.whatsapp || '';
                 document.getElementById('secondaryAccountEmail').value = user.email;
                 
-                // Preencher campos de exibiçãoo
+                // Preencher campos de exibi��o
                 document.getElementById('displayName').textContent = userData.name;
                 document.getElementById('displayWhatsApp').textContent = userData.whatsapp || 'N�o informado';
                 document.getElementById('displayEmail').textContent = user.email;
@@ -12411,7 +12074,7 @@ async function fillSecondaryAccountForm() {
             }
         }
     } catch (error) {
-        console.error('Erro ao preencher formulário:', error);
+        console.error('Erro ao preencher formul�rio:', error);
     }
 }
 
@@ -12421,7 +12084,7 @@ async function createSecondaryAccount(formData) {
         // Usando MySQL direto atrav�s do objeto 'db'
         const { data: { user } } = await db.auth.getUser();
         
-        if (!user) throw new Error('Usuário não autenticado');
+        if (!user) throw new Error('Usu�rio n�o autenticado');
         
         // Obter dados do gerente atual
         const { data: managerData, error: managerError } = await db
@@ -12450,7 +12113,7 @@ async function createSecondaryAccount(formData) {
         const hasAccountType = existingAccounts && existingAccounts.some(account => account.role === accountType);
         
         if (hasAccountType) {
-            const roleText = accountType === 'funcionario' ? 'de funcionário' : 'de veterinário';
+            const roleText = accountType === 'funcionario' ? 'de funcion�rio' : 'de veterin�rio';
             throw new Error(`Voc� j� possui uma conta ${roleText}`);
         }
         
@@ -12471,9 +12134,9 @@ async function createSecondaryAccount(formData) {
             throw new Error(result.error || 'Falha ao criar conta secund�ria');
         }
         
-        showNotification(`Conta secund�ria ${accountType === 'funcionario' ? 'de funcionário' : 'de veterinário'} criada com sucesso!`, 'success');
+        showNotification(`Conta secund�ria ${accountType === 'funcionario' ? 'de funcion�rio' : 'de veterin�rio'} criada com sucesso!`, 'success');
         
-        // Fechar formulário e recarregar lista
+        // Fechar formul�rio e recarregar lista
         cancelSecondaryAccountForm();
         loadSecondaryAccounts();
         
@@ -12513,7 +12176,7 @@ async function checkExistingSecondaryAccount(accountType) {
         const messageDiv = document.getElementById('existingAccountMessage');
         if (messageDiv) {
             if (hasAccountType) {
-                const roleText = accountType === 'funcionario' ? 'de funcionário' : 'de veterinário';
+                const roleText = accountType === 'funcionario' ? 'de funcion�rio' : 'de veterin�rio';
                 messageDiv.innerHTML = `<span class="text-red-600">?? Voc� j� possui uma conta ${roleText}</span>`;
                 messageDiv.classList.remove('hidden');
             } else {
@@ -12529,7 +12192,7 @@ async function checkExistingSecondaryAccount(accountType) {
 // Carregar contas secund�rias
 async function loadSecondaryAccounts() {
     try {
-        // Usar API de usuários
+        // Usar API de usu�rios
         const response = await fetch('api/users.php?action=select');
         const result = await response.json();
         
@@ -12570,8 +12233,8 @@ function displaySecondaryAccounts(accounts) {
     
     const accountsHtml = accounts.map(account => {
         const roleText = {
-            'funcionario': 'Funcionário',
-            'veterinario': 'Veterinário',
+            'funcionario': 'Funcion�rio',
+            'veterinario': 'Veterin�rio',
             'gerente': 'Gerente'
         }[account.role] || account.role;
         
@@ -12598,7 +12261,7 @@ function displaySecondaryAccounts(accounts) {
                             <div class="min-w-0 flex-1">
                                 <h5 class="font-semibold text-gray-900 truncate">${account.name}</h5>
                                 <p class="text-sm text-gray-600 truncate">${account.email}</p>
-                                <p class="text-xs text-gray-500 truncate">${account.whatsapp || 'WhatsApp não informado'}</p>
+                                <p class="text-xs text-gray-500 truncate">${account.whatsapp || 'WhatsApp n�o informado'}</p>
                             </div>
                         </div>
                     </div>
@@ -12645,20 +12308,20 @@ async function getCurrentUserFarmId() {
         
         return 1;
     } catch (error) {
-        console.error('Erro ao obter dados do usuário:', error);
+        console.error('Erro ao obter dados do usu�rio:', error);
         return null;
     }
 }
 
-// Funçãoo removida - não mais necess�ria após remoçãoo dos bot�es de bloquear/excluir
+// Fun��o removida - n�o mais necess�ria ap�s remo��o dos bot�es de bloquear/excluir
 
 // Acessar conta secund�ria
 async function accessSecondaryAccount(userId, userName, userRole) {
-    const confirmed = confirm(`Deseja acessar a conta "${userName}" (${userRole})?\n\nVoc� será redirecionado para esta conta.`);
+    const confirmed = confirm(`Deseja acessar a conta "${userName}" (${userRole})?\n\nVoc� ser� redirecionado para esta conta.`);
     
     if (confirmed) {
         try {
-            // Armazenar informações da conta atual
+            // Armazenar informa��es da conta atual
             const currentUser = {
                 id: userId,
                 name: userName,
@@ -12675,7 +12338,7 @@ async function accessSecondaryAccount(userId, userName, userRole) {
             } else if (userRole === 'funcionario') {
                 window.location.href = 'funcionario.php';
             } else {
-                showNotification('Tipo de conta não suportado', 'error');
+                showNotification('Tipo de conta n�o suportado', 'error');
             }
             
         } catch (error) {
@@ -12684,9 +12347,9 @@ async function accessSecondaryAccount(userId, userName, userRole) {
     }
 }
 
-// Funçãoo removida - não mais necess�ria após remoçãoo dos bot�es de bloquear/excluir
+// Fun��o removida - n�o mais necess�ria ap�s remo��o dos bot�es de bloquear/excluir
 
-// Mostrar/ocultar seçãoo de foto baseado no cargo selecionado
+// Mostrar/ocultar se��o de foto baseado no cargo selecionado
 function togglePhotoSection() {
     console.log('?? togglePhotoSection() chamada');
     
@@ -12694,21 +12357,21 @@ function togglePhotoSection() {
     const photoSection = document.getElementById('addPhotoSection');
     
     console.log('?? Role selecionado:', roleSelect?.value);
-    console.log('?? Seção de foto encontrada:', !!photoSection);
+    console.log('?? Se��o de foto encontrada:', !!photoSection);
     
     if (roleSelect && photoSection) {
         if (roleSelect.value === 'veterinario' || roleSelect.value === 'funcionario') {
-            console.log('? Mostrando seçãoo de foto para', roleSelect.value);
+            console.log('? Mostrando se��o de foto para', roleSelect.value);
             photoSection.classList.remove('hidden');
             photoSection.style.display = 'block';
             photoSection.style.visibility = 'visible';
             photoSection.style.opacity = '1';
         } else {
-            console.log('? Ocultando seçãoo de foto');
+            console.log('? Ocultando se��o de foto');
             photoSection.classList.add('hidden');
             photoSection.style.display = 'none';
             
-            // Limpar foto se não for veterinário
+            // Limpar foto se n�o for veterin�rio
             const profilePhotoInput = document.getElementById('profilePhotoInput');
             const profilePreview = document.getElementById('profilePreview');
             const profilePlaceholder = document.getElementById('profilePlaceholder');
@@ -12721,7 +12384,7 @@ function togglePhotoSection() {
             if (profilePlaceholder) profilePlaceholder.style.display = 'flex';
         }
     } else {
-        console.error('? Elementos não encontrados:', {
+        console.error('? Elementos n�o encontrados:', {
             roleSelect: !!roleSelect,
             photoSection: !!photoSection
         });
@@ -12737,27 +12400,27 @@ window.openProfileModal = function() {
     }, 100);
 };
 
-// Funçãoo removida - conflito resolvido na função openAddUserModal original
+// Fun��o removida - conflito resolvido na fun��o openAddUserModal original
 
-// Funçãoo para prévia do relatório na aba
+// Fun��o para pr�via do relat�rio na aba
 function previewReportTab() {
     const startDate = document.getElementById('reportStartDate').value;
     const endDate = document.getElementById('reportEndDate').value;
 
     if (!startDate || !endDate) {
-        showNotification('Por favor, selecione as datas inicial e final para a prévia', 'warning');
+        showNotification('Por favor, selecione as datas inicial e final para a pr�via', 'warning');
         return;
     }
 
-    // Gerar relatório de exemplo
+    // Gerar relat�rio de exemplo
     const sampleData = [
         {
             production_date: startDate,
             volume_liters: 150.5,
             shift: 'manha',
             temperature: 4.2,
-            observations: 'Exemplo de registro para prévia',
-            users: { name: 'Funcionário Exemplo' },
+            observations: 'Exemplo de registro para pr�via',
+            users: { name: 'Funcion�rio Exemplo' },
             created_at: new Date().toISOString()
         }
     ];
@@ -12765,7 +12428,7 @@ function previewReportTab() {
     generateVolumePDF(sampleData, true);
 }
 
-// Inicializar datas padrão (último mês)
+// Inicializar datas padr�o (�ltimo m�s)
 function initializeDateFilters() {
     const today = new Date();
     const lastMonth = new Date();
@@ -12775,7 +12438,7 @@ function initializeDateFilters() {
     document.getElementById('reportEndDate').value = today.toISOString().split('T')[0];
 }
 
-// ===== FUNçãoES ESPEC�FICAS PARA FOTO DO GERENTE =====
+// ===== FUN��ES ESPEC�FICAS PARA FOTO DO GERENTE =====
 
 // Abrir modal de escolha de foto do gerente
 function openManagerPhotoModal() {
@@ -12809,7 +12472,7 @@ function openManagerPhotoModal() {
         
         console.log('? Modal aberto com sucesso');
     } else {
-        console.error('? Modal não encontrado');
+        console.error('? Modal n�o encontrado');
     }
 }
 
@@ -12821,7 +12484,7 @@ function closeManagerPhotoModal() {
         modal.classList.remove('show', 'flex', 'block');
         modal.classList.add('hidden');
         
-        // For�ar ocultaçãoo com m�ltiplas propriedades
+        // For�ar oculta��o com m�ltiplas propriedades
         modal.style.display = 'none';
         modal.style.visibility = 'hidden';
         modal.style.opacity = '0';
@@ -12831,11 +12494,11 @@ function closeManagerPhotoModal() {
         
         console.log('? Modal de foto do gerente fechado');
     } else {
-        console.log('? Modal de foto do gerente não encontrado');
+        console.log('? Modal de foto do gerente n�o encontrado');
     }
 }
 
-// Abrir c�mera do gerente com verificaçãoo facial
+// Abrir c�mera do gerente com verifica��o facial
 async function openManagerCamera() {
     try {
         console.log('?? Abrindo c�mera do gerente...');
@@ -12896,14 +12559,14 @@ async function openManagerCamera() {
                     height: { ideal: 1080 }
                 } 
             });
-            console.log('? Usando �nica c�mera disponível');
+            console.log('? Usando �nica c�mera dispon�vel');
         }
         
         video.srcObject = stream;
         window.managerCameraStream = stream;
         window.managerCurrentFacingMode = stream.getVideoTracks()[0].getSettings().facingMode;
         
-        // Inicializar verificaçãoo facial
+        // Inicializar verifica��o facial
         initializeFaceDetection();
         
         console.log('? C�mera do gerente aberta com sucesso');
@@ -12953,7 +12616,7 @@ function closeManagerCamera() {
     // Resetar indicadores
     resetManagerFaceVerification();
     
-    // Limpar detecçãoo facial
+    // Limpar detec��o facial
     if (faceDetectionInterval) {
         clearInterval(faceDetectionInterval);
         faceDetectionInterval = null;
@@ -12992,25 +12655,25 @@ async function switchManagerCamera() {
     }
 }
 
-// Vari�veis globais para verificaçãoo facial
+// Vari�veis globais para verifica��o facial
 let faceDetectionInterval;
 let isFaceDetected = false;
 let faceCentered = false;
 
-// Inicializar detecçãoo facial
+// Inicializar detec��o facial
 function initializeFaceDetection() {
-    console.log('?? Inicializando detecçãoo facial...');
+    console.log('?? Inicializando detec��o facial...');
     
     // Resetar estados
     isFaceDetected = false;
     faceCentered = false;
     updateFaceUI();
     
-    // Iniciar detecçãoo facial
+    // Iniciar detec��o facial
     startFaceDetection();
 }
 
-// Iniciar detecçãoo facial
+// Iniciar detec��o facial
 function startFaceDetection() {
     const video = document.getElementById('managerCameraVideo');
     
@@ -13018,22 +12681,22 @@ function startFaceDetection() {
         clearInterval(faceDetectionInterval);
     }
     
-    // Simular detecçãoo facial (em produção, usar uma biblioteca como face-api.js)
+    // Simular detec��o facial (em produ��o, usar uma biblioteca como face-api.js)
     faceDetectionInterval = setInterval(() => {
         detectFace(video);
     }, 100); // Verificar a cada 100ms
 }
 
-// Detectar rosto (simulaçãoo)
+// Detectar rosto (simula��o)
 function detectFace(video) {
-    // Esta � uma simulaçãoo. Em produção, você usaria uma biblioteca real de detecçãoo facial
+    // Esta � uma simula��o. Em produ��o, voc� usaria uma biblioteca real de detec��o facial
     const rect = video.getBoundingClientRect();
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    // Simular detecçãoo baseada em movimento ou outras heur�sticas
-    const hasMovement = Math.random() > 0.3; // Simular que h� movimento/detecçãoo
-    const isCentered = Math.random() > 0.4; // Simular centralizaçãoo
+    // Simular detec��o baseada em movimento ou outras heur�sticas
+    const hasMovement = Math.random() > 0.3; // Simular que h� movimento/detec��o
+    const isCentered = Math.random() > 0.4; // Simular centraliza��o
     
     if (hasMovement) {
         isFaceDetected = true;
@@ -13051,7 +12714,7 @@ function detectFace(video) {
     }
 }
 
-// Atualizar interface baseada na detecçãoo
+// Atualizar interface baseada na detec��o
 function updateFaceUI() {
     const faceCircle = document.getElementById('managerFaceCircle');
     const captureBtn = document.getElementById('managerCaptureBtn');
@@ -13059,7 +12722,7 @@ function updateFaceUI() {
     const faceWarning = document.getElementById('managerFaceWarning');
     
     if (!isFaceDetected) {
-        // Rosto não detectado
+        // Rosto n�o detectado
         faceCircle.style.borderColor = 'rgb(239, 68, 68)'; // Vermelho
         faceStatus.textContent = 'Centralizando rosto...';
         faceStatus.style.color = 'rgba(255, 255, 255, 0.7)';
@@ -13071,7 +12734,7 @@ function updateFaceUI() {
         captureBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
         
     } else if (!faceCentered) {
-        // Rosto detectado mas não centralizado
+        // Rosto detectado mas n�o centralizado
         faceCircle.style.borderColor = 'rgb(239, 68, 68)'; // Vermelho
         faceStatus.textContent = 'Centralize o rosto no c�rculo';
         faceStatus.style.color = 'rgba(255, 255, 255, 0.7)';
@@ -13094,16 +12757,16 @@ function updateFaceUI() {
         captureBtn.classList.add('hover:scale-105', 'hover:bg-gray-100');
         captureBtn.style.backgroundColor = 'white';
         
-        // Ocultar aviso se estiver visível
+        // Ocultar aviso se estiver vis�vel
         if (faceWarning) {
             faceWarning.style.opacity = '0';
         }
     }
 }
 
-// Capturar foto do gerente com verificaçãoo facial
+// Capturar foto do gerente com verifica��o facial
 async function captureManagerPhoto() {
-    // Verificar se o rosto está centralizado
+    // Verificar se o rosto est� centralizado
     if (!faceCentered) {
         const faceWarning = document.getElementById('managerFaceWarning');
         if (faceWarning) {
@@ -13123,12 +12786,12 @@ async function captureManagerPhoto() {
         const processingScreen = document.getElementById('managerPhotoProcessingScreen');
         
         if (!video || !canvas) {
-            throw new Error('Elementos de v�deo ou canvas não encontrados');
+            throw new Error('Elementos de v�deo ou canvas n�o encontrados');
         }
         
-        // Verificar se o v�deo está pronto
+        // Verificar se o v�deo est� pronto
         if (video.readyState < 2) {
-            throw new Error('V�deo não está pronto');
+            throw new Error('V�deo n�o est� pronto');
         }
         
         // Mostrar tela de processamento
@@ -13186,11 +12849,11 @@ async function processManagerPhoto(file) {
     try {
         // Validar arquivo
         if (!file || file.size === 0) {
-            throw new Error('Arquivo inválido');
+            throw new Error('Arquivo inv�lido');
         }
         
         if (file.size > 2 * 1024 * 1024) {
-            throw new Error('Arquivo muito grande (máximo 2MB)');
+            throw new Error('Arquivo muito grande (m�ximo 2MB)');
         }
         
         // Mostrar preview
@@ -13200,7 +12863,7 @@ async function processManagerPhoto(file) {
         // Usando MySQL direto atrav�s do objeto 'db'
         const { data: { user } } = await db.auth.getUser();
         
-        if (!user) throw new Error('Usuário não autenticado');
+        if (!user) throw new Error('Usu�rio n�o autenticado');
         
         const photoUrl = await uploadManagerProfilePhoto(file, user.id);
         
@@ -13212,7 +12875,7 @@ async function processManagerPhoto(file) {
             
         if (updateError) throw updateError;
         
-        // Atualizar exibiçãoo
+        // Atualizar exibi��o
         updateManagerPhotoDisplay(photoUrl);
         
         // Fechar modal automaticamente
@@ -13221,7 +12884,7 @@ async function processManagerPhoto(file) {
         // Fechar c�mera se estiver aberta
         closeManagerCamera();
         
-        // Aguardar um pouco antes de mostrar notificaçãoo
+        // Aguardar um pouco antes de mostrar notifica��o
         setTimeout(() => {
             showNotification('Foto de perfil atualizada com sucesso!', 'success');
         }, 200);
@@ -13269,7 +12932,7 @@ function handleManagerGallerySelection(input) {
     }
 }
 
-// Verificaçãoo facial do gerente
+// Verifica��o facial do gerente
 function startManagerFaceVerification() {
     const focusText = document.getElementById('managerFocusText');
     const focusTimer = document.getElementById('managerFocusTimer');
@@ -13294,7 +12957,7 @@ function startManagerFaceVerification() {
     window.managerFaceVerificationTimer = timer;
 }
 
-// Resetar verificaçãoo facial do gerente
+// Resetar verifica��o facial do gerente
 function resetManagerFaceVerification() {
     const focusText = document.getElementById('managerFocusText');
     const focusTimer = document.getElementById('managerFocusTimer');
@@ -13310,12 +12973,12 @@ function resetManagerFaceVerification() {
     }
 }
 
-// Atualizar exibiçãoo da foto do gerente
+// Atualizar exibi��o da foto do gerente
 function updateManagerPhotoDisplay(photoUrl) {
-    console.log('??? Atualizando exibiçãoo da foto:', photoUrl);
+    console.log('??? Atualizando exibi��o da foto:', photoUrl);
     
     if (!photoUrl) {
-        console.log('? URL da foto não fornecida');
+        console.log('? URL da foto n�o fornecida');
         return;
     }
     
@@ -13355,7 +13018,7 @@ function updateManagerPhotoDisplay(photoUrl) {
         console.log('? Foto do modal atualizada');
     }
     
-    // Atualizar preview no formulário de ediçãoo
+    // Atualizar preview no formul�rio de edi��o
     const preview = document.getElementById('managerProfilePreview');
     const placeholder = document.getElementById('managerProfilePlaceholder');
     if (preview && placeholder) {
@@ -13381,7 +13044,7 @@ async function uploadManagerProfilePhoto(file, userId) {
         
         // Sistema Lagoa Do Mato
         const { data: { user } } = await db.auth.getUser();
-        if (!user) throw new Error('Usuário não autenticado');
+        if (!user) throw new Error('Usu�rio n�o autenticado');
         
         const { data: userData, error: userError } = await db
             .from('users')
@@ -13390,7 +13053,7 @@ async function uploadManagerProfilePhoto(file, userId) {
             .single();
             
         if (userError || !userData) {
-            throw new Error('Farm ID não encontrado');
+            throw new Error('Farm ID n�o encontrado');
         }
         
         // Criar nome �nico para o arquivo
@@ -13440,7 +13103,7 @@ function loadExcelLibrary() {
     }
 }
 
-// Evento para carregar dados quando a aba de relatórios for aberta
+// Evento para carregar dados quando a aba de relat�rios for aberta
 document.addEventListener('DOMContentLoaded', function() {
     loadExcelLibrary();
     
@@ -13466,10 +13129,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // App Version Display
         document.addEventListener('DOMContentLoaded', function() {
-            // Adiciona versão do app no perfil do usuário
+            // Adiciona vers�o do app no perfil do usu�rio
             const appVersion = '1.0.0';
             
-            // Funçãoo para adicionar versão em elementos de perfil
+            // Fun��o para adicionar vers�o em elementos de perfil
             function addVersionToProfile() {
                 const profileElements = document.querySelectorAll('.user-profile, .profile-info, .user-info');
                 profileElements.forEach(element => {
@@ -13491,7 +13154,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Funçãoo para adicionar versão no modal de perfil
+            // Fun��o para adicionar vers�o no modal de perfil
             function addVersionToProfileModal() {
                 const profileModal = document.getElementById('profileModal');
                 if (profileModal && !profileModal.querySelector('.app-version')) {
@@ -13502,10 +13165,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Executar após carregamento
+            // Executar ap�s carregamento
             setTimeout(addVersionToProfile, 1000);
             
-            // Adicionar versão quando o modal de perfil for aberto
+            // Adicionar vers�o quando o modal de perfil for aberto
             const originalOpenProfileModal = window.openProfileModal;
             window.openProfileModal = function() {
                 if (originalOpenProfileModal) {
@@ -13519,9 +13182,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const loadingSteps = [
             { message: 'Inicializando sistema...', subMessage: 'Preparando ambiente...', progress: 10 },
             { message: 'Conectando ao banco de dados...', subMessage: 'Estabelecendo conex�o...', progress: 25 },
-            { message: 'Carregando dados da fazenda...', subMessage: 'Buscando informações...', progress: 40 },
+            { message: 'Carregando dados da fazenda...', subMessage: 'Buscando informa��es...', progress: 40 },
             { message: 'Configurando interface...', subMessage: 'Preparando componentes...', progress: 60 },
-            { message: 'Carregando gr�ficos...', subMessage: 'Preparando visualizações...', progress: 80 },
+            { message: 'Carregando gr�ficos...', subMessage: 'Preparando visualiza��es...', progress: 80 },
             { message: 'Finalizando carregamento...', subMessage: 'Quase pronto...', progress: 95 },
             { message: 'Sistema pronto!', subMessage: 'Bem-vindo ao LacTech', progress: 100 }
         ];
@@ -13529,9 +13192,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentStep = 0;
         let loadingInterval;
 
-        // DESABILITADO - função duplicada, usando apenas modal HTML
+        // DESABILITADO - fun��o duplicada, usando apenas modal HTML
         function updateLoadingScreen() {
-            // Funçãoo desabilitada - usando apenas a modal de carregamento HTML
+            // Fun��o desabilitada - usando apenas a modal de carregamento HTML
             return;
             // C�digo do sistema de carregamento removido
         }
@@ -13540,14 +13203,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('DOMContentLoaded', function() {
             console.log('? Sistema carregado sem tela de loading');
             
-            // GARANTIR que não haja tela de loading criada dinamicamente
+            // GARANTIR que n�o haja tela de loading criada dinamicamente
             const loadingScreens = document.querySelectorAll('.loading-screen, #loadingScreen');
             loadingScreens.forEach(screen => {
                 console.log('??? Removendo tela de loading encontrada:', screen.id || screen.className);
                 screen.remove();
             });
             
-            // PASSO 1: Garantir que modais HTML estáticos estejam fechados
+            // PASSO 1: Garantir que modais HTML est�ticos estejam fechados
             const criticalModals = [
                 'profileModal',
                 'moreModal', 
@@ -13565,7 +13228,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.classList.remove('show');
                 }
             });
-            console.log('? Modais HTML estáticos fechados');
+            console.log('? Modais HTML est�ticos fechados');
             
             // PASSO 2: Limpar vari�veis globais
             window.isCameraOpen = false;
@@ -13587,7 +13250,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
@@ -13608,7 +13271,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                // Atualizar o banco de dados removendo a referência da foto
+                // Atualizar o banco de dados removendo a refer�ncia da foto
                 const { error: updateError } = await db
                     .from('users')
                     .update({ 
@@ -13657,14 +13320,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const isMobile = window.innerWidth <= 768;
             
             if (profileModal && header && isMobile) {
-                // Funçãoo para controlar a visibilidade do header
+                // Fun��o para controlar a visibilidade do header
                 function handleScroll() {
                     if (!isScrolling) {
                         isScrolling = true;
                         requestAnimationFrame(function() {
                             const scrollTop = profileModal.scrollTop;
                             
-                            // Detectar direçãoo do scroll
+                            // Detectar dire��o do scroll
                             if (scrollTop > lastScrollTop && scrollTop > 50) {
                                 // Scroll para baixo - esconder header completamente
                                 header.style.transform = 'translateY(-110%)';
@@ -13701,7 +13364,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // ==================== FUNçãoES DO MODAL MAIS ====================
+        // ==================== FUN��ES DO MODAL MAIS ====================
         
         // Abrir modal MAIS
         function openMoreModal() {
@@ -13734,7 +13397,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // ==================== FUNçãoES REMOVIDAS - CHAT ====================
+        // ==================== FUN��ES REMOVIDAS - CHAT ====================
         // Sistema de chat removido para simplificar o sistema da Lagoa do Mato
         // Todas as funcionalidades de chat foram removidas
         console.log('?? Sistema de chat desabilitado - Lagoa do Mato');
@@ -13752,7 +13415,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     setupChatScrollListener();
                 }, 100);
                 
-                // Atualizar status online do usuário atual
+                // Atualizar status online do usu�rio atual
                 try {
                     // Usando MySQL direto atrav�s do objeto 'db'
                     const { data: { user } } = await db.auth.getUser();
@@ -13803,20 +13466,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Carregar funcionários da fazenda
+        // Carregar funcion�rios da fazenda
         async function loadEmployees() {
             try {
-                console.log('?? Carregando funcionários...');
+                console.log('?? Carregando funcion�rios...');
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    console.error('? Usuário não autenticado');
+                    console.error('? Usu�rio n�o autenticado');
                     return;
                 }
 
-                console.log('?? Usuário autenticado:', user.email);
+                console.log('?? Usu�rio autenticado:', user.email);
                 
                 // Definir currentUser globalmente
                 window.currentUser = user;
@@ -13829,43 +13492,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     .single();
 
                 if (userError) {
-                    console.error('? Erro ao buscar dados do usuário:', userError);
+                    console.error('? Erro ao buscar dados do usu�rio:', userError);
                     return;
                 }
 
                 if (!userData) {
-                    console.error('? Dados do usuário não encontrados');
+                    console.error('? Dados do usu�rio n�o encontrados');
                     return;
                 }
 
                 console.log('?? Fazenda: Lagoa Do Mato');
 
-                // Usar o servi�o de sincronizaçãoo para buscar funcionários
+                // Usar o servi�o de sincroniza��o para buscar funcion�rios
                 const employees = await getFarmUsers() // Lagoa Do Mato;
-                console.log('?? Funcionários encontrados:', employees.length);
+                console.log('?? Funcion�rios encontrados:', employees.length);
                 
-                // Incluir todos os usuários (gerente + funcionários)
+                // Incluir todos os usu�rios (gerente + funcion�rios)
                 displayEmployees(employees);
             } catch (error) {
-                console.error('? Erro ao carregar funcionários:', error);
-                showNotification('Erro ao carregar funcionários: ' + error.message, 'error');
+                console.error('? Erro ao carregar funcion�rios:', error);
+                showNotification('Erro ao carregar funcion�rios: ' + error.message, 'error');
             }
         }
 
-        // Exibir funcionários na lista
+        // Exibir funcion�rios na lista
         function displayEmployees(employees) {
-            console.log('?? Exibindo funcionários:', employees);
+            console.log('?? Exibindo funcion�rios:', employees);
             
             const employeesList = document.getElementById('employeesList');
             const onlineEmployees = document.getElementById('onlineEmployees');
             
             if (!employeesList) {
-                console.error('? Elemento employeesList não encontrado');
+                console.error('? Elemento employeesList n�o encontrado');
                 return;
             }
             
             if (!onlineEmployees) {
-                console.error('? Elemento onlineEmployees não encontrado');
+                console.error('? Elemento onlineEmployees n�o encontrado');
                 return;
             }
 
@@ -13883,10 +13546,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     employeeName: employee.name
                 });
                 
-                // Filtrar o próprio gerente da lista
+                // Filtrar o pr�prio gerente da lista
                 if (employee.id === window.currentUser?.id || employee.email === window.currentUser?.email) {
-                    console.log('?? Filtrando próprio usuário da lista:', employee.name);
-                    return; // Pular o próprio usuário
+                    console.log('?? Filtrando pr�prio usu�rio da lista:', employee.name);
+                    return; // Pular o pr�prio usu�rio
                 }
                 
                 const isOnline = isEmployeeOnline(employee);
@@ -13938,13 +13601,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 employeesList.appendChild(employeeItem);
 
-                // Funcionário online (se estiver online)
+                // Funcion�rio online (se estiver online)
                 if (isOnline) {
                     const onlineItem = document.createElement('div');
                     onlineItem.className = 'flex flex-col items-center space-y-1 cursor-pointer';
                     onlineItem.onclick = () => selectEmployee(employee);
                     
-                    // Gerar avatar (foto ou letra) para seçãoo online
+                    // Gerar avatar (foto ou letra) para se��o online
                     let onlineAvatarHtml;
                     if (hasPhoto) {
                         onlineAvatarHtml = `
@@ -13977,12 +13640,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            console.log('? Funcionários exibidos com sucesso!');
-            console.log('?? Total de funcionários:', employees.length);
-            console.log('?? Funcionários online:', document.querySelectorAll('#onlineEmployees > div').length);
+            console.log('? Funcion�rios exibidos com sucesso!');
+            console.log('?? Total de funcion�rios:', employees.length);
+            console.log('?? Funcion�rios online:', document.querySelectorAll('#onlineEmployees > div').length);
         }
 
-        // Verificar se funcionário está online
+        // Verificar se funcion�rio est� online
         function isEmployeeOnline(employee) {
             // Verificar se o objeto employee existe
             if (!employee) {
@@ -13990,7 +13653,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
-            // Usar a coluna is_online se disponível, sen�o usar last_login
+            // Usar a coluna is_online se dispon�vel, sen�o usar last_login
             if (employee.is_online !== undefined && employee.is_online !== null) {
                 return employee.is_online;
             }
@@ -14000,10 +13663,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
             const loginTime = new Date(employee.last_login);
             const diffMinutes = (now - loginTime) / (1000 * 60);
-            return diffMinutes < 15; // Considera online se fez login nos últimos 15 minutos
+            return diffMinutes < 15; // Considera online se fez login nos �ltimos 15 minutos
         }
 
-        // Formatar última vez visto
+        // Formatar �ltima vez visto
         function formatLastSeen(lastLogin) {
             if (!lastLogin) return 'Nunca';
             
@@ -14027,7 +13690,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Selecionar funcionário para conversa
+        // Selecionar funcion�rio para conversa
         function selectEmployee(employee) {
             // Verificar se o employee existe
             if (!employee) {
@@ -14045,14 +13708,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const messageInput = document.getElementById('chatMessageInput');
             const sendBtn = document.getElementById('sendMessageBtn');
             
-            if (nameElement) nameElement.textContent = employee.name || 'Nome não disponível';
+            if (nameElement) nameElement.textContent = employee.name || 'Nome n�o dispon�vel';
             if (statusElement) statusElement.textContent = isEmployeeOnline(employee) ? 'Online' : 'Offline';
             
             // Atualizar avatar no header com foto de perfil ou inicial colorida
             if (initialElement) {
                 const avatarContainer = initialElement.parentElement;
                 if (avatarContainer) {
-                    // Limpar conteúdo anterior
+                    // Limpar conte�do anterior
                     avatarContainer.innerHTML = '';
                     
                     if (employee.profile_photo_url) {
@@ -14109,7 +13772,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Carregar mensagens com este funcionário
+            // Carregar mensagens com este funcion�rio
             if (employee.id) {
                 loadChatMessages(employee.id);
             } else {
@@ -14119,7 +13782,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Sair do chat e voltar para UI inicial
         function exitChat() {
-            // Limpar funcionário selecionado
+            // Limpar funcion�rio selecionado
             window.selectedEmployee = null;
             
             // Ocultar interface do chat e mostrar UI inicial
@@ -14173,12 +13836,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 emojiPicker.classList.add('hidden');
             }
             
-            // Resetar avatar e nome no header (se ainda estiver visível)
+            // Resetar avatar e nome no header (se ainda estiver vis�vel)
             const nameElement = document.getElementById('selectedEmployeeName');
             const initialElement = document.getElementById('selectedEmployeeInitial');
             const statusElement = document.getElementById('selectedEmployeeStatus');
             
-            if (nameElement) nameElement.textContent = 'Selecione um funcionário';
+            if (nameElement) nameElement.textContent = 'Selecione um funcion�rio';
             if (statusElement) statusElement.textContent = 'Para come�ar uma conversa';
             if (initialElement) {
                 const avatarContainer = initialElement.parentElement;
@@ -14194,19 +13857,19 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('=== INICIANDO LIMPEZA DO CHAT ===');
             
             if (!window.selectedEmployee) {
-                showNotification('Nenhum usuário selecionado para limpar chat', 'warning');
+                showNotification('Nenhum usu�rio selecionado para limpar chat', 'warning');
                 return;
             }
 
-            console.log('Usuário selecionado:', window.selectedEmployee);
+            console.log('Usu�rio selecionado:', window.selectedEmployee);
             
-            // Mostrar modal de confirmaçãoo diretamente
+            // Mostrar modal de confirma��o diretamente
             showClearChatConfirmation();
         }
 
-        // Funçãoo para mostrar modal de confirmaçãoo de limpeza do chat
+        // Fun��o para mostrar modal de confirma��o de limpeza do chat
         function showClearChatConfirmation() {
-            console.log('Mostrando modal de confirmaçãoo de limpeza');
+            console.log('Mostrando modal de confirma��o de limpeza');
             
             // Remover modal existente se houver
             const existingModal = document.getElementById('clearChatModal');
@@ -14227,7 +13890,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 Limpar Conversa
                             </h3>
                             <p class="text-sm text-gray-500 text-center mb-6">
-                                Tem certeza que deseja limpar todo o histórico de mensagens desta conversa? Esta açãoo não pode ser desfeita.
+                                Tem certeza que deseja limpar todo o hist�rico de mensagens desta conversa? Esta a��o n�o pode ser desfeita.
                             </p>
                             <div class="flex space-x-3">
                                 <button onclick="closeClearChatModal()" class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
@@ -14243,10 +13906,10 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            console.log('Modal de confirmaçãoo adicionado ao DOM');
+            console.log('Modal de confirma��o adicionado ao DOM');
         }
 
-        // Funçãoo para fechar o modal de confirmaçãoo
+        // Fun��o para fechar o modal de confirma��o
         function closeClearChatModal() {
             const modal = document.getElementById('clearChatModal');
             if (modal) {
@@ -14254,7 +13917,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Funçãoo para confirmar a limpeza do chat
+        // Fun��o para confirmar a limpeza do chat
         async function confirmClearChat() {
             console.log('=== CONFIRMANDO LIMPEZA DO CHAT ===');
             closeClearChatModal();
@@ -14267,12 +13930,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    console.error('Usuário não autenticado');
-                    showNotification('Usuário não autenticado', 'error');
+                    console.error('Usu�rio n�o autenticado');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
 
-                console.log('Usuário autenticado:', user.id);
+                console.log('Usu�rio autenticado:', user.id);
 
                 const { data: userData } = await db
                     .from('users')
@@ -14281,18 +13944,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     .single();
 
                 if (!userData) {
-                    console.error('Farm ID não encontrado');
+                    console.error('Farm ID n�o encontrado');
                     showNotification('Erro ao obter dados da fazenda', 'error');
                     return;
                 }
 
                 console.log('Fazenda: Lagoa Do Mato');
-                console.log('Funcionário selecionado:', window.selectedEmployee.id);
+                console.log('Funcion�rio selecionado:', window.selectedEmployee.id);
 
-                // Deletar todas as mensagens entre os usuários
+                // Deletar todas as mensagens entre os usu�rios
                 console.log('Deletando mensagens do banco...');
                 
-                // Usar uma �nica query com OR para deletar todas as mensagens entre os dois usuários
+                // Usar uma �nica query com OR para deletar todas as mensagens entre os dois usu�rios
                 const { error: deleteError } = await db
                     .from('chat_messages')
                     .delete()
@@ -14304,7 +13967,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showNotification('Erro ao limpar o chat. Tente novamente.', 'error');
                     return;
                 } else {
-                    console.log('Todas as mensagens entre os usuários deletadas');
+                    console.log('Todas as mensagens entre os usu�rios deletadas');
                 
                 // Verificar se as mensagens foram realmente deletadas
                 const { data: remainingMessages, error: checkError } = await db
@@ -14316,10 +13979,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (checkError) {
                     console.error('Erro ao verificar mensagens restantes:', checkError);
                 } else {
-                    console.log('Mensagens restantes após delete:', remainingMessages?.length || 0);
+                    console.log('Mensagens restantes ap�s delete:', remainingMessages?.length || 0);
                     if (remainingMessages && remainingMessages.length > 0) {
                         console.warn('Ainda existem mensagens no banco!');
-                        showNotification('Algumas mensagens não foram deletadas. Tente novamente.', 'warning');
+                        showNotification('Algumas mensagens n�o foram deletadas. Tente novamente.', 'warning');
                     }
                 }
                 }
@@ -14343,11 +14006,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Array de mensagens limpo');
                 }
 
-                // Limpar timestamp da última mensagem
+                // Limpar timestamp da �ltima mensagem
                 lastMessageTimestamp = null;
                 lastMessageCount = 0;
 
-                // For�ar recarga das mensagens para garantir que não há mensagens restantes
+                // For�ar recarga das mensagens para garantir que n�o h� mensagens restantes
                 if (window.selectedEmployee && window.selectedEmployee.id) {
                     setTimeout(async () => {
                         console.log('For�ando recarga das mensagens...');
@@ -14391,7 +14054,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Funçãoo para reproduzir �udio
+        // Fun��o para reproduzir �udio
         function playAudio(audioUrl) {
             console.log('Reproduzindo �udio:', audioUrl);
             const audio = new Audio(audioUrl);
@@ -14401,7 +14064,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Funçãoo para formatar tamanho de arquivo
+        // Fun��o para formatar tamanho de arquivo
         function formatFileSize(bytes) {
             if (!bytes) return '0 B';
             const k = 1024;
@@ -14410,7 +14073,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
-        // Carregar mensagens do chat com funcionário espec�fico
+        // Carregar mensagens do chat com funcion�rio espec�fico
         // Cache para mensagens do chat
         let chatMessagesCache = new Map();
         let lastMessageTimestamp = null;
@@ -14434,7 +14097,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (!userData) return;
 
-                // Verificar cache apenas para polling (evitar recarregamento desnecessário)
+                // Verificar cache apenas para polling (evitar recarregamento desnecess�rio)
                 if (isPolling) {
                     const cacheKey = `lagoa-do-mato_${user.id}_${employeeId}`;
                     const cachedData = chatMessagesCache.get(cacheKey);
@@ -14445,7 +14108,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                // Usar o servi�o de sincronizaçãoo para buscar mensagens
+                // Usar o servi�o de sincroniza��o para buscar mensagens
                 console.log('?? Buscando mensagens para:', { userId: user.id, employeeId, isPolling });
                 const messages = await getChatMessages( user.id, employeeId);
                 console.log('?? Mensagens encontradas:', messages?.length || 0);
@@ -14479,7 +14142,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Funçãoo para gerar cor baseada no nome do usuário
+        // Fun��o para gerar cor baseada no nome do usu�rio
         function generateUserColor(name) {
             if (!name) return 'from-gray-500 to-gray-600';
             
@@ -14511,7 +14174,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let isUserAtBottom = true;
         let newMessageIndicator = null;
 
-        // Funçãoo para verificar se usuário está no final do chat
+        // Fun��o para verificar se usu�rio est� no final do chat
         function checkIfUserAtBottom() {
             const chatContainer = document.getElementById('chatMessages');
             if (!chatContainer) return true;
@@ -14522,11 +14185,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return isAtBottom;
         }
 
-        // Funçãoo para scroll suave para o final
+        // Fun��o para scroll suave para o final
         function scrollToBottom(smooth = true) {
             const chatContainer = document.getElementById('chatMessages');
             if (!chatContainer) {
-                console.log('? Container de chat não encontrado para scroll');
+                console.log('? Container de chat n�o encontrado para scroll');
                 return;
             }
             
@@ -14549,14 +14212,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 50);
             }
             
-            // Atualizar status de posiçãoo
+            // Atualizar status de posi��o
             setTimeout(() => {
                 isUserAtBottom = true;
                 hideNewMessageIndicator();
             }, 100);
         }
 
-        // Funçãoo para mostrar indicador de nova mensagem
+        // Fun��o para mostrar indicador de nova mensagem
         function showNewMessageIndicator() {
             if (newMessageIndicator) return; // J� existe
             
@@ -14579,13 +14242,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.body.appendChild(newMessageIndicator);
             
-            // Auto-hide após 5 segundos
+            // Auto-hide ap�s 5 segundos
             setTimeout(() => {
                 hideNewMessageIndicator();
             }, 5000);
         }
 
-        // Funçãoo para esconder indicador de nova mensagem
+        // Fun��o para esconder indicador de nova mensagem
         function hideNewMessageIndicator() {
             if (newMessageIndicator) {
                 newMessageIndicator.remove();
@@ -14593,7 +14256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Funçãoo para mostrar indicador de digitando
+        // Fun��o para mostrar indicador de digitando
         function showTypingIndicator(senderName) {
             const chatContainer = document.getElementById('chatMessages');
             if (!chatContainer) return;
@@ -14635,7 +14298,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
         }
 
-        // Funçãoo para esconder indicador de digitando
+        // Fun��o para esconder indicador de digitando
         function hideTypingIndicator() {
             const typingIndicator = document.getElementById('typingIndicator');
             if (typingIndicator) {
@@ -14646,7 +14309,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Cache para status de leitura das mensagens
         let messageReadStatus = new Map();
 
-        // Funçãoo para determinar status de leitura da mensagem
+        // Fun��o para determinar status de leitura da mensagem
         function getReadStatus(message) {
             const messageId = message.id || `${message.created_at}_${message.sender_id}`;
             
@@ -14655,10 +14318,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return messageReadStatus.get(messageId);
             }
             
-            // Verificar se o destinatário está online
+            // Verificar se o destinat�rio est� online
             const isRecipientOnline = window.selectedEmployee && isEmployeeOnline(window.selectedEmployee);
             
-            // Simular status baseado no tempo da mensagem e se destinatário está online
+            // Simular status baseado no tempo da mensagem e se destinat�rio est� online
             const messageTime = new Date(message.created_at);
             const now = new Date();
             const timeDiff = (now - messageTime) / 1000; // diferen�a em segundos
@@ -14669,7 +14332,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Mensagem muito recente - apenas enviada (um verificado cinza)
                 statusHtml = '<svg class="w-4 h-3 text-gray-400" fill="currentColor" viewBox="0 0 16 12"><path d="M6.5 9.5L3 6l1.4-1.4L6.5 6.7l5.1-5.1L13 2.8l-6.5 6.7z"></path></svg>';
             } else if (isRecipientOnline && timeDiff > 2) {
-                // Destinatário online e tempo suficiente - mensagem lida (dois verificados azuis)
+                // Destinat�rio online e tempo suficiente - mensagem lida (dois verificados azuis)
                 statusHtml = `
                     <div class="relative w-5 h-3">
                         <svg class="absolute w-4 h-3 text-blue-500" fill="currentColor" viewBox="0 0 16 12">
@@ -14681,7 +14344,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             } else if (isRecipientOnline) {
-                // Destinatário online - mensagem entregue (dois verificados cinza)
+                // Destinat�rio online - mensagem entregue (dois verificados cinza)
                 statusHtml = `
                     <div class="relative w-5 h-3">
                         <svg class="absolute w-4 h-3 text-gray-400" fill="currentColor" viewBox="0 0 16 12">
@@ -14693,7 +14356,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             } else {
-                // Destinatário offline - apenas enviada (um verificado cinza)
+                // Destinat�rio offline - apenas enviada (um verificado cinza)
                 statusHtml = '<svg class="w-4 h-3 text-gray-400" fill="currentColor" viewBox="0 0 16 12"><path d="M6.5 9.5L3 6l1.4-1.4L6.5 6.7l5.1-5.1L13 2.8l-6.5 6.7z"></path></svg>';
             }
             
@@ -14716,7 +14379,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return statusHtml;
         }
 
-        // Funçãoo para atualizar status de leitura de uma mensagem espec�fica
+        // Fun��o para atualizar status de leitura de uma mensagem espec�fica
         function updateMessageReadStatus(messageId, status) {
             let statusHtml;
             
@@ -14753,7 +14416,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Funçãoo para atualizar status de leitura visualmente no chat
+        // Fun��o para atualizar status de leitura visualmente no chat
         function updateReadStatusInChat(messageId, statusHtml) {
             const chatContainer = document.getElementById('chatMessages');
             if (!chatContainer) return;
@@ -14775,21 +14438,21 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('?? Exibindo mensagens no gerente:', messages?.length || 0);
             const chatContainer = document.getElementById('chatMessages');
             if (!chatContainer) {
-                console.error('? Container de mensagens não encontrado no gerente');
+                console.error('? Container de mensagens n�o encontrado no gerente');
                 return;
             }
 
             // Esconder indicador de digitando quando exibir mensagens
             hideTypingIndicator();
 
-            // Verificar se usuário está no final antes de atualizar
+            // Verificar se usu�rio est� no final antes de atualizar
             const wasAtBottom = checkIfUserAtBottom();
             const hadMessages = lastMessageCount > 0;
             const hasNewMessages = messages.length > lastMessageCount;
 
-            // Verificar se precisa atualizar (evitar recarregamento desnecessário)
+            // Verificar se precisa atualizar (evitar recarregamento desnecess�rio)
             if (messages.length === lastMessageCount && messages.length > 0 && !hasNewMessages) {
-                console.log('?? Mesmo número de mensagens, evitando recarregamento');
+                console.log('?? Mesmo n�mero de mensagens, evitando recarregamento');
                 return;
             }
 
@@ -14840,10 +14503,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`;
                 
-                // Usar sender_name se disponível, sen�o usar 'Usuário'
-                const senderName = message.sender_name || 'Usuário';
+                // Usar sender_name se dispon�vel, sen�o usar 'Usu�rio'
+                const senderName = message.sender_name || 'Usu�rio';
                 
-                // Usar sender_name se disponível, sen�o usar '?'
+                // Usar sender_name se dispon�vel, sen�o usar '?'
                 const senderInitial = senderName.charAt(0).toUpperCase();
                 const messageTime = new Date(message.created_at).toLocaleTimeString('pt-BR', { 
                     hour: '2-digit', 
@@ -14875,7 +14538,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
                 
-                // Gerar ícones de verificaçãoo para mensagens do usuário atual
+                // Gerar �cones de verifica��o para mensagens do usu�rio atual
                 let readReceiptHtml = '';
                 if (isCurrentUser) {
                     const readStatus = getReadStatus(message);
@@ -14935,11 +14598,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (wasAtBottom || !hadMessages || hasNewMessages) {
-                    // Usuário estava no final, � primeira carga, ou h� mensagens novas - scroll autom�tico
+                    // Usu�rio estava no final, � primeira carga, ou h� mensagens novas - scroll autom�tico
                     console.log('?? Fazendo scroll autom�tico');
                     scrollToBottom(true);
                 } else if (hasNewMessages && !wasAtBottom) {
-                    // H� mensagens novas e usuário não está no final - mostrar indicador
+                    // H� mensagens novas e usu�rio n�o est� no final - mostrar indicador
                     console.log('?? Mostrando indicador de nova mensagem');
                     showNewMessageIndicator();
                 }
@@ -14971,7 +14634,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (!userData) return;
 
-                // Usar o servi�o de sincronizaçãoo para enviar mensagem
+                // Usar o servi�o de sincroniza��o para enviar mensagem
                 await sendChatMessage({
                     farm_id: 1, // Lagoa Do Mato
                     sender_id: user.id,
@@ -14979,13 +14642,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     message: message
                 });
 
-                // Limpar input IMEDIATAMENTE após enviar
+                // Limpar input IMEDIATAMENTE ap�s enviar
                 messageInput.value = '';
                 
-                // As mensagens serão atualizadas automaticamente via real-time
-                console.log('? Mensagem enviada, aguardando atualização via real-time...');
+                // As mensagens ser�o atualizadas automaticamente via real-time
+                console.log('? Mensagem enviada, aguardando atualiza��o via real-time...');
                 
-                // Fazer scroll para o final após enviar mensagem
+                // Fazer scroll para o final ap�s enviar mensagem
                 setTimeout(() => {
                     scrollToBottom(true);
                 }, 100);
@@ -15008,7 +14671,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // ==================== FUNçãoES DE EMOJI E CLIPES ====================
+        // ==================== FUN��ES DE EMOJI E CLIPES ====================
         
         // Toggle do picker de emojis
         function toggleEmojiPicker() {
@@ -15027,7 +14690,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const newValue = currentValue.slice(0, cursorPos) + emoji + currentValue.slice(cursorPos);
                 messageInput.value = newValue;
                 
-                // Reposicionar cursor após o emoji
+                // Reposicionar cursor ap�s o emoji
                 messageInput.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
                 messageInput.focus();
                 
@@ -15044,12 +14707,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Lidar com seleçãoo de arquivo
+        // Lidar com sele��o de arquivo
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Verificar tamanho do arquivo (máximo 10MB)
+            // Verificar tamanho do arquivo (m�ximo 10MB)
             const maxSize = 10 * 1024 * 1024; // 10MB
             if (file.size > maxSize) {
                 showNotification('Arquivo muito grande. M�ximo permitido: 10MB', 'error');
@@ -15068,7 +14731,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ];
 
             if (!allowedTypes.includes(file.type)) {
-                showNotification('Tipo de arquivo não suportado', 'error');
+                showNotification('Tipo de arquivo n�o suportado', 'error');
                 return;
             }
 
@@ -15079,7 +14742,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Enviar mensagem com arquivo
         async function sendFileMessage(file) {
             if (!window.selectedEmployee) {
-                showNotification('Selecione um funcionário primeiro', 'error');
+                showNotification('Selecione um funcion�rio primeiro', 'error');
                 return;
             }
 
@@ -15172,7 +14835,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // ==================== FUNçãoES DE CATEGORIAS DE EMOJIS ====================
+        // ==================== FUN��ES DE CATEGORIAS DE EMOJIS ====================
         
         // Mostrar categoria de emojis
         function showEmojiCategory(category) {
@@ -15185,7 +14848,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (selectedCategory) {
                 selectedCategory.classList.remove('hidden');
                 
-                // Carregar emojis se ainda não foram carregados
+                // Carregar emojis se ainda n�o foram carregados
                 if (selectedCategory.children.length === 0) {
                     loadEmojiCategory(category);
                 }
@@ -15225,13 +14888,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // ==================== FUNçãoES DE GRAVAçãoO DE �UDIO ====================
+        // ==================== FUN��ES DE GRAVA��O DE �UDIO ====================
         
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
 
-        // Toggle gravaçãoo de �udio
+        // Toggle grava��o de �udio
         async function toggleAudioRecording() {
             if (!isRecording) {
                 await startAudioRecording();
@@ -15240,7 +14903,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Iniciar gravaçãoo de �udio
+        // Iniciar grava��o de �udio
         async function startAudioRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -15269,7 +14932,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <path d="M12 2C13.1 2 14 2.9 14 4V12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12V4C10 2.9 10.9 2 12 2M19 10V12C19 15.9 15.9 19 12 19S5 15.9 5 12V10H7V12C7 14.8 9.2 17 12 17S17 14.8 17 12V10H19Z"/>
                     </svg>
                 `;
-                btn.title = 'Parar gravaçãoo';
+                btn.title = 'Parar grava��o';
                 
                 showNotification('?? Gravando �udio...', 'info');
 
@@ -15279,7 +14942,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Parar gravaçãoo de �udio
+        // Parar grava��o de �udio
         function stopAudioRecording() {
             if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
@@ -15303,7 +14966,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Enviar mensagem de �udio
         async function sendAudioMessage(audioBlob) {
             if (!window.selectedEmployee) {
-                showNotification('Selecione um funcionário primeiro', 'error');
+                showNotification('Selecione um funcion�rio primeiro', 'error');
                 return;
             }
 
@@ -15368,7 +15031,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-        // ==================== FUNçãoES DOS CONTATOS ====================
+        // ==================== FUN��ES DOS CONTATOS ====================
         
         // Abrir modal de contatos
         async function openContactsModal() {
@@ -15400,14 +15063,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Aprovar solicitaçãoo de senha
+        // Aprovar solicita��o de senha
         async function approvePasswordRequest(requestId) {
             if (!requestId) {
                 requestId = window.currentPasswordRequestId;
             }
             
             if (!requestId) {
-                showNotification('ID da solicitaçãoo não encontrado', 'error');
+                showNotification('ID da solicita��o n�o encontrado', 'error');
                 return;
             }
             
@@ -15432,23 +15095,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     .single();
                 
                 if (!fetchError && request) {
-                    // Enviar notificaçãoo para o usuário (implementar conforme necessário)
-                    showNotification('Solicitaçãoo aprovada com sucesso!', 'success');
+                    // Enviar notifica��o para o usu�rio (implementar conforme necess�rio)
+                    showNotification('Solicita��o aprovada com sucesso!', 'success');
                 }
                 
                 // Fechar modal de detalhes se estiver aberto
                 closePasswordRequestDetailsModal();
                 
-                // Recarregar lista de solicitações
+                // Recarregar lista de solicita��es
                 loadPasswordRequests();
                 
             } catch (error) {
-                console.error('Erro ao aprovar solicitaçãoo:', error);
-                showNotification('Erro ao aprovar solicitaçãoo', 'error');
+                console.error('Erro ao aprovar solicita��o:', error);
+                showNotification('Erro ao aprovar solicita��o', 'error');
             }
         }
         
-        // Rejeitar solicitaçãoo de senha
+        // Rejeitar solicita��o de senha
         async function rejectPasswordRequest(requestId) {
             if (!requestId) {
                 requestId = window.currentPasswordRequestId;
@@ -15459,14 +15122,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (!requestId) {
-                showNotification('ID da solicitaçãoo não encontrado', 'error');
+                showNotification('ID da solicita��o n�o encontrado', 'error');
                 return;
             }
             
             try {
                 // Usando MySQL direto atrav�s do objeto 'db'
                 
-                // Atualizar status da solicitaçãoo
+                // Atualizar status da solicita��o
                 const { error: updateError } = await db
                     .from('password_requests')
                     .update({ 
@@ -15478,7 +15141,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (updateError) throw updateError;
                 
-                // Buscar dados da solicitaçãoo para notificar o usuário
+                // Buscar dados da solicita��o para notificar o usu�rio
                 const { data: request, error: fetchError } = await db
                     .from('password_requests')
                     .select(`
@@ -15489,34 +15152,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     .single();
                 
                 if (!fetchError && request) {
-                    // Enviar notificaçãoo para o usuário (implementar conforme necessário)
-                    showNotification(`Solicitaçãoo de ${request.users.name} rejeitada.`, 'warning');
+                    // Enviar notifica��o para o usu�rio (implementar conforme necess�rio)
+                    showNotification(`Solicita��o de ${request.users.name} rejeitada.`, 'warning');
                 }
                 
                 // Fechar modal de detalhes se estiver aberto
                 closePasswordRequestDetailsModal();
                 
-                // Recarregar lista de solicitações
+                // Recarregar lista de solicita��es
                 loadPasswordRequests();
                 
             } catch (error) {
-                console.error('Erro ao rejeitar solicitaçãoo:', error);
-                showNotification('Erro ao rejeitar solicitaçãoo', 'error');
+                console.error('Erro ao rejeitar solicita��o:', error);
+                showNotification('Erro ao rejeitar solicita��o', 'error');
             }
         }
         
-        // Atualizar lista de solicitações
+        // Atualizar lista de solicita��es
         function refreshPasswordRequests() {
             loadPasswordRequests();
         }
         
-        // Aplicar filtro de solicitações
+        // Aplicar filtro de solicita��es
         document.addEventListener('DOMContentLoaded', function() {
             const filterSelect = document.getElementById('passwordRequestFilter');
             if (filterSelect) {
                 filterSelect.addEventListener('change', function() {
                     const filterValue = this.value;
-                    // Implementar filtro conforme necessário
+                    // Implementar filtro conforme necess�rio
                     loadPasswordRequests();
                 });
             }
@@ -15556,9 +15219,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-        // ==================== FUNçãoES DE SOLICITAçãoES DE SENHA (ESCOPO GLOBAL) ====================
+        // ==================== FUN��ES DE SOLICITA��ES DE SENHA (ESCOPO GLOBAL) ====================
         
-        // Abrir modal de solicitações de senha
+        // Abrir modal de solicita��es de senha
         function openPasswordRequests() {
             closeMoreModal();
             const modal = document.getElementById('passwordRequestsModal');
@@ -15570,13 +15233,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.style.pointerEvents = 'auto';
                 modal.style.zIndex = '99999';
                 
-                // Carregar solicitações com refresh for�ado
-                console.log('?? Abrindo modal e carregando solicitações...');
+                // Carregar solicita��es com refresh for�ado
+                console.log('?? Abrindo modal e carregando solicita��es...');
                 loadPasswordRequestsWithCache(true);
             }
         }
         
-        // Fechar modal de solicitações de senha
+        // Fechar modal de solicita��es de senha
         function closePasswordRequestsModal() {
             const modal = document.getElementById('passwordRequestsModal');
             if (modal) {
@@ -15589,7 +15252,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Fechar modal de detalhes da solicitaçãoo
+        // Fechar modal de detalhes da solicita��o
         function closePasswordRequestDetailsModal() {
             const modal = document.getElementById('passwordRequestDetailsModal');
             if (modal) {
@@ -15602,14 +15265,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Carregar solicitações de senha
+        // Carregar solicita��es de senha
         async function loadPasswordRequests() {
             try {
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
@@ -15625,28 +15288,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Buscar solicitações de senha da fazenda (abordagem corrigida)
-                // Primeiro, buscar usuários da fazenda
+                // Buscar solicita��es de senha da fazenda (abordagem corrigida)
+                // Primeiro, buscar usu�rios da fazenda
                 const { data: farmUsers, error: usersError } = await db
                     .from('users')
                     .select('id, name, email, role, profile_photo_url')
                     .eq('farm_id', 1);
                 
                 if (usersError) {
-                    console.error('? Erro ao buscar usuários da fazenda:', usersError);
-                    showNotification('Erro ao buscar usuários da fazenda', 'error');
+                    console.error('? Erro ao buscar usu�rios da fazenda:', usersError);
+                    showNotification('Erro ao buscar usu�rios da fazenda', 'error');
                     return;
                 }
                 
                 if (!farmUsers || farmUsers.length === 0) {
-                    console.log('?? Nenhum usuário encontrado na fazenda');
+                    console.log('?? Nenhum usu�rio encontrado na fazenda');
                     displayPasswordRequests([]);
                     return;
                 }
                 
                 const userIds = farmUsers.map(user => user.id);
                 
-                // Depois, buscar solicitações desses usuários
+                // Depois, buscar solicita��es desses usu�rios
                 const { data: requests, error } = await db
                     .from('password_requests')
                     .select('*')
@@ -15654,20 +15317,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     .order('created_at', { ascending: false });
                 
                 if (error) {
-                    console.error('Erro ao buscar solicitações:', error);
-                    showNotification('Erro ao carregar solicitações', 'error');
+                    console.error('Erro ao buscar solicita��es:', error);
+                    showNotification('Erro ao carregar solicita��es', 'error');
                     return;
                 }
                 
                 displayPasswordRequests(requests || []);
                 
             } catch (error) {
-                console.error('Erro ao carregar solicitações:', error);
-                showNotification('Erro ao carregar solicitações', 'error');
+                console.error('Erro ao carregar solicita��es:', error);
+                showNotification('Erro ao carregar solicita��es', 'error');
             }
         }
         
-        // Exibir solicitações de senha
+        // Exibir solicita��es de senha
         function displayPasswordRequests(requests) {
             const container = document.getElementById('passwordRequestsList');
             const emptyState = document.getElementById('emptyPasswordRequests');
@@ -15692,7 +15355,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Atualizar contadores de solicitações
+        // Atualizar contadores de solicita��es
         function updateRequestCounters(requests) {
             const pendingCount = requests.filter(r => r.status === 'pending').length;
             const approvedCount = requests.filter(r => r.status === 'approved').length;
@@ -15707,7 +15370,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (rejectedElement) rejectedElement.textContent = rejectedCount;
         }
         
-        // Criar card de solicitaçãoo de senha
+        // Criar card de solicita��o de senha
         function createPasswordRequestCard(request) {
             const card = document.createElement('div');
             card.className = 'bg-white bg-white rounded-xl border border-gray-200 border-gray-200 p-4 hover:shadow-md transition-all duration-200';
@@ -15725,14 +15388,14 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             const typeTexts = {
-                'change': 'Alteraçãoo de Senha',
-                'reset': 'Redefiniçãoo de Senha'
+                'change': 'Altera��o de Senha',
+                'reset': 'Redefini��o de Senha'
             };
             
             const reasonTexts = {
                 'forgot': 'Esqueci a senha',
                 'security': 'Quest�es de seguran�a',
-                'update': 'Atualizaçãoo regular',
+                'update': 'Atualiza��o regular',
                 'other': 'Outro motivo'
             };
             
@@ -15754,8 +15417,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             </svg>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900 ">${request.users?.name || 'Usuário'}</h4>
-                            <p class="text-sm text-gray-600 ">${request.users?.email || 'Email não informado'}</p>
+                            <h4 class="font-bold text-gray-900 ">${request.users?.name || 'Usu�rio'}</h4>
+                            <p class="text-sm text-gray-600 ">${request.users?.email || 'Email n�o informado'}</p>
                         </div>
                     </div>
                 </div>
@@ -15806,7 +15469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </button>
                         ` : ''}
                         
-                        <button onclick="deletePasswordRequest('${request.id}')" class="p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded transition-colors duration-200" title="Excluir solicitaçãoo">
+                        <button onclick="deletePasswordRequest('${request.id}')" class="p-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded transition-colors duration-200" title="Excluir solicita��o">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
@@ -15818,12 +15481,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return card;
         }
         
-        // Visualizar detalhes da solicitaçãoo (versão corrigida)
+        // Visualizar detalhes da solicita��o (vers�o corrigida)
         async function viewPasswordRequestDetailsFixed(requestId) {
             try {
                 // Usando MySQL direto atrav�s do objeto 'db'
                 
-                // Buscar solicitaçãoo sem JOIN
+                // Buscar solicita��o sem JOIN
                 const { data: request, error } = await db
                     .from('password_requests')
                     .select('*')
@@ -15831,12 +15494,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     .single();
                 
                 if (error || !request) {
-                    showNotification('Erro ao carregar detalhes da solicitaçãoo', 'error');
+                    showNotification('Erro ao carregar detalhes da solicita��o', 'error');
                     return;
                 }
                 
-                // Buscar dados do usuário separadamente
-                let userData = { name: 'Usuário não encontrado', email: 'Email não encontrado', role: 'N/A' };
+                // Buscar dados do usu�rio separadamente
+                let userData = { name: 'Usu�rio n�o encontrado', email: 'Email n�o encontrado', role: 'N/A' };
                 try {
                     const { data: user } = await db
                         .from('users')
@@ -15850,7 +15513,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } catch (userError) {
                 }
                 
-                // Funçãoo para truncar texto
+                // Fun��o para truncar texto
                 function truncateText(text, maxLength = 30) {
                     if (!text) return 'N�o informado';
                     if (text.length <= maxLength) return text;
@@ -15863,9 +15526,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         'forgot_password': 'Esqueci minha senha',
                         'change_password': 'Alterar senha',
                         'reset_password': 'Redefinir senha',
-                        'security_concern': 'Preocupaçãoo de seguran�a',
+                        'security_concern': 'Preocupa��o de seguran�a',
                         'account_compromised': 'Conta comprometida',
-                        'regular_update': 'Atualizaçãoo regular'
+                        'regular_update': 'Atualiza��o regular'
                     };
                     return translations[reason] || reason;
                 }
@@ -15875,11 +15538,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('requestUserEmail').textContent = truncateText(userData.email, 40);
                 document.getElementById('requestUserRole').textContent = userData.role || 'N/A';
                 document.getElementById('requestDate').textContent = new Date(request.created_at).toLocaleDateString('pt-BR');
-                document.getElementById('requestType').textContent = request.type === 'change' ? 'Alteraçãoo de Senha' : 'Redefiniçãoo de Senha';
+                document.getElementById('requestType').textContent = request.type === 'change' ? 'Altera��o de Senha' : 'Redefini��o de Senha';
                 document.getElementById('requestReason').textContent = translateReason(request.reason) || 'N/A';
                 document.getElementById('requestNotes').textContent = request.notes || 'N/A';
                 
-                // Armazenar ID da solicitaçãoo atual
+                // Armazenar ID da solicita��o atual
                 window.currentPasswordRequestId = requestId;
                 
                 // Abrir modal de detalhes
@@ -15899,11 +15562,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Aprovar solicitaçãoo de senha
+        // Aprovar solicita��o de senha
         async function approvePasswordRequest() {
             try {
                 if (!window.currentPasswordRequestId) {
-                    showNotification('ID da solicitaçãoo não encontrado', 'error');
+                    showNotification('ID da solicita��o n�o encontrado', 'error');
                     return;
                 }
                 
@@ -15911,11 +15574,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
-                // Atualizar status da solicitaçãoo
+                // Atualizar status da solicita��o
                 const { error } = await db
                     .from('password_requests')
                     .update({
@@ -15927,23 +15590,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (error) throw error;
                 
-                showNotification('Solicitaçãoo aprovada com sucesso!', 'success');
+                showNotification('Solicita��o aprovada com sucesso!', 'success');
                 
                 // Fechar modal e recarregar lista
                 closePasswordRequestDetailsModal();
                 loadPasswordRequests();
                 
             } catch (error) {
-                console.error('Erro ao aprovar solicitaçãoo:', error);
-                showNotification('Erro ao aprovar solicitaçãoo: ' + error.message, 'error');
+                console.error('Erro ao aprovar solicita��o:', error);
+                showNotification('Erro ao aprovar solicita��o: ' + error.message, 'error');
             }
         }
         
-        // Rejeitar solicitaçãoo de senha
+        // Rejeitar solicita��o de senha
         async function rejectPasswordRequest() {
             try {
                 if (!window.currentPasswordRequestId) {
-                    showNotification('ID da solicitaçãoo não encontrado', 'error');
+                    showNotification('ID da solicita��o n�o encontrado', 'error');
                     return;
                 }
                 
@@ -15951,11 +15614,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
-                // Atualizar status da solicitaçãoo
+                // Atualizar status da solicita��o
                 const { error } = await db
                     .from('password_requests')
                     .update({
@@ -15973,26 +15636,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     reason: 'manager_rejection'
                 });
                 
-                // Limpar cache para for�ar atualização
+                // Limpar cache para for�ar atualiza��o
                 clearCache();
                 
-                showNotification('Solicitaçãoo rejeitada com sucesso!', 'success');
+                showNotification('Solicita��o rejeitada com sucesso!', 'success');
                 
                 // Fechar modal e recarregar lista
                 closePasswordRequestDetailsModal();
                 loadPasswordRequests();
                 
             } catch (error) {
-                console.error('Erro ao rejeitar solicitaçãoo:', error);
-                showNotification('Erro ao rejeitar solicitaçãoo: ' + error.message, 'error');
+                console.error('Erro ao rejeitar solicita��o:', error);
+                showNotification('Erro ao rejeitar solicita��o: ' + error.message, 'error');
             }
         }
         
-        // Atualizar solicitações de senha
+        // Atualizar solicita��es de senha
         async function refreshPasswordRequests() {
             const btn = document.getElementById('refreshPasswordRequestsBtn');
             if (btn) {
-                // Adicionar animaçãoo de loading
+                // Adicionar anima��o de loading
                 btn.disabled = true;
                 btn.innerHTML = `
                     <svg class="w-4 h-4 inline mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -16018,13 +15681,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Event listener para filtro de solicitações
+        // Event listener para filtro de solicita��es
         document.addEventListener('DOMContentLoaded', function() {
             const filterSelect = document.getElementById('passwordRequestFilter');
             if (filterSelect) {
                 filterSelect.addEventListener('change', function() {
                     const filterValue = this.value;
-                    // Implementar filtro conforme necessário
+                    // Implementar filtro conforme necess�rio
                     loadPasswordRequests();
                 });
             }
@@ -16052,9 +15715,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     
-        // ==================== CONTINUAçãoO DO JAVASCRIPT - FUNçãoES DE NOTIFICAçãoES ====================
+        // ==================== CONTINUA��O DO JAVASCRIPT - FUN��ES DE NOTIFICA��ES ====================
         
-        // Abrir sidebar de notificações
+        // Abrir sidebar de notifica��es
         function openNotificationsModal() {
             const modal = document.getElementById('notificationsModal');
             const content = document.getElementById('notificationsModalContent');
@@ -16062,7 +15725,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (modal && content) {
                 modal.classList.remove('hidden');
                 
-                // Pequeno delay para garantir que o modal está visível antes da animaçãoo
+                // Pequeno delay para garantir que o modal est� vis�vel antes da anima��o
                 setTimeout(() => {
                     content.classList.remove('translate-x-full');
                     content.classList.add('translate-x-0');
@@ -16072,7 +15735,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Fechar sidebar de notificações
+        // Fechar sidebar de notifica��es
         function closeNotificationsModal() {
             const modal = document.getElementById('notificationsModal');
             const content = document.getElementById('notificationsModalContent');
@@ -16087,12 +15750,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Carregar notificações
+        // Carregar notifica��es
         async function loadNotifications() {
             try {
                 const notificationsList = document.getElementById('notificationsList');
                 if (notificationsList) {
-                    notificationsList.innerHTML = '<p class="text-center text-gray-500 py-4">Nenhuma notificaçãoo</p>';
+                    notificationsList.innerHTML = '<p class="text-center text-gray-500 py-4">Nenhuma notifica��o</p>';
                 }
                 updateNotificationCounter(0);
             } catch (error) {
@@ -16100,7 +15763,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Atualizar contador de notificações
+        // Atualizar contador de notifica��es
         function updateNotificationCounter(count) {
             const counter = document.getElementById('notificationCounter');
             if (counter) {
@@ -16113,30 +15776,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // ==================== FUNçãoES CORRIGIDAS DE SOLICITAçãoES DE SENHA ====================
+        // ==================== FUN��ES CORRIGIDAS DE SOLICITA��ES DE SENHA ====================
         
-        // Funçãoo corrigida para carregar solicitações de senha
+        // Fun��o corrigida para carregar solicita��es de senha
         async function loadPasswordRequestsFixed() {
             try {
                 // Usando MySQL direto atrav�s do objeto 'db'
                 
-                console.log('?? Carregando solicitações de senha...');
+                console.log('?? Carregando solicita��es de senha...');
                 
-                // Buscar todas as solicitações de senha (SEM join com users para evitar problemas de RLS)
+                // Buscar todas as solicita��es de senha (SEM join com users para evitar problemas de RLS)
                 const { data: requests, error } = await db
                     .from('password_requests')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
                 if (error) {
-                    console.error('? Erro ao carregar solicitações:', error);
-                    showNotification('Erro ao carregar solicitações de senha: ' + error.message, 'error');
+                    console.error('? Erro ao carregar solicita��es:', error);
+                    showNotification('Erro ao carregar solicita��es de senha: ' + error.message, 'error');
                     return;
                 }
                 
-                console.log('? Solicitações carregadas:', requests);
+                console.log('? Solicita��es carregadas:', requests);
                 
-                // Para cada solicitaçãoo, buscar os dados do usuário separadamente (com tratamento de erro melhorado)
+                // Para cada solicita��o, buscar os dados do usu�rio separadamente (com tratamento de erro melhorado)
                 if (requests && requests.length > 0) {
                     for (let request of requests) {
                         try {
@@ -16144,17 +15807,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 .from('users')
                                 .select('email, name')
                                 .eq('id', request.user_id)
-                                .maybeSingle(); // Usar maybeSingle para evitar erro se não encontrar
+                                .maybeSingle(); // Usar maybeSingle para evitar erro se n�o encontrar
                             
                             if (userError) {
-                                request.users = { email: 'Email indisponível', name: 'Usuário indisponível' };
+                                request.users = { email: 'Email indispon�vel', name: 'Usu�rio indispon�vel' };
                             } else if (userData) {
                                 request.users = userData;
                             } else {
-                                request.users = { email: 'Email não encontrado', name: 'Usuário não encontrado' };
+                                request.users = { email: 'Email n�o encontrado', name: 'Usu�rio n�o encontrado' };
                             }
                         } catch (userError) {
-                            request.users = { email: 'Email indisponível', name: 'Usuário indisponível' };
+                            request.users = { email: 'Email indispon�vel', name: 'Usu�rio indispon�vel' };
                         }
                     }
                 }
@@ -16163,15 +15826,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateRequestCounters(requests || []);
                 
             } catch (error) {
-                console.error('? Erro geral ao carregar solicitações:', error);
-                showNotification('Erro ao carregar solicitações de senha: ' + error.message, 'error');
+                console.error('? Erro geral ao carregar solicita��es:', error);
+                showNotification('Erro ao carregar solicita��es de senha: ' + error.message, 'error');
             }
         }
         
-        // Funçãoo corrigida mantida para referência
-        // window.loadPasswordRequests será substitu�da pela versão otimizada mais abaixo
+        // Fun��o corrigida mantida para refer�ncia
+        // window.loadPasswordRequests ser� substitu�da pela vers�o otimizada mais abaixo
         
-        // ==================== SISTEMA DE ATUALIZAçãoO EM TEMPO REAL ====================
+        // ==================== SISTEMA DE ATUALIZA��O EM TEMPO REAL ====================
         
         // Vari�veis para controle de WebSocket
         let realTimeInterval = null;
@@ -16179,12 +15842,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let updateCount = 0;
         let lastUpdateTime = null;
         
-        // Funçãoo para iniciar atualização em tempo real
+        // Fun��o para iniciar atualiza��o em tempo real
         function startRealTimeUpdates() {
             if (isRealTimeActive) return;
             
             isRealTimeActive = true;
-            console.log('?? Iniciando atualizações em tempo real...');
+            console.log('?? Iniciando atualiza��es em tempo real...');
             
             // Mostrar indicador de tempo real
             const indicator = document.getElementById('realTimeIndicator');
@@ -16201,14 +15864,14 @@ document.addEventListener('DOMContentLoaded', function() {
             updateRealTimeData();
         }
         
-        // Funçãoo para parar atualização em tempo real
+        // Fun��o para parar atualiza��o em tempo real
         function stopRealTimeUpdates() {
             if (realTimeInterval) {
                 clearInterval(realTimeInterval);
                 realTimeInterval = null;
             }
             isRealTimeActive = false;
-            console.log('?? Parando atualizações em tempo real...');
+            console.log('?? Parando atualiza��es em tempo real...');
             
             // Ocultar indicador de tempo real
             const indicator = document.getElementById('realTimeIndicator');
@@ -16217,25 +15880,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Funçãoo principal de atualização em tempo real
+        // Fun��o principal de atualiza��o em tempo real
         async function updateRealTimeData() {
             try {
-                // Atualizar notificações
+                // Atualizar notifica��es
                 await loadNotifications();
                 
-                // Atualizar solicitações de senha se o modal estiver aberto
+                // Atualizar solicita��es de senha se o modal estiver aberto
                 const passwordModal = document.getElementById('passwordRequestsModal');
                 if (passwordModal && !passwordModal.classList.contains('hidden')) {
                     await loadPasswordRequests();
                 }
                 
-                // Atualizar histórico se o modal estiver aberto
+                // Atualizar hist�rico se o modal estiver aberto
                 const historyModal = document.getElementById('passwordHistoryModal');
                 if (historyModal && !historyModal.classList.contains('hidden')) {
                     await loadPasswordHistory();
                 }
                 
-                // Atualizar gr�ficos se necessário
+                // Atualizar gr�ficos se necess�rio
                 await updateCharts();
                 
                 // Atualizar indicador de status
@@ -16245,15 +15908,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateCount++;
                 lastUpdateTime = new Date();
                 
-                console.log(`? Dados atualizados em tempo real (${updateCount} atualizações)`);
+                console.log(`? Dados atualizados em tempo real (${updateCount} atualiza��es)`);
                 
             } catch (error) {
-                console.error('? Erro na atualização em tempo real:', error);
+                console.error('? Erro na atualiza��o em tempo real:', error);
                 updateConnectionStatus('error');
             }
         }
         
-        // Funçãoo para atualizar status de conex�o
+        // Fun��o para atualizar status de conex�o
         function updateConnectionStatus(status) {
             const indicator = document.getElementById('realTimeIndicator');
             if (!indicator) return;
@@ -16277,10 +15940,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Funçãoo para atualizar gr�ficos
+        // Fun��o para atualizar gr�ficos
         async function updateCharts() {
             try {
-                // Aqui você pode adicionar l�gica para atualizar gr�ficos espec�ficos
+                // Aqui voc� pode adicionar l�gica para atualizar gr�ficos espec�ficos
                 // Por exemplo, se houver gr�ficos de estat�sticas
                 console.log('?? Atualizando gr�ficos...');
                 
@@ -16292,13 +15955,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Funçãoo para atualizar contadores de estat�sticas
+        // Fun��o para atualizar contadores de estat�sticas
         async function updateStatisticsCounters() {
             try {
                 console.log('?? Atualizando contadores de estat�sticas (MySQL)...');
                 
-                // Por enquanto, não há contadores no MySQL
-                // Definir valores padrão
+                // Por enquanto, n�o h� contadores no MySQL
+                // Definir valores padr�o
                 const pendingCount = 0;
                 const approvedCount = 0;
                 const rejectedCount = 0;
@@ -16315,7 +15978,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Funçãoo para atualizar elemento de contador
+        // Fun��o para atualizar elemento de contador
         function updateCounterElement(elementId, count) {
             const element = document.getElementById(elementId);
             if (element) {
@@ -16323,7 +15986,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (currentCount !== count) {
                     element.textContent = count;
                     
-                    // Adicionar animaçãoo de mudan�a
+                    // Adicionar anima��o de mudan�a
                     element.classList.add('animate-pulse');
                     setTimeout(() => {
                         element.classList.remove('animate-pulse');
@@ -16332,7 +15995,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Funçãoo para atualizar contador de notificações
+        // Fun��o para atualizar contador de notifica��es
         function updateNotificationCounter(count) {
             const countElement = document.getElementById('notificationCounter');
             if (countElement) {
@@ -16340,7 +16003,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 countElement.textContent = count;
                 countElement.style.display = count > 0 ? 'block' : 'none';
                 
-                // Adicionar animaçãoo quando h� mudan�a
+                // Adicionar anima��o quando h� mudan�a
                 if (currentCount !== count && count > 0) {
                     countElement.classList.add('animate-pulse');
                     setTimeout(() => {
@@ -16350,7 +16013,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Iniciar atualizações em tempo real quando a p�gina carrega
+        // Iniciar atualiza��es em tempo real quando a p�gina carrega
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 startRealTimeUpdates();
@@ -16358,12 +16021,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2000);
         });
         
-        // Parar atualizações quando a p�gina for fechada
+        // Parar atualiza��es quando a p�gina for fechada
         window.addEventListener('beforeunload', () => {
             stopRealTimeUpdates();
         });
         
-        // Pausar atualizações quando a aba não estiver ativa
+        // Pausar atualiza��es quando a aba n�o estiver ativa
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stopRealTimeUpdates();
@@ -16373,76 +16036,76 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         
-        // Funçãoo para mostrar informações de debug do sistema de tempo real
+        // Fun��o para mostrar informa��es de debug do sistema de tempo real
         function showRealTimeDebugInfo() {
             const status = isRealTimeActive ? 'Ativo' : 'Inativo';
             const lastUpdate = lastUpdateTime ? lastUpdateTime.toLocaleTimeString('pt-BR') : 'Nunca';
             
             const debugInfo = `
-?? Sistema de Atualizaçãoo em Tempo Real
+?? Sistema de Atualiza��o em Tempo Real
 
 Status: ${status}
-Atualizações realizadas: ${updateCount}
-última atualização: ${lastUpdate}
+Atualiza��es realizadas: ${updateCount}
+�ltima atualiza��o: ${lastUpdate}
 Intervalo: 5 segundos
-Indicador visual: ${document.getElementById('realTimeIndicator')?.classList.contains('hidden') ? 'Oculto' : 'Visível'}
+Indicador visual: ${document.getElementById('realTimeIndicator')?.classList.contains('hidden') ? 'Oculto' : 'Vis�vel'}
 
 Funcionalidades:
-? Contador de notificações
-? Lista de solicitações de senha
+? Contador de notifica��es
+? Lista de solicita��es de senha
 ? Contadores de estat�sticas
 ? Indicador de status de conex�o
-? Pausa automática quando aba inativa
+? Pausa autom�tica quando aba inativa
 ? Sistema totalmente autom�tico
-? Limpeza automática (24h)
-? Modal de histórico
-? Exclus�o individual de solicitações (bot�o lixeira em cada card)
+? Limpeza autom�tica (24h)
+? Modal de hist�rico
+? Exclus�o individual de solicita��es (bot�o lixeira em cada card)
             `;
             
             console.log(debugInfo);
-            showNotification(`Debug: ${status} - ${updateCount} atualizações`, 'info');
+            showNotification(`Debug: ${status} - ${updateCount} atualiza��es`, 'info');
         }
         
-        // Adicionar função global para debug
+        // Adicionar fun��o global para debug
         window.showRealTimeDebugInfo = showRealTimeDebugInfo;
         
         // ==================== SISTEMA DE LIMPEZA AUTOM�TICA E HIST�RICO ====================
         
-        // Funçãoo para limpeza automática de solicitações antigas (24 horas)
+        // Fun��o para limpeza autom�tica de solicita��es antigas (24 horas)
         async function cleanupOldPasswordRequests() {
             try {
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const twentyFourHoursAgo = new Date();
                 twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
                 
-                console.log('?? Iniciando limpeza automática de solicitações antigas...');
+                console.log('?? Iniciando limpeza autom�tica de solicita��es antigas...');
                 
-                // Buscar solicitações antigas
+                // Buscar solicita��es antigas
                 const { data: oldRequests, error: fetchError } = await db
                     .from('password_requests')
                     .select('id, status, created_at')
                     .lt('created_at', twentyFourHoursAgo.toISOString());
                 
                 if (fetchError) {
-                    console.error('? Erro ao buscar solicitações antigas:', fetchError);
+                    console.error('? Erro ao buscar solicita��es antigas:', fetchError);
                     return;
                 }
                 
                 if (oldRequests && oldRequests.length > 0) {
-                    console.log(`??? Encontradas ${oldRequests.length} solicitações antigas para remover`);
+                    console.log(`??? Encontradas ${oldRequests.length} solicita��es antigas para remover`);
                     
-                    // Remover solicitações antigas
+                    // Remover solicita��es antigas
                     const { error: deleteError } = await db
                         .from('password_requests')
                         .delete()
                         .lt('created_at', twentyFourHoursAgo.toISOString());
                     
                     if (deleteError) {
-                        console.error('? Erro ao remover solicitações antigas:', deleteError);
+                        console.error('? Erro ao remover solicita��es antigas:', deleteError);
                     } else {
-                        console.log(`? ${oldRequests.length} solicitações antigas removidas com sucesso`);
+                        console.log(`? ${oldRequests.length} solicita��es antigas removidas com sucesso`);
                         
-                        // Atualizar interface se necessário
+                        // Atualizar interface se necess�rio
                         await loadNotifications();
                         const passwordModal = document.getElementById('passwordRequestsModal');
                         if (passwordModal && !passwordModal.classList.contains('hidden')) {
@@ -16450,15 +16113,15 @@ Funcionalidades:
                         }
                     }
                 } else {
-                    console.log('? Nenhuma solicitaçãoo antiga encontrada');
+                    console.log('? Nenhuma solicita��o antiga encontrada');
                 }
                 
             } catch (error) {
-                console.error('? Erro na limpeza automática:', error);
+                console.error('? Erro na limpeza autom�tica:', error);
             }
         }
         
-        // Funçãoo para abrir modal de histórico
+        // Fun��o para abrir modal de hist�rico
         function openPasswordHistoryModal() {
             const modal = document.getElementById('passwordHistoryModal');
             if (modal) {
@@ -16466,12 +16129,12 @@ Funcionalidades:
                 modal.style.display = 'flex';
                 modal.style.zIndex = '99999';
                 
-                // Carregar histórico automaticamente
+                // Carregar hist�rico automaticamente
                 loadPasswordHistory();
             }
         }
         
-        // Funçãoo para fechar modal de histórico
+        // Fun��o para fechar modal de hist�rico
         function closePasswordHistoryModal() {
             const modal = document.getElementById('passwordHistoryModal');
             if (modal) {
@@ -16481,11 +16144,11 @@ Funcionalidades:
             }
         }
         
-        // Funçãoo para carregar histórico de solicitações
+        // Fun��o para carregar hist�rico de solicita��es
         async function loadPasswordHistory() {
             const btn = document.getElementById('refreshPasswordHistoryBtn');
             if (btn) {
-                // Adicionar animaçãoo de loading
+                // Adicionar anima��o de loading
                 btn.disabled = true;
                 btn.innerHTML = `
                     <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -16513,9 +16176,9 @@ Funcionalidades:
                 const dateLimit = new Date();
                 dateLimit.setDate(dateLimit.getDate() - daysFilter);
                 
-                console.log('?? Carregando histórico de solicitações...');
+                console.log('?? Carregando hist�rico de solicita��es...');
                 
-                // Buscar solicitações do histórico
+                // Buscar solicita��es do hist�rico
                 let query = db
                     .from('password_requests')
                     .select('*')
@@ -16529,7 +16192,7 @@ Funcionalidades:
                 const { data: requests, error } = await query;
                 
                 if (error) {
-                    console.error('? Erro ao carregar histórico:', error);
+                    console.error('? Erro ao carregar hist�rico:', error);
                     throw error;
                 }
                 
@@ -16544,50 +16207,50 @@ Funcionalidades:
                     return;
                 }
                 
-                // Buscar dados dos usuários para cada solicitaçãoo (com tratamento de erro melhorado)
+                // Buscar dados dos usu�rios para cada solicita��o (com tratamento de erro melhorado)
                 const historyWithUsers = [];
                 for (const request of requests) {
                     try {
-                        // Tentar buscar dados do usuário com tratamento de erro
+                        // Tentar buscar dados do usu�rio com tratamento de erro
                         const { data: userData, error: userError } = await db
                             .from('users')
                             .select('email, name')
                             .eq('id', request.user_id)
-                            .maybeSingle(); // Usar maybeSingle para evitar erro se não encontrar
+                            .maybeSingle(); // Usar maybeSingle para evitar erro se n�o encontrar
                         
                         if (userError) {
                             historyWithUsers.push({
                                 ...request,
-                                user_email: 'Email indisponível',
-                                user_name: 'Usuário indisponível'
+                                user_email: 'Email indispon�vel',
+                                user_name: 'Usu�rio indispon�vel'
                             });
                         } else if (userData) {
                             historyWithUsers.push({
                                 ...request,
-                                user_email: userData.email || 'Email não encontrado',
-                                user_name: userData.name || 'Usuário não encontrado'
+                                user_email: userData.email || 'Email n�o encontrado',
+                                user_name: userData.name || 'Usu�rio n�o encontrado'
                             });
                         } else {
                             historyWithUsers.push({
                                 ...request,
-                                user_email: 'Email não encontrado',
-                                user_name: 'Usuário não encontrado'
+                                user_email: 'Email n�o encontrado',
+                                user_name: 'Usu�rio n�o encontrado'
                             });
                         }
                     } catch (userError) {
                         historyWithUsers.push({
                             ...request,
-                            user_email: 'Email indisponível',
-                            user_name: 'Usuário indisponível'
+                            user_email: 'Email indispon�vel',
+                            user_name: 'Usu�rio indispon�vel'
                         });
                     }
                 }
                 
-                // Exibir histórico
+                // Exibir hist�rico
                 displayPasswordHistory(historyWithUsers);
                 
             } catch (error) {
-                console.error('? Erro ao carregar histórico:', error);
+                console.error('? Erro ao carregar hist�rico:', error);
                 const loadingElement = document.getElementById('historyLoading');
                 if (loadingElement) loadingElement.classList.add('hidden');
             } finally {
@@ -16604,7 +16267,7 @@ Funcionalidades:
             }
         }
         
-        // Funçãoo para exibir histórico de solicitações
+        // Fun��o para exibir hist�rico de solicita��es
         function displayPasswordHistory(requests) {
             const listElement = document.getElementById('passwordHistoryList');
             const emptyElement = document.getElementById('emptyHistory');
@@ -16621,7 +16284,7 @@ Funcionalidades:
             listElement.innerHTML = requests.map(request => createHistoryCard(request)).join('');
         }
         
-        // Funçãoo para criar card de histórico
+        // Fun��o para criar card de hist�rico
         function createHistoryCard(request) {
             const statusColors = {
                 approved: 'bg-green-100 text-green-800 bg-green-100/20 dark:text-green-400',
@@ -16636,14 +16299,14 @@ Funcionalidades:
             };
             
             const typeTexts = {
-                change: 'Alteraçãoo de Senha',
-                reset: 'Redefiniçãoo de Senha'
+                change: 'Altera��o de Senha',
+                reset: 'Redefini��o de Senha'
             };
             
             const reasonTexts = {
                 forgot: 'Esqueci a senha',
                 security: 'Quest�es de seguran�a',
-                update: 'Atualizaçãoo regular',
+                update: 'Atualiza��o regular',
                 other: 'Outro motivo'
             };
             
@@ -16665,16 +16328,16 @@ Funcionalidades:
                                     ${statusTexts[request.status]}
                                 </span>
                                 <span class="text-sm text-gray-500 ">
-                                    ${typeTexts[request.type] || 'Tipo não especificado'}
+                                    ${typeTexts[request.type] || 'Tipo n�o especificado'}
                                 </span>
                             </div>
                             
                             <div class="space-y-1">
                                 <p class="font-medium text-gray-900 ">
-                                    ${request.user_name || 'Usuário não encontrado'}
+                                    ${request.user_name || 'Usu�rio n�o encontrado'}
                                 </p>
                                 <p class="text-sm text-gray-600 ">
-                                    ${request.user_email || 'Email não encontrado'}
+                                    ${request.user_email || 'Email n�o encontrado'}
                                 </p>
                                 <p class="text-sm text-gray-500 ">
                                     Motivo: ${reasonTexts[request.reason] || request.reason || 'N�o especificado'}
@@ -16705,13 +16368,13 @@ Funcionalidades:
             `;
         }
         
-        // Executar limpeza automática a cada hora
+        // Executar limpeza autom�tica a cada hora
         setInterval(cleanupOldPasswordRequests, 60 * 60 * 1000); // 1 hora
         
-        // Executar limpeza inicial após 5 segundos
+        // Executar limpeza inicial ap�s 5 segundos
         setTimeout(cleanupOldPasswordRequests, 5000);
         
-        // Funçãoo para alternar visibilidade da senha
+        // Fun��o para alternar visibilidade da senha
         function togglePasswordVisibility(button) {
             const input = button.previousElementSibling;
             const icon = button.querySelector('svg');
@@ -16730,96 +16393,96 @@ Funcionalidades:
             }
         }
         
-        // Funçãoo para excluir solicitaçãoo individual
+        // Fun��o para excluir solicita��o individual
         async function deletePasswordRequest(requestId) {
             try {
-                // Mostrar confirmaçãoo
-                const confirmed = confirm('Tem certeza que deseja excluir esta solicitaçãoo? Esta açãoo não pode ser desfeita.');
+                // Mostrar confirma��o
+                const confirmed = confirm('Tem certeza que deseja excluir esta solicita��o? Esta a��o n�o pode ser desfeita.');
                 if (!confirmed) return;
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 
-                console.log('??? Excluindo solicitaçãoo:', requestId);
+                console.log('??? Excluindo solicita��o:', requestId);
                 
-                // Excluir solicitaçãoo
+                // Excluir solicita��o
                 const { error } = await db
                     .from('password_requests')
                     .delete()
                     .eq('id', requestId);
                 
                 if (error) {
-                    console.error('? Erro ao excluir solicitaçãoo:', error);
-                    showNotification('Erro ao excluir solicitaçãoo', 'error');
+                    console.error('? Erro ao excluir solicita��o:', error);
+                    showNotification('Erro ao excluir solicita��o', 'error');
                     return;
                 }
                 
-                console.log('? Solicitaçãoo exclu�da com sucesso');
-                showNotification('Solicitaçãoo exclu�da com sucesso', 'success');
+                console.log('? Solicita��o exclu�da com sucesso');
+                showNotification('Solicita��o exclu�da com sucesso', 'success');
                 
                 // Atualizar interface
                 await loadNotifications();
                 await loadPasswordRequests();
                 
-                // Atualizar histórico se estiver aberto
+                // Atualizar hist�rico se estiver aberto
                 const historyModal = document.getElementById('passwordHistoryModal');
                 if (historyModal && !historyModal.classList.contains('hidden')) {
                     await loadPasswordHistory();
                 }
                 
             } catch (error) {
-                console.error('? Erro ao excluir solicitaçãoo:', error);
-                showNotification('Erro ao excluir solicitaçãoo', 'error');
+                console.error('? Erro ao excluir solicita��o:', error);
+                showNotification('Erro ao excluir solicita��o', 'error');
             }
         }
         
-        // Funçãoo para excluir m�ltiplas solicitações
+        // Fun��o para excluir m�ltiplas solicita��es
         async function deleteMultiplePasswordRequests(requestIds) {
             try {
                 if (!requestIds || requestIds.length === 0) {
-                    showNotification('Nenhuma solicitaçãoo selecionada', 'warning');
+                    showNotification('Nenhuma solicita��o selecionada', 'warning');
                     return;
                 }
                 
-                const confirmed = confirm(`Tem certeza que deseja excluir ${requestIds.length} solicitaçãoo(�es)? Esta açãoo não pode ser desfeita.`);
+                const confirmed = confirm(`Tem certeza que deseja excluir ${requestIds.length} solicita��o(�es)? Esta a��o n�o pode ser desfeita.`);
                 if (!confirmed) return;
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 
-                console.log('??? Excluindo m�ltiplas solicitações:', requestIds);
+                console.log('??? Excluindo m�ltiplas solicita��es:', requestIds);
                 
-                // Excluir m�ltiplas solicitações
+                // Excluir m�ltiplas solicita��es
                 const { error } = await db
                     .from('password_requests')
                     .delete()
                     .in('id', requestIds);
                 
                 if (error) {
-                    console.error('? Erro ao excluir solicitações:', error);
-                    showNotification('Erro ao excluir solicitações', 'error');
+                    console.error('? Erro ao excluir solicita��es:', error);
+                    showNotification('Erro ao excluir solicita��es', 'error');
                     return;
                 }
                 
-                console.log(`? ${requestIds.length} solicitações exclu�das com sucesso`);
-                showNotification(`${requestIds.length} solicitações exclu�das com sucesso`, 'success');
+                console.log(`? ${requestIds.length} solicita��es exclu�das com sucesso`);
+                showNotification(`${requestIds.length} solicita��es exclu�das com sucesso`, 'success');
                 
                 // Atualizar interface
                 await loadNotifications();
                 await loadPasswordRequests();
                 
-                // Atualizar histórico se estiver aberto
+                // Atualizar hist�rico se estiver aberto
                 const historyModal = document.getElementById('passwordHistoryModal');
                 if (historyModal && !historyModal.classList.contains('hidden')) {
                     await loadPasswordHistory();
                 }
                 
             } catch (error) {
-                console.error('? Erro ao excluir solicitações:', error);
-                showNotification('Erro ao excluir solicitações', 'error');
+                console.error('? Erro ao excluir solicita��es:', error);
+                showNotification('Erro ao excluir solicita��es', 'error');
             }
         }
         
         
-        // Event listeners para filtros do histórico
+        // Event listeners para filtros do hist�rico
         document.addEventListener('DOMContentLoaded', () => {
             const statusFilter = document.getElementById('historyStatusFilter');
             const dateFilter = document.getElementById('historyDateFilter');
@@ -16833,12 +16496,12 @@ Funcionalidades:
             }
         });
         
-        // ==================== FUNçãoO CORRIGIDA PARA EXIBIR SOLICITAçãoES ====================
+        // ==================== FUN��O CORRIGIDA PARA EXIBIR SOLICITA��ES ====================
         
-        // Funçãoo corrigida para exibir solicitações
+        // Fun��o corrigida para exibir solicita��es
         function displayPasswordRequestsFixed(requests) {
-            console.log('?? Exibindo solicitações:', requests);
-            console.log('?? N�mero de solicitações:', requests?.length || 0);
+            console.log('?? Exibindo solicita��es:', requests);
+            console.log('?? N�mero de solicita��es:', requests?.length || 0);
             
             const container = document.getElementById('passwordRequestsList');
             const emptyState = document.getElementById('emptyPasswordRequests');
@@ -16847,21 +16510,21 @@ Funcionalidades:
             console.log('?? Container encontrado:', !!container);
             console.log('?? Empty state encontrado:', !!emptyState);
             console.log('?? Modal encontrado:', !!modal);
-            console.log('?? Modal visível:', modal ? !modal.classList.contains('hidden') : false);
+            console.log('?? Modal vis�vel:', modal ? !modal.classList.contains('hidden') : false);
             
             if (!container) {
-                console.error('? Container passwordRequestsList não encontrado');
+                console.error('? Container passwordRequestsList n�o encontrado');
                 return;
             }
             
             if (!emptyState) {
-                console.error('? EmptyState emptyPasswordRequests não encontrado');
+                console.error('? EmptyState emptyPasswordRequests n�o encontrado');
                 return;
             }
             
-            // Se o modal não estiver visível, não exibir as solicitações
+            // Se o modal n�o estiver vis�vel, n�o exibir as solicita��es
             if (modal && modal.classList.contains('hidden')) {
-                console.log('?? Modal não está visível, não exibindo solicitações');
+                console.log('?? Modal n�o est� vis�vel, n�o exibindo solicita��es');
                 return;
             }
             
@@ -16871,7 +16534,7 @@ Funcionalidades:
             if (!requests || requests.length === 0) {
                 container.innerHTML = '';
                 emptyState.classList.remove('hidden');
-                console.log('?? Nenhuma solicitaçãoo encontrada');
+                console.log('?? Nenhuma solicita��o encontrada');
                 return;
             }
             
@@ -16879,7 +16542,7 @@ Funcionalidades:
             container.innerHTML = '';
             
             requests.forEach((request, index) => {
-                console.log(`?? Criando card para solicitaçãoo ${index + 1}:`, request);
+                console.log(`?? Criando card para solicita��o ${index + 1}:`, request);
                 
                 const card = document.createElement('div');
                 card.className = 'bg-white bg-white border border-gray-200 border-gray-200 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] hover:border-blue-300 hover:border-blue-300';
@@ -16896,8 +16559,8 @@ Funcionalidades:
                     'rejected': 'Rejeitada'
                 };
                 
-                const userName = request.users?.name || request.users?.email || 'Usuário desconhecido';
-                const userEmail = request.users?.email || 'Email não disponível';
+                const userName = request.users?.name || request.users?.email || 'Usu�rio desconhecido';
+                const userEmail = request.users?.email || 'Email n�o dispon�vel';
                 
                 // Extrair a nova senha das notas ou do campo new_password
                 let newPassword = '';
@@ -16952,7 +16615,7 @@ Funcionalidades:
                                         ${newPassword}
                                     </div>
                                     <div id="password-hidden-${request.id}" class="text-sm text-blue-700 dark:text-blue-300 font-mono bg-white  rounded p-2 border">
-                                        çãoçãoçãoção
+                                        ��������
                                     </div>
                                 </div>
                             ` : ''}
@@ -16966,7 +16629,7 @@ Funcionalidades:
                             </div>
                         </div>
                         
-                        <!-- Botões de açãoo -->
+                        <!-- Bot�es de a��o -->
                         <div class="flex flex-col space-y-2 ml-4">
                             <button onclick="viewPasswordRequestDetails('${request.id}')" class="px-3 py-1.5 text-xs bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all font-medium shadow hover:shadow-md">
                                 Ver Detalhes
@@ -16986,17 +16649,17 @@ Funcionalidades:
                 container.appendChild(card);
             });
             
-            console.log(`? ${requests.length} solicitações exibidas com sucesso`);
+            console.log(`? ${requests.length} solicita��es exibidas com sucesso`);
         }
         
-        // Substituir as funçãoes pelas vers�es corrigidas
+        // Substituir as fun��es pelas vers�es corrigidas
         window.displayPasswordRequests = displayPasswordRequestsFixed;
         window.viewPasswordRequestDetails = viewPasswordRequestDetailsFixed;
         
-        // Funçãoes diretas para aprovar e rejeitar (sem depender de currentPasswordRequestId)
+        // Fun��es diretas para aprovar e rejeitar (sem depender de currentPasswordRequestId)
         window.approvePasswordRequestDirect = async function(requestId) {
             if (!requestId) {
-                showNotification('ID da solicitaçãoo não encontrado', 'error');
+                showNotification('ID da solicita��o n�o encontrado', 'error');
                 return;
             }
             
@@ -17005,11 +16668,11 @@ Funcionalidades:
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
-                // Primeiro, buscar a solicitaçãoo para obter a nova senha
+                // Primeiro, buscar a solicita��o para obter a nova senha
                 const { data: request, error: fetchError } = await db
                     .from('password_requests')
                     .select('*')
@@ -17017,13 +16680,13 @@ Funcionalidades:
                     .single();
                 
                 if (fetchError || !request) {
-                    showNotification('Erro ao buscar solicitaçãoo', 'error');
+                    showNotification('Erro ao buscar solicita��o', 'error');
                     return;
                 }
                 
-                // Verificar se a solicitaçãoo ainda está pendente
+                // Verificar se a solicita��o ainda est� pendente
                 if (request.status !== 'pending') {
-                    showNotification('Esta solicitaçãoo j� foi processada', 'warning');
+                    showNotification('Esta solicita��o j� foi processada', 'warning');
                     return;
                 }
                 
@@ -17034,11 +16697,11 @@ Funcionalidades:
                 }
                 
                 if (!newPassword) {
-                    showNotification('Nova senha não encontrada na solicitaçãoo', 'error');
+                    showNotification('Nova senha n�o encontrada na solicita��o', 'error');
                     return;
                 }
                 
-                console.log('?? Aprovando solicitaçãoo e alterando senha...');
+                console.log('?? Aprovando solicita��o e alterando senha...');
                 console.log('User ID:', request.user_id);
                 console.log('Nova senha:', newPassword);
                 
@@ -17059,21 +16722,21 @@ Funcionalidades:
                         
                         if (directUpdateError) {
                             
-                            // Fallback: apenas marcar como aprovado e notificar o usuário
-                            showNotification('Solicitaçãoo aprovada. A senha será alterada pelo sistema automaticamente.', 'success');
+                            // Fallback: apenas marcar como aprovado e notificar o usu�rio
+                            showNotification('Solicita��o aprovada. A senha ser� alterada pelo sistema automaticamente.', 'success');
                         } else {
                             console.log('? Senha atualizada via m�todo direto');
-                            showNotification('Solicitaçãoo aprovada e senha alterada com sucesso!', 'success');
+                            showNotification('Solicita��o aprovada e senha alterada com sucesso!', 'success');
                         }
                     } else {
                         console.log('? Senha atualizada via RPC function');
-                        showNotification('Solicitaçãoo aprovada e senha alterada com sucesso!', 'success');
+                        showNotification('Solicita��o aprovada e senha alterada com sucesso!', 'success');
                     }
                 } catch (rpcError) {
-                    showNotification('Solicitaçãoo aprovada. A senha será alterada pelo sistema automaticamente.', 'success');
+                    showNotification('Solicita��o aprovada. A senha ser� alterada pelo sistema automaticamente.', 'success');
                 }
                 
-                // Atualizar status da solicitaçãoo
+                // Atualizar status da solicita��o
                 const { error: updateRequestError } = await db
                     .from('password_requests')
                     .update({
@@ -17084,12 +16747,12 @@ Funcionalidades:
                     .eq('id', requestId);
                 
                 if (updateRequestError) {
-                    console.error('Erro ao atualizar solicitaçãoo:', updateRequestError);
-                    showNotification('Senha alterada, mas erro ao atualizar solicitaçãoo', 'warning');
+                    console.error('Erro ao atualizar solicita��o:', updateRequestError);
+                    showNotification('Senha alterada, mas erro ao atualizar solicita��o', 'warning');
                     return;
                 }
                 
-                // Garantir que o usuário está ativo após aprovaçãoo
+                // Garantir que o usu�rio est� ativo ap�s aprova��o
                 const { error: userError } = await db
                     .from('users')
                     .update({
@@ -17099,12 +16762,12 @@ Funcionalidades:
                     .eq('id', request.user_id);
                 
                 if (userError) {
-                    console.warn('Aviso: N�o foi possível ativar o usuário:', userError);
+                    console.warn('Aviso: N�o foi poss�vel ativar o usu�rio:', userError);
                 } else {
-                    console.log('? Usuário ativado após aprovaçãoo da solicitaçãoo');
+                    console.log('? Usu�rio ativado ap�s aprova��o da solicita��o');
                 }
                 
-                console.log('? Solicitaçãoo aprovada com sucesso!');
+                console.log('? Solicita��o aprovada com sucesso!');
                 
                 // Log de auditoria
                 logAuditEvent('password_request_approved', request.user_id, {
@@ -17114,10 +16777,10 @@ Funcionalidades:
                     reason: request.reason
                 });
                 
-                // Notificar o usuário sobre a alteraçãoo de senha e logout autom�tico
+                // Notificar o usu�rio sobre a altera��o de senha e logout autom�tico
                 await notifyUserPasswordChanged(request.user_id, newPassword);
                 
-                // Limpar cache para for�ar atualização
+                // Limpar cache para for�ar atualiza��o
                 clearCache();
                 
                 // Mover card para baixo e marcar como aprovado
@@ -17126,20 +16789,20 @@ Funcionalidades:
                 // Fechar modal se estiver aberto
                 closePasswordRequestDetailsModal();
                 
-                // Remover card após 10 minutos
+                // Remover card ap�s 10 minutos
                 setTimeout(() => {
                     removeCard(requestId);
                 }, 10 * 60 * 1000); // 10 minutos
                 
             } catch (error) {
-                console.error('Erro ao aprovar solicitaçãoo:', error);
-                showNotification('Erro ao aprovar solicitaçãoo: ' + error.message, 'error');
+                console.error('Erro ao aprovar solicita��o:', error);
+                showNotification('Erro ao aprovar solicita��o: ' + error.message, 'error');
             }
         };
         
         window.rejectPasswordRequestDirect = async function(requestId) {
             if (!requestId) {
-                showNotification('ID da solicitaçãoo não encontrado', 'error');
+                showNotification('ID da solicita��o n�o encontrado', 'error');
                 return;
             }
             
@@ -17148,7 +16811,7 @@ Funcionalidades:
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
@@ -17159,7 +16822,7 @@ Funcionalidades:
                     return;
                 }
                 
-                // Atualizar status da solicitaçãoo
+                // Atualizar status da solicita��o
                 const { error } = await db
                     .from('password_requests')
                     .update({
@@ -17171,7 +16834,7 @@ Funcionalidades:
                 
                 if (error) throw error;
                 
-                showNotification('Solicitaçãoo rejeitada com sucesso!', 'success');
+                showNotification('Solicita��o rejeitada com sucesso!', 'success');
                 
                 // Mover card para baixo e marcar como rejeitado
                 moveCardToBottom(requestId, 'rejected');
@@ -17179,18 +16842,18 @@ Funcionalidades:
                 // Fechar modal se estiver aberto
                 closePasswordRequestDetailsModal();
                 
-                // Remover card após 10 minutos
+                // Remover card ap�s 10 minutos
                 setTimeout(() => {
                     removeCard(requestId);
                 }, 10 * 60 * 1000); // 10 minutos
                 
             } catch (error) {
-                console.error('Erro ao rejeitar solicitaçãoo:', error);
-                showNotification('Erro ao rejeitar solicitaçãoo: ' + error.message, 'error');
+                console.error('Erro ao rejeitar solicita��o:', error);
+                showNotification('Erro ao rejeitar solicita��o: ' + error.message, 'error');
             }
         };
         
-        // Funçãoo para mover card para baixo
+        // Fun��o para mover card para baixo
         function moveCardToBottom(requestId, status) {
             const container = document.getElementById('passwordRequestsList');
             if (!container) return;
@@ -17203,7 +16866,7 @@ Funcionalidades:
             });
             
             if (targetCard) {
-                // Remover o card da posiçãoo atual
+                // Remover o card da posi��o atual
                 targetCard.remove();
                 
                 // Atualizar o visual do card para mostrar o novo status
@@ -17217,7 +16880,7 @@ Funcionalidades:
             }
         }
         
-        // Funçãoo para atualizar o status visual do card
+        // Fun��o para atualizar o status visual do card
         function updateCardStatus(card, status) {
             const statusSpan = card.querySelector('span[class*="bg-"]');
             if (statusSpan) {
@@ -17235,14 +16898,14 @@ Funcionalidades:
                 statusSpan.textContent = statusText[status];
             }
             
-            // Remover bot�es de açãoo
+            // Remover bot�es de a��o
             const actionButtons = card.querySelector('.flex.flex-col.space-y-2.ml-4');
             if (actionButtons) {
                 actionButtons.innerHTML = '<div class="text-xs text-gray-500 ">Processada</div>';
             }
         }
         
-        // Funçãoo para remover card completamente
+        // Fun��o para remover card completamente
         function removeCard(requestId) {
             const container = document.getElementById('passwordRequestsList');
             if (!container) return;
@@ -17255,18 +16918,18 @@ Funcionalidades:
             
             if (targetCard) {
                 targetCard.remove();
-                console.log(`??? Card removido após 10 minutos: ${requestId}`);
+                console.log(`??? Card removido ap�s 10 minutos: ${requestId}`);
             }
         }
         
-        // Funçãoes principais para aprovar e rejeitar solicitações
+        // Fun��es principais para aprovar e rejeitar solicita��es
         window.approvePasswordRequest = async function(requestId) {
             if (!requestId) {
                 requestId = window.currentPasswordRequestId;
             }
             
             if (!requestId) {
-                showNotification('ID da solicitaçãoo não encontrado', 'error');
+                showNotification('ID da solicita��o n�o encontrado', 'error');
                 return;
             }
             
@@ -17275,11 +16938,11 @@ Funcionalidades:
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
-                // Primeiro, obter dados da solicitaçãoo para pegar o user_id
+                // Primeiro, obter dados da solicita��o para pegar o user_id
                 const { data: requestData, error: requestError } = await db
                     .from('password_requests')
                     .select('user_id')
@@ -17288,7 +16951,7 @@ Funcionalidades:
                 
                 if (requestError) throw requestError;
                 
-                // Atualizar status da solicitaçãoo
+                // Atualizar status da solicita��o
                 const { error } = await db
                     .from('password_requests')
                     .update({
@@ -17300,7 +16963,7 @@ Funcionalidades:
                 
                 if (error) throw error;
                 
-                // Garantir que o usuário está ativo após aprovaçãoo
+                // Garantir que o usu�rio est� ativo ap�s aprova��o
                 if (requestData.user_id) {
                     const { error: userError } = await db
                         .from('users')
@@ -17311,9 +16974,9 @@ Funcionalidades:
                         .eq('id', requestData.user_id);
                     
                     if (userError) {
-                        console.warn('Aviso: N�o foi possível ativar o usuário:', userError);
+                        console.warn('Aviso: N�o foi poss�vel ativar o usu�rio:', userError);
                     } else {
-                        console.log('? Usuário ativado após aprovaçãoo da solicitaçãoo');
+                        console.log('? Usu�rio ativado ap�s aprova��o da solicita��o');
                     }
                 }
                 
@@ -17323,7 +16986,7 @@ Funcionalidades:
                     reason: 'manager_approval'
                 });
                 
-                // Limpar cache para for�ar atualização
+                // Limpar cache para for�ar atualiza��o
                 clearPasswordRequestsCache();
                 
                 // Recarregar lista
@@ -17335,11 +16998,11 @@ Funcionalidades:
                     closePasswordRequestDetailsModal();
                 }
                 
-                showNotification('Solicitaçãoo aprovada com sucesso!', 'success');
+                showNotification('Solicita��o aprovada com sucesso!', 'success');
                 
             } catch (error) {
-                console.error('Erro ao aprovar solicitaçãoo:', error);
-                showNotification('Erro ao aprovar solicitaçãoo: ' + error.message, 'error');
+                console.error('Erro ao aprovar solicita��o:', error);
+                showNotification('Erro ao aprovar solicita��o: ' + error.message, 'error');
             }
         };
         
@@ -17349,7 +17012,7 @@ Funcionalidades:
             }
             
             if (!requestId) {
-                showNotification('ID da solicitaçãoo não encontrado', 'error');
+                showNotification('ID da solicita��o n�o encontrado', 'error');
                 return;
             }
             
@@ -17358,11 +17021,11 @@ Funcionalidades:
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    showNotification('Usuário não autenticado', 'error');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
-                // Atualizar status da solicitaçãoo
+                // Atualizar status da solicita��o
                 const { error } = await db
                     .from('password_requests')
                     .update({
@@ -17380,7 +17043,7 @@ Funcionalidades:
                     reason: 'manager_rejection'
                 });
                 
-                // Limpar cache para for�ar atualização
+                // Limpar cache para for�ar atualiza��o
                 clearPasswordRequestsCache();
                 
                 // Recarregar lista
@@ -17392,11 +17055,11 @@ Funcionalidades:
                     closePasswordRequestDetailsModal();
                 }
                 
-                showNotification('Solicitaçãoo rejeitada com sucesso!', 'success');
+                showNotification('Solicita��o rejeitada com sucesso!', 'success');
                 
             } catch (error) {
-                console.error('Erro ao rejeitar solicitaçãoo:', error);
-                showNotification('Erro ao rejeitar solicitaçãoo: ' + error.message, 'error');
+                console.error('Erro ao rejeitar solicita��o:', error);
+                showNotification('Erro ao rejeitar solicita��o: ' + error.message, 'error');
             }
         };
         
@@ -17442,11 +17105,11 @@ Funcionalidades:
             
             console.log(`[AUDIT] ${action} by manager:`, logEntry);
             
-            // Armazenar no localStorage para persistência
+            // Armazenar no localStorage para persist�ncia
             const auditLogs = JSON.parse(localStorage.getItem('manager_audit_logs') || '[]');
             auditLogs.push(logEntry);
             
-            // Manter apenas os últimos 200 logs
+            // Manter apenas os �ltimos 200 logs
             if (auditLogs.length > 200) {
                 auditLogs.splice(0, auditLogs.length - 200);
             }
@@ -17454,7 +17117,7 @@ Funcionalidades:
             localStorage.setItem('manager_audit_logs', JSON.stringify(auditLogs));
         }
         
-        // Validaçãoo de sess�o do gerente
+        // Valida��o de sess�o do gerente
         async function validateManagerSession() {
             try {
                 // Usando MySQL direto atrav�s do objeto 'db'
@@ -17464,7 +17127,7 @@ Funcionalidades:
                     return { valid: false, reason: 'not_authenticated' };
                 }
                 
-                // Verificar se o usuário ainda � um gerente ativo
+                // Verificar se o usu�rio ainda � um gerente ativo
                 const { data: userData, error } = await db
                     .from('users')
                     .select('role, is_active, last_activity')
@@ -17491,7 +17154,7 @@ Funcionalidades:
             }
         }
         
-        // Funçãoo para notificar usuário sobre alteraçãoo de senha
+        // Fun��o para notificar usu�rio sobre altera��o de senha
         async function notifyUserPasswordChanged(userId, newPassword) {
             try {
                 // Usando MySQL direto atrav�s do objeto 'db'
@@ -17503,7 +17166,7 @@ Funcionalidades:
                     return;
                 }
                 
-                // Buscar dados do usuário
+                // Buscar dados do usu�rio
                 const { data: userData, error: userError } = await db
                     .from('users')
                     .select('email, name')
@@ -17511,18 +17174,18 @@ Funcionalidades:
                     .single();
                 
                 if (userError || !userData) {
-                    console.error('Erro ao buscar dados do usuário:', userError);
+                    console.error('Erro ao buscar dados do usu�rio:', userError);
                     return;
                 }
                 
-                // Criar notificaçãoo para o usuário
+                // Criar notifica��o para o usu�rio
                 const { error: notificationError } = await db
                     .from('notifications')
                     .insert([{
                         user_id: userId,
                         type: 'password_changed',
                         title: 'Senha Alterada com Sucesso',
-                        message: `Sua senha foi alterada com sucesso. Por seguran�a, você será deslogado automaticamente. Use a nova senha para fazer login novamente.`,
+                        message: `Sua senha foi alterada com sucesso. Por seguran�a, voc� ser� deslogado automaticamente. Use a nova senha para fazer login novamente.`,
                         data: {
                             new_password: newPassword,
                             auto_logout: true,
@@ -17532,15 +17195,15 @@ Funcionalidades:
                     }]);
                 
                 if (notificationError) {
-                    console.error('Erro ao criar notificaçãoo:', notificationError);
+                    console.error('Erro ao criar notifica��o:', notificationError);
                 } else {
-                    console.log('? Notificaçãoo de alteraçãoo de senha criada para o usuário');
+                    console.log('? Notifica��o de altera��o de senha criada para o usu�rio');
                 }
                 
                 // Criptografar a nova senha antes de armazenar
                 const encryptedPassword = await encryptPassword(newPassword);
                 
-                // Enviar sinal para logout autom�tico (usando WebSocket ou Server-Sent Events se disponível)
+                // Enviar sinal para logout autom�tico (usando WebSocket ou Server-Sent Events se dispon�vel)
                 // Por enquanto, vamos usar uma abordagem simples com localStorage
                 const logoutSignal = {
                     userId: userId,
@@ -17550,19 +17213,19 @@ Funcionalidades:
                     encrypted: true
                 };
                 
-                // Armazenar sinal de logout no localStorage (ser� verificado pelos outros usuários)
+                // Armazenar sinal de logout no localStorage (ser� verificado pelos outros usu�rios)
                 const existingSignals = JSON.parse(localStorage.getItem('password_change_signals') || '[]');
                 existingSignals.push(logoutSignal);
                 localStorage.setItem('password_change_signals', JSON.stringify(existingSignals));
                 
-                console.log('?? Sinal de logout autom�tico enviado para o usuário:', userId);
+                console.log('?? Sinal de logout autom�tico enviado para o usu�rio:', userId);
                 
             } catch (error) {
-                console.error('Erro ao notificar usuário sobre alteraçãoo de senha:', error);
+                console.error('Erro ao notificar usu�rio sobre altera��o de senha:', error);
             }
         }
         
-        // Tornar função global
+        // Tornar fun��o global
         window.notifyUserPasswordChanged = notifyUserPasswordChanged;
         
         // Sistema de indicadores de progresso
@@ -17621,21 +17284,21 @@ Funcionalidades:
             }
         }
         
-        // Confirmações inteligentes baseadas no contexto
+        // Confirma��es inteligentes baseadas no contexto
         function getConfirmationMessage(request, action) {
-            const userEmail = request.users?.email || 'usuário';
+            const userEmail = request.users?.email || 'usu�rio';
             const requestAge = Math.floor((Date.now() - new Date(request.created_at)) / (1000 * 60 * 60)); // horas
             
             if (action === 'approve') {
                 if (requestAge < 1) {
-                    return `Aprovar solicitaçãoo de ${userEmail}? Esta solicitaçãoo foi feita h� menos de 1 hora.`;
+                    return `Aprovar solicita��o de ${userEmail}? Esta solicita��o foi feita h� menos de 1 hora.`;
                 } else if (requestAge < 24) {
-                    return `Aprovar solicitaçãoo de ${userEmail}? Esta solicitaçãoo foi feita h� ${requestAge} horas.`;
+                    return `Aprovar solicita��o de ${userEmail}? Esta solicita��o foi feita h� ${requestAge} horas.`;
                 } else {
-                    return `Aprovar solicitaçãoo de ${userEmail}? Esta solicitaçãoo foi feita h� ${Math.floor(requestAge / 24)} dias.`;
+                    return `Aprovar solicita��o de ${userEmail}? Esta solicita��o foi feita h� ${Math.floor(requestAge / 24)} dias.`;
                 }
             } else if (action === 'reject') {
-                return `Rejeitar solicitaçãoo de ${userEmail}? Esta açãoo não pode ser desfeita.`;
+                return `Rejeitar solicita��o de ${userEmail}? Esta a��o n�o pode ser desfeita.`;
             }
             
             return `Confirmar ${action} para ${userEmail}?`;
@@ -17643,9 +17306,9 @@ Funcionalidades:
         
         // Atalhos de teclado
         document.addEventListener('keydown', (e) => {
-            // Ctrl + Enter para aprovar solicitaçãoo
+            // Ctrl + Enter para aprovar solicita��o
             if (e.ctrlKey && e.key === 'Enter') {
-                // Verificar se h� uma solicitaçãoo selecionada
+                // Verificar se h� uma solicita��o selecionada
                 if (window.currentPasswordRequestId) {
                 const approveButton = document.querySelector('button[onclick*="approvePasswordRequest"]');
                 if (approveButton && !approveButton.disabled) {
@@ -17654,14 +17317,14 @@ Funcionalidades:
                     }
                 } else {
                     e.preventDefault();
-                    showNotification('Nenhuma solicitaçãoo selecionada. Abra o modal de solicitações primeiro.', 'warning');
+                    showNotification('Nenhuma solicita��o selecionada. Abra o modal de solicita��es primeiro.', 'warning');
                 }
             }
             
-            // Ctrl + R removido para não conflitar com reload do navegador
-            // Use Ctrl + Delete para rejeitar solicitaçãoo
+            // Ctrl + R removido para n�o conflitar com reload do navegador
+            // Use Ctrl + Delete para rejeitar solicita��o
             if (e.ctrlKey && e.key === 'Delete') {
-                // Verificar se h� uma solicitaçãoo selecionada
+                // Verificar se h� uma solicita��o selecionada
                 if (window.currentPasswordRequestId) {
                 const rejectButton = document.querySelector('button[onclick*="rejectPasswordRequest"]');
                 if (rejectButton && !rejectButton.disabled) {
@@ -17670,7 +17333,7 @@ Funcionalidades:
                     }
                 } else {
                     e.preventDefault();
-                    showNotification('Nenhuma solicitaçãoo selecionada. Use Ctrl + Delete para rejeitar.', 'warning');
+                    showNotification('Nenhuma solicita��o selecionada. Use Ctrl + Delete para rejeitar.', 'warning');
                 }
             }
             
@@ -17690,7 +17353,7 @@ Funcionalidades:
         const requestsCache = new Map();
         const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos em vez de 5
         let lastCacheUpdate = 0;
-        const MIN_CACHE_UPDATE_INTERVAL = 2 * 60 * 1000; // 2 minutos mínimo entre atualizações
+        const MIN_CACHE_UPDATE_INTERVAL = 2 * 60 * 1000; // 2 minutos m�nimo entre atualiza��es
         
         function getCachedRequests() {
             const cached = requestsCache.get('password_requests');
@@ -17702,7 +17365,7 @@ Funcionalidades:
         
         function setCachedRequests(data) {
             const now = Date.now();
-            // Evitar atualizações muito frequentes do cache
+            // Evitar atualiza��es muito frequentes do cache
             if (now - lastCacheUpdate < MIN_CACHE_UPDATE_INTERVAL) {
                 return;
             }
@@ -17719,11 +17382,11 @@ Funcionalidades:
             lastCacheUpdate = 0;
         }
         
-        // Funçãoo otimizada para carregar solicitações com cache
+        // Fun��o otimizada para carregar solicita��es com cache
         let isLoadingRequests = false;
         
         async function loadPasswordRequestsWithCache(forceRefresh = false) {
-            console.log('?? Iniciando carregamento de solicitações...', forceRefresh ? '(for�ando refresh)' : '');
+            console.log('?? Iniciando carregamento de solicita��es...', forceRefresh ? '(for�ando refresh)' : '');
             
             // Evitar m�ltiplas chamadas simult�neas
             if (isLoadingRequests) {
@@ -17735,7 +17398,7 @@ Funcionalidades:
             if (!forceRefresh) {
                 const cached = getCachedRequests();
                 if (cached) {
-                    console.log('?? Carregando solicitações do cache:', cached.length, 'solicitações');
+                    console.log('?? Carregando solicita��es do cache:', cached.length, 'solicita��es');
                     displayPasswordRequests(cached);
                     return;
                 }
@@ -17752,12 +17415,12 @@ Funcionalidades:
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    console.error('? Usuário não autenticado');
-                    showNotification('Usuário não autenticado', 'error');
+                    console.error('? Usu�rio n�o autenticado');
+                    showNotification('Usu�rio n�o autenticado', 'error');
                     return;
                 }
                 
-                console.log('?? Usuário autenticado:', user.id);
+                console.log('?? Usu�rio autenticado:', user.id);
                 
                 // Sistema Lagoa Do Mato
                 const { data: userData, error: userError } = await db
@@ -17774,28 +17437,28 @@ Funcionalidades:
                 
                 console.log('?? Fazenda: Lagoa Do Mato');
                 
-                // Buscar solicitações de senha da fazenda (abordagem corrigida)
-                // Primeiro, buscar usuários da fazenda
+                // Buscar solicita��es de senha da fazenda (abordagem corrigida)
+                // Primeiro, buscar usu�rios da fazenda
                 const { data: farmUsers, error: usersError } = await db
                     .from('users')
                     .select('id, name, email, role, profile_photo_url')
                     .eq('farm_id', 1);
                 
                 if (usersError) {
-                    console.error('? Erro ao buscar usuários da fazenda:', usersError);
-                    showNotification('Erro ao buscar usuários da fazenda', 'error');
+                    console.error('? Erro ao buscar usu�rios da fazenda:', usersError);
+                    showNotification('Erro ao buscar usu�rios da fazenda', 'error');
                     return;
                 }
                 
                 if (!farmUsers || farmUsers.length === 0) {
-                    console.log('?? Nenhum usuário encontrado na fazenda');
+                    console.log('?? Nenhum usu�rio encontrado na fazenda');
                     displayPasswordRequests([]);
                     return;
                 }
                 
                 const userIds = farmUsers.map(user => user.id);
                 
-                // Depois, buscar solicitações desses usuários
+                // Depois, buscar solicita��es desses usu�rios
                 const { data: requests, error } = await db
                     .from('password_requests')
                     .select('*')
@@ -17803,23 +17466,23 @@ Funcionalidades:
                     .order('created_at', { ascending: false });
                 
                 if (error) {
-                    console.error('? Erro ao buscar solicitações:', error);
-                    showNotification('Erro ao carregar solicitações', 'error');
+                    console.error('? Erro ao buscar solicita��es:', error);
+                    showNotification('Erro ao carregar solicita��es', 'error');
                     return;
                 }
                 
-                console.log('? Solicitações carregadas:', requests?.length || 0, 'solicitações');
+                console.log('? Solicita��es carregadas:', requests?.length || 0, 'solicita��es');
                 
-                // Combinar dados das solicitações com dados dos usuários
+                // Combinar dados das solicita��es com dados dos usu�rios
                 const requestsWithUsers = (requests || []).map(request => {
                     const user = farmUsers.find(u => u.id === request.user_id);
                     return {
                         ...request,
-                        users: user || { name: 'Usuário não encontrado', email: '', role: 'unknown' }
+                        users: user || { name: 'Usu�rio n�o encontrado', email: '', role: 'unknown' }
                     };
                 });
                 
-                console.log('? Solicitações combinadas com usuários:', requestsWithUsers.length);
+                console.log('? Solicita��es combinadas com usu�rios:', requestsWithUsers.length);
                 
                 // Armazenar no cache
                 setCachedRequests(requestsWithUsers);
@@ -17827,17 +17490,17 @@ Funcionalidades:
                 displayPasswordRequests(requestsWithUsers);
                 
             } catch (error) {
-                console.error('? Erro geral ao carregar solicitações:', error);
-                showNotification('Erro ao carregar solicitações', 'error');
+                console.error('? Erro geral ao carregar solicita��es:', error);
+                showNotification('Erro ao carregar solicita��es', 'error');
             } finally {
                 isLoadingRequests = false;
             }
         }
         
-        // Substituir a função original
+        // Substituir a fun��o original
         window.loadPasswordRequests = loadPasswordRequestsWithCache;
         
-        // Funçãoo para limpar todos os intervalos e timers
+        // Fun��o para limpar todos os intervalos e timers
         function cleanupAllIntervals() {
             stopBlockWatcher();
             clearCache();
@@ -17861,12 +17524,12 @@ Funcionalidades:
         window.addEventListener('beforeunload', cleanupAllIntervals);
         window.addEventListener('pagehide', cleanupAllIntervals);
         
-        // Tornar função global para debug
+        // Tornar fun��o global para debug
         window.cleanupAllIntervals = cleanupAllIntervals;
         
-        // Funçãoo de debug para testar o carregamento
+        // Fun��o de debug para testar o carregamento
         window.debugPasswordRequests = async function() {
-            console.log('?? Debug: Testando carregamento de solicitações...');
+            console.log('?? Debug: Testando carregamento de solicita��es...');
             console.log('?? Modal existe:', !!document.getElementById('passwordRequestsModal'));
             console.log('?? Lista existe:', !!document.getElementById('passwordRequestsList'));
             console.log('?? Empty state existe:', !!document.getElementById('emptyPasswordRequests'));
@@ -17875,23 +17538,23 @@ Funcionalidades:
             await loadPasswordRequestsWithCache(true);
         };
         
-        // Funçãoo de debug simples para testar exibiçãoo
+        // Fun��o de debug simples para testar exibi��o
         window.testDisplayRequests = function() {
-            console.log('?? Testando exibiçãoo de solicitações...');
+            console.log('?? Testando exibi��o de solicita��es...');
             const testRequests = [
                 {
                     id: 'test-1',
                     status: 'pending',
-                    users: { name: 'Teste Usuário', email: 'teste@teste.com', role: 'funcionario' },
+                    users: { name: 'Teste Usu�rio', email: 'teste@teste.com', role: 'funcionario' },
                     created_at: new Date().toISOString(),
-                    reason: 'Teste de exibiçãoo'
+                    reason: 'Teste de exibi��o'
                 }
             ];
             
             displayPasswordRequests(testRequests);
         };
         
-        // Funçãoo para for�ar refresh das solicitações
+        // Fun��o para for�ar refresh das solicita��es
         window.refreshPasswordRequests = function() {
             loadPasswordRequestsWithCache(true);
         };
@@ -17899,7 +17562,7 @@ Funcionalidades:
         // Sistema de criptografia simples para senhas
         async function encryptPassword(password) {
             try {
-                // Usar Web Crypto API se disponível
+                // Usar Web Crypto API se dispon�vel
                 if (window.crypto && window.crypto.subtle) {
                     const encoder = new TextEncoder();
                     const data = encoder.encode(password);
@@ -17922,8 +17585,8 @@ Funcionalidades:
             try {
                 if (encryptedPassword.startsWith('enc_')) {
                     const encrypted = encryptedPassword.substring(4);
-                    // Para SHA-256, não podemos descriptografar, ent�o retornamos o hash
-                    // Em um sistema real, você usaria criptografia sim�trica
+                    // Para SHA-256, n�o podemos descriptografar, ent�o retornamos o hash
+                    // Em um sistema real, voc� usaria criptografia sim�trica
                     return encrypted;
                 }
                 return encryptedPassword;
@@ -17933,7 +17596,7 @@ Funcionalidades:
             }
         }
         
-        // Tornar funçãoes globais
+        // Tornar fun��es globais
         window.encryptPassword = encryptPassword;
         window.decryptPassword = decryptPassword;
         
@@ -17950,7 +17613,7 @@ Funcionalidades:
             checkPWAStatus();
         });
         
-        // Funçãoo para verificar status da PWA
+        // Fun��o para verificar status da PWA
         async function checkPWAStatus() {
             const isInstalled = await isPWAInstalled();
             const installedVersion = localStorage.getItem('pwa_version');
@@ -17969,7 +17632,7 @@ Funcionalidades:
             }
         }
         
-        // Verificar se PWA está instalada
+        // Verificar se PWA est� instalada
         async function isPWAInstalled() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
             const installData = localStorage.getItem('pwa_version');
@@ -17978,10 +17641,10 @@ Funcionalidades:
             return isStandalone || hasValidInstallData;
         }
         
-        // Funçãoo para instalar a PWA
+        // Fun��o para instalar a PWA
         async function installPWA() {
             if (!deferredPrompt) {
-                showNotification('App j� está instalado ou não pode ser instalado', 'error');
+                showNotification('App j� est� instalado ou n�o pode ser instalado', 'error');
                 return;
             }
             
@@ -17990,7 +17653,7 @@ Funcionalidades:
                 const { outcome } = await deferredPrompt.userChoice;
                 
                 if (outcome === 'accepted') {
-                    console.log('Usuário aceitou a instalaçãoo');
+                    console.log('Usu�rio aceitou a instala��o');
                     
                     setTimeout(async () => {
                         const isReallyInstalled = await checkRealInstallation();
@@ -18008,17 +17671,17 @@ Funcionalidades:
                             
                             showUninstallButton();
                         } else {
-                            showNotification('Erro: App não foi instalado corretamente', 'error');
+                            showNotification('Erro: App n�o foi instalado corretamente', 'error');
                         }
                     }, 2000);
                     
                 } else {
-                    showNotification('Instalaçãoo cancelada', 'info');
+                    showNotification('Instala��o cancelada', 'info');
                 }
                 
             } catch (error) {
-                console.error('Erro durante instalaçãoo:', error);
-                showNotification('Erro durante instalaçãoo: ' + error.message, 'error');
+                console.error('Erro durante instala��o:', error);
+                showNotification('Erro durante instala��o: ' + error.message, 'error');
             }
             
             deferredPrompt = null;
@@ -18033,7 +17696,7 @@ Funcionalidades:
             return isStandalone;
         }
         
-        // Obter informações do usuário atual
+        // Obter informa��es do usu�rio atual
         function getCurrentUserInfo() {
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
             return {
@@ -18045,7 +17708,7 @@ Funcionalidades:
             };
         }
         
-        // Funçãoo para desinstalar a PWA
+        // Fun��o para desinstalar a PWA
         async function uninstallPWA() {
             if (confirm('Tem certeza que deseja desinstalar o app?')) {
                 try {
@@ -18068,7 +17731,7 @@ Funcionalidades:
             }
         }
         
-        // Funçãoes para mostrar/esconder bot�es
+        // Fun��es para mostrar/esconder bot�es
         function showInstallButton() {
             document.getElementById('pwaInstallButton')?.classList.remove('hidden');
             document.getElementById('pwaUninstallButton')?.classList.add('hidden');
@@ -18079,16 +17742,16 @@ Funcionalidades:
             document.getElementById('pwaUninstallButton')?.classList.remove('hidden');
         }
         
-        // Detectar se o app j� está instalado
+        // Detectar se o app j� est� instalado
         window.addEventListener('appinstalled', () => {
             console.log('PWA foi instalada');
             showUninstallButton();
         });
         
-        // Service Worker removido - sistema MySQL não precisa
+        // Service Worker removido - sistema MySQL n�o precisa
         console.log('?? Service Worker desabilitado - sistema MySQL');
 
-        // ==================== DETECçãoO DE CONEX�O COM INTERNET ====================
+        // ==================== DETEC��O DE CONEX�O COM INTERNET ====================
         let wasOffline = false;
         
         // Detectar quando volta a conex�o
@@ -18097,7 +17760,7 @@ Funcionalidades:
             if (wasOffline) {
                 showServerConnectionLoading();
                 
-                // Simular sincronizaçãoo (você pode adicionar l�gica real aqui)
+                // Simular sincroniza��o (voc� pode adicionar l�gica real aqui)
                 setTimeout(() => {
                     hideServerConnectionLoading();
                     showNotification('Conex�o restaurada! Dados sincronizados.', 'success');
@@ -18113,7 +17776,7 @@ Funcionalidades:
             showNotification('Conex�o perdida. Trabalhando offline...', 'warning');
         });
         
-        // ==================== FUNçãoES DO MODAL PWA ====================
+        // ==================== FUN��ES DO MODAL PWA ====================
         
         // Abrir modal PWA
         function openPWAModal() {
@@ -18151,7 +17814,7 @@ Funcionalidades:
                         </div>
                         <div>
                             <h4 class="font-semibold text-green-800 dark:text-green-200">App Instalado</h4>
-                            <p class="text-green-600 dark:text-green-300 text-sm">LacTech está instalado e pronto para uso</p>
+                            <p class="text-green-600 dark:text-green-300 text-sm">LacTech est� instalado e pronto para uso</p>
                         </div>
                     </div>
                 `;
@@ -18182,7 +17845,7 @@ Funcionalidades:
                             </svg>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-800 dark:text-gray-200">Instalaçãoo Indisponível</h4>
+                            <h4 class="font-semibold text-gray-800 dark:text-gray-200">Instala��o Indispon�vel</h4>
                             <p class="text-gray-600 dark:text-gray-300 text-sm">Use o navegador para instalar o app</p>
                         </div>
                     </div>
@@ -18215,7 +17878,7 @@ Funcionalidades:
         
         async function loadProductionDataWithCache(farmId, dateRange = 'week') {
             if (!window.offlineManager) {
-                console.error('Offline Manager não disponível');
+                console.error('Offline Manager n�o dispon�vel');
                 return null;
             }
             
@@ -18252,10 +17915,10 @@ Funcionalidades:
             return await window.offlineManager.getData(cacheKey, fetchOnlineData);
         }
         
-        // Funçãoo para salvar dados de produção com sincronizaçãoo
+        // Fun��o para salvar dados de produ��o com sincroniza��o
         async function saveProductionDataWithSync(volumeData) {
             if (!window.offlineManager) {
-                console.error('Offline Manager não disponível');
+                console.error('Offline Manager n�o dispon�vel');
                 return false;
             }
             
@@ -18263,10 +17926,10 @@ Funcionalidades:
             return await window.offlineManager.saveData('volume_record', volumeData, true);
         }
         
-        // Funçãoo para carregar dados do usuário com cache
+        // Fun��o para carregar dados do usu�rio com cache
         async function loadUserDataWithCache() {
             if (!window.offlineManager) {
-                console.error('Offline Manager não disponível');
+                console.error('Offline Manager n�o dispon�vel');
                 return null;
             }
             
@@ -18276,7 +17939,7 @@ Funcionalidades:
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
-                if (!user) throw new Error('Usuário não autenticado');
+                if (!user) throw new Error('Usu�rio n�o autenticado');
                 
                 const { data: userData, error } = await db
                     .from('users')
@@ -18291,10 +17954,10 @@ Funcionalidades:
             return await window.offlineManager.getData(cacheKey, fetchOnlineData);
         }
         
-        // Funçãoo para carregar dados da fazenda com cache
+        // Fun��o para carregar dados da fazenda com cache
         async function loadFarmDataWithCache(farmId) {
             if (!window.offlineManager) {
-                console.error('Offline Manager não disponível');
+                console.error('Offline Manager n�o dispon�vel');
                 return null;
             }
             
@@ -18318,7 +17981,7 @@ Funcionalidades:
         // Service Worker listener removido - sistema MySQL
         console.log('?? Service Worker listener desabilitado - sistema MySQL');
         
-        // Tornar funçãoes offline globais
+        // Tornar fun��es offline globais
         window.loadProductionDataWithCache = loadProductionDataWithCache;
         window.saveProductionDataWithSync = saveProductionDataWithSync;
         window.loadUserDataWithCache = loadUserDataWithCache;
@@ -18326,24 +17989,24 @@ Funcionalidades:
         
         
     
-        // ==================== CONTINUAçãoO - INICIALIZAçãoO ====================
+        // ==================== CONTINUA��O - INICIALIZA��O ====================
         document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar notificações nativas
+        // Inicializar notifica��es nativas
         if (window.nativeNotifications) {
             window.nativeNotifications.init();
             
-            // Solicitar permiss�o de notificações automaticamente
+            // Solicitar permiss�o de notifica��es automaticamente
             setTimeout(() => {
                 window.nativeNotifications.requestNotificationPermission();
             }, 3000);
         }
 
-        // Inicializar sistema de sincronizaçãoo offline
+        // Inicializar sistema de sincroniza��o offline
         if (window.offlineSyncManager) {
-            console.log('?? Sistema de sincronizaçãoo offline inicializado');
+            console.log('?? Sistema de sincroniza��o offline inicializado');
         }
 
-        // Funçãoes para atualização em tempo real dos gr�ficos
+        // Fun��es para atualiza��o em tempo real dos gr�ficos
         window.updateVolumeCharts = async function() {
             try {
                 await loadWeeklyVolumeChart();
@@ -18358,7 +18021,7 @@ Funcionalidades:
         window.updateVolumeStats = async function() {
             try {
                 await loadVolumeData();
-                console.log('?? Estatísticas de volume atualizadas');
+                console.log('?? Estat�sticas de volume atualizadas');
             } catch (error) {
                 console.error('? Erro ao atualizar estat�sticas de volume:', error);
             }
@@ -18460,16 +18123,16 @@ Funcionalidades:
                 // Atualizar estat�sticas gerais
                 await loadDashboardData();
                 
-                console.log('? Estatísticas do dashboard atualizadas');
+                console.log('? Estat�sticas do dashboard atualizadas');
             } catch (error) {
                 console.error('? Erro ao atualizar estat�sticas do dashboard:', error);
             }
         };
 
-        // Funçãoo para for�ar atualização completa dos registros de volume
+        // Fun��o para for�ar atualiza��o completa dos registros de volume
         window.forceRefreshVolumeRecords = async function() {
             try {
-                console.log('?? For�ando atualização completa dos registros de volume...');
+                console.log('?? For�ando atualiza��o completa dos registros de volume...');
                 
                 // Limpar cache
                 if (CacheManager) {
@@ -18483,14 +18146,14 @@ Funcionalidades:
                 
                 console.log('? Registros de volume atualizados com sucesso');
             } catch (error) {
-                console.error('? Erro ao for�ar atualização dos registros:', error);
+                console.error('? Erro ao for�ar atualiza��o dos registros:', error);
             }
         };
 
-        // Funçãoo para corrigir registros existentes sem nome do funcionário
+        // Fun��o para corrigir registros existentes sem nome do funcion�rio
         window.fixVolumeRecordsEmployeeNames = async function() {
             try {
-                console.log('?? Corrigindo nomes de funcionários nos registros existentes...');
+                console.log('?? Corrigindo nomes de funcion�rios nos registros existentes...');
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
@@ -18504,7 +18167,7 @@ Funcionalidades:
 
                 if (!userData) return;
 
-                // Buscar registros para verificar se t�m nomes de funcionários
+                // Buscar registros para verificar se t�m nomes de funcion�rios
                 const { data: recordsWithoutName, error: fetchError } = await db
                     .from('volume_records')
                     .select(`
@@ -18521,14 +18184,14 @@ Funcionalidades:
                 }
 
                 if (recordsWithoutName && recordsWithoutName.length > 0) {
-                    console.log(`? Encontrados ${recordsWithoutName.length} registros com dados de funcionários`);
-                    console.log('?? Os nomes dos funcionários s�o obtidos automaticamente via relacionamento com a tabela users');
+                    console.log(`? Encontrados ${recordsWithoutName.length} registros com dados de funcion�rios`);
+                    console.log('?? Os nomes dos funcion�rios s�o obtidos automaticamente via relacionamento com a tabela users');
                 } else {
-                    console.log('?? Nenhum registro encontrado para verificaçãoo');
+                    console.log('?? Nenhum registro encontrado para verifica��o');
                 }
                 
             } catch (error) {
-                console.error('? Erro ao corrigir nomes de funcionários:', error);
+                console.error('? Erro ao corrigir nomes de funcion�rios:', error);
             }
         };
         });
@@ -18552,16 +18215,16 @@ Funcionalidades:
             }
         }
 
-        // Funçãoes de geraçãoo de relatórios
+        // Fun��es de gera��o de relat�rios
         async function generateVolumeReport() {
             try {
-                showCustomLoading('Gerando relatório de volume...', 'generate');
+                showCustomLoading('Gerando relat�rio de volume...', 'generate');
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    throw new Error('Usuário não autenticado');
+                    throw new Error('Usu�rio n�o autenticado');
                 }
 
                 // Sistema Lagoa Do Mato
@@ -18572,7 +18235,7 @@ Funcionalidades:
                     .single();
 
                 if (!userData) {
-                    throw new Error('Farm ID não encontrado');
+                    throw new Error('Farm ID n�o encontrado');
                 }
 
                 // Buscar dados de volume
@@ -18591,24 +18254,24 @@ Funcionalidades:
                 await generateVolumePDF(volumeData || []);
                 
                 hideCustomLoading();
-                showNotification('Relatário de volume gerado com sucesso!', 'success');
+                showNotification('Relat�rio de volume gerado com sucesso!', 'success');
                 
             } catch (error) {
                 hideCustomLoading();
-                console.error('Erro ao gerar relatório de volume:', error);
-                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+                console.error('Erro ao gerar relat�rio de volume:', error);
+                showNotification('Erro ao gerar relat�rio: ' + error.message, 'error');
             }
         }
 
         async function generateQualityReport() {
             try {
-                showCustomLoading('Gerando relatório de qualidade...', 'generate');
+                showCustomLoading('Gerando relat�rio de qualidade...', 'generate');
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    throw new Error('Usuário não autenticado');
+                    throw new Error('Usu�rio n�o autenticado');
                 }
 
                 // Sistema Lagoa Do Mato
@@ -18619,7 +18282,7 @@ Funcionalidades:
                     .single();
 
                 if (!userData) {
-                    throw new Error('Farm ID não encontrado');
+                    throw new Error('Farm ID n�o encontrado');
                 }
 
                 // Buscar dados de qualidade
@@ -18638,24 +18301,24 @@ Funcionalidades:
                 await generateQualityPDF(qualityData || []);
                 
                 hideCustomLoading();
-                showNotification('Relatário de qualidade gerado com sucesso!', 'success');
+                showNotification('Relat�rio de qualidade gerado com sucesso!', 'success');
                 
             } catch (error) {
                 hideCustomLoading();
-                console.error('Erro ao gerar relatório de qualidade:', error);
-                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+                console.error('Erro ao gerar relat�rio de qualidade:', error);
+                showNotification('Erro ao gerar relat�rio: ' + error.message, 'error');
             }
         }
 
         async function generateFinancialReport() {
             try {
-                showCustomLoading('Gerando relatório financeiro...', 'generate');
+                showCustomLoading('Gerando relat�rio financeiro...', 'generate');
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    throw new Error('Usuário não autenticado');
+                    throw new Error('Usu�rio n�o autenticado');
                 }
 
                 // Sistema Lagoa Do Mato
@@ -18666,7 +18329,7 @@ Funcionalidades:
                     .single();
 
                 if (!userData) {
-                    throw new Error('Farm ID não encontrado');
+                    throw new Error('Farm ID n�o encontrado');
                 }
 
                 // Buscar dados financeiros
@@ -18685,12 +18348,12 @@ Funcionalidades:
                 await generatePaymentsPDF(financialData || []);
                 
                 hideCustomLoading();
-                showNotification('Relatário financeiro gerado com sucesso!', 'success');
+                showNotification('Relat�rio financeiro gerado com sucesso!', 'success');
                 
             } catch (error) {
                 hideCustomLoading();
-                console.error('Erro ao gerar relatório financeiro:', error);
-                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+                console.error('Erro ao gerar relat�rio financeiro:', error);
+                showNotification('Erro ao gerar relat�rio: ' + error.message, 'error');
             }
         }
 
@@ -18722,7 +18385,7 @@ Funcionalidades:
                 
                 if (!user) return;
 
-                // Buscar dados do usuário
+                // Buscar dados do usu�rio
                 const { data: userData, error: userError } = await db
                     .from('users')
                     .select('report_farm_name, report_farm_logo_base64')
@@ -18730,7 +18393,7 @@ Funcionalidades:
                     .single();
 
                 if (userError) {
-                    console.error('Erro ao buscar dados do usuário:', userError);
+                    console.error('Erro ao buscar dados do usu�rio:', userError);
                     return;
                 }
 
@@ -18739,7 +18402,7 @@ Funcionalidades:
                     let farmName = userData.report_farm_name;
                     
                     if (!farmName) {
-                        // Buscar nome da fazenda se não tiver personalizado
+                        // Buscar nome da fazenda se n�o tiver personalizado
                         const { data: farmData, error: farmError } = await db
                             .from('farms')
                             .select('name')
@@ -18751,7 +18414,7 @@ Funcionalidades:
                         }
                     }
                     
-                    // Fallback para nome padrão
+                    // Fallback para nome padr�o
                     if (!farmName) {
                         farmName = await getFarmName() || 'Minha Fazenda';
                     }
@@ -18763,7 +18426,7 @@ Funcionalidades:
                     }
                 }
             } catch (error) {
-                console.error('Erro ao carregar configurações:', error);
+                console.error('Erro ao carregar configura��es:', error);
             }
         }
 
@@ -18772,12 +18435,12 @@ Funcionalidades:
             if (!file) return;
             
             if (!file.type.startsWith('image/')) {
-                showNotification('Por favor, selecione um arquivo de imagem válido', 'error');
+                showNotification('Por favor, selecione um arquivo de imagem v�lido', 'error');
                 return;
             }
             
             if (file.size > 2 * 1024 * 1024) {
-                showNotification('A imagem deve ter no máximo 2MB', 'error');
+                showNotification('A imagem deve ter no m�ximo 2MB', 'error');
                 return;
             }
             
@@ -18817,13 +18480,13 @@ Funcionalidades:
 
         async function saveCustomReportSettings() {
             try {
-                showCustomLoading('Salvando configurações...', 'save');
+                showCustomLoading('Salvando configura��es...', 'save');
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    throw new Error('Usuário não autenticado');
+                    throw new Error('Usu�rio n�o autenticado');
                 }
 
                 const farmName = document.getElementById('customReportFarmName').value;
@@ -18843,32 +18506,32 @@ Funcionalidades:
                     throw error;
                 }
 
-                // Atualizar configurações globais
+                // Atualizar configura��es globais
                 if (window.reportSettings) {
                     window.reportSettings.farmName = farmName;
                     window.reportSettings.farmLogo = farmLogo;
                 }
 
                 hideCustomLoading();
-                showNotification('Configurações salvas com sucesso!', 'success');
+                showNotification('Configura��es salvas com sucesso!', 'success');
                 closeCustomReportModal();
                 
             } catch (error) {
                 hideCustomLoading();
-                console.error('Erro ao salvar configurações:', error);
-                showNotification('Erro ao salvar configurações: ' + error.message, 'error');
+                console.error('Erro ao salvar configura��es:', error);
+                showNotification('Erro ao salvar configura��es: ' + error.message, 'error');
             }
         }
 
         async function generateCustomReport() {
             try {
-                showCustomLoading('Gerando relatório personalizado...', 'generate');
+                showCustomLoading('Gerando relat�rio personalizado...', 'generate');
                 
                 // Usando MySQL direto atrav�s do objeto 'db'
                 const { data: { user } } = await db.auth.getUser();
                 
                 if (!user) {
-                    throw new Error('Usuário não autenticado');
+                    throw new Error('Usu�rio n�o autenticado');
                 }
 
                 // Sistema Lagoa Do Mato
@@ -18879,26 +18542,26 @@ Funcionalidades:
                     .single();
 
                 if (!userData) {
-                    throw new Error('Farm ID não encontrado');
+                    throw new Error('Farm ID n�o encontrado');
                 }
 
-                // Obter configurações do modal
+                // Obter configura��es do modal
                 const farmName = document.getElementById('customReportFarmName').value;
                 const logoImage = document.getElementById('customReportLogoImage');
                 const farmLogo = logoImage.src.includes('data:image') ? logoImage.src : null;
 
-                // Configurar window.reportSettings com as configurações do modal
+                // Configurar window.reportSettings com as configura��es do modal
                 if (!window.reportSettings) {
                     window.reportSettings = {};
                 }
                 window.reportSettings.farmName = farmName;
                 window.reportSettings.farmLogo = farmLogo;
 
-                console.log('Configurações do relatório personalizado:');
+                console.log('Configura��es do relat�rio personalizado:');
                 console.log('- Nome da fazenda:', farmName);
                 console.log('- Logo da fazenda:', farmLogo ? 'Carregada' : 'N�o carregada');
 
-                // Buscar dados de volume (relatório personalizado combina volume + qualidade)
+                // Buscar dados de volume (relat�rio personalizado combina volume + qualidade)
                 const { data: volumeData, error: volumeError } = await db
                     .from('volume_records')
                     .select('*')
@@ -18910,17 +18573,17 @@ Funcionalidades:
                     throw volumeError;
                 }
 
-                // Gerar PDF personalizado (usando função de volume como base)
+                // Gerar PDF personalizado (usando fun��o de volume como base)
                 await generateVolumePDF(volumeData || []);
                 
                 hideCustomLoading();
-                showNotification('Relatário personalizado gerado com sucesso!', 'success');
+                showNotification('Relat�rio personalizado gerado com sucesso!', 'success');
                 closeCustomReportModal();
                 
             } catch (error) {
                 hideCustomLoading();
-                console.error('Erro ao gerar relatório personalizado:', error);
-                showNotification('Erro ao gerar relatório: ' + error.message, 'error');
+                console.error('Erro ao gerar relat�rio personalizado:', error);
+                showNotification('Erro ao gerar relat�rio: ' + error.message, 'error');
             }
         }
 
@@ -18933,7 +18596,7 @@ Funcionalidades:
             if (loadingModal && loadingMessage && loadingIcon) {
                 loadingMessage.textContent = message;
                 
-                // Definir ícone baseado no tipo
+                // Definir �cone baseado no tipo
                 if (type === 'save') {
                     loadingIcon.innerHTML = `
                         <svg class="w-8 h-8 text-indigo-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -18963,8 +18626,8 @@ Funcionalidades:
             }
         }
     
-// CONTINUA O SCRIPT - NÃO FECHAR AQUI!
-// ========== O C�DIGO ABAIXO � CSS/HTML MAS FAZ PARTE DO DOCUMENTO, NÃO DO SCRIPT ==========
+// CONTINUA O SCRIPT - N�O FECHAR AQUI!
+// ========== O C�DIGO ABAIXO � CSS/HTML MAS FAZ PARTE DO DOCUMENTO, N�O DO SCRIPT ==========
 </script>
 
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
@@ -19042,7 +18705,7 @@ Funcionalidades:
             .space-y-4 > * + * { margin-top: 0.6rem !important; }
             .space-y-6 > * + * { margin-top: 0.8rem !important; }
             
-            /* Botões menores */
+            /* Bot�es menores */
             .btn-sm { padding: 0.3rem 0.6rem !important; font-size: 0.7rem !important; }
             .btn-md { padding: 0.5rem 0.8rem !important; font-size: 0.8rem !important; }
             
@@ -19187,7 +18850,7 @@ Funcionalidades:
             }
         }
         
-        /* Ajustes para inputs e formulários */
+        /* Ajustes para inputs e formul�rios */
         @media (max-width: 480px) {
             input, select, textarea { 
                 font-size: 0.85rem !important; 
@@ -19231,7 +18894,7 @@ Funcionalidades:
             }
         }
         
-        /* Garantir que os bot�es de ediçãoo sejam ocultados corretamente */
+        /* Garantir que os bot�es de edi��o sejam ocultados corretamente */
         #profileEditButtons.hidden {
             display: none !important;
             visibility: hidden !important;
@@ -19239,7 +18902,7 @@ Funcionalidades:
             pointer-events: none !important;
         }
         
-        /* For�ar ocultaçãoo dos bot�es quando não há mudan�as */
+        /* For�ar oculta��o dos bot�es quando n�o h� mudan�as */
         #profileEditButtons[style*="display: none"] {
             visibility: hidden !important;
             opacity: 0 !important;
@@ -19255,7 +18918,7 @@ Funcionalidades:
             pointer-events: none !important;
         }
         
-        /* For�ar ocultaçãoo das telas de processamento */
+        /* For�ar oculta��o das telas de processamento */
         #photoProcessingScreen[style*="display: none"],
         #managerPhotoProcessingScreen[style*="display: none"] {
             visibility: hidden !important;
@@ -19292,7 +18955,7 @@ Funcionalidades:
         }
         
         
-        /* Melhorar aparência dos apps no modal estilo mobile */
+        /* Melhorar apar�ncia dos apps no modal estilo mobile */
         #moreModal .app-item {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             padding: 8px;
@@ -19310,7 +18973,7 @@ Funcionalidades:
         }
         
         
-        /* Garantir que o ícone de perfil seja ocultado quando h� foto */
+        /* Garantir que o �cone de perfil seja ocultado quando h� foto */
         #headerProfileIcon.hidden,
         #modalProfileIcon.hidden,
         #managerProfilePlaceholder.hidden {
@@ -19379,7 +19042,7 @@ Funcionalidades:
             width: 100%;
         }
         
-        /* Corrigir centralizaçãoo no desktop */
+        /* Corrigir centraliza��o no desktop */
         @media (min-width: 640px) {
             #secondaryAccountsList {
                 display: flex;
@@ -19400,7 +19063,7 @@ Funcionalidades:
             width: 100%;
         }
         
-        /* ==================== ANIMAçãoO DE CONEX�O COM SERVIDOR ==================== */
+        /* ==================== ANIMA��O DE CONEX�O COM SERVIDOR ==================== */
         /* From Uiverse.io by Juanes200122 */ 
         #svg_svg {
             zoom: 0.3;
@@ -19485,7 +19148,7 @@ Funcionalidades:
             white-space: nowrap;
         }
         
-        /* Animações do header din�mico - Global */
+        /* Anima��es do header din�mico - Global */
         #profileModalHeader {
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
         }
@@ -19534,9 +19197,9 @@ Funcionalidades:
                 }
             }
             
-            /* Conteúdo do modal responsivo - padding removido para evitar conflito com sticky header */
+            /* Conte�do do modal responsivo - padding removido para evitar conflito com sticky header */
             
-            /* Animações do header din�mico */
+            /* Anima��es do header din�mico */
             #profileModalHeader {
                 transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
             }
@@ -19568,7 +19231,7 @@ Funcionalidades:
             }
         }
         
-        /* Animaçãoo dos tr�s pontinhos para indicador de digitando */
+        /* Anima��o dos tr�s pontinhos para indicador de digitando */
         .typing-dot {
             width: 6px;
             height: 6px;
@@ -19598,9 +19261,9 @@ Funcionalidades:
     </style>
     
     
-<!-- Estilos personalizados para animações premium da seçãoo de relatórios -->
+<!-- Estilos personalizados para anima��es premium da se��o de relat�rios -->
     <style>
-        /* Animações customizadas */
+        /* Anima��es customizadas */
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-6px); }
@@ -19711,17 +19374,17 @@ Funcionalidades:
             --tw-ring-offset-width: 2px; 
         } 
         
-        /* Classe para background do ícone */ 
+        /* Classe para background do �cone */ 
         .bg-forest-100 { 
             background-color: #f0f9f0; 
         } 
         
-        /* Definiçãoo de cores personalizadas para o ring */
+        /* Defini��o de cores personalizadas para o ring */
         :root {
             --forest-300: #86d186;
         }
         
-        /* Animações da C�mera */
+        /* Anima��es da C�mera */
         @keyframes focusPulse {
             0%, 100% { transform: scale(1); opacity: 0.4; }
             50% { transform: scale(1.05); opacity: 0.8; }
@@ -19787,7 +19450,7 @@ Funcionalidades:
                     </div>
                     
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Como você quer adicionar sua foto?</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Como voc� quer adicionar sua foto?</h3>
                         <p class="text-gray-600">Escolha entre tirar uma foto ou selecionar da galeria</p>
                     </div>
                     
@@ -19824,7 +19487,7 @@ Funcionalidades:
                         </svg>
                     </div>
                     <div>
-                    <h2 class="text-xl font-bold text-gray-900 ">Mais Opções</h2>
+                    <h2 class="text-xl font-bold text-gray-900 ">Mais Op��es</h2>
                     <p class="text-sm text-gray-600 ">Acesse ferramentas e recursos</p>
                     </div>
                 </div>
@@ -19835,10 +19498,10 @@ Funcionalidades:
                 </button>
             </div>
             
-        <!-- Conteúdo melhorado -->
+        <!-- Conte�do melhorado -->
         <div class="p-6">
             <div class="max-w-2xl mx-auto">
-                <!-- Seção: Ferramentas Principais -->
+                <!-- Se��o: Ferramentas Principais -->
                 <div class="mb-8">
                     <h3 class="text-lg font-semibold text-gray-900  mb-4 flex items-center">
                         <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -19847,7 +19510,7 @@ Funcionalidades:
                         Ferramentas Principais
                     </h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- Relatórios -->
+                    <!-- Relat�rios -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openReportsTab()">
                             <div class="flex flex-col items-center text-center space-y-3">
                                 <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -19856,13 +19519,13 @@ Funcionalidades:
                                 </svg>
                             </div>
                             <div>
-                                    <p class="font-semibold text-gray-900  text-sm">Relatórios</p>
-                                    <p class="text-xs text-gray-600 ">Análises e dados</p>
+                                    <p class="font-semibold text-gray-900  text-sm">Relat�rios</p>
+                                    <p class="text-xs text-gray-600 ">An�lises e dados</p>
                             </div>
                         </div>
                     </div>
                     
-                        <!-- Gestão de Rebanho -->
+                        <!-- Gest�o de Rebanho -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showAnimalManagement()">
                             <div class="flex flex-col items-center text-center space-y-3">
                                 <div class="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -19871,13 +19534,13 @@ Funcionalidades:
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Gestão de Rebanho</p>
+                                    <p class="font-semibold text-gray-900 text-sm">Gest�o de Rebanho</p>
                                     <p class="text-xs text-gray-600">Animais e IA</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Gestão Sanitária -->
+                        <!-- Gest�o Sanit�ria -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showHealthManagement()">
                             <div class="flex flex-col items-center text-center space-y-3">
                                 <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-700 rounded-2xl flex items-center justify-center shadow-lg">
@@ -19886,13 +19549,13 @@ Funcionalidades:
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Gestão Sanitária</p>
-                                    <p class="text-xs text-gray-600">Saúde e vacinas</p>
+                                    <p class="font-semibold text-gray-900 text-sm">Gest�o Sanit�ria</p>
+                                    <p class="text-xs text-gray-600">Sa�de e vacinas</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Reprodução -->
+                        <!-- Reprodu��o -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showReproductionManagement()">
                             <div class="flex flex-col items-center text-center space-y-3">
                                 <div class="w-16 h-16 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -19901,13 +19564,13 @@ Funcionalidades:
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Reprodução</p>
+                                    <p class="font-semibold text-gray-900 text-sm">Reprodu��o</p>
                                     <p class="text-xs text-gray-600">Prenhez e DPP</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Dashboard Analítico -->
+                        <!-- Dashboard Anal�tico -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showAnalyticsDashboard()">
                             <div class="flex flex-col items-center text-center space-y-3">
                                 <div class="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center shadow-lg">
@@ -19916,7 +19579,7 @@ Funcionalidades:
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-900 text-sm">Dashboard Analítico</p>
+                                    <p class="font-semibold text-gray-900 text-sm">Dashboard Anal�tico</p>
                                     <p class="text-xs text-gray-600">Indicadores e KPIs</p>
                                 </div>
                             </div>
@@ -19952,13 +19615,13 @@ Funcionalidades:
                         </div>
                     </div>
                     
-                <!-- Seção: Utilitários -->
+                <!-- Se��o: Utilit�rios -->
                 <div class="mb-8">
                     <h3 class="text-lg font-semibold text-gray-900  mb-4 flex items-center">
                         <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                         </svg>
-                        Utilitários
+                        Utilit�rios
                     </h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         
@@ -20021,17 +19684,17 @@ Funcionalidades:
                         </div>
                     </div>
                     
-        <!-- Conteúdo -->
+        <!-- Conte�do -->
         <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50">
             <div class="max-w-4xl mx-auto">
                 <div id="contactsList" class="space-y-4">
-                    <!-- Contatos serão carregados aqui -->
+                    <!-- Contatos ser�o carregados aqui -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Formulário de Contato -->
+    <!-- Modal de Formul�rio de Contato -->
     <div id="contactFormModal" class="fixed inset-0 bg-black bg-opacity-50 z-[99999] hidden flex items-center justify-center" style="display: none;">
         <div class="bg-white rounded-2xl p-6 shadow-2xl max-w-md w-full mx-4">
             <div class="flex items-center justify-between mb-6">
@@ -20078,7 +19741,7 @@ Funcionalidades:
                             <option value="Distribuidora">Distribuidora</option>
                             <option value="Comprador">Comprador</option>
                             <option value="Fornecedor">Fornecedor</option>
-                            <option value="Veterinário">Veterinário</option>
+                            <option value="Veterin�rio">Veterin�rio</option>
                             <option value="T�cnico">T�cnico</option>
                             <option value="Transportadora">Transportadora</option>
                             <option value="Banco">Banco</option>
@@ -20086,6 +19749,7 @@ Funcionalidades:
                             <option value="Outros">Outros</option>
                         </select>
                         </div>
+
                     <!-- Observa��es -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Observa��es</label>
@@ -21551,7 +21215,9 @@ function switchAnimalTab(tabName) {
     document.getElementById(tabName + 'Tab').classList.add('text-blue-600', 'border-blue-600');
 }
 
-====================================================
+// =====================================================
+// MODAIS DE CADASTRO - GEST�O DE ANIMAIS
+// =====================================================
 
 function showAddAnimalModal() {
     const modal = document.createElement('div');
@@ -23893,189 +23559,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.log('? Service Worker registration failed:', error));
     }
     
-    // Loading screen control - 4 seconds duration to cover interface bugs
+    // Mark content as loaded
     setTimeout(function() {
-        // Fade out loading screen
-        const loadingScreen = document.getElementById('loadingScreen');
-        if (loadingScreen) {
-            loadingScreen.classList.add('fade-out');
-            
-            // Remove loading screen after fade animation
-            setTimeout(function() {
-                loadingScreen.style.display = 'none';
-            }, 500); // Wait for fade-out animation to complete
-        }
-        
-        // Show main content
-        document.body.classList.add('loaded', 'page-loaded');
+        document.body.classList.add('loaded');
         document.querySelector('.main-content').classList.add('loaded');
-        
-        // Mark page as fully loaded
-        window.pageFullyLoaded = true;
-        window.modalEnabled = true;
-        
-        // Stop observing modal changes
-        if (modalObserver) {
-            modalObserver.disconnect();
-        }
-        
-        console.log('Page fully loaded, modal is now available for manual opening');
-        
-        // Load farm name after page is ready
-        setTimeout(async () => {
-            try {
-                await setFarmName();
-                console.log('Farm name loaded successfully');
-            } catch (error) {
-                console.log('Error loading farm name:', error);
-            }
-        }, 1000);
-        
-        // Add event listener to profile button as backup
-        setTimeout(() => {
-            const profileButton = document.getElementById('profileButton');
-            if (profileButton) {
-                profileButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('Profile button clicked via event listener');
-                    openProfileModalManually();
-                });
-            }
-        }, 1500);
-        
-        // Override the original openProfileModal function
-        const originalOpenProfileModal = window.openProfileModal;
-        window.openProfileModal = function() {
-            if (!window.pageFullyLoaded || !window.modalEnabled) {
-                console.log('Modal blocked - page not ready');
-                return;
-            }
-            
-            // Enable modal and open it
-            enableModal();
-            if (originalOpenProfileModal) {
-                originalOpenProfileModal();
-            } else {
-                // Fallback opening
-                const modal = document.getElementById('profileModal');
-                if (modal) {
-                    modal.classList.add('show');
-                    modal.style.display = 'flex';
-                    
-                    // Setup header if needed
-                    setTimeout(() => {
-                        if (typeof setupProfileModalHeader === 'function') {
-                            setupProfileModalHeader();
-                        }
-                    }, 100);
-                }
-            }
-        };
-        
-        // Function for manual opening (called by button click)
-        window.openProfileModalManually = function() {
-            console.log('Attempting to open modal manually...');
-            
-            if (!window.pageFullyLoaded || !window.modalEnabled) {
-                console.log('Modal blocked - page not ready');
-                return;
-            }
-            
-            console.log('Modal should open now...');
-            
-            const modal = document.getElementById('profileModal');
-            if (modal) {
-                // Enable modal with proper positioning
-                enableModal();
-                
-                // Add show class and remove hidden
-                modal.classList.add('show');
-                modal.classList.remove('hidden');
-                
-                // Ensure proper modal styling - FULLSCREEN
-                const modalContent = modal.querySelector('.modal-content');
-                if (modalContent) {
-                    modalContent.style.background = 'white';
-                    modalContent.style.borderRadius = '0';
-                    modalContent.style.boxShadow = 'none';
-                    modalContent.style.maxWidth = '100vw';
-                    modalContent.style.maxHeight = '100vh';
-                    modalContent.style.width = '100vw';
-                    modalContent.style.height = '100vh';
-                    modalContent.style.overflowY = 'auto';
-                    modalContent.style.position = 'relative';
-                    modalContent.style.margin = '0';
-                }
-                
-                // Setup header if needed
-                setTimeout(() => {
-                    if (typeof setupProfileModalHeader === 'function') {
-                        setupProfileModalHeader();
-                    }
-                }, 100);
-                
-                console.log('Modal opened successfully with proper styling');
-            } else {
-                console.log('Modal not found');
-            }
-        };
-        
-        // Function to close modal properly
-        window.closeProfileModal = function() {
-            const modal = document.getElementById('profileModal');
-            if (modal) {
-                modal.classList.remove('show', 'modal-enabled');
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-                modal.style.visibility = 'hidden';
-                modal.style.opacity = '0';
-                modal.style.pointerEvents = 'none';
-                modal.style.zIndex = '-1';
-                console.log('Modal closed successfully');
-            }
-        };
-        // Prevent user modals from flashing on page load
-        // Force hide all user modals immediately
-        const userModals = ['addUserModal', 'editUserModal', 'deleteUserModal'];
-        userModals.forEach(modalId => {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.style.display = 'none !important';
-                modal.style.visibility = 'hidden !important';
-                modal.style.opacity = '0 !important';
-                modal.style.zIndex = '-1 !important';
-                modal.style.pointerEvents = 'none !important';
-            }
-        });
-
-        // Add click outside to close modals
-        document.addEventListener('click', function(event) {
-            // Close user modals when clicking outside
-            const userModals = ['addUserModal', 'editUserModal', 'deleteUserModal'];
-            userModals.forEach(modalId => {
-                const modal = document.getElementById(modalId);
-                if (modal && modal.classList.contains('show')) {
-                    if (event.target === modal) {
-                        if (modalId === 'addUserModal') {
-                            closeAddUserModal();
-                        } else if (modalId === 'editUserModal') {
-                            closeEditUserModal();
-                        } else if (modalId === 'deleteUserModal') {
-                            closeDeleteUserModal();
-                        }
-                    }
-                }
-            });
-            
-            // Close profile modal when clicking outside
-            const profileModal = document.getElementById('profileModal');
-            if (profileModal && profileModal.classList.contains('show')) {
-                if (event.target === profileModal) {
-                    closeProfileModal();
-                }
-            }
-        });
-    }, 5000); // 5 seconds loading time to cover interface bugs
+    }, 100);
 });
 
 // Performance monitoring

@@ -7,7 +7,7 @@
 
 // Configurações do banco de dados - LOCAL (XAMPP)
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'u311882628_lactech_lgmato');
+define('DB_NAME', 'lactech_lgmato');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
@@ -47,7 +47,7 @@ date_default_timezone_set('America/Sao_Paulo');
 PARA TESTAR LOCALMENTE (XAMPP):
 1. Renomeie config_mysql.php para config_mysql_production.php (backup)
 2. Renomeie este arquivo (config_local.php) para config_mysql.php
-3. Crie o banco "u311882628_lactech_lgmato" no phpMyAdmin local
+3. Crie o banco "lactech_lgmato" no phpMyAdmin local
 4. Importe o banco_mysql_completo.sql
 5. Execute resetar_senhas.php para criar usuários de teste
 6. Teste em http://localhost/...

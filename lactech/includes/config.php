@@ -61,7 +61,7 @@ class DatabaseConfig {
     private static $configs = [
         'local' => [
             'host' => 'localhost',
-            'database' => 'lactech_lagoa_mato',
+            'database' => 'lactech_lgmato',
             'username' => 'root',
             'password' => '',
             'charset' => 'utf8mb4',
