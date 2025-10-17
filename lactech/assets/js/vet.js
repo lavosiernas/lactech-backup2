@@ -96,7 +96,7 @@ const VetApp = {
 
   // Atualizar interface com dados do usuário
   updateUserInterface(userData) {
-    const farmName = this.state.currentFarm?.name || "Minha Fazenda"
+    const farmName = this.state.currentFarm?.name || "Lagoa do Mato"
     const vetName = userData?.name || this.state.currentUser?.email?.split("@")[0] || "Veterinário"
     const formalName = this.extractFormalName(vetName)
 
