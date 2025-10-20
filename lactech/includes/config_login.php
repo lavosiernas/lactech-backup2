@@ -1,58 +1,11 @@
 <?php
 /**
  * CONFIGURAÇÃO LOGIN - LACTECH
- * Configuração mínima apenas para login funcionar
+ * Configuração segura usando variáveis de ambiente
  */
 
-// Detectar ambiente
-$isLocal = (
-    strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
-    strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false
-);
-
-// Configurações do banco
-if ($isLocal) {
-    // LOCAL
-    define('DB_HOST', 'localhost');
-    define('DB_NAME', 'lactech_lgmato');
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
-    define('BASE_URL', 'http://localhost/GitHub/lactech-backup2/lactechsys/');
-} else {
-    // PRODUÇÃO
-    define('DB_HOST', 'localhost');
-    define('DB_NAME', 'u311882628_lactech_lgmato');
-    define('DB_USER', 'u311882628_xandriaAgro');
-    define('DB_PASS', 'Lavosier0012!');
-    define('BASE_URL', 'https://lactechsys.com/');
-}
-
-// Configurações gerais
-define('APP_NAME', 'LacTech');
-define('FARM_NAME', 'Lagoa do Mato');
-define('FARM_ID', 1);
-
-// Configurações de sessão
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', $isLocal ? 0 : 1);
-
-// Configurações de erro
-if ($isLocal) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-}
-
-// Timezone
-date_default_timezone_set('America/Sao_Paulo');
-
-// Iniciar sessão
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Carregar configurações de ambiente
+require_once __DIR__ . '/config_env.php';
 
 // Função para conectar ao banco
 function getDatabase() {
@@ -109,6 +62,10 @@ function loginUser($email, $password) {
         $_SESSION['profile_photo'] = $user['profile_photo'];
         $_SESSION['password_change_required'] = $user['password_change_required'];
         $_SESSION['logged_in'] = true;
+        $_SESSION['login_time'] = time();
+        
+        // Renovar o cookie de sessão para durar 1 ano (permanente)
+        setcookie(session_name(), session_id(), time() + 31536000, '/');
         
         // Remover senha da resposta
         unset($user['password']);

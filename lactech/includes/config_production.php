@@ -19,7 +19,7 @@ define('APP_VERSION', '2.0.0');
 define('FARM_NAME', 'Lagoa do Mato');
 
 // URLs do sistema - ALTERAR PARA SEU DOMÍNIO
-define('BASE_URL', 'https://seudominio.com/lactechsys/');
+define('BASE_URL', 'https://seudominio.com/lactech/');
 define('LOGIN_URL', 'login.php');
 define('DASHBOARD_URL', 'gerente.php');
 

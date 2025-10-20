@@ -1,109 +1,190 @@
 <?php
+// API para Dashboard Analítico
+
+// Header ANTES de qualquer output
 header('Content-Type: application/json');
+
 error_reporting(0);
 ini_set('display_errors', 0);
 
-// Iniciar sessão se não estiver iniciada
+// Buffer de saída
+ob_start();
+
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    @session_start();
 }
 
-// Verificar se o usuário está logado
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Usuário não autenticado']);
-    exit;
-}
-
-// Incluir Database class
 $dbPath = __DIR__ . '/../includes/Database.class.php';
 if (!file_exists($dbPath)) {
-    http_response_code(500);
+    ob_clean();
     echo json_encode(['success' => false, 'error' => 'Database class não encontrada']);
     exit;
 }
+
 require_once $dbPath;
 
-// Função para enviar resposta JSON
-function sendResponse($success, $data = null, $error = null) {
-    echo json_encode([
-        'success' => $success,
-        'data' => $data,
-        'error' => $error
-    ]);
+// Limpar buffer
+ob_clean();
+
+function sendResponse($data = null, $error = null) {
+    $response = ['success' => $error === null];
+    if ($data !== null) {
+        foreach ($data as $key => $value) {
+            $response[$key] = $value;
+        }
+    }
+    if ($error !== null) $response['error'] = $error;
+    echo json_encode($response);
     exit;
 }
 
 try {
     $db = Database::getInstance();
-    $action = $_GET['action'] ?? $_POST['action'] ?? '';
+    $conn = $db->getConnection();
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    $farmId = 1;
+    
+    if ($method === 'GET') {
+        $action = $_GET['action'] ?? '';
     
     switch ($action) {
-        case 'get_dashboard_summary':
-            $summary = $db->getDashboardSummary(1);
-            sendResponse(true, $summary);
-            
-        case 'get_performance_indicators':
-            $indicators = $db->getPerformanceIndicators(1);
-            sendResponse(true, $indicators);
-            
-        case 'get_production_trends':
-            $days = intval($_GET['days'] ?? 30);
-            $trends = $db->getProductionTrends(1, $days);
-            sendResponse(true, $trends);
-            
-        case 'get_reproductive_analysis':
-            $analysis = $db->getReproductiveAnalysis(1);
-            sendResponse(true, $analysis);
-            
-        case 'get_health_analysis':
-            $analysis = $db->getHealthAnalysis(1);
-            sendResponse(true, $analysis);
-            
-        case 'get_financial_analysis':
-            $analysis = $db->getFinancialAnalysis(1);
-            sendResponse(true, $analysis);
-            
-        case 'get_performance_alerts':
-            $alerts = $db->getPerformanceAlerts(1);
-            sendResponse(true, $alerts);
-            
-        case 'resolve_performance_alert':
-            $alertId = intval($_POST['id'] ?? 0);
-            $notes = $_POST['notes'] ?? '';
-            
-            if ($alertId <= 0) {
-                sendResponse(false, null, 'ID do alerta inválido');
-            }
-            
-            $result = $db->resolvePerformanceAlert($alertId, $_SESSION['user_id'], $notes);
-            sendResponse($result, null, $result ? null : 'Erro ao resolver alerta');
-            
-        case 'update_management_indicators':
-            $indicators = json_decode($_POST['indicators'] ?? '[]', true);
-            
-            if (empty($indicators)) {
-                sendResponse(false, null, 'Nenhum indicador fornecido');
-            }
-            
-            $result = $db->updateManagementIndicators(1, $indicators);
-            sendResponse($result, null, $result ? null : 'Erro ao atualizar indicadores');
-            
-        case 'get_comparative_analysis':
-            $period = $_GET['period'] ?? 'monthly';
-            $comparison = $db->getComparativeAnalysis(1, $period);
-            sendResponse(true, $comparison);
-            
-        case 'get_efficiency_score':
-            $score = $db->getFarmEfficiencyScore(1);
-            sendResponse(true, $score);
+            case 'get_dashboard':
+                $dashboard = [];
+                
+                // Total de animais
+                $stmt = $conn->prepare("SELECT COUNT(*) as total FROM animals WHERE is_active = 1 AND farm_id = ?");
+                $stmt->execute([$farmId]);
+                $dashboard['total_animals'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+                
+                // Produção de leite hoje
+                $stmt = $conn->prepare("
+                    SELECT COALESCE(SUM(total_volume), 0) as total 
+                    FROM volume_records 
+                    WHERE record_date = CURDATE() AND farm_id = ?
+                ");
+                $stmt->execute([$farmId]);
+                $dashboard['milk_today'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+                
+                // Total de prenhes ativas
+                $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pregnancy_controls WHERE farm_id = ?");
+                $stmt->execute([$farmId]);
+                $dashboard['total_pregnant'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+                
+                // Animais saudáveis
+                $stmt = $conn->prepare("
+                    SELECT COUNT(*) as total 
+                    FROM animals 
+                    WHERE health_status = 'saudavel' AND is_active = 1 AND farm_id = ?
+                ");
+                $stmt->execute([$farmId]);
+                $dashboard['healthy_animals'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+                
+                // Alertas pendentes
+                $stmt = $conn->prepare("
+                    SELECT COUNT(*) as total 
+                    FROM health_alerts 
+                    WHERE is_resolved = 0 AND farm_id = ?
+                ");
+                $stmt->execute([$farmId]);
+                $dashboard['pending_alerts'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+                
+                // Distribuição por status
+                $stmt = $conn->prepare("
+                    SELECT status, COUNT(*) as count 
+                    FROM animals 
+                    WHERE is_active = 1 AND farm_id = ?
+                    GROUP BY status
+                    ORDER BY count DESC
+                ");
+                $stmt->execute([$farmId]);
+                $dashboard['status_distribution'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Distribuição de saúde
+                $stmt = $conn->prepare("
+                    SELECT health_status, COUNT(*) as count 
+                    FROM animals 
+                    WHERE is_active = 1 AND farm_id = ?
+                    GROUP BY health_status
+                    ORDER BY count DESC
+                ");
+                $stmt->execute([$farmId]);
+                $dashboard['health_distribution'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Distribuição reprodutiva
+                $stmt = $conn->prepare("
+                    SELECT reproductive_status, COUNT(*) as count 
+                    FROM animals 
+                    WHERE is_active = 1 AND gender = 'femea' AND farm_id = ?
+                    GROUP BY reproductive_status
+                    ORDER BY count DESC
+                ");
+                $stmt->execute([$farmId]);
+                $dashboard['reproductive_distribution'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Produção dos últimos 7 dias
+                $stmt = $conn->prepare("
+                    SELECT record_date, SUM(total_volume) as total_volume
+                    FROM volume_records
+                    WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND farm_id = ?
+                    GROUP BY record_date
+                    ORDER BY record_date DESC
+                    LIMIT 7
+                ");
+                $stmt->execute([$farmId]);
+                $dashboard['production_7days'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Atividades recentes (últimas ações em cada tabela)
+                $activities = [];
+                
+                // Animais criados recentemente
+                $stmt = $conn->prepare("
+                    SELECT 'animal' as type, CONCAT('Animal ', animal_number, ' adicionado') as description, created_at
+                    FROM animals 
+                    WHERE farm_id = ?
+                    ORDER BY created_at DESC
+                    LIMIT 3
+                ");
+                $stmt->execute([$farmId]);
+                $activities = array_merge($activities, $stmt->fetchAll(PDO::FETCH_ASSOC));
+                
+                // Registros de saúde recentes
+                $stmt = $conn->prepare("
+                    SELECT 'health' as type, CONCAT(record_type, ' - ', LEFT(description, 50)) as description, created_at
+                    FROM health_records 
+                    WHERE farm_id = ?
+                    ORDER BY created_at DESC
+                    LIMIT 3
+                ");
+                $stmt->execute([$farmId]);
+                $activities = array_merge($activities, $stmt->fetchAll(PDO::FETCH_ASSOC));
+                
+                // Inseminações recentes
+                $stmt = $conn->prepare("
+                    SELECT 'reproduction' as type, CONCAT('Inseminação registrada') as description, created_at
+                    FROM inseminations 
+                    WHERE farm_id = ?
+                    ORDER BY created_at DESC
+                    LIMIT 2
+                ");
+                $stmt->execute([$farmId]);
+                $activities = array_merge($activities, $stmt->fetchAll(PDO::FETCH_ASSOC));
+                
+                // Ordenar atividades por data
+                usort($activities, function($a, $b) {
+                    return strtotime($b['created_at']) - strtotime($a['created_at']);
+                });
+                
+                $dashboard['recent_activities'] = array_slice($activities, 0, 10);
+                
+                sendResponse($dashboard);
+                break;
             
         default:
-            sendResponse(false, null, 'Ação inválida');
+                sendResponse(null, 'Ação não especificada');
+        }
     }
     
 } catch (Exception $e) {
-    sendResponse(false, null, 'Erro interno: ' . $e->getMessage());
+    sendResponse(null, $e->getMessage());
 }
 ?>
-

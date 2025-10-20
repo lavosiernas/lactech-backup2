@@ -32,206 +32,9 @@ window.getMilkingTypeInPortuguese = function(milkingType) {
 
 // ==================== FUNÇÕES GLOBAIS DE MODAIS ====================
 
-// Gestão de Rebanho
-window.showAnimalManagement = function() {
-    console.log('🐄 Abrindo Gestão de Rebanho...');
-    
-    // Fechar modal Mais
-    if (typeof window.closeMoreModal === 'function') {
-        window.closeMoreModal();
-    }
-    
-    // Criar modal simples
-    const modal = document.createElement('div');
-    modal.id = 'animalManagementModal';
-    modal.className = 'fixed inset-0 bg-white z-[99999] overflow-y-auto';
-    modal.innerHTML = `
-        <div class="w-full h-full">
-            <div class="sticky top-0 bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg z-10 p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button onclick="closeAnimalManagement()" class="w-10 h-10 flex items-center justify-center hover:bg-white hover:bg-opacity-20 rounded-xl transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <div>
-                            <h3 class="text-2xl font-bold">Gestão de Rebanho</h3>
-                            <p class="text-emerald-100 text-sm">Gerencie animais e inseminações</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="text-center">
-                    <h4 class="text-xl font-semibold text-gray-800 mb-4">Sistema de Gestão de Rebanho</h4>
-                    <p class="text-gray-600 mb-6">Funcionalidade em desenvolvimento para a Lagoa do Mato</p>
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p class="text-blue-800">Em breve: Cadastro de animais, controle de inseminações e pedigree completo.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-};
+// Gestão de Rebanho - REMOVIDO (agora usa overlay no gerente.php)
 
-// Fechar Gestão de Rebanho
-window.closeAnimalManagement = function() {
-    const modal = document.getElementById('animalManagementModal');
-    if (modal) modal.remove();
-};
-
-// Gestão Sanitária
-window.showHealthManagement = function() {
-    console.log('🏥 Abrindo Gestão Sanitária...');
-    
-    // Fechar modal Mais
-    if (typeof window.closeMoreModal === 'function') {
-        window.closeMoreModal();
-    }
-    
-    const modal = document.createElement('div');
-    modal.id = 'healthManagementModal';
-    modal.className = 'fixed inset-0 bg-white z-[99999] overflow-y-auto';
-    modal.innerHTML = `
-        <div class="w-full h-full">
-            <div class="sticky top-0 bg-gradient-to-br from-green-600 to-emerald-700 text-white shadow-lg z-10 p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button onclick="closeHealthManagement()" class="w-10 h-10 flex items-center justify-center hover:bg-white hover:bg-opacity-20 rounded-xl transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <div>
-                            <h3 class="text-2xl font-bold">Gestão Sanitária</h3>
-                            <p class="text-green-100 text-sm">Controle de saúde e vacinas</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="text-center">
-                    <h4 class="text-xl font-semibold text-gray-800 mb-4">Sistema de Gestão Sanitária</h4>
-                    <p class="text-gray-600 mb-6">Funcionalidade em desenvolvimento para a Lagoa do Mato</p>
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p class="text-green-800">Em breve: Controle de vacinas, tratamentos e histórico sanitário dos animais.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-};
-
-// Fechar Gestão Sanitária
-window.closeHealthManagement = function() {
-    const modal = document.getElementById('healthManagementModal');
-    if (modal) modal.remove();
-};
-
-// Reprodução
-window.showReproductionManagement = function() {
-    console.log('💕 Abrindo Sistema de Reprodução...');
-    
-    // Fechar modal Mais
-    if (typeof window.closeMoreModal === 'function') {
-        window.closeMoreModal();
-    }
-    
-    const modal = document.createElement('div');
-    modal.id = 'reproductionManagementModal';
-    modal.className = 'fixed inset-0 bg-white z-[99999] overflow-y-auto';
-    modal.innerHTML = `
-        <div class="w-full h-full">
-            <div class="sticky top-0 bg-gradient-to-br from-teal-600 to-cyan-600 text-white shadow-lg z-10 p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button onclick="closeReproductionManagement()" class="w-10 h-10 flex items-center justify-center hover:bg-white hover:bg-opacity-20 rounded-xl transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <div>
-                            <h3 class="text-2xl font-bold">Sistema de Reprodução</h3>
-                            <p class="text-teal-100 text-sm">Controle de prenhez e DPP</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="text-center">
-                    <h4 class="text-xl font-semibold text-gray-800 mb-4">Sistema de Reprodução</h4>
-                    <p class="text-gray-600 mb-6">Funcionalidade em desenvolvimento para a Lagoa do Mato</p>
-                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
-                        <p class="text-teal-800">Em breve: Controle de prenhez, datas de parto previstas (DPP) e histórico reprodutivo.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-};
-
-// Fechar Reprodução
-window.closeReproductionManagement = function() {
-    const modal = document.getElementById('reproductionManagementModal');
-    if (modal) modal.remove();
-};
-
-// Dashboard Analítico
-window.showAnalyticsDashboard = function() {
-    console.log('📊 Abrindo Dashboard Analítico...');
-    
-    // Fechar modal Mais
-    if (typeof window.closeMoreModal === 'function') {
-        window.closeMoreModal();
-    }
-    
-    const modal = document.createElement('div');
-    modal.id = 'analyticsDashboardModal';
-    modal.className = 'fixed inset-0 bg-white z-[99999] overflow-y-auto';
-    modal.innerHTML = `
-        <div class="w-full h-full">
-            <div class="sticky top-0 bg-gradient-to-br from-slate-600 to-slate-700 text-white shadow-lg z-10 p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button onclick="closeAnalyticsDashboard()" class="w-10 h-10 flex items-center justify-center hover:bg-white hover:bg-opacity-20 rounded-xl transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <div>
-                            <h3 class="text-2xl font-bold">Dashboard Analítico</h3>
-                            <p class="text-slate-100 text-sm">Análises e relatórios avançados</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="text-center">
-                    <h4 class="text-xl font-semibold text-gray-800 mb-4">Dashboard Analítico</h4>
-                    <p class="text-gray-600 mb-6">Funcionalidade em desenvolvimento para a Lagoa do Mato</p>
-                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                        <p class="text-slate-800">Em breve: Gráficos avançados, análises de performance e relatórios detalhados.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-};
-
-// Fechar Dashboard Analítico
-window.closeAnalyticsDashboard = function() {
-    const modal = document.getElementById('analyticsDashboardModal');
-    if (modal) modal.remove();
-};
+// Todas as funções de modal foram REMOVIDAS (agora usam overlays no gerente.php)
 
 // Controle de Novilhas - Sistema de Custos de Criação
 window.openHeiferManagement = function() {
@@ -512,16 +315,19 @@ window.addEventListener('load', function() {
       }
   }
   
-  // Disable modal immediately on page load
-  disableModal();
+  // DESABILITADO - Não bloquear modal mais
+  // disableModal();
+  console.log('⚠️ disableModal() DESABILITADO para permitir abertura do modal');
   
+  // MUTATION OBSERVER DESABILITADO - Estava impedindo abertura do modal
   // Monitor for any attempts to show the modal during page load
-  const modalObserver = new MutationObserver(function(mutations) {
+  /* const modalObserver = new MutationObserver(function(mutations) {
       if (!window.pageFullyLoaded) {
           mutations.forEach(function(mutation) {
               if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                   const modal = document.getElementById('profileModal');
-                  if (modal && modal.classList.contains('show')) {
+                  // Bloquear apenas 'show', permitir 'modal-enabled' após liberação
+                  if (modal && modal.classList.contains('show') && !modal.classList.contains('modal-enabled')) {
                       console.log('Modal show attempt blocked during page load');
                       modal.classList.remove('show');
                       disableModal();
@@ -535,7 +341,9 @@ window.addEventListener('load', function() {
   const modal = document.getElementById('profileModal');
   if (modal) {
       modalObserver.observe(modal, { attributes: true, attributeFilter: ['class', 'style'] });
-  }
+  } */
+  
+  console.log('⚠️ MutationObserver DESABILITADO para permitir abertura do modal');
   
   // Alert shim for custom notifications - PRIORIDADE MÁXIMA
   (function(){
@@ -1157,8 +965,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     console.log('? Sistema carregado com sucesso!');
     
+    // Liberar modal de perfil para uso
+    window.pageFullyLoaded = true;
+    window.modalEnabled = true;
+    console.log('✅ Modal de perfil liberado para uso');
+    
     // Carregar foto do header
     await loadHeaderPhoto();
+    
+    // Carregar dados do perfil na inicialização
+    loadProfileData();
     
     // Garantir que o modal de foto esteja fechado na inicializaçãoo
     const photoModal = document.getElementById('photoChoiceModal');
@@ -1171,6 +987,30 @@ document.addEventListener('DOMContentLoaded', async function() {
         photoModal.style.opacity = '0';
         photoModal.style.pointerEvents = 'none';
     }
+    
+    // Garantir que o modal de foto do gerente esteja fechado na inicializaçãoo
+    const managerPhotoModal = document.getElementById('managerPhotoChoiceModal');
+    if (managerPhotoModal) {
+        managerPhotoModal.classList.remove('show', 'flex', 'block');
+        managerPhotoModal.classList.add('hidden');
+        managerPhotoModal.style.display = 'none';
+        managerPhotoModal.style.visibility = 'hidden';
+        managerPhotoModal.style.opacity = '0';
+        managerPhotoModal.style.pointerEvents = 'none';
+    }
+    
+    // Failsafe adicional: verificar novamente após alguns milissegundos
+    setTimeout(() => {
+        const modal = document.getElementById('managerPhotoChoiceModal');
+        if (modal) {
+            modal.classList.remove('show', 'flex', 'block');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+            modal.style.visibility = 'hidden';
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+        }
+    }, 500);
     
     // Garantir que as telas de processamento estejam ocultas
     const photoProcessingScreen = document.getElementById('photoProcessingScreen');
@@ -1681,7 +1521,7 @@ try {
 
     if (!user) {
 
-        return authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Gerente';
+        return authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Usuário';
     }
 
     // First try to get user from database
@@ -1695,17 +1535,17 @@ try {
     
     // If user not found in database, return fallback
     if (error && error.code === 'PGRST116') {
-        return user.user_metadata?.name || user.email?.split('@')[0] || 'Gerente';
+        return user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
     }
     
     if (error) {
         console.error('Error in getManagerName:', error);
-        return 'Gerente';
+        return user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
     }
-    return data?.name || 'Gerente';
+    return data?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
 } catch (error) {
     console.error('Error fetching manager name:', error);
-    return 'Gerente';
+    return 'Usuário';
 }
 }
 
@@ -1793,7 +1633,7 @@ const managerName = await getManagerName();
 const farmName = await getFarmName();
 
 // Set with fallback values if empty
-const finalManagerName = managerName || 'Gerente';
+const finalManagerName = managerName || 'Usuário';
 const finalFarmName = farmName || 'Lagoa do Mato';
 
 // Extract formal name for welcome message
@@ -5747,25 +5587,389 @@ document.getElementById('notificationToast').classList.remove('show');
 
 // Profile modal functions
 function openProfileModal() {
+console.log('🔵 ABRINDO MODAL DE PERFIL...');
 const modal = document.getElementById('profileModal');
-if (modal) {
-    modal.classList.remove('hidden');
-    modal.classList.add('show');
-    modal.style.display = 'flex';
-    // Configurar header din�mico quando o modal for aberto
+console.log('🔵 Modal encontrado:', !!modal);
+
+if (!modal) {
+    console.error('❌ MODAL DE PERFIL NÃO ENCONTRADO NO DOM!');
+    return;
+}
+
+// FORÇA ABERTURA DO MODAL - PRIORIDADE MÁXIMA
+modal.classList.remove('hidden');
+modal.classList.add('modal-enabled');
+
+// Remover todos os estilos inline que possam estar bloqueando
+modal.removeAttribute('style');
+
+// Aplicar estilos inline com !important via setAttribute
+modal.setAttribute('style', 'display: flex !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; z-index: 9999 !important; position: fixed !important; inset: 0 !important;');
+
+document.body.style.overflow = 'hidden';
+
+console.log('✅ MODAL DE PERFIL ABERTO COM SUCESSO!');
+console.log('Classes do modal:', modal.className);
+console.log('Style do modal:', modal.getAttribute('style'));
+
+// Configurar header din�mico quando o modal for aberto
+    // CARREGAR DADOS DO PERFIL
+    loadProfileData();
+    
+    // FORÇAR ATUALIZAÇÃO DOS DADOS DO PERFIL
     setTimeout(() => {
-        setupProfileModalHeader();
+        forceUpdateProfileData();
+    }, 200);
+
+    setTimeout(() => {
+        if (typeof setupProfileModalHeader === 'function') {
+            setupProfileModalHeader();
+        }
     }, 100);
+}
+
+// Função para forçar atualização dos dados do perfil
+function forceUpdateProfileData() {
+    try {
+        console.log('🔄 FORÇANDO ATUALIZAÇÃO DOS DADOS DO PERFIL...');
+        
+        // Buscar dados do usuário
+        const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data') || localStorage.getItem('userData') || sessionStorage.getItem('userData');
+        
+        if (userData) {
+            const user = JSON.parse(userData);
+            console.log('👤 Dados encontrados para forçar atualização:', user);
+            
+            // FORÇAR atualização do nome
+            const nameElement = document.getElementById('profileName');
+            if (nameElement) {
+                const displayName = user.name || user.nome || user.full_name || user.fullName || 'Usuário';
+                nameElement.textContent = displayName;
+                console.log('✅ Nome FORÇADO:', displayName);
+            }
+            
+            // FORÇAR atualização do cargo
+            const roleElement = document.getElementById('profileRole');
+            if (roleElement) {
+                const roleText = user.role || user.cargo || 'Gerente';
+                roleElement.textContent = roleText;
+                console.log('✅ Cargo FORÇADO:', roleText);
+            }
+            
+            // FORÇAR atualização da fazenda
+            const farmElement = document.getElementById('profileFarmName');
+            if (farmElement) {
+                const farmText = user.farm_name || user.fazenda || 'Fazenda';
+                farmElement.textContent = farmText;
+                console.log('✅ Fazenda FORÇADA:', farmText);
+            }
+        } else {
+            console.log('⚠️ Nenhum dado de usuário encontrado para forçar atualização');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao forçar atualização dos dados:', error);
+    }
+}
+
+// Função de teste para verificar dados do usuário
+window.testarDadosUsuario = function() {
+    console.log('🔍 TESTANDO DADOS DO USUÁRIO:');
+    console.log('localStorage user_data:', localStorage.getItem('user_data'));
+    console.log('localStorage userData:', localStorage.getItem('userData'));
+    console.log('sessionStorage user_data:', sessionStorage.getItem('user_data'));
+    console.log('sessionStorage userData:', sessionStorage.getItem('userData'));
+    
+    const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data') || localStorage.getItem('userData') || sessionStorage.getItem('userData');
+    if (userData) {
+        const user = JSON.parse(userData);
+        console.log('👤 Dados parseados:', user);
+        console.log('📝 Chaves disponíveis:', Object.keys(user));
+        console.log('👤 Nome:', user.name);
+        console.log('👤 Nome (alternativo):', user.nome);
+        console.log('👤 Role:', user.role);
+        console.log('👤 Email:', user.email);
+    }
+};
+
+// Função global para testar atualização forçada
+window.forcarAtualizacaoPerfil = function() {
+    forceUpdateProfileData();
+};
+
+// Função de teste SIMPLES para abrir modal
+window.testarModalSimples = function() {
+    console.log('🧪 TESTE SIMPLES: Tentando abrir modal...');
+    
+    const modal = document.getElementById('profileModal');
+    console.log('Modal encontrado:', !!modal);
+    
+    if (modal) {
+        // FORÇAR todas as classes necessárias
+        modal.classList.remove('hidden');
+        modal.classList.add('modal-enabled');
+        modal.classList.add('show');
+        
+        // Método mais simples
+        modal.style.display = 'flex';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        modal.style.zIndex = '9999';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.background = 'rgba(0, 0, 0, 0.5)';
+        
+        document.body.style.overflow = 'hidden';
+        
+        console.log('✅ Modal aberto com método simples!');
+        console.log('Classes do modal:', modal.className);
+    } else {
+        console.error('❌ Modal não encontrado!');
+    }
+};
+
+// Função de debug para verificar estado do modal
+window.debugModal = function() {
+    const modal = document.getElementById('profileModal');
+    if (modal) {
+        console.log('🔍 DEBUG MODAL:');
+        console.log('- Elemento encontrado:', !!modal);
+        console.log('- Classes:', modal.className);
+        console.log('- Style display:', modal.style.display);
+        console.log('- Style visibility:', modal.style.visibility);
+        console.log('- Style opacity:', modal.style.opacity);
+        console.log('- Computed display:', window.getComputedStyle(modal).display);
+        console.log('- Computed visibility:', window.getComputedStyle(modal).visibility);
+        console.log('- Computed opacity:', window.getComputedStyle(modal).opacity);
+        console.log('- Computed z-index:', window.getComputedStyle(modal).zIndex);
+        console.log('- Computed position:', window.getComputedStyle(modal).position);
+    } else {
+        console.error('❌ Modal não encontrado!');
+    }
+};
+
+// ========== NOVO MODAL DE PERFIL - JAVASCRIPT SIMPLES ==========
+
+// Função para abrir o modal (NOVA VERSÃO)
+function openProfileModalNew() {
+    console.log('🔵 ABRINDO NOVO MODAL DE PERFIL...');
+    
+    const modal = document.getElementById('profileModal');
+    if (!modal) {
+        console.error('❌ Modal não encontrado!');
+        return;
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    
+    // Bloquear scroll do body
+    document.body.style.overflow = 'hidden';
+    
+    // Carregar dados do usuário
+    loadUserDataNew();
+    
+    console.log('✅ Modal aberto com sucesso!');
+}
+
+// Função para fechar o modal (NOVA VERSÃO)
+function closeProfileModalNew() {
+    console.log('🔴 FECHANDO MODAL DE PERFIL...');
+    
+    const modal = document.getElementById('profileModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        
+        // Restaurar scroll do body
+        document.body.style.overflow = '';
+        
+        console.log('✅ Modal fechado com sucesso!');
+    }
+}
+
+// Função para carregar dados do usuário (NOVA VERSÃO)
+function loadUserDataNew() {
+    try {
+        console.log('📊 Carregando dados do usuário...');
+        
+        // Buscar dados do usuário
+        const userData = localStorage.getItem('user_data') || 
+                        sessionStorage.getItem('user_data') || 
+                        localStorage.getItem('userData') || 
+                        sessionStorage.getItem('userData');
+        
+        if (userData) {
+            const user = JSON.parse(userData);
+            console.log('👤 Dados encontrados:', user);
+            
+            // Atualizar nome
+            const nameElement = document.getElementById('profileName');
+            if (nameElement) {
+                nameElement.textContent = user.name || user.nome || 'Usuário';
+            }
+            
+            // Atualizar cargo
+            const roleElement = document.getElementById('profileRole');
+            if (roleElement) {
+                roleElement.textContent = user.role || user.cargo || 'Gerente';
+            }
+            
+            // Atualizar fazenda
+            const farmElement = document.getElementById('profileFarmName');
+            if (farmElement) {
+                farmElement.textContent = user.farm_name || user.fazenda || 'Fazenda';
+            }
+            
+            // Atualizar nome completo
+            const fullNameElement = document.getElementById('profileFullName');
+            if (fullNameElement) {
+                fullNameElement.textContent = user.name || user.nome || 'Usuário';
+            }
+            
+            // Atualizar email
+            const emailElement = document.getElementById('profileEmail');
+            if (emailElement) {
+                emailElement.textContent = user.email || 'Não informado';
+            }
+            
+            // Atualizar WhatsApp
+            const whatsappElement = document.getElementById('profileWhatsApp');
+            if (whatsappElement) {
+                whatsappElement.textContent = user.whatsapp || user.phone || 'Não informado';
+            }
+            
+            console.log('✅ Dados carregados com sucesso!');
+        } else {
+            console.log('⚠️ Nenhum dado de usuário encontrado');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados:', error);
+    }
+}
+
+// Função de teste para o novo modal
+window.testarNovoModal = function() {
+    console.log('🧪 TESTANDO NOVO MODAL...');
+    openProfileModalNew();
+};
+
+// Exportar funções novas
+window.openProfileModalNew = openProfileModalNew;
+window.closeProfileModalNew = closeProfileModalNew;
+window.loadUserDataNew = loadUserDataNew;
+
+// Função para carregar dados do perfil
+async function loadProfileData() {
+try {
+    console.log('📊 Carregando dados do perfil...');
+    
+    // Buscar dados do usuário logado
+    const userData = localStorage.getItem('user_data') || sessionStorage.getItem('user_data') || localStorage.getItem('userData') || sessionStorage.getItem('userData');
+    
+    console.log('🔍 Dados encontrados no localStorage:', {
+        'user_data': localStorage.getItem('user_data'),
+        'userData': localStorage.getItem('userData'),
+        'sessionStorage user_data': sessionStorage.getItem('user_data'),
+        'sessionStorage userData': sessionStorage.getItem('userData')
+    });
+    
+    if (userData) {
+        const user = JSON.parse(userData);
+        console.log('👤 Dados do usuário parseados:', user);
+        console.log('📝 Propriedades disponíveis:', Object.keys(user));
+        console.log('👤 user.name:', user.name);
+        console.log('👤 user.nome:', user.nome);
+        console.log('👤 user.role:', user.role);
+        console.log('👤 user.cargo:', user.cargo);
+        
+        // Atualizar nome no modal
+        const nameElement = document.getElementById('profileName');
+        if (nameElement) {
+            const displayName = user.name || user.nome || user.full_name || user.fullName || 'Usuário';
+            nameElement.textContent = displayName;
+            console.log('✅ Nome atualizado no modal:', displayName);
+        }
+        
+        // Atualizar cargo
+        const roleElement = document.getElementById('profileRole');
+        if (roleElement) {
+            const roleText = user.role || user.cargo || 'Gerente';
+            roleElement.textContent = roleText;
+            console.log('✅ Cargo atualizado:', roleText);
+        }
+        
+        // Atualizar fazenda
+        const farmElement = document.getElementById('profileFarmName');
+        if (farmElement) {
+            farmElement.textContent = user.farm_name || user.fazenda || 'Fazenda';
+            console.log('✅ Fazenda atualizada:', user.farm_name || user.fazenda || 'Fazenda');
+        }
+        
+        // ATUALIZAR TAMBÉM O BEM-VINDO NA PÁGINA PRINCIPAL
+        const welcomeElement = document.getElementById('managerWelcome');
+        if (welcomeElement) {
+            const displayName = user.name || user.nome || user.full_name || user.fullName || 'Usuário';
+            welcomeElement.textContent = displayName;
+            console.log('✅ Bem-vindo atualizado:', displayName);
+        }
+        
+        console.log('✅ Dados do perfil carregados:', user);
+    } else {
+        console.log('⚠️ Dados do usuário não encontrados, usando valores padrão');
+        
+        // Valores padrão
+        const nameElement = document.getElementById('profileName');
+        if (nameElement) nameElement.textContent = 'Usuário';
+        
+        const roleElement = document.getElementById('profileRole');
+        if (roleElement) roleElement.textContent = 'Gerente';
+        
+        const farmElement = document.getElementById('profileFarmName');
+        if (farmElement) farmElement.textContent = 'Fazenda';
+        
+        // Atualizar bem-vindo também
+        const welcomeElement = document.getElementById('managerWelcome');
+        if (welcomeElement) welcomeElement.textContent = 'Usuário';
+    }
+    
+} catch (error) {
+    console.error('❌ Erro ao carregar dados do perfil:', error);
 }
 }
 
 function closeProfileModal() {
 const modal = document.getElementById('profileModal');
 if (modal) {
-    modal.classList.remove('show');
+    modal.classList.remove('modal-enabled');
     modal.classList.add('hidden');
     modal.style.display = 'none';
+    modal.style.visibility = 'hidden';
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+    document.body.style.overflow = '';
 }
+}
+
+// Exportar funções para o window para uso em onclick - PRIORIDADE MÁXIMA
+if (typeof window !== 'undefined') {
+    window.openProfileModal = openProfileModal;
+    window.closeProfileModal = closeProfileModal;
+    console.log('✅ Funções openProfileModal e closeProfileModal exportadas para window');
+    
+    // Teste automático para debug
+    console.log('🔵 Função disponível?', typeof window.openProfileModal === 'function');
+    
+    // TESTE: Adicionar botão para testar modal no console
+    window.testarModalPerfil = function() {
+        console.log('🧪 TESTE MANUAL: Tentando abrir modal de perfil...');
+        openProfileModal();
+    };
+    console.log('💡 Digite no console: testarModalPerfil() para testar o modal');
 }
 
 // Profile edit functions
@@ -5992,8 +6196,9 @@ try {
     
     // Extract formal name for header and welcome message
     const formalName = extractFormalName(updateData.name);
-    document.getElementById('managerName').textContent = formalName || 'Gerente';
-    document.getElementById('managerWelcome').textContent = formalName || 'Gerente';
+    const displayName = formalName || updateData.name || 'Usuário';
+    document.getElementById('managerName').textContent = displayName;
+    document.getElementById('managerWelcome').textContent = displayName;
     
     document.getElementById('profileWhatsApp').textContent = updateData.whatsapp || 'N�o informado';
     
@@ -8840,7 +9045,7 @@ try {
     const managerName = await getManagerName();
     const farmName = await getFarmName();
     
-    const finalManagerName = managerName || 'Gerente';
+    const finalManagerName = managerName || 'Usuário';
     const finalFarmName = farmName || 'Lagoa do Mato';
     
     // Extract formal name for welcome message
@@ -8874,7 +9079,7 @@ try {
     }
 } catch (error) {
     // Definir valores padrão em caso de erro
-    const defaultName = 'Gerente';
+    const defaultName = 'Usuário';
     const defaultFarm = 'Lagoa do Mato';
     
     const elements = [
@@ -9134,7 +9339,7 @@ const headerPhoto = document.getElementById('headerProfilePhoto');
 const headerIcon = document.getElementById('headerProfileIcon');
 
 if (headerPhoto && headerIcon) {
-    if (photoUrl) {
+    if (photoUrl && photoUrl.trim() !== '' && !photoUrl.includes('default-avatar')) {
         // Adicionar timestamp para evitar cache
         const photoUrlWithTimestamp = photoUrl + '?t=' + Date.now();
         headerPhoto.src = photoUrlWithTimestamp;
@@ -9146,7 +9351,8 @@ if (headerPhoto && headerIcon) {
         headerIcon.classList.add('hidden');
         console.log('? Foto do header atualizada com sucesso');
     } else {
-        // Mostrar ícone padrão se não há foto
+        // Mostrar ícone padrão se não há foto ou é default-avatar
+        headerPhoto.src = ''; // Limpar src para evitar erro 404
         headerPhoto.style.display = 'none';
         headerPhoto.style.visibility = 'hidden';
         headerPhoto.classList.add('hidden');
@@ -9166,14 +9372,15 @@ const modalPhoto = document.getElementById('modalProfilePhoto');
 const modalIcon = document.getElementById('modalProfileIcon');
 
 if (modalPhoto && modalIcon) {
-    if (photoUrl) {
+    if (photoUrl && photoUrl.trim() !== '' && !photoUrl.includes('default-avatar')) {
         // Adicionar timestamp para evitar cache
         const photoUrlWithTimestamp = photoUrl + '?t=' + Date.now();
         modalPhoto.src = photoUrlWithTimestamp;
         modalPhoto.classList.remove('hidden');
         modalIcon.classList.add('hidden');
     } else {
-        // Mostrar ícone padrão se não há foto
+        // Mostrar ícone padrão se não há foto ou é default-avatar
+        modalPhoto.src = ''; // Limpar src para evitar erro 404
         modalPhoto.classList.add('hidden');
         modalIcon.classList.remove('hidden');
     }
@@ -9203,15 +9410,17 @@ try {
 }
 }
 
+// DESABILITADO - Estava quebrando a função original
 // Modificar função openProfileModal para carregar foto
-const originalOpenProfileModal = window.openProfileModal;
+/* const originalOpenProfileModal = window.openProfileModal;
 window.openProfileModal = function() {
 originalOpenProfileModal();
 // Carregar foto do gerente apenas quando o modal for aberto manualmente
 setTimeout(() => {
 loadManagerPhoto();
 }, 100);
-};
+}; */
+console.log('⚠️ Sobrescrita #1 de openProfileModal DESABILITADA');
 
 // Funçãoo para carregar foto no header ao inicializar a p�gina
 async function loadHeaderPhoto() {
@@ -10284,14 +10493,16 @@ if (roleSelect && photoSection) {
 }
 }
 
+// DESABILITADO - Estava quebrando a função original
 // Carregar contas secund�rias quando o modal for aberto
-const currentOpenProfileModal = window.openProfileModal;
+/* const currentOpenProfileModal = window.openProfileModal;
 window.openProfileModal = function() {
 currentOpenProfileModal();
 setTimeout(() => {
     loadSecondaryAccounts();
 }, 100);
-};
+}; */
+console.log('⚠️ Sobrescrita #2 de openProfileModal DESABILITADA');
 
 // Funçãoo removida - conflito resolvido na função openAddUserModal original
 
@@ -10870,24 +11081,32 @@ if (window.managerFaceVerificationTimer) {
 function updateManagerPhotoDisplay(photoUrl) {
 console.log('??? Atualizando exibiçãoo da foto:', photoUrl);
 
-if (!photoUrl) {
-    console.log('? URL da foto não fornecida');
-    return;
-}
-
 // Atualizar foto no header
 const headerPhoto = document.getElementById('headerProfilePhoto');
 const headerPlaceholder = document.getElementById('headerProfileIcon');
+
 if (headerPhoto && headerPlaceholder) {
-    headerPhoto.src = photoUrl + '?t=' + Date.now();
-    headerPhoto.style.display = 'block';
-    headerPhoto.style.visibility = 'visible';
-    headerPhoto.classList.remove('hidden');
-    headerPhoto.classList.add('block');
-    
-    headerPlaceholder.style.display = 'none';
-    headerPlaceholder.style.visibility = 'hidden';
-    headerPlaceholder.classList.add('hidden');
+    if (photoUrl && photoUrl.trim() !== '' && !photoUrl.includes('default-avatar')) {
+        headerPhoto.src = photoUrl + '?t=' + Date.now();
+        headerPhoto.style.display = 'block';
+        headerPhoto.style.visibility = 'visible';
+        headerPhoto.classList.remove('hidden');
+        headerPhoto.classList.add('block');
+        
+        headerPlaceholder.style.display = 'none';
+        headerPlaceholder.style.visibility = 'hidden';
+        headerPlaceholder.classList.add('hidden');
+    } else {
+        // Sem foto - mostrar ícone
+        headerPhoto.src = ''; // Limpar src
+        headerPhoto.style.display = 'none';
+        headerPhoto.style.visibility = 'hidden';
+        headerPhoto.classList.add('hidden');
+        
+        headerPlaceholder.style.display = 'block';
+        headerPlaceholder.style.visibility = 'visible';
+        headerPlaceholder.classList.remove('hidden');
+    }
     headerPlaceholder.classList.remove('block');
     
     console.log('? Foto do header atualizada');
@@ -10897,36 +11116,60 @@ if (headerPhoto && headerPlaceholder) {
 const modalPhoto = document.getElementById('modalProfilePhoto');
 const modalPlaceholder = document.getElementById('modalProfileIcon');
 if (modalPhoto && modalPlaceholder) {
-    modalPhoto.src = photoUrl + '?t=' + Date.now();
-    modalPhoto.style.display = 'block';
-    modalPhoto.style.visibility = 'visible';
-    modalPhoto.classList.remove('hidden');
-    modalPhoto.classList.add('block');
-    
-    modalPlaceholder.style.display = 'none';
-    modalPlaceholder.style.visibility = 'hidden';
-    modalPlaceholder.classList.add('hidden');
-    modalPlaceholder.classList.remove('block');
-    
-    console.log('? Foto do modal atualizada');
+    if (photoUrl && photoUrl.trim() !== '' && !photoUrl.includes('default-avatar')) {
+        modalPhoto.src = photoUrl + '?t=' + Date.now();
+        modalPhoto.style.display = 'block';
+        modalPhoto.style.visibility = 'visible';
+        modalPhoto.classList.remove('hidden');
+        modalPhoto.classList.add('block');
+        
+        modalPlaceholder.style.display = 'none';
+        modalPlaceholder.style.visibility = 'hidden';
+        modalPlaceholder.classList.add('hidden');
+        modalPlaceholder.classList.remove('block');
+        
+        console.log('? Foto do modal atualizada');
+    } else {
+        // Sem foto - mostrar ícone
+        modalPhoto.src = ''; // Limpar src
+        modalPhoto.style.display = 'none';
+        modalPhoto.style.visibility = 'hidden';
+        modalPhoto.classList.add('hidden');
+        
+        modalPlaceholder.style.display = 'block';
+        modalPlaceholder.style.visibility = 'visible';
+        modalPlaceholder.classList.remove('hidden');
+    }
 }
 
 // Atualizar preview no formulário de ediçãoo
 const preview = document.getElementById('managerProfilePreview');
 const placeholder = document.getElementById('managerProfilePlaceholder');
 if (preview && placeholder) {
-    preview.src = photoUrl + '?t=' + Date.now();
-    preview.style.display = 'block';
-    preview.style.visibility = 'visible';
-    preview.classList.remove('hidden');
-    preview.classList.add('block');
-    
-    placeholder.style.display = 'none';
-    placeholder.style.visibility = 'hidden';
-    placeholder.classList.add('hidden');
-    placeholder.classList.remove('block');
-    
-    console.log('? Preview atualizado');
+    if (photoUrl && photoUrl.trim() !== '' && !photoUrl.includes('default-avatar')) {
+        preview.src = photoUrl + '?t=' + Date.now();
+        preview.style.display = 'block';
+        preview.style.visibility = 'visible';
+        preview.classList.remove('hidden');
+        preview.classList.add('block');
+        
+        placeholder.style.display = 'none';
+        placeholder.style.visibility = 'hidden';
+        placeholder.classList.add('hidden');
+        placeholder.classList.remove('block');
+        
+        console.log('? Preview atualizado');
+    } else {
+        // Sem foto - mostrar placeholder
+        preview.src = ''; // Limpar src
+        preview.style.display = 'none';
+        preview.style.visibility = 'hidden';
+        preview.classList.add('hidden');
+        
+        placeholder.style.display = 'flex';
+        placeholder.style.visibility = 'visible';
+        placeholder.classList.remove('hidden');
+    }
 }
 }
 
@@ -11061,14 +11304,16 @@ if (reportsTab) {
         // Executar após carregamento
         setTimeout(addVersionToProfile, 1000);
         
+        // DESABILITADO - Estava quebrando a função original
         // Adicionar versão quando o modal de perfil for aberto
-        const originalOpenProfileModal = window.openProfileModal;
+        /* const originalOpenProfileModal = window.openProfileModal;
         window.openProfileModal = function() {
             if (originalOpenProfileModal) {
                 originalOpenProfileModal();
             }
             setTimeout(addVersionToProfileModal, 100);
-        };
+        }; */
+        console.log('⚠️ Sobrescrita #3 de openProfileModal DESABILITADA');
     });
     
 // ==================== FUNÇÕES DO MODAL MAIS (GLOBAL) ====================
@@ -11162,12 +11407,13 @@ window.closeMoreModal = function() {
         });
         
         // PASSO 1: Garantir que modais HTML estáticos estejam fechados
+        // profileModal REMOVIDO - usa sistema próprio com modal-enabled
         const criticalModals = [
-            'profileModal',
             'moreModal', 
             'managerPhotoChoiceModal',
             'managerCameraModal',
-            'contactsModal'
+            'contactsModal',
+            'notificationsModal'
         ];
         
         criticalModals.forEach(modalId => {
@@ -11175,11 +11421,23 @@ window.closeMoreModal = function() {
             if (modal) {
                 modal.style.display = 'none';
                 modal.style.visibility = 'hidden';
+                modal.style.opacity = '0';
+                modal.style.pointerEvents = 'none';
                 modal.classList.add('hidden');
-                modal.classList.remove('show');
+                modal.classList.remove('show', 'flex', 'block');
             }
         });
-        console.log('? Modais HTML estáticos fechados');
+        console.log('? Modais HTML estáticos fechados (profileModal NÃO incluído)');
+        
+        // VERIFICAR se profileModal existe e está pronto
+        const profileModal = document.getElementById('profileModal');
+        if (profileModal) {
+            console.log('✅ ProfileModal encontrado no DOM');
+            console.log('📊 Classes atuais do profileModal:', profileModal.className);
+            console.log('📊 Display atual do profileModal:', window.getComputedStyle(profileModal).display);
+        } else {
+            console.error('❌ ProfileModal NÃO encontrado no DOM!');
+        }
         
         // PASSO 2: Limpar vari�veis globais
         window.isCameraOpen = false;

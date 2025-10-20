@@ -1,0 +1,105 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     GOOGLE ANALYTICS 4 - CÓDIGO PRONTO PARA USAR
+     ═══════════════════════════════════════════════════════════════════════════
+
+     📋 INSTRUÇÕES:
+     
+     1. Crie uma conta no Google Analytics:
+        https://analytics.google.com/
+     
+     2. Crie uma propriedade GA4
+     
+     3. Copie o ID de medição (formato: G-XXXXXXXXXX)
+     
+     4. Substitua "G-XXXXXXXXXX" abaixo pelo seu ID real
+     
+     5. Copie TODO o código abaixo
+     
+     6. Cole no arquivo index.php ANTES da tag </head>
+        (linha aproximada 128, antes de <!-- Fonts -->)
+     
+     7. Repita o processo em lactech.php e outras páginas importantes
+     
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX', {
+    'page_title': 'LacTech - Sistema de Gestão Leiteira',
+    'send_page_view': true
+  });
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     EVENTOS PERSONALIZADOS (OPCIONAL)
+     
+     Adicione estes eventos nos botões importantes do seu site:
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Exemplo: Rastrear clique no botão "Assinar Mensal" -->
+<script>
+function trackMonthlySubscription() {
+  gtag('event', 'subscription_click', {
+    'event_category': 'engagement',
+    'event_label': 'monthly_plan',
+    'value': 1
+  });
+}
+</script>
+
+<!-- Exemplo: Rastrear clique no botão "Assinar Anual" -->
+<script>
+function trackYearlySubscription() {
+  gtag('event', 'subscription_click', {
+    'event_category': 'engagement',
+    'event_label': 'yearly_plan',
+    'value': 2
+  });
+}
+</script>
+
+<!-- Exemplo: Rastrear clique no botão "Conhecer LacTech" -->
+<script>
+function trackLacTechClick() {
+  gtag('event', 'product_view', {
+    'event_category': 'products',
+    'event_label': 'lactech_page',
+    'value': 1
+  });
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     COMO USAR OS EVENTOS:
+     
+     Adicione nos botões HTML:
+     
+     onclick="trackMonthlySubscription()"
+     onclick="trackYearlySubscription()"
+     onclick="trackLacTechClick()"
+     
+     Exemplo:
+     <button onclick="trackMonthlySubscription()">Assinar Mensal</button>
+     
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     VERIFICAÇÃO:
+     
+     1. Depois de adicionar o código, abra seu site
+     2. Abra o Console do navegador (F12)
+     3. Digite: gtag
+     4. Se aparecer uma função = está funcionando ✓
+     
+     OU
+     
+     1. No Google Analytics, vá em "Tempo real"
+     2. Abra seu site
+     3. Deve aparecer 1 usuário ativo = está funcionando ✓
+     
+     ═══════════════════════════════════════════════════════════════════════════ -->
+

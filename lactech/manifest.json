@@ -1,7 +1,7 @@
 {
-  "name": "LacTech - Sistema Agropecuário",
+  "name": "LacTech - Sistema de Gestão Leiteira e Agropecuária",
   "short_name": "LacTech",
-  "description": "Sistema completo para gestão agropecuária - LacTech",
+  "description": "LacTech é o sistema mais completo para gestão de fazendas leiteiras no Brasil. Controle de rebanho, produção de leite, saúde animal e análise de dados.",
   "version": "2.0.0",
   "start_url": "/xandria-store.php",
   "display": "standalone",

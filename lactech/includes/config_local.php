@@ -18,7 +18,7 @@ define('APP_VERSION', '2.0.0');
 define('FARM_NAME', 'Lagoa do Mato');
 
 // URLs do sistema - LOCAL
-define('BASE_URL', 'http://localhost/GitHub/lactech-backup2/lactechsys/');
+define('BASE_URL', 'http://localhost/GitHub/lactech-backup2/lactech/');
 define('LOGIN_URL', 'login.php');
 define('DASHBOARD_URL', 'gerente.php');
 

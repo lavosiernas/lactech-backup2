@@ -31,9 +31,9 @@ try {
         switch ($action) {
             case 'get_photo':
             case 'select':
-                // Retornar foto padrão ou URL da foto do usuário
+                // Quando não há foto, retornar null para mostrar ícone SVG
                 $photoData = [
-                    'photo_url' => 'assets/img/default-avatar.png',
+                    'photo_url' => null,
                     'has_photo' => false
                 ];
                 

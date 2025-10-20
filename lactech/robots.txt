@@ -1,0 +1,39 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://lactechsys.com/sitemap.xml
+
+# Permitir indexação de páginas principais
+Allow: /index.php
+Allow: /lactech.php
+Allow: /agrosmart.php
+Allow: /inicio-login.php
+Allow: /gerente.php
+Allow: /funcionario.php
+Allow: /proprietario.php
+
+# Bloquear páginas de sistema
+Disallow: /api/
+Disallow: /includes/
+Disallow: /backupbanco/
+Disallow: *.bat$
+Disallow: /reset-password.php
+Disallow: /solicitar-alteracao-senha.php
+Disallow: /acesso-bloqueado.php
+
+# Permitir acesso a recursos
+Allow: /assets/
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Otimizações para crawlers
+Crawl-delay: 0
+
+# Sitemap adicional
+Sitemap: https://lactechsys.com/sitemap-images.xml
+

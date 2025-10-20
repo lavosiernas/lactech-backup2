@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteRule ^$ lactech/ [R=301,L]
+AddDefaultCharset UTF-8
