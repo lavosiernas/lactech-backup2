@@ -820,6 +820,25 @@ class Database {
     }
     
     /**
+     * Deletar registro de volume
+     */
+    public function deleteVolumeRecord($id) {
+        try {
+            $stmt = $this->query("DELETE FROM volume_records WHERE id = ?", [$id]);
+            
+            return [
+                'success' => true,
+                'message' => 'Registro de volume excluído com sucesso'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
      * Adicionar teste de qualidade
      */
     public function addQualityTest($data) {

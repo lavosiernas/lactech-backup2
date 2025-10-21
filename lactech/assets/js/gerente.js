@@ -1870,7 +1870,7 @@ if (!window.db) {
 
 try {
     // Usar API de volume
-    const response = await fetch('api/volume.php?action=select');
+    const response = await fetch('api/volume.php?action=get_all');
     const result = await response.json();
     
     if (!result.success) {
@@ -1882,13 +1882,13 @@ try {
     // Calcular estat�sticas simples
     const today = new Date().toISOString().split('T')[0];
     const todayVolume = volumeData
-        .filter(record => record.collection_date === today)
+        .filter(record => record.record_date === today)
         .reduce((sum, record) => sum + (parseFloat(record.volume) || 0), 0);
     
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const weekData = volumeData
-        .filter(record => new Date(record.collection_date) >= weekAgo)
+        .filter(record => new Date(record.record_date) >= weekAgo)
         .reduce((sum, record) => sum + (parseFloat(record.volume) || 0), 0);
     const weekAvg = weekData / 7;
     const growth = weekAvg > 0 ? ((todayVolume - weekAvg) / weekAvg * 100) : 0;
@@ -4197,7 +4197,7 @@ let qualityDistributionChart = null;
 async function loadVolumeRecords() {
 try {
     // Usar API de volume
-    const response = await fetch('api/volume.php?action=select');
+    const response = await fetch('api/volume.php?action=get_all');
     const result = await response.json();
     
     if (!result.success) {
@@ -4219,7 +4219,7 @@ const tbody = document.getElementById('volumeRecords');
 if (!records || records.length === 0) {
     tbody.innerHTML = `
         <tr>
-            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                 <div class="flex flex-col items-center">
                     <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -4234,18 +4234,20 @@ if (!records || records.length === 0) {
 }
 
 tbody.innerHTML = records.map(record => {
-    // Corrigir data - adicionar timezone para evitar problema de 1 dia
-    const recordDate = new Date(record.production_date + 'T00:00:00').toLocaleDateString('pt-BR');
-    const recordTime = new Date(record.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const volume = record.volume_liters ? `${record.volume_liters.toFixed(1)}L` : '--';
-    // Obter nome do funcionário via relacionamento
-    const userName = record.users?.name || record.user_name || 'N/A';
+    // Usar campos corretos da API
+    const recordDate = record.record_date ? new Date(record.record_date + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+    const recordTime = record.created_at ? new Date(record.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'N/A';
+    const volume = record.volume ? `${parseFloat(record.volume).toFixed(1)}L` : 'N/A';
+    const shift = record.shift || 'N/A';
+    const userName = record.recorded_by_name || record.recorded_by || 'N/A';
     const notes = record.notes || '-';
     
     return `
         <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${recordDate} ${recordTime}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${recordDate}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${recordTime}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${volume}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${shift}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${userName}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${notes}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -4353,9 +4355,23 @@ tbody.innerHTML = tests.map(test => {
 
 // Delete volume record function
 async function deleteVolumeRecord(recordId) {
-if (!confirm('Tem certeza que deseja excluir este registro de volume?')) {
-    return;
-}
+    // Usar modal system se disponível, senão usar confirm nativo
+    let confirmed = false;
+    
+    try {
+        if (typeof window.modalSystem !== 'undefined' && window.modalSystem.showConfirm) {
+            confirmed = await window.modalSystem.showConfirm('Tem certeza que deseja excluir este registro de volume?');
+        } else {
+            confirmed = window.confirm('Tem certeza que deseja excluir este registro de volume?');
+        }
+    } catch (e) {
+        console.warn('Erro no modal system, usando confirm nativo:', e);
+        confirmed = window.confirm('Tem certeza que deseja excluir este registro de volume?');
+    }
+    
+    if (!confirmed) {
+        return;
+    }
 
 try {
     // Usar API para deletar
@@ -4370,7 +4386,17 @@ try {
         })
     });
     
-    const result = await response.json();
+    const text = await response.text();
+    console.log('📥 Resposta da API (delete):', text);
+    
+    let result;
+    try {
+        result = JSON.parse(text);
+    } catch (e) {
+        console.error('❌ Resposta não é JSON válido:', text);
+        showNotification('A API retornou uma resposta inválida. Verifique o console.', 'error');
+        return;
+    }
     
     if (!result.success) {
         console.error('Error deleting volume record:', result.error);

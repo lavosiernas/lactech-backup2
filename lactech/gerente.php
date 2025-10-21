@@ -634,13 +634,13 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
-                            <button onclick="showAddVolumeModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="showGeneralVolumeOverlay()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 + Volume
                             </button>
-                            <button onclick="showVolumeByCowModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="showVolumeOverlay()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                                 </svg>
@@ -789,7 +789,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
-                            <button onclick="showAddQualityModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="showQualityOverlay()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -1044,7 +1044,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                                 <option value="veterinario">Veterinários</option>
                                 <option value="proprietario">Proprietários</option>
                             </select>
-                            <button onclick="addUser()" class="px-3 sm:px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
+                            <button onclick="showUserOverlay()" class="px-3 sm:px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -1113,7 +1113,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                             </div>
                             <h3 class="text-base sm:text-lg font-semibold text-gray-900mb-2">Nenhum Usuário Cadastrado</h3>
                             <p class="text-gray-600mb-3 sm:mb-4 text-sm">Adicione usuários para gerenciar sua equipe</p>
-                            <button onclick="addUser()" class="px-4 sm:px-6 py-2 sm:py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm">
+                            <button onclick="showUserOverlay()" class="px-4 sm:px-6 py-2 sm:py-3 gradient-forest text-white font-semibold rounded-xl hover:shadow-lg transition-all text-sm">
                                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -7523,6 +7523,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         }
         
         overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
         document.body.style.overflow = 'hidden';
         
         // Carregar dados
@@ -7536,6 +7537,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         
         const overlay = document.getElementById('heiferOverlay');
         if (overlay) {
+            overlay.classList.remove('flex');
             overlay.classList.add('hidden');
             document.body.style.overflow = '';
             
@@ -7543,47 +7545,340 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         }
     };
     
-    // Carregar dados de novilhas
+    // Carregar dados de novilhas - TESTE ULTRA SIMPLES
     async function loadHeiferData() {
         try {
-            console.log('📡 Carregando dados de novilhas...');
+            console.log('📡 TESTE 1: Verificando se API responde...');
             
-            // Carregar novilhas dos animais
-            if (animalsCache.length === 0) {
-                const response = await fetch('api/animals.php?action=get_all');
-                const data = await response.json();
-                if (data.success && data.data) animalsCache = data.data;
+            // Teste 1: API ultra simples
+            const ultraResponse = await fetch('api/ultra_simple.php');
+            const ultraData = await ultraResponse.json();
+            
+            console.log('🔍 Teste ultra simples:', ultraData);
+            
+            if (!ultraData.success) {
+                throw new Error('❌ API ultra simples falhou: ' + ultraData.message);
             }
             
-            // Carregar custos de novilhas
-            const costsRes = await fetch('api/heifer_costs.php?action=get_all');
-            const costsData = await costsRes.json();
+            console.log('✅ API ultra simples OK!');
             
-            console.log('📦 Custos:', costsData);
+            // Teste 2: API de conexão
+            console.log('📡 TESTE 2: Testando conexão com banco...');
             
-            heiferCostsCache = costsData.success && costsData.data ? costsData.data : [];
+            const testResponse = await fetch('api/simple_test.php');
+            const testData = await testResponse.json();
             
-            // Filtrar apenas novilhas
-            const heifers = animalsCache.filter(a => a.status === 'Novilha');
+            console.log('🔍 Teste de conexão:', testData);
             
-            // Calcular estatísticas
-            updateHeiferStats(heifers);
+            if (!testData.success) {
+                console.log('❌ Erro de conexão:', testData.message);
+                // Mesmo com erro de conexão, vamos mostrar interface vazia
+                updateHeiferStatsNew({ total_heifers: 0, total_invested: 0, avg_cost_per_record: 0 });
+                renderHeiferTableNew([]);
+                return;
+            }
             
-            // Renderizar tabela
-            renderHeiferTable(heifers);
+            console.log('✅ Conexão OK! Total de animais:', testData.total_animals);
             
-            console.log(`✅ ${heifers.length} novilhas carregadas!`);
+            // Teste 3: Buscar animais
+            console.log('📡 TESTE 3: Buscando animais...');
+            
+            const response = await fetch('api/debug_animals.php');
+            const data = await response.json();
+            
+            console.log('🔍 Debug - Resposta da API:', data);
+            
+            if (!data.success || !data.data) {
+                console.log('❌ Erro ao carregar animais:', data.message);
+                updateHeiferStatsNew({ total_heifers: 0, total_invested: 0, avg_cost_per_record: 0 });
+                renderHeiferTableNew([]);
+                return;
+            }
+            
+            // Filtrar apenas novilhas/bezerras/bezerros
+            const heifers = data.data.filter(a => 
+                a.status === 'Novilha' || 
+                a.status === 'Bezerra' || 
+                a.status === 'Bezerro'
+            );
+            
+            console.log('🐄 Novilhas encontradas:', heifers.length);
+            console.log('📋 Status dos animais:', data.data.map(a => a.status));
+            
+            if (heifers.length === 0) {
+                console.log('⚠️ Nenhuma novilha encontrada. Status disponíveis:', [...new Set(data.data.map(a => a.status))]);
+                updateHeiferStatsNew({ total_heifers: 0, total_invested: 0, avg_cost_per_record: 0 });
+                renderHeiferTableNew([]);
+                return;
+            }
+            
+            // Processar novilhas
+            const processedHeifers = heifers.map(h => {
+                const ageDays = h.age_days || 0;
+                const ageMonths = Math.floor(ageDays / 30);
+                
+                // Calcular fase
+                let currentPhase = 'Adulta';
+                if (ageDays <= 60) currentPhase = 'Aleitamento';
+                else if (ageDays <= 90) currentPhase = 'Transição/Desmame';
+                else if (ageDays <= 180) currentPhase = 'Recria Inicial';
+                else if (ageDays <= 365) currentPhase = 'Recria Intermediária';
+                else if (ageDays <= 540) currentPhase = 'Crescimento/Desenvolvimento';
+                else if (ageDays <= 780) currentPhase = 'Pré-parto';
+                
+                return {
+                    id: h.id,
+                    ear_tag: h.animal_number,
+                    name: h.name || 'Sem nome',
+                    birth_date: h.birth_date,
+                    category: h.status,
+                    age_months: ageMonths,
+                    current_phase: currentPhase,
+                    total_cost: 0,
+                    total_records: 0
+                };
+            });
+            
+            console.log('✅ Novilhas processadas:', processedHeifers);
+            
+            // Atualizar interface
+            updateHeiferStatsNew({ 
+                total_heifers: processedHeifers.length, 
+                total_invested: 0, 
+                avg_cost_per_record: 0 
+            });
+            renderHeiferTableNew(processedHeifers);
+            
+            console.log(`✅ ${processedHeifers.length} novilhas carregadas com sucesso!`);
         } catch (error) {
             console.error('❌ Erro ao carregar novilhas:', error);
             
-            document.getElementById('heiferTotalCount').textContent = '0';
-            document.getElementById('heiferAvgCost').textContent = 'R$ 0';
-            document.getElementById('heiferAvgAge').textContent = '0m';
-            document.getElementById('heiferTotalCost').textContent = 'R$ 0';
+            // Mostrar erro na tela
+            const tbody = document.getElementById('heiferTableBody');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-3 py-8 text-center text-red-500">
+                            <div class="flex flex-col items-center space-y-2">
+                                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p class="font-semibold">Erro ao carregar dados</p>
+                                <p class="text-sm">${error.message}</p>
+                                <button onclick="loadHeiferData()" class="mt-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                                    Tentar Novamente
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // Zerar estatísticas
+            const stats = ['heiferTotalCount', 'heiferAvgCost', 'heiferAvgAge', 'heiferTotalCost'];
+            stats.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = id.includes('Cost') ? 'R$ 0' : '0';
+            });
         }
     }
     
-    // Atualizar estatísticas
+    // Atualizar estatísticas - NOVA
+    function updateHeiferStatsNew(heifers) {
+        const total = heifers.length;
+        const totalCost = heifers.reduce((sum, h) => sum + parseFloat(h.total_cost || 0), 0);
+        const avgCost = total > 0 ? totalCost / total : 0;
+        
+        // Calcular idade média
+        let totalAge = 0;
+        heifers.forEach(h => {
+            totalAge += parseInt(h.age_months || 0);
+        });
+        const avgAge = total > 0 ? Math.floor(totalAge / total) : 0;
+        
+        document.getElementById('heiferTotalCount').textContent = total;
+        document.getElementById('heiferAvgCost').textContent = `R$ ${avgCost.toFixed(2)}`;
+        document.getElementById('heiferAvgAge').textContent = `${avgAge}m`;
+        document.getElementById('heiferTotalCost').textContent = `R$ ${totalCost.toFixed(2)}`;
+        
+        console.log(`📊 Stats: ${total} novilhas, R$ ${totalCost.toFixed(2)} total`);
+    }
+    
+    // Renderizar tabela - NOVA
+    function renderHeiferTableNew(heifers) {
+        const tbody = document.getElementById('heiferTableBody');
+        if (!tbody) return;
+        
+        if (heifers.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-3 py-8 text-center text-gray-500">
+                        <div class="flex flex-col items-center space-y-2">
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            <p class="text-sm font-semibold">Nenhuma novilha encontrada</p>
+                            <p class="text-xs">Cadastre animais com status "Novilha" ou "Bezerra/Bezerro"</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = heifers.map(heifer => {
+            const totalCost = parseFloat(heifer.total_cost || 0);
+            const age = `${heifer.age_months || 0}m`;
+            
+            return `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-3 py-2 font-medium text-gray-900">${heifer.ear_tag} ${heifer.name ? '- ' + heifer.name : ''}</td>
+                    <td class="px-3 py-2 text-gray-600">${age}</td>
+                    <td class="px-3 py-2 text-gray-600">${heifer.current_phase || 'Sem fase'}</td>
+                    <td class="px-3 py-2 font-semibold ${totalCost > 0 ? 'text-red-600' : 'text-gray-400'}">
+                        R$ ${totalCost.toFixed(2)}
+                    </td>
+                    <td class="px-3 py-2">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="viewHeiferDetailsNew(${heifer.id})" class="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Ver Detalhes">
+                                Ver Custos
+                            </button>
+                            <button onclick="showAddHeiferCostFormForAnimal(${heifer.id})" class="text-green-600 hover:text-green-700 text-xs font-medium" title="Adicionar Custo">
+                                Adicionar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Ver detalhes - NOVA
+    window.viewHeiferDetailsNew = async function(animalId) {
+        console.log('🔍 Carregando detalhes:', animalId);
+        
+        try {
+            const response = await fetch(`api/heifer_simple.php?action=get_heifer_details&animal_id=${animalId}`);
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.message);
+            }
+            
+            showHeiferDetailsModalNew(data.data);
+        } catch (error) {
+            console.error('❌ Erro:', error);
+            alert('Erro ao carregar detalhes: ' + error.message);
+        }
+    };
+    
+    // Modal de detalhes - NOVA
+    function showHeiferDetailsModalNew(heiferData) {
+        const { animal, total_cost, total_records, avg_daily_cost, costs_by_category, recent_costs } = heiferData;
+        
+        const modal = document.createElement('div');
+        modal.id = 'heiferDetailsModalNew';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-60 z-[999999] flex items-center justify-center p-4';
+        
+        modal.innerHTML = `
+            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-orange-600 to-red-600 px-4 py-3 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-white">${animal.animal_number} ${animal.name ? '- ' + animal.name : ''}</h3>
+                        <p class="text-xs text-orange-100">${animal.breed} • ${animal.age_months} meses • ${animal.current_phase}</p>
+                    </div>
+                    <button onclick="closeHeiferDetailsModalNew()" class="text-white hover:bg-white hover:bg-opacity-20 p-1 rounded">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Resumo -->
+                <div class="p-4 bg-gray-50 border-b border-gray-200">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white rounded-lg p-3 text-center">
+                            <p class="text-xs text-gray-500 mb-1">Total de Custos</p>
+                            <p class="text-lg font-bold text-orange-600">R$ ${total_cost.toFixed(2)}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 text-center">
+                            <p class="text-xs text-gray-500 mb-1">Registros</p>
+                            <p class="text-lg font-bold text-gray-900">${total_records}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 text-center">
+                            <p class="text-xs text-gray-500 mb-1">Custo/Dia</p>
+                            <p class="text-lg font-bold text-blue-600">R$ ${avg_daily_cost.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Custos por Categoria -->
+                ${costs_by_category && costs_by_category.length > 0 ? `
+                <div class="p-4 border-b border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-900 mb-3">Custos por Categoria</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        ${costs_by_category.map(cat => `
+                            <div class="bg-gray-50 rounded-lg p-2 flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-medium text-gray-900">${cat.category_type}</p>
+                                    <p class="text-xs text-gray-500">${cat.total_records} registros</p>
+                                </div>
+                                <p class="text-sm font-bold text-orange-600">R$ ${cat.total_cost.toFixed(2)}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <!-- Histórico -->
+                <div class="p-4 overflow-y-auto max-h-[calc(90vh-400px)]">
+                    <h4 class="text-sm font-semibold text-gray-900 mb-3">Histórico de Custos</h4>
+                    ${recent_costs && recent_costs.length > 0 ? `
+                        <div class="space-y-2">
+                            ${recent_costs.map(cost => `
+                                <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="flex items-center space-x-2 mb-1">
+                                                <span class="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded">${cost.cost_category}</span>
+                                                <span class="text-xs text-gray-500">${formatDate(cost.cost_date)}</span>
+                                            </div>
+                                            <p class="text-sm font-medium text-gray-900">${cost.description || 'Sem descrição'}</p>
+                                        </div>
+                                        <p class="text-base font-bold text-red-600">R$ ${parseFloat(cost.cost_amount).toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '<p class="text-center text-gray-500 py-8">Nenhum custo registrado</p>'}
+                </div>
+                
+                <!-- Footer -->
+                <div class="border-t border-gray-200 px-4 py-3 flex items-center justify-between bg-gray-50">
+                    <button onclick="closeHeiferDetailsModalNew()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Fechar
+                    </button>
+                    <button onclick="closeHeiferDetailsModalNew(); showAddHeiferCostFormForAnimal(${animal.id})" class="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg flex items-center space-x-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>Adicionar Custo</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) closeHeiferDetailsModalNew(); });
+    }
+    
+    window.closeHeiferDetailsModalNew = function() {
+        const modal = document.getElementById('heiferDetailsModalNew');
+        if (modal) modal.remove();
+    };
+    
+    // Atualizar estatísticas - ANTIGA (manter por compatibilidade)
     function updateHeiferStats(heifers) {
         const total = heifers.length;
         
@@ -7865,14 +8160,30 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     window.showAddHeiferCostForm = async function() {
         console.log('💰 Abrindo formulário de custo...');
         
-        // Carregar novilhas
-        if (animalsCache.length === 0) {
-            const response = await fetch('api/animals.php?action=get_all');
+        try {
+            // Buscar TODOS os animais para debug
+            const response = await fetch('api/debug_animals.php');
             const data = await response.json();
-            if (data.success && data.data) animalsCache = data.data;
-        }
-        
-        const heifers = animalsCache.filter(a => a.status === 'Novilha');
+            
+            console.log('🔍 Debug - Todos os animais:', data);
+            
+            if (!data.success || !data.data) {
+                throw new Error('Erro ao carregar animais');
+            }
+            
+            // Filtrar apenas novilhas/bezerras/bezerros
+            const heifers = data.data.filter(a => 
+                a.status === 'Novilha' || 
+                a.status === 'Bezerra' || 
+                a.status === 'Bezerro'
+            );
+            
+            console.log('🐄 Novilhas filtradas:', heifers);
+            
+            if (heifers.length === 0) {
+                alert('Nenhuma novilha encontrada! Verifique se existem animais com status "Novilha", "Bezerra" ou "Bezerro" na tabela animals.');
+                return;
+            }
         
         const modal = document.createElement('div');
         modal.id = 'addHeiferCostModal';
@@ -7897,7 +8208,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                                 <select name="animal_id" required class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
                                     <option value="">Selecione</option>
                                     ${heifers.map(h => `
-                                        <option value="${h.id}">${h.animal_number} - ${h.name || 'Sem nome'}</option>
+                                        <option value="${h.id}">${h.ear_tag} - ${h.name || 'Sem nome'} (${h.age_months}m)</option>
                                     `).join('')}
                                 </select>
                             </div>
@@ -7951,6 +8262,11 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         
         document.body.appendChild(modal);
         modal.addEventListener('click', e => { if (e.target === modal) closeAddHeiferCostModal(); });
+        
+        } catch (error) {
+            console.error('❌ Erro ao abrir formulário:', error);
+            alert('Erro ao carregar lista de novilhas: ' + error.message);
+        }
     };
     
     window.closeAddHeiferCostModal = function() {
@@ -9101,6 +9417,502 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     </div>
 </div>
 
+<!-- OVERLAY CONTROLE DE VOLUME GERAL -->
+<div id="generalVolumeOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[999999] hidden flex items-center justify-center p-4" onclick="if(event.target === this) closeGeneralVolumeOverlay()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Volume Geral</h3>
+                    <p class="text-sm text-green-100">Registre o volume total de todas as vacas</p>
+                </div>
+            </div>
+            <button onclick="closeGeneralVolumeOverlay()" class="text-white hover:bg-white hover:bg-opacity-20 p-1.5 rounded-lg transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <form id="generalVolumeForm" class="space-y-6">
+                <!-- Data e Turno -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Coleta *</label>
+                        <input type="date" name="collection_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Turno *</label>
+                        <select name="period" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <option value="">Selecione o turno</option>
+                            <option value="manha">Manhã</option>
+                            <option value="tarde">Tarde</option>
+                            <option value="noite">Noite</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Volume Total e Número de Vacas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Volume Total (Litros) *</label>
+                        <input type="number" name="total_volume" step="0.1" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 150.5">
+                        <p class="text-xs text-gray-500 mt-1">Volume total de todas as vacas ordenhadas</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Número de Vacas Ordenhadas *</label>
+                        <input type="number" name="total_animals" min="1" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 25">
+                        <p class="text-xs text-gray-500 mt-1">Quantidade de vacas que foram ordenhadas</p>
+                    </div>
+                </div>
+                
+                <!-- Temperatura -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Temperatura Média do Leite (°C)</label>
+                    <input type="number" name="temperature" step="0.1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 4.0">
+                </div>
+                
+                <!-- Observações -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none" placeholder="Observações sobre a ordenha geral (opcional)"></textarea>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Footer -->
+        <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-3 bg-gray-50">
+            <button onclick="closeGeneralVolumeOverlay()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancelar
+            </button>
+            <button onclick="submitGeneralVolumeForm()" class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>Registrar Volume Geral</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- OVERLAY CONTROLE DE VOLUME POR VACA -->
+<div id="volumeOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[999999] hidden flex items-center justify-center p-4" onclick="if(event.target === this) closeVolumeOverlay()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Volume Por Vaca</h3>
+                    <p class="text-sm text-blue-100">Registre o volume de uma vaca específica</p>
+                </div>
+            </div>
+            <button onclick="closeVolumeOverlay()" class="text-white hover:bg-white hover:bg-opacity-20 p-1.5 rounded-lg transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <form id="volumeForm" class="space-y-6">
+                <!-- SELECIONAR VACA -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Selecionar Vaca *</label>
+                    <select name="animal_id" id="volumeAnimalSelect" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Carregando vacas...</option>
+                    </select>
+                </div>
+
+                <!-- Data e Turno -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Coleta *</label>
+                        <input type="date" name="collection_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Turno *</label>
+                        <select name="period" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Selecione o turno</option>
+                            <option value="manha">Manhã</option>
+                            <option value="tarde">Tarde</option>
+                            <option value="noite">Noite</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Volume da Vaca -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Volume de Leite da Vaca (Litros) *</label>
+                    <input type="number" name="volume" step="0.1" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: 12.5">
+                    <p class="text-xs text-gray-500 mt-1">Volume produzido por esta vaca nesta ordenha</p>
+                </div>
+                
+                <!-- Temperatura -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Temperatura do Leite (°C)</label>
+                    <input type="number" name="temperature" step="0.1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ex: 4.0">
+                </div>
+                
+                <!-- Observações -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="Observações sobre a ordenha desta vaca (opcional)"></textarea>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Footer -->
+        <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-3 bg-gray-50">
+            <button onclick="closeVolumeOverlay()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancelar
+            </button>
+            <button onclick="submitVolumeForm()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>Registrar Volume</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- OVERLAY CONTROLE DE QUALIDADE -->
+<div id="qualityOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[999999] hidden flex items-center justify-center p-4" onclick="if(event.target === this) closeQualityOverlay()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Controle de Qualidade</h3>
+                    <p class="text-sm text-green-100">Registre os parâmetros de qualidade do leite</p>
+                </div>
+            </div>
+            <button onclick="closeQualityOverlay()" class="text-white hover:bg-white hover:bg-opacity-20 p-1.5 rounded-lg transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <form id="qualityForm" class="space-y-6">
+                <!-- Data do Teste -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Data do Teste *</label>
+                    <input type="date" name="test_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" value="<?php echo date('Y-m-d'); ?>">
+                </div>
+                
+                <!-- Parâmetros de Qualidade -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Gordura (%) *</label>
+                        <input type="number" name="fat_content" step="0.01" min="0" max="100" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 3.50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Proteína (%) *</label>
+                        <input type="number" name="protein_content" step="0.01" min="0" max="100" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 3.20">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Células Somáticas (mil/mL) *</label>
+                        <input type="number" name="somatic_cells" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Contagem Bacteriana (mil/mL) *</label>
+                        <input type="number" name="bacteria_count" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 50">
+                    </div>
+                </div>
+                
+                <!-- Laboratório e Custo -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Laboratório</label>
+                        <input type="text" name="laboratory" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Nome do laboratório">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Custo do Teste (R$)</label>
+                        <input type="number" name="cost" step="0.01" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: 25.00">
+                    </div>
+                </div>
+                
+                <!-- Observações -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none" placeholder="Observações adicionais (opcional)"></textarea>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Footer -->
+        <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-3 bg-gray-50">
+            <button onclick="closeQualityOverlay()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancelar
+            </button>
+            <button onclick="submitQualityForm()" class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>Registrar Qualidade</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- OVERLAY CONTROLE DE VENDAS -->
+<div id="salesOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[999999] hidden flex items-center justify-center p-4" onclick="if(event.target === this) closeSalesOverlay()">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Controle de Vendas</h3>
+                    <p class="text-sm text-purple-100">Registre as vendas de leite</p>
+                </div>
+            </div>
+            <button onclick="closeSalesOverlay()" class="text-white hover:bg-white hover:bg-opacity-20 p-1.5 rounded-lg transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <form id="salesForm" class="space-y-6">
+                <!-- Data e Cliente -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Venda *</label>
+                        <input type="date" name="sale_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Cliente/Comprador *</label>
+                        <input type="text" name="customer" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Nome do cliente">
+                    </div>
+                </div>
+                
+                <!-- Volume e Preço -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Volume Vendido (Litros) *</label>
+                        <input type="number" name="volume_sold" step="0.1" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 150.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Preço por Litro (R$) *</label>
+                        <input type="number" name="price_per_liter" step="0.01" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 2.50">
+                    </div>
+                </div>
+                
+                <!-- Valor Total e Forma de Pagamento -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Valor Total (R$) *</label>
+                        <input type="number" name="total_amount" step="0.01" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Ex: 376.25">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Forma de Pagamento *</label>
+                        <select name="payment_method" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            <option value="">Selecione</option>
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="cartao">Cartão</option>
+                            <option value="transferencia">Transferência</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="pix">PIX</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Observações -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none" placeholder="Observações adicionais (opcional)"></textarea>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Footer -->
+        <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-3 bg-gray-50">
+            <button onclick="closeSalesOverlay()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancelar
+            </button>
+            <button onclick="submitSalesForm()" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>Registrar Venda</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- OVERLAY ADICIONAR USUÁRIO - FULL SCREEN -->
+<div id="userOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[999999] hidden flex items-center justify-center p-0" onclick="if(event.target === this) closeUserOverlay()">
+    <div class="bg-white w-full h-full overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Adicionar Usuário</h3>
+                    <p class="text-sm text-indigo-100">Crie uma nova conta de usuário</p>
+                </div>
+            </div>
+            <button onclick="closeUserOverlay()" class="text-white hover:bg-white hover:bg-opacity-20 p-1.5 rounded-lg transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Conteúdo -->
+        <div class="p-6 overflow-y-auto h-[calc(100vh-140px)]">
+            <form id="userForm" class="space-y-6 max-w-4xl mx-auto">
+                <!-- Seção: Informações Básicas -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        Informações Básicas
+                    </h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo *</label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Nome completo">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="email@exemplo.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">CPF</label>
+                            <input type="text" name="cpf" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="000.000.000-00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Telefone/WhatsApp</label>
+                            <input type="tel" name="phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="(11) 99999-9999">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção: Acesso e Permissões -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                        Acesso e Permissões
+                    </h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Cargo *</label>
+                            <select name="role" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Selecione o cargo</option>
+                                <option value="proprietario">Proprietário</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="funcionario">Funcionário</option>
+                                <option value="veterinario">Veterinário</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                            <select name="is_active" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="1">Ativo</option>
+                                <option value="0">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção: Segurança -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        Segurança
+                    </h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Senha *</label>
+                            <input type="password" name="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Mínimo 6 caracteres">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Confirmar Senha *</label>
+                            <input type="password" name="confirm_password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Digite a senha novamente">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção: Informações Adicionais -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Informações Adicionais
+                    </h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Contratação</label>
+                            <input type="date" name="hire_date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Salário (R$)</label>
+                            <input type="number" name="salary" step="0.01" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.00">
+                        </div>
+                        <div class="lg:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Endereço</label>
+                            <textarea name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none" placeholder="Endereço completo (opcional)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Footer -->
+        <div class="border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-3 bg-gray-50">
+            <button onclick="closeUserOverlay()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Cancelar
+            </button>
+            <button onclick="submitUserForm()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>Criar Usuário</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL DE CONFIRMAÇÃO DE LOGOUT -->
 <div id="logoutConfirmModal" class="fixed inset-0 bg-black bg-opacity-60 z-[999999] hidden flex items-center justify-center p-4" onclick="if(event.target === this) closeLogoutConfirmation()">
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
@@ -9161,136 +9973,462 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     </div>
 </div>
 
-<!-- OVERLAY CONTROLE DE NOVILHAS -->
-<div id="heiferOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[99999] hidden transition-all duration-300 backdrop-blur-sm">
-    <div class="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col transform transition-transform duration-300">
-        <!-- Header -->
-        <div class="bg-white border-b border-gray-200">
-            <div class="flex items-center justify-between p-3 sm:p-4">
-                <button onclick="closeHeiferOverlay()" class="group p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 flex items-center space-x-1.5 text-gray-600 hover:text-gray-900">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    <span class="hidden sm:inline text-xs font-medium">Voltar</span>
-                </button>
-                <h2 class="text-base sm:text-lg font-bold text-gray-900">Controle de Novilhas</h2>
-                <button onclick="closeHeiferOverlay()" class="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 text-gray-600 hover:text-gray-900">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
+<?php include 'includes/heifer-overlay.html'; ?>
+
+<script>
+// ==================== FUNÇÕES DOS OVERLAYS ====================
+
+// OVERLAY CONTROLE DE VOLUME GERAL
+function showGeneralVolumeOverlay() {
+    const overlay = document.getElementById('generalVolumeOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeGeneralVolumeOverlay() {
+    const overlay = document.getElementById('generalVolumeOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+async function submitGeneralVolumeForm() {
+    const form = document.getElementById('generalVolumeForm');
+    if (!form || !form.checkValidity()) {
+        form?.reportValidity();
+        return;
+    }
+    
+    const formData = new FormData(form);
+    
+    // Estrutura para volume geral (todas as vacas)
+    const volumeData = {
+        action: 'insert',
+        collection_date: formData.get('collection_date'),
+        period: formData.get('period'),
+        volume: parseFloat(formData.get('total_volume')),
+        temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
+        recorded_by: <?php echo $_SESSION['user_id'] ?? 1; ?>,
+        // Para volume geral, não precisamos de producer_id específico
+        is_general: true
+    };
+    
+    console.log('📤 Registrando volume geral:', volumeData);
+    
+    try {
+        const response = await fetch('api/volume.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(volumeData)
+        });
         
-        <!-- Conteúdo -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div class="max-w-6xl mx-auto space-y-4">
-                
-                <!-- Cards de Estatísticas -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <!-- Total de Novilhas -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                </svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs text-gray-500">Total</p>
-                                <p class="text-lg font-bold text-orange-600" id="heiferTotalCount">-</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Custo Médio -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs text-gray-500">Custo Médio</p>
-                                <p class="text-lg font-bold text-green-600" id="heiferAvgCost">-</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Idade Média -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs text-gray-500">Idade Média</p>
-                                <p class="text-lg font-bold text-blue-600" id="heiferAvgAge">-</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Custo Total -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs text-gray-500">Custo Total</p>
-                                <p class="text-lg font-bold text-red-600" id="heiferTotalCost">-</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Tabela de Novilhas -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="p-3 border-b border-gray-200 flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-gray-900">Novilhas e Custos de Criação</h3>
-                        <button onclick="showAddHeiferCostForm()" class="flex items-center space-x-1 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium rounded-lg">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            <span>Adicionar Custo</span>
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Novilha</th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Idade</th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Raça</th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Custo Total</th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="heiferTableBody" class="divide-y divide-gray-200">
-                                <tr>
-                                    <td colspan="5" class="px-3 py-8 text-center text-gray-500">
-                                        <div class="flex flex-col items-center space-y-2">
-                                            <svg class="w-12 h-12 text-gray-300 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                            </svg>
-                                            <p class="text-sm">Carregando novilhas...</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-    </div>
-</div>
+        const text = await response.text();
+        console.log('📥 Resposta da API (texto):', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('❌ Resposta não é JSON válido:', text);
+            throw new Error('A API retornou uma resposta inválida. Verifique o console.');
+        }
+        
+        if (data.success) {
+            closeGeneralVolumeOverlay();
+            alert('Volume geral registrado com sucesso!');
+            form.reset();
+            // Recarregar dados se necessário
+            if (typeof loadVolumeData === 'function') {
+                loadVolumeData();
+            }
+        } else {
+            throw new Error(data.error || 'Erro ao registrar volume geral');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao registrar volume geral:', error);
+        alert('Erro ao registrar volume geral: ' + error.message);
+    }
+}
+
+// OVERLAY CONTROLE DE VOLUME POR VACA
+async function showVolumeOverlay() {
+    const overlay = document.getElementById('volumeOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Carregar vacas lactantes
+        await loadCowsForVolume();
+    }
+}
+
+async function loadCowsForVolume() {
+    const select = document.getElementById('volumeAnimalSelect');
+    if (!select) return;
+    
+    try {
+        const response = await fetch('api/animals.php?action=get_all');
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            // Filtrar apenas vacas lactantes
+            const lactatingCows = data.data.filter(a => 
+                a.status === 'Lactante' || a.status === 'Vaca'
+            );
+            
+            select.innerHTML = '<option value="">Selecione uma vaca</option>';
+            lactatingCows.forEach(cow => {
+                const option = document.createElement('option');
+                option.value = cow.id;
+                option.textContent = `${cow.animal_number} - ${cow.name || 'Sem nome'}`;
+                select.appendChild(option);
+            });
+        } else {
+            select.innerHTML = '<option value="">Erro ao carregar vacas</option>';
+        }
+    } catch (error) {
+        console.error('❌ Erro ao carregar vacas:', error);
+        select.innerHTML = '<option value="">Erro ao carregar vacas</option>';
+    }
+}
+
+function closeVolumeOverlay() {
+    const overlay = document.getElementById('volumeOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+async function submitVolumeForm() {
+    const form = document.getElementById('volumeForm');
+    if (!form || !form.checkValidity()) {
+        form?.reportValidity();
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const animal_id = formData.get('animal_id');
+    
+    if (!animal_id) {
+        alert('Por favor, selecione uma vaca!');
+        return;
+    }
+    
+    // Estrutura correta conforme Database.class.php addVolumeRecord()
+    const volumeData = {
+        action: 'insert',
+        collection_date: formData.get('collection_date'),
+        period: formData.get('period'),
+        volume: parseFloat(formData.get('volume')),
+        producer_id: parseInt(animal_id), // ID da vaca
+        temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
+        recorded_by: <?php echo $_SESSION['user_id'] ?? 1; ?>
+    };
+    
+    console.log('📤 Registrando volume da vaca:', volumeData);
+    
+    try {
+        const response = await fetch('api/volume.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(volumeData)
+        });
+        
+        const text = await response.text();
+        console.log('📥 Resposta da API (texto):', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('❌ Resposta não é JSON válido:', text);
+            throw new Error('A API retornou uma resposta inválida. Verifique o console.');
+        }
+        
+        if (data.success) {
+            closeVolumeOverlay();
+            alert('Volume registrado com sucesso!');
+            form.reset();
+            // Recarregar dados se necessário
+            if (typeof loadVolumeData === 'function') {
+                loadVolumeData();
+            }
+        } else {
+            throw new Error(data.error || 'Erro ao registrar volume');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao registrar volume:', error);
+        alert('Erro ao registrar volume: ' + error.message);
+    }
+}
+
+// OVERLAY CONTROLE DE QUALIDADE
+function showQualityOverlay() {
+    const overlay = document.getElementById('qualityOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeQualityOverlay() {
+    const overlay = document.getElementById('qualityOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+async function submitQualityForm() {
+    const form = document.getElementById('qualityForm');
+    if (!form || !form.checkValidity()) {
+        form?.reportValidity();
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const qualityData = {
+        action: 'insert',
+        test_date: formData.get('test_date'),
+        test_type: 'qualidade_leite',
+        fat_percentage: parseFloat(formData.get('fat_content')) || null,
+        protein_percentage: parseFloat(formData.get('protein_content')) || null,
+        ccs: parseInt(formData.get('somatic_cells')) || null,
+        bacteria_count: parseInt(formData.get('bacteria_count')) || null,
+        laboratory: formData.get('laboratory'),
+        cost: parseFloat(formData.get('cost')) || null,
+        notes: formData.get('notes'),
+        tested_by: <?php echo $_SESSION['user_id'] ?? 1; ?>
+    };
+    
+    console.log('📤 Registrando qualidade:', qualityData);
+    
+    try {
+        const response = await fetch('api/quality.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(qualityData)
+        });
+        
+        const text = await response.text();
+        console.log('📥 Resposta da API (texto):', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('❌ Resposta não é JSON válido:', text);
+            throw new Error('A API retornou uma resposta inválida. Verifique o console.');
+        }
+        
+        if (data.success) {
+            closeQualityOverlay();
+            alert('Teste de qualidade registrado com sucesso!');
+            form.reset();
+            // Recarregar dados se necessário
+            if (typeof loadQualityData === 'function') {
+                loadQualityData();
+            }
+        } else {
+            throw new Error(data.error || 'Erro ao registrar teste de qualidade');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao registrar teste de qualidade:', error);
+        alert('Erro ao registrar teste de qualidade: ' + error.message);
+    }
+}
+
+// OVERLAY CONTROLE DE VENDAS
+function showSalesOverlay() {
+    const overlay = document.getElementById('salesOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeSalesOverlay() {
+    const overlay = document.getElementById('salesOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+async function submitSalesForm() {
+    const form = document.getElementById('salesForm');
+    if (!form || !form.checkValidity()) {
+        form?.reportValidity();
+        return;
+    }
+    
+    const formData = new FormData(form);
+    // Estrutura correta conforme Database.class.php addFinancialRecord()
+    const salesData = {
+        action: 'insert',
+        due_date: formData.get('sale_date'),
+        type: 'receita',
+        description: `Venda de ${formData.get('volume_sold')}L de leite para ${formData.get('customer')}`,
+        amount: parseFloat(formData.get('total_amount')),
+        created_by: <?php echo $_SESSION['user_id'] ?? 1; ?>
+    };
+    
+    console.log('📤 Registrando venda:', salesData);
+    
+    try {
+        const response = await fetch('api/financial.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(salesData)
+        });
+        
+        const text = await response.text();
+        console.log('📥 Resposta da API (texto):', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('❌ Resposta não é JSON válido:', text);
+            throw new Error('A API retornou uma resposta inválida. Verifique o console.');
+        }
+        
+        if (data.success) {
+            closeSalesOverlay();
+            alert('Venda registrada com sucesso!');
+            form.reset();
+            // Recarregar dados se necessário
+            if (typeof loadFinancialData === 'function') {
+                loadFinancialData();
+            }
+        } else {
+            throw new Error(data.error || 'Erro ao registrar venda');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao registrar venda:', error);
+        alert('Erro ao registrar venda: ' + error.message);
+    }
+}
+
+// OVERLAY ADICIONAR USUÁRIO
+function showUserOverlay() {
+    const overlay = document.getElementById('userOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeUserOverlay() {
+    const overlay = document.getElementById('userOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+async function submitUserForm() {
+    const form = document.getElementById('userForm');
+    if (!form || !form.checkValidity()) {
+        form?.reportValidity();
+        return;
+    }
+    
+    const formData = new FormData(form);
+    
+    // Verificar se as senhas coincidem
+    if (formData.get('password') !== formData.get('confirm_password')) {
+        alert('As senhas não coincidem!');
+        return;
+    }
+    
+    const userData = {
+        action: 'insert',
+        name: formData.get('name'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        role: formData.get('role'),
+        phone: formData.get('phone'),
+        cpf: formData.get('cpf'),
+        is_active: formData.get('is_active') || '1',
+        hire_date: formData.get('hire_date'),
+        salary: parseFloat(formData.get('salary')) || null,
+        address: formData.get('address'),
+        farm_id: 1
+    };
+    
+    console.log('📤 Criando usuário:', { ...userData, password: '***' });
+    
+    try {
+        const response = await fetch('api/users.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        
+        const text = await response.text();
+        console.log('📥 Resposta da API (texto):', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('❌ Resposta não é JSON válido:', text);
+            throw new Error('A API retornou uma resposta inválida. Verifique o console.');
+        }
+        
+        if (data.success) {
+            closeUserOverlay();
+            alert('Usuário criado com sucesso!');
+            form.reset();
+            // Recarregar dados se necessário
+            if (typeof loadUsersData === 'function') {
+                loadUsersData();
+            }
+        } else {
+            throw new Error(data.error || 'Erro ao criar usuário');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao criar usuário:', error);
+        alert('Erro ao criar usuário: ' + error.message);
+    }
+}
+
+// ==================== FUNÇÕES LEGADAS (MANTIDAS PARA COMPATIBILIDADE) ====================
+
+// Manter funções antigas para não quebrar o sistema
+function addUser() {
+    showUserOverlay();
+}
+
+function showAddVolumeModal() {
+    showGeneralVolumeOverlay();
+}
+
+function showVolumeByCowModal() {
+    showVolumeOverlay();
+}
+
+function showAddQualityModal() {
+    showQualityOverlay();
+}
+
+// ==================== FIM DAS FUNÇÕES DOS OVERLAYS ====================
+</script>
 
 </body>
 </html>

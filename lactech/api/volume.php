@@ -73,6 +73,13 @@ try {
             unset($input['action']);
             $data = $db->addVolumeRecord($input);
             sendResponse($data);
+        } elseif ($action === 'delete') {
+            $id = $input['id'] ?? null;
+            if (!$id) {
+                sendResponse(null, 'ID não fornecido');
+            }
+            $data = $db->deleteVolumeRecord($id);
+            sendResponse($data);
         } else {
             sendResponse(null, 'Ação inválida');
         }
