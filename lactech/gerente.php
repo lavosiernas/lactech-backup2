@@ -4,6 +4,12 @@
  * Requer autenticação e papel de gerente
  */
 
+// Headers anti-cache - FORÇA recarregamento
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
+
 // Incluir configuração e iniciar sessão
 require_once __DIR__ . '/includes/config_login.php';
 
@@ -46,6 +52,9 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Painel do Gerente - Sistema Leiteiro</title>
     
     <!-- PWA Meta Tags -->
@@ -72,6 +81,8 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
+    
+    <?php $v = time(); // Versão dinâmica para evitar cache ?>
     
     <!-- Critical CSS - inline for fastest loading -->
     <style>
@@ -257,12 +268,12 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     </style>
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="assets/css/critical.css" as="style">
-    <link rel="preload" href="assets/js/performance-optimizer.js" as="script">
-    <link rel="preload" href="assets/js/config_mysql.js" as="script">
+    <link rel="preload" href="assets/css/critical.css?v=<?php echo $v; ?>" as="style">
+    <link rel="preload" href="assets/js/performance-optimizer.js?v=<?php echo $v; ?>" as="script">
+    <link rel="preload" href="assets/js/config_mysql.js?v=<?php echo $v; ?>" as="script">
     
     <!-- Load critical CSS immediately -->
-    <link rel="stylesheet" href="assets/css/critical.css">
+    <link rel="stylesheet" href="assets/css/critical.css?v=<?php echo $v; ?>">
     
     <!-- Tailwind CSS CDN - optimized -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -288,22 +299,31 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     <!-- Chart.js - Carregar primeiro para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- ==================== BIBLIOTECAS DE GRÁFICOS AVANÇADOS ==================== -->
+    <!-- ApexCharts - Gráficos avançados e interativos -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest"></script>
+    
+    <!-- Chart.js plugins para gráficos avançados -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@latest"></script>
+    
     <!-- ==================== SCRIPTS LOCAIS - ORDEM CRÍTICA ==================== -->
     <!-- 1. Performance e Configuração (BASE) -->
-    <script src="assets/js/performance-optimizer.js"></script>
-    <script src="assets/js/config_mysql.js"></script>
-    <script src="assets/js/console-guard.js"></script>
+    <script src="assets/js/performance-optimizer.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/config_mysql.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/console-guard.js?v=<?php echo $v; ?>"></script>
     
     <!-- 2. Sistema de Modais (DEPENDÊNCIA DO GERENTE.JS) -->
-    <script src="assets/js/modal-system.js"></script>
-    <script src="assets/js/native-notifications.js"></script>
+    <script src="assets/js/modal-system.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/native-notifications.js?v=<?php echo $v; ?>"></script>
     
     <!-- 3. Gerenciamento Offline -->
-    <script src="assets/js/offline-manager.js"></script>
-    <script src="assets/js/offline-sync.js"></script>
+    <script src="assets/js/offline-manager.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/offline-sync.js?v=<?php echo $v; ?>"></script>
     
     <!-- 4. Utilitários -->
-    <script src="assets/js/pdf-generator.js"></script>
+    <script src="assets/js/pdf-generator.js?v=<?php echo $v; ?>"></script>
     
     <style>
         /* CRITICAL: Prevenir bugs de inicializaçãoo */
@@ -322,6 +342,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         #moreModal,
         #managerPhotoChoiceModal,
         #managerCameraModal,
+        #deleteVolumeModal,
         #contactsModal,
         #notificationsModal,
         .modal.hidden,
@@ -457,12 +478,13 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                     <!-- Botão de Notificações -->
                     <button onclick="openNotificationsModal()" class="relative p-2 text-white hover:text-forest-200 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-5 5v-5zM9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                         </svg>
                         <span id="notificationCounter" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                         <!-- Indicador de tempo real -->
                         <div id="realTimeIndicator" class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse hidden" title="Sistema de atualização automática ativo"></div>
                     </button>
+                    
                     
                     
                     
@@ -472,8 +494,8 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                             <img id="headerProfilePhoto" src="" alt="Foto de Perfil" class="w-8 h-8 object-cover rounded-full hidden">
                             <!-- ícone padrão -->
                             <div id="headerProfileIcon" class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" style="transform: translateY(0px);">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                 </svg>
                             </div>
                         </div>
@@ -559,30 +581,40 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                     <div class="metric-label text-slate-600 font-semibold mt-1">Sistema</div>
                 </div>
             </div>
+            
+
+
+
 
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-                <!-- Volume Chart -->
+                <!-- Volume Chart - Melhorado -->
                 <div class="data-card rounded-2xl p-4 sm:p-6 card-compact">
-                    <h3 class="card-title font-bold text-slate-900 mb-3 sm:mb-4">Volume Semanal</h3>
+                    <div class="flex items-center justify-between mb-3 sm:mb-4">
+                        <h3 class="card-title font-bold text-slate-900">Volume Semanal</h3>
+                    </div>
                     <div class="chart-container">
                         <canvas id="volumeChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Weekly Production Chart -->
-                <div class="data-card rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Produção dos últimos 7 Dias</h3>
+                <!-- Weekly Production Chart - Melhorado -->
+                <div class="data-card rounded-2xl p-4 sm:p-6 card-compact">
+                    <div class="flex items-center justify-between mb-3 sm:mb-4">
+                        <h3 class="card-title font-bold text-slate-900">Produção dos últimos 7 Dias</h3>
+                    </div>
                     <div class="chart-container">
                         <canvas id="dashboardWeeklyChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Temperature Chart Section -->
+            <!-- Temperature Chart Section - Melhorado -->
             <div class="grid grid-cols-1 gap-6 mb-6">
-                <div class="data-card rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Controle de Temperatura</h3>
+                <div class="data-card rounded-2xl p-4 sm:p-6 card-compact">
+                    <div class="flex items-center justify-between mb-3 sm:mb-4">
+                        <h3 class="card-title font-bold text-slate-900">Controle de Temperatura</h3>
+                    </div>
                     <div class="chart-container">
                         <canvas id="temperatureChart"></canvas>
                     </div>
@@ -657,7 +689,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                 </div>
 
                 <!-- Volume Metrics -->
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
                     <div class="metric-card rounded-2xl p-4 text-center">
                         <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -700,6 +732,17 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                         <div class="text-lg font-bold text-slate-900 mb-1" id="lastCollection">--/--/---- - --:--</div>
                     <div class="text-xs text-slate-500 font-medium">última Coleta</div>
                     <div class="text-xs text-slate-600 font-semibold mt-1">Data e Hora</div>
+                    </div>
+                    
+                    <div class="metric-card rounded-2xl p-4 text-center">
+                        <div class="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xl font-bold text-slate-900 mb-1" id="yearVolume">-- L</div>
+                    <div class="text-xs text-slate-500 font-medium">Volume Anual</div>
+                    <div class="text-xs text-slate-600 font-semibold mt-1"><?php echo date('Y'); ?></div>
                     </div>
                 </div>
 
@@ -754,6 +797,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Data/Hora</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-slate-900">Turno</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Volume (L)</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Funcionário</th>
                                     <th class="text-left py-3 px-4 font-semibold text-slate-900">Observações</th>
@@ -762,7 +806,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                             </thead>
                             <tbody id="volumeRecords">
                                 <tr>
-                                    <td colspan="5" class="text-center py-8 text-gray-500">
+                                    <td colspan="6" class="text-center py-8 text-gray-500">
                                         Nenhum registro encontrado
                                     </td>
                                 </tr>
@@ -2032,6 +2076,67 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão de Volume -->
+    <div id="deleteVolumeModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Confirmar Exclusão</h3>
+                    <button onclick="closeDeleteVolumeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900">Tem certeza que deseja excluir este registro de volume?</h4>
+                        <p class="text-sm text-gray-600 mt-1">Esta ação não pode ser desfeita.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h5 class="font-medium text-gray-900 mb-2">Detalhes do Registro:</h5>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Data:</span>
+                            <span class="ml-2 font-medium" id="deleteVolumeDate">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Turno:</span>
+                            <span class="ml-2 font-medium" id="deleteVolumeShift">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Volume:</span>
+                            <span class="ml-2 font-medium" id="deleteVolumeAmount">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Funcionário:</span>
+                            <span class="ml-2 font-medium" id="deleteVolumeUser">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeDeleteVolumeModal()" class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmDeleteVolume()" class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors font-medium">
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification Toast -->
     <div id="notificationToast" class="notification-toast">
         <div class="bg-white   rounded-lg shadow-lg border border-gray-200   p-4 max-w-sm">
@@ -2058,9 +2163,9 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
 
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
     <!-- <link href="assets/css/offline-loading.css" rel="stylesheet"> --> <!-- Desabilitado -->
-    <link href="assets/css/weather-modal.css" rel="stylesheet">
-    <link href="assets/css/native-notifications.css" rel="stylesheet">
-    <link href="assets/css/quality-modal.css" rel="stylesheet">
+    <link href="assets/css/weather-modal.css?v=<?php echo $v; ?>" rel="stylesheet">
+    <link href="assets/css/native-notifications.css?v=<?php echo $v; ?>" rel="stylesheet">
+    <link href="assets/css/quality-modal.css?v=<?php echo $v; ?>" rel="stylesheet">
     
     <!-- Responsividade Customizada -->
     <style>
@@ -2745,6 +2850,142 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
             left: 10%;
             animation-delay: -2s;
         }
+        
+        /* ============================================================ */
+        /* MELHORIAS UX/UI - SUPERIOR AO FARMTELL */
+        /* ============================================================ */
+        
+        /* Badge de notificação pulsante */
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border-radius: 9999px;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            border: 2px solid white;
+            animation: pulse-badge 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+        }
+        
+        /* Cards com hover melhorado */
+        .app-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .app-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+        
+        .app-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .app-item:hover::before {
+            left: 100%;
+        }
+        
+        /* Pulse para itens urgentes */
+        .urgent-pulse {
+            animation: urgent-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes urgent-pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+        }
+        
+        /* Loading spinner suave */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Skeleton loading */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s ease-in-out infinite;
+            border-radius: 0.5rem;
+        }
+        
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Smooth transitions globais */
+        * {
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Destaque para novos recursos */
+        .new-feature-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: shine 3s ease-in-out infinite;
+        }
+        
+        /* Correção do ícone de usuário */
+        #headerProfileIcon svg {
+            display: block;
+            margin: 0 auto;
+            vertical-align: middle;
+        }
+        
+        #overlayProfileIcon svg {
+            display: block;
+            margin: 0 auto;
+            vertical-align: middle;
+        }
+        
+        @keyframes shine {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
     </style>
 
         
@@ -2753,7 +2994,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
 
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo $v; ?>">
     <style>
 
         
@@ -2983,6 +3224,87 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Central de Ações (NOVO!) -->
+                        <div class="app-item bg-white border-2 border-purple-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showActionsDashboard()">
+                            <span class="new-feature-badge">Novo</span>
+                            <span id="urgentActionsBadge" class="notification-badge hidden">0</span>
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Central de Ações</p>
+                                    <p class="text-xs text-gray-600">Tarefas prioritárias</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sistema RFID (NOVO!) -->
+                        <div class="app-item bg-white border-2 border-teal-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showTransponderManagement()">
+                            <span class="new-feature-badge">Novo</span>
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Sistema RFID</p>
+                                    <p class="text-xs text-gray-600">Transponders</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Condição Corporal (NOVO!) -->
+                        <div class="app-item bg-white border-2 border-amber-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showBCSManagement()">
+                            <span class="new-feature-badge">Novo</span>
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Condição Corporal</p>
+                                    <p class="text-xs text-gray-600">Avaliação BCS</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Grupos e Lotes (NOVO!) -->
+                        <div class="app-item bg-white border-2 border-indigo-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showGroupsManagement()">
+                            <span class="new-feature-badge">Novo</span>
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Grupos e Lotes</p>
+                                    <p class="text-xs text-gray-600">Organização</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Insights de IA (NOVO!) -->
+                        <div class="app-item bg-white border-2 border-violet-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showAIInsights()">
+                            <span class="new-feature-badge">IA</span>
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Insights de IA</p>
+                                    <p class="text-xs text-gray-600">Previsões</p>
+                                </div>
+                            </div>
+                        </div>
                     
                         <!-- Suporte -->
                         <div class="app-item bg-white border-2 border-gray-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="openSupportHub()">
@@ -3035,6 +3357,38 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                                 <div>
                                     <p class="font-semibold text-gray-900 text-sm">Contatos</p>
                                     <p class="text-xs text-gray-600">Lista telefonica</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controle de Alimentação (NOVO!) -->
+                        <div class="app-item bg-white border-2 border-green-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showFeedManagement()">
+                            <span class="new-feature-badge">Novo</span>
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Alimentação</p>
+                                    <p class="text-xs text-gray-600">Concentrado e ração</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sistema de Touros (NOVO!) -->
+                        <div class="app-item bg-white border-2 border-blue-200 rounded-2xl p-4 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200" onclick="showBullsManagement()">
+                            <span class="new-feature-badge">Novo</span>
+                            <div class="flex flex-col items-center text-center space-y-3">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm">Sistema de Touros</p>
+                                    <p class="text-xs text-gray-600">Touros e inseminações</p>
                                 </div>
                             </div>
                         </div>
@@ -3485,7 +3839,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                     <div class="flex items-center space-x-4">
                         <div class="w-12 h-12 bg-forest-100 rounded-2xl flex items-center justify-center">
                             <svg class="w-7 h-7 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-5 5v-5zM9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                             </svg>
                         </div>
                         <div>
@@ -4175,9 +4529,13 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         </div>
     </div>
 
-<!-- ==================== SCRIPT PRINCIPAL ==================== -->
+<!-- ==================== SCRIPTS ==================== -->
+<!-- Push Notifications -->
+<script src="assets/js/push-notifications.js?v=<?php echo $v; ?>"></script>
+
+
 <!-- GERENTE.JS - DEVE SER CARREGADO POR ÚLTIMO (após todas as dependências) -->
-<script src="assets/js/gerente.js"></script>
+<script src="assets/js/gerente.js?v=<?php echo $v; ?>"></script>
 
 <!-- Script para esconder a tela de carregamento -->
 <script>
@@ -4267,6 +4625,13 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         // Mostrar overlay com animação
         overlay.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        
+        // Verificar status de sincronização
+        setTimeout(() => {
+            if (typeof checkProfileSyncStatus === 'function') {
+                checkProfileSyncStatus();
+            }
+        }, 500);
         
         // Carregar dados do usuário
         loadProfileOverlayData();
@@ -8608,6 +8973,56 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                     </div>
                 </div>
                 
+                <!-- Backup e Sincronização -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-50 to-white px-3 sm:px-4 py-2.5 border-b border-purple-200">
+                        <h3 class="text-sm sm:text-base font-bold text-gray-900 flex items-center">
+                            <svg class="w-4 h-4 mr-1.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Backup e Sincronização
+                        </h3>
+                    </div>
+                    <div class="p-3 sm:p-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button onclick="closeProfileOverlay(); setTimeout(() => showBackupManagement(), 300)" class="group flex items-center space-x-2.5 p-3 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200 rounded-lg transition-all duration-200">
+                                <div class="flex-shrink-0 w-9 h-9 bg-purple-600 bg-opacity-10 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-all">
+                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-left flex-1">
+                                    <p class="font-semibold text-gray-900 text-sm">Gerenciar Backups</p>
+                                    <p class="text-xs text-gray-600">Criar e restaurar backups</p>
+                                </div>
+                            </button>
+                            
+                            <button onclick="closeProfileOverlay(); setTimeout(() => exportData(), 300)" class="group flex items-center space-x-2.5 p-3 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border border-green-200 rounded-lg transition-all duration-200">
+                                <div class="flex-shrink-0 w-9 h-9 bg-green-600 bg-opacity-10 rounded-lg flex items-center justify-center group-hover:bg-opacity-20 transition-all">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-left flex-1">
+                                    <p class="font-semibold text-gray-900 text-sm">Exportar Dados</p>
+                                    <p class="text-xs text-gray-600">Download dos dados</p>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <!-- Status de Sincronização -->
+                        <div class="mt-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span class="text-sm font-medium text-blue-900">Sistema Sincronizado</span>
+                                </div>
+                                <span class="text-xs text-blue-700" id="profileSyncStatus">Verificando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Estatísticas -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-gradient-to-r from-gray-50 to-white px-3 sm:px-4 py-2.5 border-b border-gray-200">
@@ -10430,5 +10845,30 @@ function showAddQualityModal() {
 // ==================== FIM DAS FUNÇÕES DOS OVERLAYS ====================
 </script>
 
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-container canvas {
+            border-radius: 8px;
+        }
+        
+        /* Animações suaves para os gráficos */
+        .data-card {
+            transition: all 0.3s ease;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </body>
 </html>

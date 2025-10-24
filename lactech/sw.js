@@ -1,11 +1,12 @@
 // =====================================================
 // SERVICE WORKER - LACTECH SYSTEM
-// Cache Strategy for Performance Optimization
+// PWA + Push Notifications + Offline Support
+// Versão 2.0 - Superior ao FarmTell
 // =====================================================
 
-const CACHE_NAME = 'lactech-v1.0.0';
-const STATIC_CACHE = 'lactech-static-v1';
-const DYNAMIC_CACHE = 'lactech-dynamic-v1';
+const CACHE_NAME = 'lactech-v2.0.0';
+const STATIC_CACHE = 'lactech-static-v2';
+const DYNAMIC_CACHE = 'lactech-dynamic-v2';
 
 // Critical resources to cache immediately
 const CRITICAL_RESOURCES = [
@@ -218,11 +219,66 @@ self.addEventListener('notificationclick', (event) => {
     
     event.notification.close();
     
-    if (event.action === 'explore') {
-        event.waitUntil(
-            clients.openWindow('/gerente.php')
-        );
+    const urlToOpen = event.notification.data?.url || '/gerente.php';
+    
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((windowClients) => {
+                // Verificar se já há uma janela aberta
+                for (const client of windowClients) {
+                    if (client.url.includes(urlToOpen) && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                // Se não, abrir nova janela
+                if (clients.openWindow) {
+                    return clients.openWindow(urlToOpen);
+                }
+            })
+    );
+});
+
+// Push notification handler
+self.addEventListener('push', (event) => {
+    console.log('📩 Push notification received');
+    
+    let data = { title: 'LacTech', body: 'Nova notificação', icon: '/assets/img/lactech-logo.png' };
+    
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (e) {
+            data.body = event.data.text();
+        }
     }
+    
+    const options = {
+        body: data.body || 'Você tem uma nova notificação',
+        icon: data.icon || '/assets/img/lactech-logo.png',
+        badge: '/assets/img/lactech-logo.png',
+        vibrate: [200, 100, 200],
+        tag: data.tag || 'lactech-notification',
+        requireInteraction: data.priority === 'urgent' || data.priority === 'critical',
+        data: {
+            url: data.url || '/gerente.php',
+            timestamp: Date.now()
+        },
+        actions: [
+            {
+                action: 'view',
+                title: 'Ver Agora',
+                icon: '/assets/img/lactech-logo.png'
+            },
+            {
+                action: 'dismiss',
+                title: 'Dispensar'
+            }
+        ]
+    };
+    
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'LacTech', options)
+    );
 });
 
 // Helper function to sync offline data
