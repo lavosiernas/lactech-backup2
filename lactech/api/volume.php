@@ -45,6 +45,15 @@ try {
                 sendResponse($data);
                 break;
                 
+            case 'get_individual':
+                // Buscar registros individuais por vaca
+                $animal_id = $_GET['animal_id'] ?? null;
+                $date_from = $_GET['date_from'] ?? null;
+                $date_to = $_GET['date_to'] ?? null;
+                $data = $db->getMilkProductionRecords($animal_id, $date_from, $date_to);
+                sendResponse($data);
+                break;
+                
             case 'get_by_id':
                 $id = $_GET['id'] ?? null;
                 if (!$id) sendResponse(null, 'ID não fornecido');

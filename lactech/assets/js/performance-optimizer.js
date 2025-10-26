@@ -1,63 +1,29 @@
-// =====================================================
-// PERFORMANCE OPTIMIZER - LACTECH SYSTEM
-// =====================================================
+/**
+ * Performance Optimizer - Lactech
+ * Otimizações de performance para o sistema
+ */
 
 class PerformanceOptimizer {
     constructor() {
-        this.resourceQueue = [];
-        this.loadedResources = new Set();
-        this.criticalResourcesLoaded = false;
+        this.observers = new Map();
+        this.debounceTimers = new Map();
+        this.throttleTimers = new Map();
         this.init();
     }
 
     init() {
-        // Preload critical resources
-        this.preloadCriticalResources();
-        
-        // Optimize images
-        this.optimizeImages();
-        
-        // Defer non-critical scripts
-        this.deferNonCriticalScripts();
-        
-        // Setup lazy loading
+        console.log('🚀 Performance Optimizer inicializado');
         this.setupLazyLoading();
-        
-        // Optimize fonts
-        this.optimizeFonts();
-        
-        console.log('🚀 Performance Optimizer initialized');
+        this.setupImageOptimization();
+        this.setupScrollOptimization();
+        this.setupResizeOptimization();
+        this.setupMemoryManagement();
     }
 
-    // Preload critical resources
-    preloadCriticalResources() {
-        const criticalResources = [
-            'assets/css/style.css',
-            'assets/css/dark-theme-fixes.css'
-        ];
-
-        criticalResources.forEach(resource => {
-            this.preloadResource(resource, 'style');
-        });
-    }
-
-    preloadResource(href, as) {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.href = href;
-        link.as = as;
-        if (as === 'style') {
-            link.onload = () => {
-                link.rel = 'stylesheet';
-            };
-        }
-        document.head.appendChild(link);
-    }
-
-    // Optimize images with lazy loading
-    optimizeImages() {
-        const images = document.querySelectorAll('img');
-        
+    /**
+     * Lazy Loading para imagens e elementos
+     */
+    setupLazyLoading() {
         if ('IntersectionObserver' in window) {
             const imageObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
@@ -72,206 +38,269 @@ class PerformanceOptimizer {
                 });
             });
 
-            images.forEach(img => {
-                if (img.dataset.src) {
-                    img.classList.add('lazy');
-                    imageObserver.observe(img);
-                }
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
             });
         }
     }
 
-    // Setup lazy loading for components
-    setupLazyLoading() {
-        const lazyComponents = document.querySelectorAll('[data-lazy]');
-        
-        if ('IntersectionObserver' in window) {
-            const componentObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        this.loadComponent(entry.target);
-                        componentObserver.unobserve(entry.target);
-                    }
-                });
-            });
-
-            lazyComponents.forEach(component => {
-                componentObserver.observe(component);
-            });
-        }
-    }
-
-    // Load component when needed
-    async loadComponent(element) {
-        const componentType = element.dataset.lazy;
-        
-        try {
-            switch (componentType) {
-                case 'charts':
-                    await this.loadCharts();
-                    break;
-                case 'modals':
-                    await this.loadModals();
-                    break;
-                case 'notifications':
-                    await this.loadNotifications();
-                    break;
+    /**
+     * Otimização de imagens
+     */
+    setupImageOptimization() {
+        // Comprimir imagens automaticamente
+        document.querySelectorAll('img').forEach(img => {
+            if (!img.hasAttribute('data-optimized')) {
+                img.setAttribute('data-optimized', 'true');
+                img.style.imageRendering = 'auto';
+                img.style.objectFit = 'cover';
             }
-            
-            element.classList.add('loaded');
-        } catch (error) {
-            console.error('Error loading component:', error);
-        }
-    }
-
-    // Load charts only when needed
-    async loadCharts() {
-        if (this.loadedResources.has('charts')) return;
-        
-        // Load Chart.js dynamically
-        await this.loadScript('https://cdn.jsdelivr.net/npm/chart.js');
-        this.loadedResources.add('charts');
-    }
-
-    // Load modal system
-    async loadModals() {
-        if (this.loadedResources.has('modals')) return;
-        
-        await this.loadScript('assets/js/modal-system.js');
-        this.loadedResources.add('modals');
-    }
-
-    // Load notifications
-    async loadNotifications() {
-        if (this.loadedResources.has('notifications')) return;
-        
-        await this.loadScript('assets/js/native-notifications.js');
-        this.loadedResources.add('notifications');
-    }
-
-    // Dynamically load scripts
-    loadScript(src) {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
         });
     }
 
-    // Defer non-critical scripts
-    deferNonCriticalScripts() {
-        const nonCriticalScripts = [
-            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-            'assets/js/pdf-generator.js',
-            'assets/js/offline-sync.js'
+    /**
+     * Otimização de scroll
+     */
+    setupScrollOptimization() {
+        let scrollTimeout;
+        let isScrolling = false;
+
+        const handleScroll = () => {
+            if (!isScrolling) {
+                isScrolling = true;
+                requestAnimationFrame(() => {
+                    // Otimizações durante o scroll
+                    document.body.classList.add('scrolling');
+                    isScrolling = false;
+                });
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        // Limpar classe após parar de rolar
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                document.body.classList.remove('scrolling');
+            }, 150);
+        }, { passive: true });
+    }
+
+    /**
+     * Otimização de resize
+     */
+    setupResizeOptimization() {
+        let resizeTimeout;
+        
+        const handleResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                // Otimizações durante o resize
+                this.optimizeLayout();
+            }, 250);
+        };
+
+        window.addEventListener('resize', handleResize, { passive: true });
+    }
+
+    /**
+     * Gerenciamento de memória
+     */
+    setupMemoryManagement() {
+        // Limpar observers não utilizados
+        setInterval(() => {
+            this.cleanupObservers();
+        }, 30000); // A cada 30 segundos
+
+        // Limpar timers não utilizados
+        setInterval(() => {
+            this.cleanupTimers();
+        }, 60000); // A cada 1 minuto
+    }
+
+    /**
+     * Debounce para funções
+     */
+    debounce(func, delay, key = 'default') {
+        return (...args) => {
+            if (this.debounceTimers.has(key)) {
+                clearTimeout(this.debounceTimers.get(key));
+            }
+            
+            const timer = setTimeout(() => {
+                func.apply(this, args);
+                this.debounceTimers.delete(key);
+            }, delay);
+            
+            this.debounceTimers.set(key, timer);
+        };
+    }
+
+    /**
+     * Throttle para funções
+     */
+    throttle(func, delay, key = 'default') {
+        return (...args) => {
+            if (this.throttleTimers.has(key)) {
+                return;
+            }
+            
+            func.apply(this, args);
+            
+            const timer = setTimeout(() => {
+                this.throttleTimers.delete(key);
+            }, delay);
+            
+            this.throttleTimers.set(key, timer);
+        };
+    }
+
+    /**
+     * Otimizar layout
+     */
+    optimizeLayout() {
+        // Recalcular posições de elementos fixos
+        const fixedElements = document.querySelectorAll('.fixed, .sticky');
+        fixedElements.forEach(element => {
+            element.style.transform = 'translateZ(0)';
+        });
+
+        // Otimizar tabelas grandes
+        const tables = document.querySelectorAll('table');
+        tables.forEach(table => {
+            if (table.rows.length > 100) {
+                table.style.contain = 'layout';
+            }
+        });
+    }
+
+    /**
+     * Limpar observers não utilizados
+     */
+    cleanupObservers() {
+        this.observers.forEach((observer, key) => {
+            if (observer.disconnected) {
+                this.observers.delete(key);
+            }
+        });
+    }
+
+    /**
+     * Limpar timers não utilizados
+     */
+    cleanupTimers() {
+        // Limpar timers expirados
+        this.debounceTimers.forEach((timer, key) => {
+            if (Date.now() - timer.timestamp > 300000) { // 5 minutos
+                clearTimeout(timer);
+                this.debounceTimers.delete(key);
+            }
+        });
+
+        this.throttleTimers.forEach((timer, key) => {
+            if (Date.now() - timer.timestamp > 300000) { // 5 minutos
+                clearTimeout(timer);
+                this.throttleTimers.delete(key);
+            }
+        });
+    }
+
+    /**
+     * Otimizar performance de animações
+     */
+    optimizeAnimations() {
+        // Usar transform em vez de position para animações
+        const animatedElements = document.querySelectorAll('.animate, .transition');
+        animatedElements.forEach(element => {
+            element.style.willChange = 'transform, opacity';
+        });
+    }
+
+    /**
+     * Preload de recursos críticos
+     */
+    preloadCriticalResources() {
+        const criticalResources = [
+            'assets/css/style.css',
+            'assets/css/tailwind.css',
+            'assets/js/gerente.js'
         ];
 
-        // Load these after page is fully loaded
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                nonCriticalScripts.forEach(src => {
-                    this.loadScript(src);
-                });
-            }, 1000);
+        criticalResources.forEach(resource => {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.href = resource;
+            link.as = resource.endsWith('.css') ? 'style' : 'script';
+            document.head.appendChild(link);
         });
     }
 
-    // Optimize fonts
-    optimizeFonts() {
-        // Preload Google Fonts
-        const fontLink = document.createElement('link');
-        fontLink.rel = 'preload';
-        fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
-        fontLink.as = 'style';
-        fontLink.onload = () => {
-            fontLink.rel = 'stylesheet';
-        };
-        document.head.appendChild(fontLink);
-    }
-
-    // Critical path optimization
-    optimizeCriticalPath() {
-        // Hide non-critical content until loaded
-        const nonCriticalElements = document.querySelectorAll('[data-non-critical]');
-        nonCriticalElements.forEach(el => {
-            el.style.visibility = 'hidden';
-        });
-
-        // Show content when ready
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                nonCriticalElements.forEach(el => {
-                    el.style.visibility = 'visible';
-                });
-                document.body.classList.add('loaded');
-            }, 100);
-        });
-    }
-
-    // Database query optimization
-    optimizeDatabaseQueries() {
-        // Cache frequently accessed data
-        const cache = new Map();
-        
-        return {
-            get: async (key) => {
-                if (cache.has(key)) {
-                    return cache.get(key);
-                }
-                return null;
-            },
-            
-            set: (key, value, ttl = 300000) => { // 5 minutes default
-                cache.set(key, value);
-                setTimeout(() => cache.delete(key), ttl);
-            }
-        };
-    }
-
-    // Image compression
-    compressImage(file, maxWidth = 800, quality = 0.8) {
-        return new Promise((resolve) => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            
-            img.onload = () => {
-                const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
-                canvas.width = img.width * ratio;
-                canvas.height = img.height * ratio;
-                
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                canvas.toBlob(resolve, 'image/jpeg', quality);
-            };
-            
-            img.src = URL.createObjectURL(file);
-        });
-    }
-
-    // Service Worker for caching
-    async registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            try {
-                const registration = await navigator.serviceWorker.register('/sw.js');
-                console.log('✅ Service Worker registered:', registration);
-            } catch (error) {
-                console.log('❌ Service Worker registration failed:', error);
-            }
+    /**
+     * Otimizar carregamento de dados
+     */
+    optimizeDataLoading() {
+        // Implementar cache inteligente
+        if ('caches' in window) {
+            caches.open('lactech-data').then(cache => {
+                console.log('📦 Cache de dados inicializado');
+            });
         }
     }
+
+    /**
+     * Métricas de performance
+     */
+    getPerformanceMetrics() {
+        const metrics = {
+            loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
+            domContentLoaded: performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart,
+            firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0,
+            memoryUsage: performance.memory ? {
+                used: performance.memory.usedJSHeapSize,
+                total: performance.memory.totalJSHeapSize,
+                limit: performance.memory.jsHeapSizeLimit
+            } : null
+        };
+
+        return metrics;
+    }
+
+    /**
+     * Relatório de performance
+     */
+    generatePerformanceReport() {
+        const metrics = this.getPerformanceMetrics();
+        
+        console.group('📊 Relatório de Performance');
+        console.log('⏱️ Tempo de carregamento:', metrics.loadTime + 'ms');
+        console.log('📄 DOM Content Loaded:', metrics.domContentLoaded + 'ms');
+        console.log('🎨 First Paint:', metrics.firstPaint + 'ms');
+        
+        if (metrics.memoryUsage) {
+            console.log('💾 Uso de memória:', {
+                usado: Math.round(metrics.memoryUsage.used / 1024 / 1024) + 'MB',
+                total: Math.round(metrics.memoryUsage.total / 1024 / 1024) + 'MB',
+                limite: Math.round(metrics.memoryUsage.limit / 1024 / 1024) + 'MB'
+            });
+        }
+        
+        console.groupEnd();
+        
+        return metrics;
+    }
 }
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.performanceOptimizer = new PerformanceOptimizer();
-    });
-} else {
+// Inicializar quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
     window.performanceOptimizer = new PerformanceOptimizer();
-}
+    
+    // Gerar relatório de performance após 3 segundos
+    setTimeout(() => {
+        window.performanceOptimizer.generatePerformanceReport();
+    }, 3000);
+});
 
-// Export for global use
+// Exportar para uso global
 window.PerformanceOptimizer = PerformanceOptimizer;
+

@@ -20,6 +20,22 @@ if (!isLoggedIn()) {
     exit();
 }
 
+// DEBUG: Verificar dados da sessão
+error_log("DEBUG GERENTE - User ID: " . ($_SESSION['user_id'] ?? 'NOT_SET'));
+error_log("DEBUG GERENTE - User Name: " . ($_SESSION['user_name'] ?? 'NOT_SET'));
+error_log("DEBUG GERENTE - User Role: " . ($_SESSION['user_role'] ?? 'NOT_SET'));
+
+// Garantir que temos o ID correto do usuário
+$current_user_id = $_SESSION['user_id'] ?? null;
+if (!$current_user_id) {
+    error_log("ERRO CRÍTICO: User ID não encontrado na sessão!");
+    // Tentar recuperar da sessão de outra forma
+    if (isset($_SESSION['user']['id'])) {
+        $current_user_id = $_SESSION['user']['id'];
+        $_SESSION['user_id'] = $current_user_id;
+    }
+}
+
 // Verificar se tem o papel correto
 if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager') {
     // Papel incorreto, redirecionar para o dashboard correto
@@ -347,6 +363,19 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         #notificationsModal,
         .modal.hidden,
         .fullscreen-modal.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        
+        /* Correção específica para modal de notificações */
+        #notificationsModal.flex {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        #notificationsModal.hidden {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -785,12 +814,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
                 <div class="data-card rounded-2xl p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-slate-900">Registros de Volume</h3>
-                        <button onclick="addVolumeRecord()" class="px-4 py-2 bg-forest-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            Novo Registro
-                        </button>
+                        <!-- Botão removido conforme solicitado -->
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
@@ -2163,9 +2187,7 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
 
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
     <!-- <link href="assets/css/offline-loading.css" rel="stylesheet"> --> <!-- Desabilitado -->
-    <link href="assets/css/weather-modal.css?v=<?php echo $v; ?>" rel="stylesheet">
-    <link href="assets/css/native-notifications.css?v=<?php echo $v; ?>" rel="stylesheet">
-    <link href="assets/css/quality-modal.css?v=<?php echo $v; ?>" rel="stylesheet">
+    <!-- CSS desnecessários removidos para limpeza -->
     
     <!-- Responsividade Customizada -->
     <style>
@@ -2398,7 +2420,6 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
             label { font-size: 0.75rem !important; }
         }
         
-        /* Ajustes espec�ficos para modal de logout */
         @media (max-width: 480px) {
             #logoutConfirmationModal .bg-white,
             #logoutConfirmationModal .bg-white{
@@ -3414,420 +3435,10 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         </div>
     </div>
 
-    <!-- Modal de Contatos - Full Screen -->
-    <div id="contactsModal" class="fixed inset-0 bg-white z-[99999] hidden flex flex-col">
-        <!-- Header -->
-        <div class="flex-shrink-0 p-4 sm:p-6 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 text-white shadow-2xl">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-whitebg-opacity-20 rounded-2xl flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                        <h1 class="text-2xl font-bold">Lista Telef�nica</h1>
-                        <p class="text-indigo-100 text-sm">Gerencie contatos da fazenda</p>
-                            </div>
-                        </div>
-                <div class="flex items-center space-x-3">
-                    <button onclick="openContactForm()" class="px-4 py-2 bg-whitebg-opacity-20 hover:bg-opacity-30 rounded-xl transition-colors flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        <span>Adicionar</span>
-                    </button>
-                    <button onclick="closeContactsModal()" class="p-2 hover:bg-whitehover:bg-opacity-20 rounded-xl transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                        </div>
-                        </div>
-                    </div>
-                    
-        <!-- Conteúdo -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50">
-            <div class="max-w-4xl mx-auto">
-                <div id="contactsList" class="space-y-4">
-                    <!-- Contatos serão carregados aqui -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Formulário de Contato -->
-    <div id="contactFormModal" class="fixed inset-0 bg-black bg-opacity-50 z-[99999] hidden flex items-center justify-center">
-        <div class="bg-whiterounded-2xl p-6 shadow-2xl max-w-md w-full mx-4">
-            <div class="flex items-center justify-between mb-6">
-                <h3 id="contactFormTitle" class="text-xl font-bold text-gray-900">Adicionar Contato</h3>
-                <button onclick="closeContactForm()" class="p-2 hover:bg-gray-100rounded-xl transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                </button>
-                            </div>
-
-            <form id="contactForm" onsubmit="saveContact(event)">
-                <div class="space-y-4">
-                    <!-- Nome -->
-                            <div>
-                        <label class="block text-sm font-semibold text-gray-700mb-2">Nome *</label>
-                        <input type="text" name="name" id="contactName" required
-                               class="w-full px-4 py-3 border border-gray-300rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
-                               placeholder="Nome do contato">
-                            </div>
-
-                    <!-- Telefone -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700mb-2">Telefone *</label>
-                        <input type="tel" name="phone" id="contactPhone" required
-                               class="w-full px-4 py-3 border border-gray-300rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
-                               placeholder="(11) 99999-9999">
-                        </div>
-
-                    <!-- Email -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700mb-2">Email</label>
-                        <input type="email" name="email" id="contactEmail"
-                               class="w-full px-4 py-3 border border-gray-300rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
-                               placeholder="email@exemplo.com">
-                        </div>
-
-                    <!-- Categoria -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700mb-2">Categoria *</label>
-                        <select name="category" id="contactCategory" required
-                                class="w-full px-4 py-3 border border-gray-300rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none">
-                            <option value="">Selecione uma categoria</option>
-                            <option value="Distribuidora">Distribuidora</option>
-                            <option value="Comprador">Comprador</option>
-                            <option value="Fornecedor">Fornecedor</option>
-                            <option value="Veterinário">Veterinário</option>
-                            <option value="T�cnico">T�cnico</option>
-                            <option value="Transportadora">Transportadora</option>
-                            <option value="Banco">Banco</option>
-                            <option value="Seguro">Seguro</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                        </div>
-                    <!-- Observa��es -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700mb-2">Observa��es</label>
-                        <textarea name="notes" id="contactNotes" rows="3"
-                                  class="w-full px-4 py-3 border border-gray-300rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none"
-                                  placeholder="Informa��es adicionais..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Bot�es -->
-                <div class="flex space-x-3 mt-6">
-                    <button type="button" onclick="closeContactForm()"
-                            class="flex-1 px-4 py-3 border border-gray-300text-gray-700rounded-xl hover:bg-gray-50transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" id="contactFormSubmit"
-                            class="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors">
-                        Adicionar
-                    </button>
-            </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Modal de Solicitações de Senha - Full Screen -->
-    <div id="passwordRequestsModal" class="fixed inset-0 bg-white z-[99999] hidden flex flex-col">
-        <!-- Header -->
-        <div class="flex-shrink-0 p-4 sm:p-6 bg-gradient-to-br from-forest-500 via-forest-600 to-forest-700 text-white shadow-2xl">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3 sm:space-x-6">
-                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-whitebg-opacity-20 backdrop-blur-sm rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-xl">
-                            <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg sm:text-xl font-bold mb-1">Solicitações de Senha</h2>
-                            <p class="text-forest-100 text-xs sm:text-sm">Gerencie solicitações de alteração e redefinição de senha</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <!-- Bot�o de Hist�rico -->
-                        <button onclick="openPasswordHistoryModal()" class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex items-center justify-center hover:bg-white hover:bg-opacity-20 rounded-xl sm:rounded-2xl transition-all duration-200" title="Ver histórico de solicitações">
-                            <svg class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </button>
-                        <!-- Bot�o de Fechar -->
-                        <button onclick="closePasswordRequestsModal()" class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex items-center justify-center hover:bg-whitehover:bg-opacity-20 rounded-xl sm:rounded-2xl transition-all duration-200">
-                            <svg class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-        </div>
-        
-        <!-- Conte�do -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-                <!-- Filtros e Estat�sticas -->
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Estat�sticas -->
-                    <div class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-4 border border-amber-200">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-2xl font-bold text-amber-800" id="pendingCount">0</p>
-                                    <p class="text-sm text-amber-600">Pendentes</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-4 border border-green-200">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-2xl font-bold text-green-800" id="approvedCount">0</p>
-                                    <p class="text-sm text-green-600">Aprovadas</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-4 border border-red-200">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-2xl font-bold text-red-800" id="rejectedCount">0</p>
-                                    <p class="text-sm text-red-600">Rejeitadas</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Filtros -->
-                    <div class="space-y-4">
-                        <select id="passwordRequestFilter" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white text-gray-900">
-                            <option value="all">Todas as solicitações</option>
-                            <option value="pending">Pendentes</option>
-                            <option value="approved">Aprovadas</option>
-                            <option value="rejected">Rejeitadas</option>
-                        </select>
-                        <button onclick="refreshPasswordRequests()" id="refreshPasswordRequestsBtn" class="w-full px-4 py-3 bg-gradient-to-r from-forest-500 to-forest-600 text-white rounded-xl hover:from-forest-600 hover:to-forest-700 transition-all font-semibold text-sm shadow-lg hover:shadow-xl">
-                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            Atualizar
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Lista de Solicitações -->
-                <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                        <h3 class="text-lg font-semibold text-gray-900">Lista de Solicitações</h3>
-                        <p class="text-sm text-gray-600">Gerencie todas as solicitações de alteração de senha</p>
-                    </div>
-                    
-                    <div class="p-6">
-                        <div class="space-y-4" id="passwordRequestsList">
-                            <!-- Solicitações serão carregadas aqui -->
-                        </div>
-                        
-                        <!-- Estado vazio -->
-                        <div id="emptyPasswordRequests" class="text-center py-16 hidden">
-                            <div class="w-20 h-20 bg-gradient-to-br from-forest-100 to-forest-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg class="w-10 h-10 text-forest-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-xl font-semibold text-gray-900 mb-3">Nenhuma Solicitação</h3>
-                            <p class="text-gray-600 mb-6">Não há solicitações de senha no momento.</p>
-                            <div class="w-32 h-1 bg-gradient-to-r from-forest-400 to-forest-600 rounded-full mx-auto"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal de Detalhes da Solicita��o -->
-    <div id="passwordRequestDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[99999] hidden">
-        <div class="bg-whitebg-whiterounded-2xl shadow-2xl max-w-2xl w-full mx-4">
-            <!-- Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-900">Detalhes da Solicita��o</h2>
-                        <p class="text-sm text-gray-600">Analise e tome uma decis�o</p>
-                    </div>
-                </div>
-                <button onclick="closePasswordRequestDetailsModal()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100hover:bg-gray-50rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <!-- Conte�do -->
-            <div class="p-6 space-y-6">
-                <!-- Informa��es do usu�rio -->
-                <div class="bg-gray-50  rounded-xl p-4">
-                    <h3 class="font-semibold text-gray-900 mb-3">Informa��es do Usu�rio</h3>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-600">Nome:</span>
-                            <span class="font-medium text-gray-900 ml-2" id="requestUserName">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Email:</span>
-                            <span class="font-medium text-gray-900 ml-2" id="requestUserEmail">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Cargo:</span>
-                            <span class="font-medium text-gray-900 ml-2" id="requestUserRole">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Data da Solicita��o:</span>
-                            <span class="font-medium text-gray-900 ml-2" id="requestDate">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Detalhes da solicita��o -->
-                <div class="bg-gray-50  rounded-xl p-4">
-                    <h3 class="font-semibold text-gray-900 mb-3">Detalhes da Solicita��o</h3>
-                    <div class="space-y-3">
-                        <div>
-                            <span class="text-gray-600">Tipo:</span>
-                            <span class="font-medium text-gray-900 ml-2" id="requestType">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Motivo:</span>
-                            <span class="font-medium text-gray-900 ml-2" id="requestReason">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Observa��es:</span>
-                            <span class="font-medium text-gray-900 ml-2" id="requestNotes">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- A��es -->
-                <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200border-gray-200">
-                    <button onclick="approvePasswordRequest()" class="flex-1 px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all font-semibold">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Aprovar
-                    </button>
-                    <button onclick="rejectPasswordRequest()" class="flex-1 px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all font-semibold">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Rejeitar
-                    </button>
-                    <button onclick="closePasswordRequestDetailsModal()" class="px-6 py-3 border border-gray-300border-gray-300text-gray-700 rounded-xl hover:bg-gray-50hover:bg-gray-50transition-all font-semibold">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal de Histórico de Solicitações de Senha -->
-    <div id="passwordHistoryModal" class="fixed inset-0 bg-white z-[99999] hidden flex flex-col">
-        <!-- Header -->
-        <div class="flex-shrink-0 p-4 sm:p-6 bg-gradient-to-br from-forest-500 via-forest-600 to-forest-700 text-white shadow-2xl">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3 sm:space-x-6">
-                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-whitebg-opacity-20 backdrop-blur-sm rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-xl">
-                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg sm:text-xl font-bold mb-1">Histórico de Solicitações</h2>
-                        <p class="text-forest-100 text-xs sm:text-sm">Visualize todas as solicitações processadas nos últimos 30 dias</p>
-                    </div>
-                </div>
-                <button onclick="closePasswordHistoryModal()" class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex items-center justify-center hover:bg-whitehover:bg-opacity-20 rounded-xl sm:rounded-2xl transition-all duration-200">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Conte�do -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-            <!-- Filtros -->
-            <div class="mb-6">
-                <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <select id="historyStatusFilter" class="px-4 py-2 border border-gray-300rounded-lg bg-whitetext-gray-900focus:ring-2 focus:ring-forest-500 focus:border-transparent">
-                            <option value="">Todos os status</option>
-                            <option value="approved">Aprovadas</option>
-                            <option value="rejected">Rejeitadas</option>
-                            <option value="pending">Pendentes</option>
-                        </select>
-                        <select id="historyDateFilter" class="px-4 py-2 border border-gray-300rounded-lg bg-whitetext-gray-900focus:ring-2 focus:ring-forest-500 focus:border-transparent">
-                            <option value="7">�ltimos 7 dias</option>
-                            <option value="15">�ltimos 15 dias</option>
-                            <option value="30" selected>�ltimos 30 dias</option>
-                            <option value="90">�ltimos 90 dias</option>
-                        </select>
-                    </div>
-                    <button onclick="loadPasswordHistory()" id="refreshPasswordHistoryBtn" class="px-4 py-2 bg-forest-500 hover:bg-forest-600 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        <span>Atualizar</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Lista de Hist�rico -->
-            <div id="passwordHistoryList" class="space-y-4">
-                <!-- Loading -->
-                <div id="historyLoading" class="flex items-center justify-center py-12">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-forest-500"></div>
-                    <span class="ml-3 text-gray-600">Carregando hist�rico...</span>
-                </div>
-                
-                <!-- Empty State -->
-                <div id="emptyHistory" class="hidden text-center py-12">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Nenhum histórico encontrado</h3>
-                    <p class="text-gray-500">Não há solicitações no período selecionado</p>
-                </div>
-            </div>
-        </div>
-    </div>
+  
     
     <!-- Sidebar de Notificações -->
-    <div id="notificationsModal" class="fixed inset-0 z-[99999] hidden flex-col transition-all duration-300">
+    <div id="notificationsModal" class="fixed inset-0 z-[999999] hidden flex-col transition-all duration-300">
         <!-- Overlay -->
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeNotificationsModal()"></div>
         
@@ -4273,16 +3884,8 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         </div>
     </div>
 
-    <!-- Modal de Loading Personalizado -->
-    <div id="customLoadingModal" class="fixed inset-0 bg-black bg-opacity-50 z-[99999] hidden flex items-center justify-center">
-        <div class="bg-whiterounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4">
             <div class="text-center">
                 <!-- �cone de Loading -->
-                <div id="customLoadingIcon" class="flex justify-center mb-4">
-                    <svg class="w-8 h-8 text-indigo-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                </div>
                 
                 <!-- Mensagem -->
                 <h3 id="customLoadingMessage" class="text-lg font-semibold text-gray-900mb-2">
@@ -4534,8 +4137,35 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
 <script src="assets/js/push-notifications.js?v=<?php echo $v; ?>"></script>
 
 
+<!-- QUALITY DATA FIX - Correção específica de dados de qualidade PRIMEIRO -->
+<script src="assets/js/quality-data-fix.js?v=<?php echo $v; ?>"></script>
+
+<!-- ULTRA AGGRESSIVE FIXES - Interceptação ultra agressiva PRIMEIRO -->
+<script src="assets/js/ultra-aggressive-fixes.js?v=<?php echo $v; ?>"></script>
+
+<!-- API CONFIG - Configuração da API REST -->
+<script src="assets/js/api-config.js?v=<?php echo $v; ?>"></script>
+
+<!-- DATA LOADING FIXES - Interceptação de carregamento de dados -->
+<script src="assets/js/data-loading-fixes.js?v=<?php echo $v; ?>"></script>
+
+<!-- AGGRESSIVE ERROR FIXES - Interceptação agressiva ANTES do gerente.js -->
+<script src="assets/js/aggressive-error-fixes.js?v=<?php echo $v; ?>"></script>
+
 <!-- GERENTE.JS - DEVE SER CARREGADO POR ÚLTIMO (após todas as dependências) -->
 <script src="assets/js/gerente.js?v=<?php echo $v; ?>"></script>
+
+<!-- API FIXES - Correções para usar a nova API REST -->
+<script src="assets/js/gerente-api-fixes.js?v=<?php echo $v; ?>"></script>
+
+<!-- SYSTEM CLEANUP - Limpeza e otimização do sistema -->
+<script src="assets/js/system-cleanup.js?v=<?php echo $v; ?>"></script>
+
+<!-- ERROR INTERCEPTOR - Interceptação e correção de erros -->
+<script src="assets/js/error-interceptor.js?v=<?php echo $v; ?>"></script>
+
+<!-- SPECIFIC ERROR FIXES - Correções específicas para erros persistentes -->
+<script src="assets/js/specific-error-fixes.js?v=<?php echo $v; ?>"></script>
 
 <!-- Script para esconder a tela de carregamento -->
 <script>
@@ -8796,17 +8426,28 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
             if (modal) {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
+                modal.style.display = 'none';
+                modal.style.visibility = 'hidden';
+                modal.style.opacity = '0';
                 document.body.style.overflow = '';
             }
         }, 300);
     };
 
     window.openNotificationsModal = function() {
+        // Fechar outros modais primeiro
+        if (typeof window.closeMoreModal === 'function') {
+            window.closeMoreModal();
+        }
+        
         const modal = document.getElementById('notificationsModal');
         const content = document.getElementById('notificationsModalContent');
         if (modal) {
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
             document.body.style.overflow = 'hidden';
             setTimeout(() => {
                 if (content) {
@@ -10428,7 +10069,8 @@ async function submitGeneralVolumeForm() {
         period: formData.get('period'),
         volume: parseFloat(formData.get('total_volume')),
         temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
-        recorded_by: <?php echo $_SESSION['user_id'] ?? 1; ?>,
+        recorded_by: <?php echo $current_user_id ?? 1; ?>,
+        // DEBUG: User ID = <?php echo $_SESSION['user_id'] ?? 'NOT_SET'; ?>, Name = <?php echo $_SESSION['user_name'] ?? 'NOT_SET'; ?>
         // Para volume geral, não precisamos de producer_id específico
         is_general: true
     };
@@ -10545,7 +10187,8 @@ async function submitVolumeForm() {
         volume: parseFloat(formData.get('volume')),
         producer_id: parseInt(animal_id), // ID da vaca
         temperature: formData.get('temperature') ? parseFloat(formData.get('temperature')) : null,
-        recorded_by: <?php echo $_SESSION['user_id'] ?? 1; ?>
+        recorded_by: <?php echo $current_user_id ?? 1; ?>,
+        // DEBUG: User ID = <?php echo $_SESSION['user_id'] ?? 'NOT_SET'; ?>, Name = <?php echo $_SESSION['user_name'] ?? 'NOT_SET'; ?>
     };
     
     console.log('📤 Registrando volume da vaca:', volumeData);
@@ -10623,7 +10266,7 @@ async function submitQualityForm() {
         laboratory: formData.get('laboratory'),
         cost: parseFloat(formData.get('cost')) || null,
         notes: formData.get('notes'),
-        tested_by: <?php echo $_SESSION['user_id'] ?? 1; ?>
+        tested_by: <?php echo json_encode($_SESSION['user_id'] ?? 1); ?>
     };
     
     console.log('📤 Registrando qualidade:', qualityData);

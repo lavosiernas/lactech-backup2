@@ -893,18 +893,37 @@ class Database {
      */
     public function addVolumeRecord($data) {
         try {
-            $stmt = $this->query("
-                INSERT INTO volume_records (record_date, shift, total_volume, total_animals, average_per_animal, recorded_by, farm_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ", [
-                $data['collection_date'] ?? date('Y-m-d'),
-                $data['period'] ?? 'manha',
-                $data['volume'],
-                1, // total_animals
-                $data['volume'], // average_per_animal
-                $data['recorded_by'] ?? 1,
-                self::FARM_ID
-            ]);
+            // Se tem producer_id (animal_id), inserir na tabela milk_production (individual por vaca)
+            if (isset($data['producer_id']) && $data['producer_id']) {
+                $stmt = $this->query("
+                    INSERT INTO milk_production (animal_id, production_date, shift, volume, temperature, notes, recorded_by, farm_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ", [
+                    $data['producer_id'],
+                    $data['collection_date'] ?? date('Y-m-d'),
+                    $data['period'] ?? 'manha',
+                    $data['volume'],
+                    $data['temperature'] ?? null,
+                    $data['notes'] ?? null,
+                    $data['recorded_by'] ?? 1,
+                    self::FARM_ID
+                ]);
+            } else {
+                // Se não tem producer_id, inserir na tabela volume_records (geral da fazenda)
+                $stmt = $this->query("
+                    INSERT INTO volume_records (record_date, shift, total_volume, total_animals, average_per_animal, notes, recorded_by, farm_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ", [
+                    $data['collection_date'] ?? date('Y-m-d'),
+                    $data['period'] ?? 'manha',
+                    $data['volume'],
+                    1, // total_animals
+                    $data['volume'], // average_per_animal
+                    $data['notes'] ?? null,
+                    $data['recorded_by'] ?? 1,
+                    self::FARM_ID
+                ]);
+            }
             
             return [
                 'success' => true,
@@ -934,6 +953,50 @@ class Database {
                 'success' => false,
                 'error' => $e->getMessage()
             ];
+        }
+    }
+    
+    /**
+     * Buscar registros de produção individual por vaca
+     */
+    public function getMilkProductionRecords($animal_id = null, $date_from = null, $date_to = null) {
+        try {
+            $sql = "
+                SELECT 
+                    mp.*,
+                    a.animal_number,
+                    a.name as animal_name,
+                    u.name as recorded_by_name
+                FROM milk_production mp
+                LEFT JOIN animals a ON mp.animal_id = a.id
+                LEFT JOIN users u ON mp.recorded_by = u.id
+                WHERE mp.farm_id = ?
+            ";
+            
+            $params = [self::FARM_ID];
+            
+            if ($animal_id) {
+                $sql .= " AND mp.animal_id = ?";
+                $params[] = $animal_id;
+            }
+            
+            if ($date_from) {
+                $sql .= " AND mp.production_date >= ?";
+                $params[] = $date_from;
+            }
+            
+            if ($date_to) {
+                $sql .= " AND mp.production_date <= ?";
+                $params[] = $date_to;
+            }
+            
+            $sql .= " ORDER BY mp.production_date DESC, mp.created_at DESC";
+            
+            $stmt = $this->query($sql, $params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+        } catch (PDOException $e) {
+            return [];
         }
     }
     

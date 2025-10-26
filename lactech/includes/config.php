@@ -1,156 +1,15 @@
 <?php
 /**
- * SISTEMA DE CONFIGURAÇÃO UNIFICADO - LACTECH
- * Configuração inteligente para Local e Produção
- * Versão: 2.0.0
+ * CONFIGURAÇÃO PRINCIPAL - LACTECH
+ * Arquivo de configuração unificado
  */
 
-// =====================================================
-// DETECÇÃO AUTOMÁTICA DE AMBIENTE
-// =====================================================
-
-class EnvironmentDetector {
-    public static function detect() {
-        $serverName = $_SERVER['SERVER_NAME'] ?? '';
-        $httpHost = $_SERVER['HTTP_HOST'] ?? '';
-        
-        // Lista de indicadores de ambiente local
-        $localIndicators = [
-            'localhost',
-            '127.0.0.1',
-            '::1',
-            '192.168.',
-            '10.0.',
-            '172.16.',
-            '172.17.',
-            '172.18.',
-            '172.19.',
-            '172.20.',
-            '172.21.',
-            '172.22.',
-            '172.23.',
-            '172.24.',
-            '172.25.',
-            '172.26.',
-            '172.27.',
-            '172.28.',
-            '172.29.',
-            '172.30.',
-            '172.31.'
-        ];
-        
-        foreach ($localIndicators as $indicator) {
-            if (strpos($serverName, $indicator) === 0 || strpos($httpHost, $indicator) === 0) {
-                return 'local';
-            }
-        }
-        
-        return 'production';
-    }
-    
-    public static function getEnvironment() {
-        return self::detect();
-    }
-}
-
-// =====================================================
-// CONFIGURAÇÕES POR AMBIENTE
-// =====================================================
-
-class DatabaseConfig {
-    private static $configs = [
-        'local' => [
-            'host' => 'localhost',
-            'database' => 'lactech_lgmato',
-            'username' => 'root',
-            'password' => '',
-            'charset' => 'utf8mb4',
-            'options' => [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
-            ]
-        ],
-        'production' => [
-            'host' => 'localhost',
-            'database' => 'u311882628_lactech_lgmato',
-            'username' => 'u311882628_xandriaAgro',
-            'password' => 'Lavosier0012!',
-            'charset' => 'utf8mb4',
-            'options' => [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
-            ]
-        ]
-    ];
-    
-    public static function getConfig($environment = null) {
-        if ($environment === null) {
-            $environment = EnvironmentDetector::getEnvironment();
-        }
-        
-        if (!isset(self::$configs[$environment])) {
-            throw new Exception("Ambiente '{$environment}' não configurado");
-        }
-        
-        return self::$configs[$environment];
-    }
-    
-    public static function getCurrentEnvironment() {
-        return EnvironmentDetector::getEnvironment();
-    }
-}
-
-// =====================================================
-// CONFIGURAÇÕES GERAIS DA APLICAÇÃO
-// =====================================================
-
-class AppConfig {
-    public static function getBaseUrl() {
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $script = $_SERVER['SCRIPT_NAME'] ?? '';
-        $path = str_replace('\\', '/', dirname($script));
-        $path = rtrim($path, '/') . '/';
-        
-        return $protocol . '://' . $host . $path;
-    }
-    
-    public static function isSecure() {
-        $environment = EnvironmentDetector::getEnvironment();
-        return $environment === 'production';
-    }
-    
-    public static function isDebugMode() {
-        $environment = EnvironmentDetector::getEnvironment();
-        return $environment === 'local';
-    }
-}
-
-// =====================================================
-// CONSTANTES GLOBAIS
-// =====================================================
-
-// Ambiente
-define('ENVIRONMENT', EnvironmentDetector::getEnvironment());
-define('IS_LOCAL', ENVIRONMENT === 'local');
-define('IS_PRODUCTION', ENVIRONMENT === 'production');
-
-// Banco de dados
-$dbConfig = DatabaseConfig::getConfig();
-define('DB_HOST', $dbConfig['host']);
-define('DB_NAME', $dbConfig['database']);
-define('DB_USER', $dbConfig['username']);
-define('DB_PASS', $dbConfig['password']);
-define('DB_CHARSET', $dbConfig['charset']);
-
-// URLs
-define('BASE_URL', AppConfig::getBaseUrl());
-define('LOGIN_URL', 'login.php');
-define('DASHBOARD_URL', 'gerente.php');
+// Configurações do banco de dados
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'lactech_lgmato');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_CHARSET', 'utf8mb4');
 
 // Configurações da aplicação
 define('APP_NAME', 'LacTech - Lagoa do Mato');
@@ -158,82 +17,124 @@ define('APP_VERSION', '2.0.0');
 define('FARM_NAME', 'Lagoa do Mato');
 define('FARM_ID', 1);
 
+// URLs do sistema
+define('BASE_URL', 'http://localhost/GitHub/lactech-backup2/lactech/');
+define('LOGIN_URL', 'inicio-login.php');
+define('DASHBOARD_URL', 'gerente.php');
+
 // Configurações de sessão
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', AppConfig::isSecure() ? 1 : 0);
+ini_set('session.cookie_secure', 0); // HTTP em desenvolvimento
 
-// Configurações de erro
-if (AppConfig::isDebugMode()) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-}
-
-// Timezone
-date_default_timezone_set('America/Sao_Paulo');
-
-// Iniciar sessão
+// Iniciar sessão se não estiver iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// =====================================================
-// FUNÇÕES UTILITÁRIAS
-// =====================================================
+// Configurações de erro - ATIVADO EM DESENVOLVIMENTO
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-function getEnvironment() {
-    return EnvironmentDetector::getEnvironment();
-}
+// Timezone
+date_default_timezone_set('America/Sao_Paulo');
 
-function isLocal() {
-    return IS_LOCAL;
-}
-
-function isProduction() {
-    return IS_PRODUCTION;
-}
-
-function getBaseUrl() {
-    return BASE_URL;
-}
-
-function logError($message, $context = []) {
-    $logMessage = date('Y-m-d H:i:s') . " - $message";
+// Função para conectar ao banco
+function getDatabase() {
+    static $pdo = null;
     
-    if (!empty($context)) {
-        $logMessage .= " - Context: " . json_encode($context);
+    if ($pdo === null) {
+        try {
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . DB_CHARSET
+            ];
+            
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        } catch (PDOException $e) {
+            error_log("Erro de conexão: " . $e->getMessage());
+            return null;
+        }
     }
     
-    error_log($logMessage);
+    return $pdo;
 }
 
-function jsonResponse($data, $status = 200) {
-    http_response_code($status);
-    header('Content-Type: application/json');
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
-    exit;
+// Função para fazer login
+function loginUser($email, $password) {
+    $db = getDatabase();
+    if (!$db) {
+        return ['success' => false, 'error' => 'Erro de conexão com banco'];
+    }
+    
+    try {
+        $stmt = $db->prepare("SELECT id, name, email, password, role, farm_id, profile_photo, password_changed_at, password_change_required FROM users WHERE email = ? AND is_active = 1");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        
+        if (!$user) {
+            return ['success' => false, 'error' => 'Usuário não encontrado'];
+        }
+        
+        if (!password_verify($password, $user['password'])) {
+            return ['success' => false, 'error' => 'Senha incorreta'];
+        }
+        
+        // Atualizar último login
+        $updateStmt = $db->prepare("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?");
+        $updateStmt->execute([$user['id']]);
+        
+        // Criar sessão
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['farm_id'] = $user['farm_id'];
+        $_SESSION['profile_photo'] = $user['profile_photo'];
+        $_SESSION['password_change_required'] = $user['password_change_required'];
+        $_SESSION['logged_in'] = true;
+        $_SESSION['login_time'] = time();
+        
+        // Renovar o cookie de sessão para durar 1 ano (permanente)
+        setcookie(session_name(), session_id(), time() + 31536000, '/');
+        
+        // Remover senha da resposta
+        unset($user['password']);
+        
+        return ['success' => true, 'user' => $user];
+        
+    } catch (PDOException $e) {
+        error_log("Erro no login: " . $e->getMessage());
+        return ['success' => false, 'error' => 'Erro interno'];
+    }
 }
 
-// =====================================================
-// CONFIGURAÇÕES ESPECÍFICAS DA FAZENDA
-// =====================================================
+// Função para verificar se está logado
+function isLoggedIn() {
+    return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
+}
 
-define('USER_ROLES', ['proprietario', 'gerente', 'funcionario', 'veterinario']);
-define('ANIMAL_BREEDS', ['Holandesa', 'Gir', 'Girolanda', 'Jersey', 'Pardo Suíço', 'Simental', 'Outras']);
-define('ANIMAL_STATUS', ['Lactante', 'Seco', 'Novilha', 'Vaca', 'Bezerra', 'Bezerro']);
-define('HEALTH_STATUS', ['saudavel', 'doente', 'tratamento', 'quarentena']);
-define('TREATMENT_TYPES', ['Medicamento', 'Vacinação', 'Vermifugação', 'Suplementação', 'Cirurgia', 'Outros']);
-define('FINANCIAL_TYPES', ['receita', 'despesa']);
-define('PAYMENT_METHODS', ['dinheiro', 'cartao', 'transferencia', 'cheque', 'pix']);
-
-// =====================================================
-// LOG DE INICIALIZAÇÃO
-// =====================================================
-
-if (AppConfig::isDebugMode()) {
-    error_log("LacTech System iniciado - Ambiente: " . ENVIRONMENT . " - Base URL: " . BASE_URL);
+// Função para obter usuário atual
+function getCurrentUser() {
+    if (!isLoggedIn()) {
+        return null;
+    }
+    
+    $db = getDatabase();
+    if (!$db) {
+        return null;
+    }
+    
+    try {
+        $stmt = $db->prepare("SELECT id, name, email, role, farm_id, profile_photo FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        return $stmt->fetch();
+    } catch (PDOException $e) {
+        error_log("Erro ao buscar usuário: " . $e->getMessage());
+        return null;
+    }
 }
 ?>
