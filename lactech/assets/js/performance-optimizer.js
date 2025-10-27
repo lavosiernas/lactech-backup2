@@ -1,306 +1,229 @@
-/**
- * Performance Optimizer - Lactech
- * Otimizações de performance para o sistema
- */
+// OTIMIZADOR DE PERFORMANCE - FASE 2
+console.log('⚡ Carregando otimizador de performance...');
 
 class PerformanceOptimizer {
     constructor() {
-        this.observers = new Map();
+        this.cache = new Map();
         this.debounceTimers = new Map();
-        this.throttleTimers = new Map();
+        this.observers = new Map();
         this.init();
     }
-
+    
     init() {
-        console.log('🚀 Performance Optimizer inicializado');
         this.setupLazyLoading();
         this.setupImageOptimization();
-        this.setupScrollOptimization();
-        this.setupResizeOptimization();
+        this.setupDataCaching();
+        this.setupDebouncing();
         this.setupMemoryManagement();
+        console.log('⚡ Otimizador de performance inicializado!');
     }
-
-    /**
-     * Lazy Loading para imagens e elementos
-     */
+    
+    // 1. LAZY LOADING
     setupLazyLoading() {
-        if ('IntersectionObserver' in window) {
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        if (img.dataset.src) {
-                            img.src = img.dataset.src;
-                            img.classList.remove('lazy');
-                            observer.unobserve(img);
-                        }
+        const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
                     }
-                });
+                }
             });
-
-            document.querySelectorAll('img[data-src]').forEach(img => {
-                imageObserver.observe(img);
-            });
-        }
-    }
-
-    /**
-     * Otimização de imagens
-     */
-    setupImageOptimization() {
-        // Comprimir imagens automaticamente
-        document.querySelectorAll('img').forEach(img => {
-            if (!img.hasAttribute('data-optimized')) {
-                img.setAttribute('data-optimized', 'true');
-                img.style.imageRendering = 'auto';
-                img.style.objectFit = 'cover';
-            }
-        });
-    }
-
-    /**
-     * Otimização de scroll
-     */
-    setupScrollOptimization() {
-        let scrollTimeout;
-        let isScrolling = false;
-
-        const handleScroll = () => {
-            if (!isScrolling) {
-                isScrolling = true;
-                requestAnimationFrame(() => {
-                    // Otimizações durante o scroll
-                    document.body.classList.add('scrolling');
-                    isScrolling = false;
-                });
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-
-        // Limpar classe após parar de rolar
-        window.addEventListener('scroll', () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                document.body.classList.remove('scrolling');
-            }, 150);
-        }, { passive: true });
-    }
-
-    /**
-     * Otimização de resize
-     */
-    setupResizeOptimization() {
-        let resizeTimeout;
+        }, { rootMargin: '50px' });
         
-        const handleResize = () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                // Otimizações durante o resize
-                this.optimizeLayout();
-            }, 250);
-        };
-
-        window.addEventListener('resize', handleResize, { passive: true });
+        document.querySelectorAll('img[data-src]').forEach(img => {
+            imageObserver.observe(img);
+        });
     }
-
-    /**
-     * Gerenciamento de memória
-     */
-    setupMemoryManagement() {
-        // Limpar observers não utilizados
-        setInterval(() => {
-            this.cleanupObservers();
-        }, 30000); // A cada 30 segundos
-
-        // Limpar timers não utilizados
-        setInterval(() => {
-            this.cleanupTimers();
-        }, 60000); // A cada 1 minuto
-    }
-
-    /**
-     * Debounce para funções
-     */
-    debounce(func, delay, key = 'default') {
-        return (...args) => {
-            if (this.debounceTimers.has(key)) {
-                clearTimeout(this.debounceTimers.get(key));
+    
+    // 2. OTIMIZAÇÃO DE IMAGENS
+    setupImageOptimization() {
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            // Adicionar loading lazy nativo
+            if (!img.loading) {
+                img.loading = 'lazy';
             }
             
-            const timer = setTimeout(() => {
-                func.apply(this, args);
-                this.debounceTimers.delete(key);
-            }, delay);
+            // Otimizar imagens grandes
+            if (img.naturalWidth > 800) {
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+            }
+        });
+    }
+    
+    // 3. CACHE DE DADOS
+    setupDataCaching() {
+        // Interceptar fetch para cache
+        const originalFetch = window.fetch;
+        window.fetch = async (url, options = {}) => {
+            const cacheKey = `${url}_${JSON.stringify(options)}`;
             
-            this.debounceTimers.set(key, timer);
-        };
-    }
-
-    /**
-     * Throttle para funções
-     */
-    throttle(func, delay, key = 'default') {
-        return (...args) => {
-            if (this.throttleTimers.has(key)) {
-                return;
+            // Verificar cache
+            if (this.cache.has(cacheKey)) {
+                const cached = this.cache.get(cacheKey);
+                if (Date.now() - cached.timestamp < 300000) { // 5 minutos
+                    console.log('📦 Cache hit:', url);
+                    return Promise.resolve(new Response(JSON.stringify(cached.data)));
+                }
             }
             
-            func.apply(this, args);
+            // Fazer requisição
+            const response = await originalFetch(url, options);
+            const data = await response.json();
             
-            const timer = setTimeout(() => {
-                this.throttleTimers.delete(key);
-            }, delay);
-            
-            this.throttleTimers.set(key, timer);
-        };
-    }
-
-    /**
-     * Otimizar layout
-     */
-    optimizeLayout() {
-        // Recalcular posições de elementos fixos
-        const fixedElements = document.querySelectorAll('.fixed, .sticky');
-        fixedElements.forEach(element => {
-            element.style.transform = 'translateZ(0)';
-        });
-
-        // Otimizar tabelas grandes
-        const tables = document.querySelectorAll('table');
-        tables.forEach(table => {
-            if (table.rows.length > 100) {
-                table.style.contain = 'layout';
-            }
-        });
-    }
-
-    /**
-     * Limpar observers não utilizados
-     */
-    cleanupObservers() {
-        this.observers.forEach((observer, key) => {
-            if (observer.disconnected) {
-                this.observers.delete(key);
-            }
-        });
-    }
-
-    /**
-     * Limpar timers não utilizados
-     */
-    cleanupTimers() {
-        // Limpar timers expirados
-        this.debounceTimers.forEach((timer, key) => {
-            if (Date.now() - timer.timestamp > 300000) { // 5 minutos
-                clearTimeout(timer);
-                this.debounceTimers.delete(key);
-            }
-        });
-
-        this.throttleTimers.forEach((timer, key) => {
-            if (Date.now() - timer.timestamp > 300000) { // 5 minutos
-                clearTimeout(timer);
-                this.throttleTimers.delete(key);
-            }
-        });
-    }
-
-    /**
-     * Otimizar performance de animações
-     */
-    optimizeAnimations() {
-        // Usar transform em vez de position para animações
-        const animatedElements = document.querySelectorAll('.animate, .transition');
-        animatedElements.forEach(element => {
-            element.style.willChange = 'transform, opacity';
-        });
-    }
-
-    /**
-     * Preload de recursos críticos
-     */
-    preloadCriticalResources() {
-        const criticalResources = [
-            'assets/css/style.css',
-            'assets/css/tailwind.css',
-            'assets/js/gerente.js'
-        ];
-
-        criticalResources.forEach(resource => {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.href = resource;
-            link.as = resource.endsWith('.css') ? 'style' : 'script';
-            document.head.appendChild(link);
-        });
-    }
-
-    /**
-     * Otimizar carregamento de dados
-     */
-    optimizeDataLoading() {
-        // Implementar cache inteligente
-        if ('caches' in window) {
-            caches.open('lactech-data').then(cache => {
-                console.log('📦 Cache de dados inicializado');
+            // Armazenar no cache
+            this.cache.set(cacheKey, {
+                data: data,
+                timestamp: Date.now()
             });
-        }
+            
+            return response;
+        };
     }
-
-    /**
-     * Métricas de performance
-     */
+    
+    // 4. DEBOUNCING
+    setupDebouncing() {
+        // Debounce para pesquisas
+        this.debounce = (func, wait) => {
+            return (...args) => {
+                const key = func.name || 'anonymous';
+                clearTimeout(this.debounceTimers.get(key));
+                this.debounceTimers.set(key, setTimeout(() => func.apply(this, args), wait));
+            };
+        };
+        
+        // Aplicar debounce em inputs de pesquisa
+        document.querySelectorAll('input[type="search"], input[placeholder*="pesquisar"], input[placeholder*="buscar"]').forEach(input => {
+            const debouncedSearch = this.debounce((e) => {
+                // Implementar lógica de pesquisa
+                console.log('🔍 Pesquisando:', e.target.value);
+            }, 300);
+            
+            input.addEventListener('input', debouncedSearch);
+        });
+    }
+    
+    // 5. GERENCIAMENTO DE MEMÓRIA
+    setupMemoryManagement() {
+        // Limpar cache periodicamente
+        setInterval(() => {
+            const now = Date.now();
+            for (const [key, value] of this.cache.entries()) {
+                if (now - value.timestamp > 600000) { // 10 minutos
+                    this.cache.delete(key);
+                }
+            }
+        }, 300000); // 5 minutos
+        
+        // Limpar observers quando não precisar mais
+        window.addEventListener('beforeunload', () => {
+            this.observers.forEach(observer => observer.disconnect());
+            this.cache.clear();
+        });
+    }
+    
+    // 6. OTIMIZAÇÃO DE DOM
+    optimizeDOM() {
+        // Remover elementos não utilizados
+        const unusedElements = document.querySelectorAll('.unused, .deprecated, [style*="display: none"]');
+        unusedElements.forEach(el => {
+            if (!el.hasAttribute('data-keep')) {
+                el.remove();
+            }
+        });
+        
+        // Otimizar seletores
+        const heavySelectors = document.querySelectorAll('[class*="hover:"], [class*="focus:"]');
+        heavySelectors.forEach(el => {
+            el.style.willChange = 'transform';
+        });
+    }
+    
+    // 7. COMPRESSÃO DE DADOS
+    compressData(data) {
+        // Simular compressão (em produção, usar biblioteca real)
+        return JSON.stringify(data);
+    }
+    
+    // 8. MÉTRICAS DE PERFORMANCE
     getPerformanceMetrics() {
         const metrics = {
-            loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
-            domContentLoaded: performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart,
-            firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0,
-            memoryUsage: performance.memory ? {
-                used: performance.memory.usedJSHeapSize,
-                total: performance.memory.totalJSHeapSize,
-                limit: performance.memory.jsHeapSizeLimit
-            } : null
+            cacheSize: this.cache.size,
+            memoryUsage: performance.memory ? performance.memory.usedJSHeapSize : 'N/A',
+            loadTime: performance.timing ? performance.timing.loadEventEnd - performance.timing.navigationStart : 'N/A',
+            domNodes: document.querySelectorAll('*').length
         };
-
-        return metrics;
-    }
-
-    /**
-     * Relatório de performance
-     */
-    generatePerformanceReport() {
-        const metrics = this.getPerformanceMetrics();
         
-        console.group('📊 Relatório de Performance');
-        console.log('⏱️ Tempo de carregamento:', metrics.loadTime + 'ms');
-        console.log('📄 DOM Content Loaded:', metrics.domContentLoaded + 'ms');
-        console.log('🎨 First Paint:', metrics.firstPaint + 'ms');
-        
-        if (metrics.memoryUsage) {
-            console.log('💾 Uso de memória:', {
-                usado: Math.round(metrics.memoryUsage.used / 1024 / 1024) + 'MB',
-                total: Math.round(metrics.memoryUsage.total / 1024 / 1024) + 'MB',
-                limite: Math.round(metrics.memoryUsage.limit / 1024 / 1024) + 'MB'
-            });
-        }
-        
-        console.groupEnd();
-        
+        console.table(metrics);
         return metrics;
     }
 }
 
-// Inicializar quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
-    window.performanceOptimizer = new PerformanceOptimizer();
-    
-    // Gerar relatório de performance após 3 segundos
+// Inicializar otimizador
+const performanceOptimizer = new PerformanceOptimizer();
+
+// Otimizações específicas para gráficos
+function optimizeCharts() {
+    const chartContainers = document.querySelectorAll('.chart-container');
+    chartContainers.forEach(container => {
+        // Adicionar resize observer
+        const resizeObserver = new ResizeObserver(entries => {
+            entries.forEach(entry => {
+                // Redimensionar gráfico se necessário
+                const chart = entry.target.querySelector('canvas');
+                if (chart && chart.chart) {
+                    chart.chart.resize();
+                }
+            });
+        });
+        
+        resizeObserver.observe(container);
+        performanceOptimizer.observers.set(container, resizeObserver);
+    });
+}
+
+// Otimizações para modais
+function optimizeModals() {
+    const modals = document.querySelectorAll('[id*="Modal"]');
+    modals.forEach(modal => {
+        // Lazy load conteúdo do modal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Carregar conteúdo quando modal for visível
+                    const lazyContent = entry.target.querySelector('.lazy-content');
+                    if (lazyContent && lazyContent.dataset.src) {
+                        fetch(lazyContent.dataset.src)
+                            .then(response => response.text())
+                            .then(html => {
+                                lazyContent.innerHTML = html;
+                                lazyContent.classList.remove('lazy-content');
+                            });
+                    }
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+        
+        observer.observe(modal);
+        performanceOptimizer.observers.set(modal, observer);
+    });
+}
+
+// Inicializar otimizações específicas
+document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
-        window.performanceOptimizer.generatePerformanceReport();
-    }, 3000);
+        optimizeCharts();
+        optimizeModals();
+        performanceOptimizer.optimizeDOM();
+    }, 1000);
 });
 
-// Exportar para uso global
-window.PerformanceOptimizer = PerformanceOptimizer;
+// Expor para debug
+window.performanceOptimizer = performanceOptimizer;
 
+console.log('⚡ Otimizador de performance carregado!');

@@ -110,15 +110,18 @@ class Database {
             $stmt = $this->getConnection()->prepare($sql);
             $stmt->execute($params);
             
+            // Buscar todos os resultados como array associativo
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
             // Armazenar no cache se solicitado
             if ($useCache) {
                 $this->queryCache[$cacheKey] = [
-                    'data' => $stmt,
+                    'data' => $results,
                     'timestamp' => time()
                 ];
             }
             
-            return $stmt;
+            return $results;
         } catch (PDOException $e) {
             $this->lastError = $e->getMessage();
             error_log("Erro na query SQL: {$sql} - {$e->getMessage()}");
@@ -219,14 +222,14 @@ class Database {
      */
     public function getUser($userId) {
         try {
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT u.*, f.name as farm_name 
                 FROM users u
                 LEFT JOIN farms f ON u.farm_id = f.id
                 WHERE u.id = ?
             ", [$userId]);
             
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            $user = $results[0] ?? null;
             
             if ($user) {
                 unset($user['password']); // Remover senha
@@ -401,22 +404,22 @@ class Database {
             $stats = [];
             
             // Contar usuários
-            $stmt = $this->query("SELECT COUNT(*) FROM users WHERE is_active = 1");
-            $stats['users'] = $stmt->fetchColumn();
+            $results = $this->query("SELECT COUNT(*) as count FROM users WHERE is_active = 1");
+            $stats['users'] = $results[0]['count'] ?? 0;
             
             // Contar animais
             if ($this->tableExists('animals')) {
-                $stmt = $this->query("SELECT COUNT(*) FROM animals WHERE is_active = 1");
-                $stats['animals'] = $stmt->fetchColumn();
+                $results = $this->query("SELECT COUNT(*) as count FROM animals WHERE is_active = 1");
+                $stats['animals'] = $results[0]['count'] ?? 0;
             }
             
             // Contar produção do dia
             if ($this->tableExists('milk_production')) {
-                $stmt = $this->query("
-                    SELECT COUNT(*) FROM milk_production 
+                $results = $this->query("
+                    SELECT COUNT(*) as count FROM milk_production 
                     WHERE DATE(production_date) = CURDATE()
                 ");
-                $stats['today_production'] = $stmt->fetchColumn();
+                $stats['today_production'] = $results[0]['count'] ?? 0;
             }
             
             return $stats;
@@ -666,96 +669,96 @@ class Database {
             $stats = [];
             
             // Volume de hoje - APENAS dados de hoje (não usar dados antigos)
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COALESCE(SUM(total_volume), 0) as volume_today 
                 FROM volume_records 
                 WHERE DATE(record_date) = CURDATE() AND farm_id = 1
             ");
-            $stats['volume_today'] = $stmt->fetchColumn() ?: 0;
+            $stats['volume_today'] = $results[0]['volume_today'] ?? 0;
             
             // Volume do mês - todos os dados do mês atual
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COALESCE(SUM(total_volume), 0) as volume_month 
                 FROM volume_records 
                 WHERE MONTH(record_date) = MONTH(CURDATE()) 
                 AND farm_id = 1
             ");
-            $stats['volume_month'] = $stmt->fetchColumn() ?: 0;
+            $stats['volume_month'] = $results[0]['volume_month'] ?? 0;
             
             // Volume do ano - todos os dados disponíveis
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COALESCE(SUM(total_volume), 0) as volume_year 
                 FROM volume_records 
                 WHERE farm_id = 1
             ");
-            $stats['volume_year'] = $stmt->fetchColumn() ?: 0;
+            $stats['volume_year'] = $results[0]['volume_year'] ?? 0;
             
             // Log para debug
             error_log("Debug Volume Anual: " . $stats['volume_year']);
             
             // Qualidade média (gordura e proteína) - APENAS dados atuais
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COALESCE(AVG(fat_content), 0) as avg_fat, 
                        COALESCE(AVG(protein_content), 0) as avg_protein 
                 FROM milk_production 
                 WHERE DATE(production_date) = CURDATE() AND farm_id = 1 
                 AND fat_content IS NOT NULL AND protein_content IS NOT NULL
             ");
-            $quality = $stmt->fetch(PDO::FETCH_ASSOC);
-            $stats['avg_fat'] = $quality['avg_fat'] ?: 0; // Zero se não há dados de hoje
-            $stats['avg_protein'] = $quality['avg_protein'] ?: 0; // Zero se não há dados de hoje
+            $quality = $results[0] ?? [];
+            $stats['avg_fat'] = $quality['avg_fat'] ?? 0; // Zero se não há dados de hoje
+            $stats['avg_protein'] = $quality['avg_protein'] ?? 0; // Zero se não há dados de hoje
             
             // Pagamentos pendentes - usando dados reais
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COALESCE(SUM(amount), 0) as pending_payments 
                 FROM financial_records 
                 WHERE type = 'despesa' AND farm_id = 1
                 AND record_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             ");
-            $stats['pending_payments'] = $stmt->fetchColumn() ?: 0;
+            $stats['pending_payments'] = $results[0]['pending_payments'] ?? 0;
             
             // Usuários ativos - total de usuários do sistema
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COUNT(*) as active_users 
                 FROM users 
                 WHERE farm_id = 1
             ");
-            $stats['active_users'] = $stmt->fetchColumn() ?: 0;
+            $stats['active_users'] = $results[0]['active_users'] ?? 0;
             
             // Debug: verificar usuários no banco
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COUNT(*) as total_users, 
                        COUNT(CASE WHEN is_active = 1 THEN 1 END) as active_count,
                        COUNT(CASE WHEN is_active = 0 THEN 1 END) as inactive_count
                 FROM users 
                 WHERE farm_id = 1
             ");
-            $userDebug = $stmt->fetch(PDO::FETCH_ASSOC);
+            $userDebug = $results[0] ?? [];
             error_log("Debug Usuários - Total: {$userDebug['total_users']}, Ativos: {$userDebug['active_count']}, Inativos: {$userDebug['inactive_count']}");
             
             // Animais totais - usando dados reais
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COUNT(*) as total_animals 
                 FROM animals 
                 WHERE is_active = 1 AND farm_id = 1
             ");
-            $stats['total_animals'] = $stmt->fetchColumn() ?: 0;
+            $stats['total_animals'] = $results[0]['total_animals'] ?? 0;
             
             // Prenhezes ativas - usando dados reais
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COUNT(*) as active_pregnancies 
                 FROM pregnancy_controls 
                 WHERE expected_birth >= CURDATE() AND farm_id = 1
             ");
-            $stats['active_pregnancies'] = $stmt->fetchColumn() ?: 0;
+            $stats['active_pregnancies'] = $results[0]['active_pregnancies'] ?? 0;
             
             // Alertas ativos - usando dados reais
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT COUNT(*) as active_alerts 
                 FROM health_alerts 
                 WHERE is_resolved = 0 AND farm_id = 1
             ");
-            $stats['active_alerts'] = $stmt->fetchColumn() ?: 0;
+            $stats['active_alerts'] = $results[0]['active_alerts'] ?? 0;
             
             // Log para debug
             error_log("Dashboard Stats (APENAS dados atuais): " . json_encode($stats));
@@ -797,13 +800,13 @@ class Database {
      */
     public function getUsersByFarm($farmId) {
         try {
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT id, name, email, role, is_active, last_login
                 FROM users 
                 WHERE farm_id = ? AND is_active = 1
                 ORDER BY name
             ", [$farmId]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $results;
         } catch (PDOException $e) {
             return [];
         }
@@ -832,8 +835,8 @@ class Database {
             
             $sql .= " ORDER BY vr.record_date DESC";
             
-            $stmt = $this->query($sql, $params);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->query($sql, $params);
+            return $results;
         } catch (PDOException $e) {
             return [];
         }
@@ -859,8 +862,8 @@ class Database {
             
             $sql .= " ORDER BY test_date DESC";
             
-            $stmt = $this->query($sql, $params);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->query($sql, $params);
+            return $results;
         } catch (PDOException $e) {
             return [];
         }
@@ -881,8 +884,8 @@ class Database {
             
             $sql .= " ORDER BY record_date DESC";
             
-            $stmt = $this->query($sql, $params);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->query($sql, $params);
+            return $results;
         } catch (PDOException $e) {
             return [];
         }
@@ -992,8 +995,8 @@ class Database {
             
             $sql .= " ORDER BY mp.production_date DESC, mp.created_at DESC";
             
-            $stmt = $this->query($sql, $params);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->query($sql, $params);
+            return $results;
             
         } catch (PDOException $e) {
             return [];
@@ -1093,7 +1096,7 @@ class Database {
      */
     public function getUserById($id) {
         try {
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT u.id, u.name, u.email, u.role, u.cpf, u.phone, u.address, 
                        u.hire_date, u.salary, u.is_active, u.last_login, u.created_at,
                        f.name as farm_name
@@ -1101,7 +1104,7 @@ class Database {
                 LEFT JOIN farms f ON u.farm_id = f.id
                 WHERE u.id = ?
             ", [$id]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            return $results[0] ?? null;
         } catch (PDOException $e) {
             return null;
         }
@@ -1183,8 +1186,8 @@ class Database {
             
             $sql .= " ORDER BY vr.record_date DESC";
             
-            $stmt = $this->query($sql, $params);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->query($sql, $params);
+            return $results;
         } catch (PDOException $e) {
             return [];
         }

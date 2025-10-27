@@ -46,10 +46,8 @@ if ($result['success']) {
         case 'gerente':
             $redirect = 'gerente.php';
             break;
-        case 'veterinario':
-            $redirect = 'veterinario.php';
-            break;
         case 'funcionario':
+        default:
             $redirect = 'funcionario.php';
             break;
     }

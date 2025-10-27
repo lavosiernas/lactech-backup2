@@ -49,18 +49,18 @@ self.addEventListener('activate', (event) => {
     
     event.waitUntil(
         caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME) {
                         console.log('🗑️ Removendo cache antigo:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
         }).then(() => {
             console.log('✅ Service Worker ativado');
-            return self.clients.claim();
-        })
+                return self.clients.claim();
+            })
     );
 });
 
@@ -97,12 +97,12 @@ self.addEventListener('fetch', (event) => {
                     
                     // Adicionar ao cache
                     caches.open(CACHE_NAME)
-                        .then((cache) => {
+                                .then((cache) => {
                             cache.put(event.request, responseToCache);
                         });
                     
                     return response;
-                });
+                    });
             })
             .catch(() => {
                 // Retornar página offline se disponível

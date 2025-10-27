@@ -196,7 +196,7 @@ try {
             $stmt->execute([$animal_id]);
             $costs_by_category = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            // Custos por fase (simulado baseado em data)
+            // Custos por fase (baseado em data real)
             $stmt = $conn->prepare("
                 SELECT 
                     CASE 

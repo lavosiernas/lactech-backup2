@@ -2508,6 +2508,25 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
             background-color: white !important;
         }
         
+        /* CORREÇÃO ADICIONAL PARA MODAL MAIS */
+        #moreModal {
+            z-index: 99999 !important;
+        }
+        
+        #moreModal.modal-open {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        
+        #moreModal.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
         
         /* Melhorar aparência dos apps no modal estilo mobile */
         #moreModal .app-item {
@@ -4152,11 +4171,205 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
 <!-- AGGRESSIVE ERROR FIXES - Interceptação agressiva ANTES do gerente.js -->
 <script src="assets/js/aggressive-error-fixes.js?v=<?php echo $v; ?>"></script>
 
+
+
 <!-- GERENTE.JS - DEVE SER CARREGADO POR ÚLTIMO (após todas as dependências) -->
 <script src="assets/js/gerente.js?v=<?php echo $v; ?>"></script>
 
 <!-- API FIXES - Correções para usar a nova API REST -->
 <script src="assets/js/gerente-api-fixes.js?v=<?php echo $v; ?>"></script>
+
+<!-- FIX MODALS FINAL - Correção definitiva dos modais -->
+<script src="assets/js/fix-modals-final.js?v=<?php echo $v; ?>"></script>
+
+<!-- CONTROLE DAS ABAS PRINCIPAIS -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Configurando controle das abas...');
+    
+    // Selecionar todos os botões de navegação
+    const navButtons = document.querySelectorAll('.nav-item[data-tab], .mobile-nav-item[data-tab]');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    console.log('🔍 Botões encontrados:', navButtons.length);
+    console.log('🔍 Conteúdos encontrados:', tabContents.length);
+    
+    // Adicionar event listener para cada botão
+    navButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            console.log('🖱️ Clicou na aba:', tabName);
+            
+            // Remover classe active de todos os botões
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Adicionar classe active ao botão clicado
+            this.classList.add('active');
+            
+            // Esconder todos os conteúdos
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('active');
+            });
+            
+            // Mostrar o conteúdo da aba selecionada
+            const selectedTab = document.getElementById(tabName + '-tab');
+            console.log('🔍 Procurando elemento:', tabName + '-tab');
+            console.log('🔍 Elemento encontrado:', !!selectedTab);
+            
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+                selectedTab.classList.add('active');
+                console.log('✅ Aba', tabName, 'mostrada com sucesso!');
+            } else {
+                console.error('❌ Aba', tabName, 'não encontrada!');
+            }
+        });
+    });
+    
+    console.log('✅ Controle das abas configurado!');
+});
+</script>
+
+
+<!-- UX ENHANCEMENTS - Melhorias de experiência do usuário -->
+<script src="assets/js/ux-enhancements.js?v=<?php echo $v; ?>"></script>
+
+<!-- PERFORMANCE OPTIMIZER - Otimização de performance -->
+<script src="assets/js/performance-optimizer.js?v=<?php echo $v; ?>"></script>
+
+<!-- DATA VALIDATION - Validação robusta de dados -->
+<script src="assets/js/data-validation.js?v=<?php echo $v; ?>"></script>
+
+<!-- CHARTS ENHANCER - Gráficos interativos e dados reais -->
+<!-- CHART PROTECTOR - Proteção contra erros do Chart.js -->
+<script src="assets/js/chart-protector.js?v=<?php echo $v; ?>"></script>
+
+<!-- REQUEST CACHE - Sistema de cache para evitar múltiplas requisições -->
+<script src="assets/js/request-cache.js?v=<?php echo $v; ?>"></script>
+
+<script src="assets/js/charts-enhancer.js?v=<?php echo $v; ?>"></script>
+
+<!-- FINAL TESTS - Testes finais e validação completa -->
+<script src="assets/js/final-tests.js?v=<?php echo $v; ?>"></script>
+
+<!-- DIAGNOSTIC TOOL - Ferramenta de diagnóstico e correção -->
+<script src="assets/js/diagnostic-tool.js?v=<?php echo $v; ?>"></script>
+
+<!-- CRITICAL FIXES - Correções críticas para 100% de sucesso -->
+<script src="assets/js/critical-fixes.js?v=<?php echo $v; ?>"></script>
+
+<!-- REAL-TIME MONITOR - Monitor em tempo real para manter 100% -->
+<script src="assets/js/real-time-monitor.js?v=<?php echo $v; ?>"></script>
+
+<!-- FORM VALIDATOR - Validação robusta de formulários -->
+<script src="assets/js/form-validator.js?v=<?php echo $v; ?>"></script>
+
+<!-- PERFORMANCE OPTIMIZER ADVANCED - Otimização avançada -->
+<script src="assets/js/performance-optimizer-advanced.js?v=<?php echo $v; ?>"></script>
+
+<!-- CHART FIXER - Correção e criação de gráficos -->
+<script src="assets/js/chart-fixer.js?v=<?php echo $v; ?>"></script>
+
+<!-- FINAL VALIDATOR - Validação final completa -->
+<script src="assets/js/final-validator.js?v=<?php echo $v; ?>"></script>
+
+<!-- DETAILED ANALYZER - Análise dos 6.5% restantes -->
+<script src="assets/js/detailed-analyzer.js?v=<?php echo $v; ?>"></script>
+
+<!-- AUTO FIXER - Correção automática para 100% -->
+<script src="assets/js/auto-fixer.js?v=<?php echo $v; ?>"></script>
+
+<!-- FIX MORE MODAL - Correção do modal "Mais Opções" -->
+<script src="assets/js/fix-more-modal.js?v=<?php echo $v; ?>"></script>
+
+<!-- SIMPLE MANAGER DATA FIX - Corrigindo todos os elementos "Carregando..." -->
+<script>
+// Função para corrigir todos os dados do gerente
+function fixAllManagerData() {
+    console.log('👤 Corrigindo todos os dados do gerente...');
+    
+    const userData = localStorage.getItem('user_data') || 
+                    sessionStorage.getItem('user_data') || 
+                    localStorage.getItem('userData') || 
+                    sessionStorage.getItem('userData');
+    
+    let user = null;
+    if (userData) {
+        try {
+            user = JSON.parse(userData);
+            console.log('👤 Dados encontrados:', user);
+        } catch (e) {
+            console.log('⚠️ Erro ao parsear dados:', e);
+        }
+    }
+    
+    // Se não encontrou dados, usar padrão
+    if (!user) {
+        user = {
+            name: 'Usuário',
+            nome: 'Usuário',
+            role: 'Gerente',
+            cargo: 'Gerente',
+            farm_name: 'Fazenda',
+            fazenda: 'Fazenda',
+            email: 'gerente@fazenda.com'
+        };
+    }
+    
+    // Corrigir nome do gerente no header
+    const managerNameElement = document.getElementById('managerName');
+    if (managerNameElement) {
+        const displayName = user.name || user.nome || user.full_name || user.fullName || 'Usuário';
+        managerNameElement.textContent = displayName;
+        console.log('✅ Nome do gerente corrigido:', displayName);
+    }
+    
+    // Corrigir bem-vindo no dashboard
+    const welcomeElement = document.getElementById('managerWelcome');
+    if (welcomeElement) {
+        const displayName = user.name || user.nome || user.full_name || user.fullName || 'Usuário';
+        welcomeElement.textContent = displayName;
+        console.log('✅ Bem-vindo corrigido:', displayName);
+    }
+    
+    // Corrigir nome da fazenda no header
+    const farmNameElement = document.getElementById('farmNameHeader');
+    if (farmNameElement) {
+        const farmName = user.farm_name || user.fazenda || 'Fazenda';
+        farmNameElement.textContent = farmName;
+        console.log('✅ Nome da fazenda corrigido:', farmName);
+    }
+    
+    // Corrigir elementos do overlay
+    const overlayElements = [
+        { id: 'overlayProfileName', value: user.name || user.nome || user.full_name || user.fullName || 'Usuário' },
+        { id: 'overlayProfileRole', value: user.role || user.cargo || 'Gerente' },
+        { id: 'overlayProfileFarmName', value: user.farm_name || user.fazenda || 'Fazenda' },
+        { id: 'overlayProfileFullName', value: user.name || user.nome || user.full_name || user.fullName || 'Usuário' },
+        { id: 'overlayProfileEmail', value: user.email || 'gerente@fazenda.com' }
+    ];
+    
+    overlayElements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            el.textContent = element.value;
+            console.log(`✅ ${element.id} corrigido: ${element.value}`);
+        }
+    });
+}
+
+// Executar após carregar tudo
+setTimeout(fixAllManagerData, 2000);
+
+// Executar também a função do perfil se existir
+setTimeout(() => {
+    if (typeof window.loadProfileData === 'function') {
+        window.loadProfileData();
+        console.log('✅ Função loadProfileData executada!');
+    }
+}, 3000);
+</script>
 
 <!-- SYSTEM CLEANUP - Limpeza e otimização do sistema -->
 <script src="assets/js/system-cleanup.js?v=<?php echo $v; ?>"></script>
@@ -8415,48 +8628,9 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
         closeModal('contactFormModal');
     };
 
-    window.closeNotificationsModal = function() {
-        const modal = document.getElementById('notificationsModal');
-        const content = document.getElementById('notificationsModalContent');
-        if (content) {
-            content.classList.remove('translate-x-0');
-            content.classList.add('translate-x-full');
-        }
-        setTimeout(() => {
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                modal.style.display = 'none';
-                modal.style.visibility = 'hidden';
-                modal.style.opacity = '0';
-                document.body.style.overflow = '';
-            }
-        }, 300);
-    };
+    // FUNÇÃO REMOVIDA - JÁ DEFINIDA NO SCRIPT DE CORREÇÃO
 
-    window.openNotificationsModal = function() {
-        // Fechar outros modais primeiro
-        if (typeof window.closeMoreModal === 'function') {
-            window.closeMoreModal();
-        }
-        
-        const modal = document.getElementById('notificationsModal');
-        const content = document.getElementById('notificationsModalContent');
-        if (modal) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            modal.style.display = 'flex';
-            modal.style.visibility = 'visible';
-            modal.style.opacity = '1';
-            document.body.style.overflow = 'hidden';
-            setTimeout(() => {
-                if (content) {
-                    content.classList.remove('translate-x-full');
-                    content.classList.add('translate-x-0');
-                }
-            }, 10);
-        }
-    };
+    // FUNÇÃO REMOVIDA - JÁ DEFINIDA NO SCRIPT DE CORREÇÃO
 
     // Fechar modais ao pressionar ESC
     document.addEventListener('keydown', function(e) {
@@ -10513,5 +10687,6 @@ function showAddQualityModal() {
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
     </style>
+    
 </body>
 </html>

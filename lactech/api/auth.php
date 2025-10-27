@@ -49,12 +49,23 @@ try {
                 $_SESSION['user_email'] = $result['user']['email'];
                 $_SESSION['user_name'] = $result['user']['name'];
                 $_SESSION['user_role'] = $result['user']['role'];
-                $_SESSION['farm_id'] = 1; // Sempre Lagoa Do Mato
+                // Buscar farm_id e nome da fazenda do usuário
+                $stmt = $db->prepare("SELECT farm_id FROM users WHERE id = ?");
+                $stmt->execute([$result['user']['id']]);
+                $userFarm = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                $farmId = $userFarm['farm_id'];
+                $_SESSION['farm_id'] = $farmId;
                 $_SESSION['logged_in'] = true;
                 
-                // Adicionar nome da fazenda
-                $result['user']['farm_name'] = 'Lagoa Do Mato';
-                $result['user']['farm_id'] = 1;
+                // Buscar nome da fazenda
+                $stmt = $db->prepare("SELECT name FROM farms WHERE id = ?");
+                $stmt->execute([$farmId]);
+                $farmName = $stmt->fetch(PDO::FETCH_ASSOC)['name'];
+                
+                // Adicionar dados da fazenda
+                $result['user']['farm_name'] = $farmName;
+                $result['user']['farm_id'] = $farmId;
                 
                 echo json_encode([
                     'success' => true,
@@ -274,8 +285,6 @@ function getRedirectByRole($role) {
             return 'gerente.php';
         case 'proprietario':
             return 'proprietario.php';
-        case 'veterinario':
-            return 'veterinario.php';
         case 'funcionario':
         default:
             return 'funcionario.php';

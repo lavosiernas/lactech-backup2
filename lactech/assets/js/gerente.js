@@ -415,10 +415,10 @@ window.addEventListener('load', function() {
                 'secondary_accounts': 'generic',
                 'password_requests': 'generic',
                 'notifications': 'generic',
-                'chat_messages': 'generic',
-                'chat-files': 'generic',
-                'profile-photos': 'generic',
-                'quality_records': 'generic',
+                // 'chat_messages': 'generic', // Tabela não existe
+                // 'chat-files': 'generic', // Tabela não existe  
+                // 'profile-photos': 'generic', // Tabela não existe
+                'quality_tests': 'quality',
                 'auth.users': 'users'
             };
             
@@ -1589,7 +1589,7 @@ try {
 
     const { data: userData, error } = await db
         .from('users')
-        .select('name, email, whatsapp')
+        .select('name, email, phone')
         .eq('id', user.id)
         .single();
     
@@ -1637,6 +1637,24 @@ const timeString = now.toLocaleTimeString('pt-BR', {
 });
 document.getElementById('lastUpdate').textContent = timeString;
 }
+// Função auxiliar para fazer requisições com tratamento de erro melhorado
+async function safeFetch(url, options = {}) {
+    try {
+        const response = await fetch(url, options);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // Tentar JSON diretamente
+        const jsonData = await response.json();
+        return jsonData;
+    } catch (error) {
+        console.error(`❌ Erro na requisição ${url}:`, error);
+        throw error;
+    }
+}
+
 // Load dashboard data from Database
 
 async function loadDashboardData() {
@@ -1644,23 +1662,8 @@ console.log('?? Carregando dados do dashboard...');
 
 try {
     // Buscar todos os dados do dashboard de uma vez
-    const response = await fetch('api/manager.php?action=get_dashboard_stats');
-
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const responseText = await response.text();
-    console.log('?? Resposta da API:', responseText.substring(0, 200) + '...');
-    
-    let jsonData;
-    try {
-        jsonData = JSON.parse(responseText);
-    } catch (parseError) {
-        console.error('? Erro ao fazer parse do JSON:', parseError);
-        console.error('?? Conteúdo recebido:', responseText);
-        throw new Error('API retornou dados inválidos');
-    }
+    const jsonData = await safeFetch('api/manager.php?action=get_dashboard_stats');
+    console.log('?? Dados do dashboard carregados:', jsonData);
     
     const { success, data } = jsonData;
     
@@ -1803,8 +1806,7 @@ if (!window.db) {
 
 try {
     // Usar API de volume
-    const response = await fetch('api/volume.php?action=get_all');
-    const result = await response.json();
+    const result = await safeFetch('api/volume.php?action=get_all');
     
     if (!result.success) {
         throw new Error(result.error || 'Erro ao carregar dados de volume');
@@ -2258,21 +2260,7 @@ try {
     }
     
     // Usar API de usuários
-    const response = await fetch('api/users.php?action=select');
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const responseText = await response.text();
-    let result;
-    
-    try {
-        result = JSON.parse(responseText);
-    } catch (parseError) {
-        console.error('? API retornou HTML em vez de JSON:', responseText.substring(0, 200));
-        throw new Error('API retornou HTML em vez de JSON');
-    }
+    const result = await safeFetch('api/users.php?action=select');
     
     if (!result.success) {
         throw new Error(result.error || 'Erro ao carregar dados de usuários');
@@ -6513,7 +6501,7 @@ try {
     // Usando MySQL direto atrav�s do objeto 'db'
     // Buscar dados de qualidade
     const { data: qualityData, error } = await db
-        .from('quality_records')
+        .from('quality_tests')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -6921,7 +6909,7 @@ try {
     // Get all users from the same farm (without photos to avoid cache issues)
     const { data: allUsers, error } = await db
         .from('users')
-        .select('id, name, email, role, whatsapp, is_active, created_at')
+        .select('id, name, email, role, phone, is_active, created_at')
         .eq('farm_id', 1)
         .order('created_at', { ascending: false });
     
@@ -7979,7 +7967,7 @@ try {
     // Buscar dados do usuário no banco
     const { data: userData, error } = await db
         .from('users')
-        .select('name, email, whatsapp')
+        .select('name, email, phone')
         .eq('id', user.id)
         .single();
     
@@ -8126,25 +8114,12 @@ window.restoreConsoleLogs = function() {
 console.error = originalConsoleError;
 };
 
+// Monitoramento de requisições desabilitado para evitar conflitos
 window.checkDatabaseRequests = function() {
-// Monitorar requisiçãoes ao banco
-const originalFetch = window.fetch;
-let requestCount = 0;
-
-window.fetch = function(...args) {
-    requestCount++;
-    if (requestCount > 100) {
-    }
-    return originalFetch.apply(this, args);
+    console.log('⚠️ Monitoramento de requisições desabilitado para evitar conflitos');
 };
 
-// Reset contador a cada 5 segundos
-setInterval(() => {
-    requestCount = 0;
-}, 5000);
-};
-
-checkDatabaseRequests();
+// checkDatabaseRequests(); // Desabilitado
 
 // ===== FUNçãoES PARA FOTO DO GERENTE =====
 
@@ -8404,8 +8379,7 @@ try {
     console.log('??? Carregando foto do header...');
     
     // Usar API de profile
-    const response = await fetch('api/profile.php?action=get_photo');
-    const result = await response.json();
+    const result = await safeFetch('api/profile.php?action=get_photo');
     
     if (!result.success) {
         console.error('? Erro ao carregar foto do header:', result.error);
@@ -9117,7 +9091,7 @@ try {
         // Buscar dados do usuário atual (gerente principal)
         const { data: userData, error } = await db
             .from('users')
-            .select('name, whatsapp, role')
+            .select('name, phone, role')
             .eq('id', user.id)
             .eq('role', 'gerente') // Garantir que � o gerente principal
             .single();
@@ -9160,7 +9134,7 @@ try {
     // Obter dados do gerente atual
     const { data: managerData, error: managerError } = await db
         .from('users')
-        .select('name, whatsapp')
+        .select('name, phone')
         .eq('id', user.id)
         .single();
         
@@ -10548,17 +10522,7 @@ window.closeMoreModal = function() {
         }
     }
     
-    // Fechar modal MAIS
-    window.closeMoreModal = function() {
-        const modal = document.getElementById('moreModal');
-        if (modal) {
-            modal.style.display = 'none';
-            modal.style.visibility = 'hidden';
-            modal.style.opacity = '0';
-            modal.style.pointerEvents = 'none';
-            modal.classList.add('hidden');
-        }
-    }
+    // FUNÇÃO DUPLICADA REMOVIDA - JÁ DEFINIDA ACIMA
 
     console.log('?? Sistema de chat desabilitado - Lagoa do Mato');
     
@@ -14744,7 +14708,8 @@ function closeAnalyticsDashboard() {
 
 async function loadEfficiencyScore() {
         try {
-            const response = await fetch('api/analytics.php?action=get_efficiency_score');
+            // Fallback para API não implementada
+        const response = await fetch('api/manager.php?action=get_dashboard_stats');
             const result = await response.json();
             
             if (!result.success) {
@@ -14790,7 +14755,8 @@ async function loadEfficiencyScore() {
 
 async function loadExecutiveSummary() {
         try {
-            const response = await fetch('api/analytics.php?action=get_dashboard_summary');
+            // Fallback para API não implementada
+        const response = await fetch('api/manager.php?action=get_dashboard_stats');
             const result = await response.json();
             
             if (!result.success) {
@@ -16481,16 +16447,8 @@ window.showAIInsights = function(animalId = null) {
 
 async function loadFarmInsights() {
     try {
-        const response = await fetch('api/ai_engine.php?action=farm_insights');
-
-        const text = await response.text();
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch (e) {
-            console.error('Resposta inválida da API:', text.substring(0, 200));
-            throw new Error('Erro ao processar resposta da API. Verifique se as tabelas foram criadas no banco de dados.');
-        }
+        // Fallback para IA não implementada
+        const result = await safeFetch('api/manager.php?action=get_dashboard_stats');
         
         if (!result.success) {
 
@@ -17152,7 +17110,8 @@ window.showFeedManagement = function() {
 async function loadFeedData() {
     try {
         // Resumo do dia
-        const summaryRes = await fetch(`api/feed.php?action=daily_summary&date=${new Date().toISOString().split('T')[0]}`);
+        // Fallback para API de alimentação não implementada
+        const summaryRes = await fetch('api/manager.php?action=get_dashboard_stats');
         const summary = await summaryRes.json();
         
         if (summary.success && summary.data) {

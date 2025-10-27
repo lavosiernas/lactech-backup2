@@ -1,6 +1,6 @@
 <?php
 /**
- * API do Funcionário/Veterinário
+ * API do Funcionário
  * Operações diárias: registrar coleta, testes de qualidade
  */
 
@@ -26,7 +26,7 @@ if (!file_exists($dbPath)) {
 require_once $dbPath;
 
 // Verificar autenticação
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['funcionario', 'veterinario'])) {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['funcionario'])) {
     echo json_encode(['success' => false, 'error' => 'Acesso negado']);
     exit;
 }
@@ -63,9 +63,9 @@ try {
             
         // ==================== REGISTRAR TESTE DE QUALIDADE ====================
         case 'add_quality_test':
-            // Apenas veterinário pode adicionar testes de qualidade
-            if ($_SESSION['user_role'] !== 'veterinario') {
-                echo json_encode(['success' => false, 'error' => 'Apenas veterinários podem registrar testes de qualidade']);
+            // Funcionários podem adicionar testes de qualidade
+            if ($_SESSION['user_role'] !== 'funcionario') {
+                echo json_encode(['success' => false, 'error' => 'Apenas funcionários podem registrar testes de qualidade']);
                 exit;
             }
             
