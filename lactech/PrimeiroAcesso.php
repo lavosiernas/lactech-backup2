@@ -9,11 +9,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
     $role = $_SESSION['user_role'] ?? 'gerente';
     $redirectMap = [
         'proprietario' => 'proprietario.php',
-        'gerente' => 'gerente.php',
+        'gerente' => 'gerente-completo.php',
         'funcionario' => 'funcionario.php',
-        'veterinario' => 'veterinario.php'
+        'veterinario' => 'funcionario.php'
     ];
-    header('Location: ' . ($redirectMap[$role] ?? 'gerente.php'));
+    header('Location: ' . ($redirectMap[$role] ?? 'gerente-completo.php'));
     exit;
 }
 ?>
@@ -966,11 +966,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                 window.location.href = 'proprietario.php';
             } else if (adminData.role === 'gerente') {
                 console.log('👤 Redirecionando para gerente');
-                window.location.href = 'gerente.php';
+                window.location.href = 'gerente-completo.php';
             } else {
                 console.log('⚠️ Role não definido, redirecionando para login');
                 // Fallback to login page
-                window.location.href = 'login.php';
+                window.location.href = 'inicio-login.php';
             }
         }
 

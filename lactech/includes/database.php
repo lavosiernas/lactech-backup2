@@ -8,9 +8,9 @@ require_once __DIR__ . '/config.php';
 
 class Database {
     private $host = 'localhost';
-    private $db_name = 'lactech_lgmato';
-    private $username = 'root';
-    private $password = '';
+    private $db_name = 'u311882628_lactech_lgmato';
+    private $username = 'u311882628_xandriaAgro';
+    private $password = 'Lavosier0012!';
     private $charset = 'utf8mb4';
     private $pdo;
 

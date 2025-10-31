@@ -38,13 +38,13 @@ $result = loginUser($email, $password);
 
 if ($result['success']) {
     // Determinar página de redirecionamento
-    $redirect = 'gerente.php'; // padrão
+    $redirect = 'gerente-completo.php'; // padrão
     switch ($result['user']['role']) {
         case 'proprietario':
             $redirect = 'proprietario.php';
             break;
         case 'gerente':
-            $redirect = 'gerente.php';
+            $redirect = 'gerente-completo.php';
             break;
         case 'funcionario':
         default:

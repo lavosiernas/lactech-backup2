@@ -385,7 +385,7 @@
                 if (error || !user) {
                     showNotification('Usuário não autenticado. Redirecionando para login...', 'error');
                     setTimeout(() => {
-                        window.location.href = 'login.php';
+                        window.location.href = 'inicio-login.php';
                     }, 2000);
                     return;
                 }

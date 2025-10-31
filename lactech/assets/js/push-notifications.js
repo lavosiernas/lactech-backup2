@@ -338,16 +338,16 @@ class PushNotifications {
     executeNotificationAction(action, data) {
         switch (action) {
             case 'open_dashboard':
-                window.location.href = 'gerente.php';
+                window.location.href = 'gerente-completo.php';
                 break;
             case 'open_volume':
-                window.location.href = 'gerente.php#volume';
+                window.location.href = 'gerente-completo.php#volume';
                 break;
             case 'open_quality':
-                window.location.href = 'gerente.php#quality';
+                window.location.href = 'gerente-completo.php#quality';
                 break;
             case 'open_financial':
-                window.location.href = 'gerente.php#financial';
+                window.location.href = 'gerente-completo.php#financial';
                 break;
             default:
                 console.log('Ação não reconhecida:', action);

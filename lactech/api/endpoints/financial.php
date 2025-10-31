@@ -1,206 +1,76 @@
 <?php
-/**
- * Endpoint para gerenciar registros financeiros
- * GET /api/rest.php/financial - Listar registros financeiros
- * POST /api/rest.php/financial - Adicionar registro financeiro
- * PUT /api/rest.php/financial - Atualizar registro
- * DELETE /api/rest.php/financial - Deletar registro
- */
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-$method = Request::getMethod();
-
-switch ($method) {
-    case 'GET':
-        $userId = Auth::checkAuth();
-        
-        $limit = Request::getParam('limit', 50);
-        $type = Request::getParam('type', null);
-        $status = Request::getParam('status', null);
-        $dateFrom = Request::getParam('date_from', null);
-        $dateTo = Request::getParam('date_to', null);
-        
-        try {
-            $query = "SELECT 
-                fr.id,
-                fr.type,
-                fr.amount,
-                fr.description,
-                fr.due_date,
-                fr.payment_date,
-                fr.status,
-                fr.created_at,
-                u.name as created_by_name
-                FROM financial_records fr
-                LEFT JOIN users u ON fr.created_by = u.id
-                WHERE 1=1";
-            
-            $params = [];
-            
-            if ($type) {
-                $query .= " AND fr.type = ?";
-                $params[] = $type;
-            }
-            
-            if ($status) {
-                $query .= " AND fr.status = ?";
-                $params[] = $status;
-            }
-            
-            if ($dateFrom) {
-                $query .= " AND DATE(fr.created_at) >= ?";
-                $params[] = $dateFrom;
-            }
-            
-            if ($dateTo) {
-                $query .= " AND DATE(fr.created_at) <= ?";
-                $params[] = $dateTo;
-            }
-            
-            $query .= " ORDER BY fr.created_at DESC LIMIT ?";
-            $params[] = (int)$limit;
-            
-            $stmt = $db->prepare($query);
-            $stmt->execute($params);
-            $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            ApiResponse::success($records, 'Registros financeiros carregados com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao buscar registros financeiros: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'POST':
-        $userId = Auth::checkAuth();
-        
-        Validator::required($data, ['type', 'amount']);
-        Validator::numeric($data['amount'], 'amount');
-        
-        $allowedTypes = ['income', 'expense'];
-        if (!in_array($data['type'], $allowedTypes)) {
-            ApiResponse::error('Tipo inválido. Valores permitidos: ' . implode(', ', $allowedTypes));
-        }
-        
-        try {
-            $stmt = $db->prepare("INSERT INTO financial_records (type, amount, description, due_date, payment_date, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([
-                $data['type'],
-                $data['amount'],
-                $data['description'] ?? null,
-                $data['due_date'] ?? null,
-                $data['payment_date'] ?? null,
-                $data['status'] ?? 'pending',
-                $userId
-            ]);
-            
-            $recordId = $db->lastInsertId();
-            
-            ApiResponse::success([
-                'id' => $recordId,
-                'type' => $data['type'],
-                'amount' => $data['amount'],
-                'status' => $data['status'] ?? 'pending'
-            ], 'Registro financeiro adicionado com sucesso', 201);
+try {
+    require_once '../../includes/Database.class.php';
+    
+    $db = Database::getInstance();
+    $pdo = $db->getConnection();
+    
+    // 1. Resumo financeiro do mês
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END), 0) as total_revenue,
+            COALESCE(SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END), 0) as total_expenses,
+            COALESCE(SUM(CASE WHEN type = 'receita' THEN amount ELSE -amount END), 0) as net_profit
+        FROM financial_records 
+        WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND record_date <= CURDATE() 
+        AND farm_id = 1
+    ");
+    $stmt->execute();
+    $monthlySummary = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // 2. Gráfico de fluxo de caixa dos últimos 30 dias
+    $stmt = $pdo->prepare("
+        SELECT 
+            record_date,
+            SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as daily_revenue,
+            SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as daily_expenses
+        FROM financial_records 
+        WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND record_date <= CURDATE() 
+        AND farm_id = 1
+        GROUP BY record_date
+        ORDER BY record_date ASC
+    ");
+    $stmt->execute();
+    $cashFlowChart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // 3. Registros financeiros recentes
+    $stmt = $pdo->prepare("
+        SELECT 
+            id,
+            record_date,
+            type,
+            description,
+            amount,
+            created_at
+        FROM financial_records 
+        WHERE farm_id = 1
+        ORDER BY record_date DESC, created_at DESC
+        LIMIT 10
+    ");
+    $stmt->execute();
+    $recentRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $financialData = [
+        'monthly_summary' => $monthlySummary,
+        'cash_flow_chart' => $cashFlowChart,
+        'recent_records' => $recentRecords
+    ];
+    
+    echo json_encode([
+        'success' => true,
+        'data' => $financialData
+    ]);
             
         } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao adicionar registro financeiro: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'PUT':
-        $userId = Auth::checkAuth();
-        
-        $recordId = Request::getParam('id');
-        if (!$recordId) {
-            ApiResponse::error('ID do registro é obrigatório');
-        }
-        
-        try {
-            $updateFields = [];
-            $params = [];
-            
-            if (isset($data['type'])) {
-                $allowedTypes = ['income', 'expense'];
-                if (!in_array($data['type'], $allowedTypes)) {
-                    ApiResponse::error('Tipo inválido. Valores permitidos: ' . implode(', ', $allowedTypes));
-                }
-                $updateFields[] = "type = ?";
-                $params[] = $data['type'];
-            }
-            
-            if (isset($data['amount'])) {
-                Validator::numeric($data['amount'], 'amount');
-                $updateFields[] = "amount = ?";
-                $params[] = $data['amount'];
-            }
-            
-            if (isset($data['description'])) {
-                $updateFields[] = "description = ?";
-                $params[] = $data['description'];
-            }
-            
-            if (isset($data['due_date'])) {
-                $updateFields[] = "due_date = ?";
-                $params[] = $data['due_date'];
-            }
-            
-            if (isset($data['payment_date'])) {
-                $updateFields[] = "payment_date = ?";
-                $params[] = $data['payment_date'];
-            }
-            
-            if (isset($data['status'])) {
-                $updateFields[] = "status = ?";
-                $params[] = $data['status'];
-            }
-            
-            if (empty($updateFields)) {
-                ApiResponse::error('Nenhum campo para atualizar');
-            }
-            
-            $updateFields[] = "updated_at = NOW()";
-            $params[] = $recordId;
-            
-            $query = "UPDATE financial_records SET " . implode(', ', $updateFields) . " WHERE id = ?";
-            $stmt = $db->prepare($query);
-            $stmt->execute($params);
-            
-            if ($stmt->rowCount() === 0) {
-                ApiResponse::notFound('Registro não encontrado');
-            }
-            
-            ApiResponse::success(null, 'Registro atualizado com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao atualizar registro: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'DELETE':
-        $userId = Auth::checkAuth();
-        
-        $recordId = Request::getParam('id');
-        if (!$recordId) {
-            ApiResponse::error('ID do registro é obrigatório');
-        }
-        
-        try {
-            $stmt = $db->prepare("DELETE FROM financial_records WHERE id = ?");
-            $stmt->execute([$recordId]);
-            
-            if ($stmt->rowCount() === 0) {
-                ApiResponse::notFound('Registro não encontrado');
-            }
-            
-            ApiResponse::success(null, 'Registro removido com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao remover registro: ' . $e->getMessage());
-        }
-        break;
-        
-    default:
-        ApiResponse::error('Método não permitido', 405);
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
 ?>
-

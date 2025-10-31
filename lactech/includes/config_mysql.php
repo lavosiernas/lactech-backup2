@@ -28,16 +28,16 @@ function getBaseUrl() {
 if ($isLocal) {
     // AMBIENTE LOCAL (XAMPP/WAMP)
     define('DB_HOST', 'localhost');
-    define('DB_NAME', 'lactech_lagoa_mato'); // Banco local
+    define('DB_NAME', 'lactech_lgmato'); // Banco local (conforme dump .sql)
     define('DB_USER', 'root');
     define('DB_PASS', '');
     define('BASE_URL', getBaseUrl()); // Detecta automaticamente
     ini_set('session.cookie_secure', 0); // HTTP local
     define('ENVIRONMENT', 'LOCAL');
 } else {
-    // AMBIENTE DE PRODUÇÃO (HOSTINGER)
+    // AMBIENTE DE PRODUÇÃO (HOSPEDAGEM)
     define('DB_HOST', 'localhost');
-    define('DB_NAME', 'u311882628_lactech_lgmato'); // Banco Hostinger
+    define('DB_NAME', 'u311882628_lactech_lgmato'); // Banco hospedagem
     define('DB_USER', 'u311882628_xandriaAgro');
     define('DB_PASS', 'Lavosier0012!');
     define('BASE_URL', 'https://lactechsys.com/');
@@ -49,8 +49,8 @@ define('DB_CHARSET', 'utf8mb4');
 define('APP_NAME', 'LacTech - Lagoa do Mato');
 define('APP_VERSION', '2.0.0');
 define('FARM_NAME', 'Lagoa do Mato');
-define('LOGIN_URL', 'login.php');
-define('DASHBOARD_URL', 'gerente.php');
+define('LOGIN_URL', 'inicio-login.php');
+define('DASHBOARD_URL', 'gerente-completo.php');
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1); 
 
@@ -58,9 +58,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Configurações de erro (desabilitar em produção)
+// Configurações de erro (sempre ocultar em endpoints para não quebrar JSON)
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');

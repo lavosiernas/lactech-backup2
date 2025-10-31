@@ -6,9 +6,9 @@
 
 // Configurações do banco de dados
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'lactech_lgmato');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_NAME', 'u311882628_lactech_lgmato');
+define('DB_USER', 'u311882628_xandriaAgro');
+define('DB_PASS', 'Lavosier0012!');
 define('DB_CHARSET', 'utf8mb4');
 
 // Configurações da aplicação
@@ -18,23 +18,23 @@ define('FARM_NAME', 'Lagoa do Mato');
 define('FARM_ID', 1);
 
 // URLs do sistema
-define('BASE_URL', 'http://localhost/GitHub/lactech-backup2/lactech/');
+define('BASE_URL', 'https://lactechsys.com/');
 define('LOGIN_URL', 'inicio-login.php');
-define('DASHBOARD_URL', 'gerente.php');
+define('DASHBOARD_URL', 'gerente-completo.php');
 
 // Configurações de sessão
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0); // HTTP em desenvolvimento
+ini_set('session.cookie_secure', 1); // HTTPS em produção
 
 // Iniciar sessão se não estiver iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Configurações de erro - ATIVADO EM DESENVOLVIMENTO
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Configurações de erro - DESABILITADO EM PRODUÇÃO
+error_reporting(0);
+ini_set('display_errors', 0);
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');

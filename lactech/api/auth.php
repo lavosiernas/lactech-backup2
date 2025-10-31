@@ -67,6 +67,9 @@ try {
                 $result['user']['farm_name'] = $farmName;
                 $result['user']['farm_id'] = $farmId;
                 
+                // Nota: O registro de sessão será feito automaticamente pelo JavaScript
+                // quando a página carregar (função registerCurrentSession())
+                
                 echo json_encode([
                     'success' => true,
                     'user' => $result['user'],
@@ -282,7 +285,7 @@ try {
 function getRedirectByRole($role) {
     switch ($role) {
         case 'gerente':
-            return 'gerente.php';
+            return 'gerente-completo.php';
         case 'proprietario':
             return 'proprietario.php';
         case 'funcionario':

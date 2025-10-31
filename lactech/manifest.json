@@ -30,7 +30,7 @@
       "name": "Gerente",
       "short_name": "Gerente",
       "description": "Abrir Painel do Gerente",
-      "url": "/gerente.php",
+      "url": "/gerente-completo.php",
       "icons": [
         {
           "src": "assets/img/lactech-logo.png",
@@ -43,18 +43,6 @@
       "short_name": "Funcionário",
       "description": "Abrir Painel do Funcionário",
       "url": "/funcionario.php",
-      "icons": [
-        {
-          "src": "assets/img/lactech-logo.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Veterinário",
-      "short_name": "Veterinário",
-      "description": "Abrir Painel do Veterinário",
-      "url": "/veterinario.php",
       "icons": [
         {
           "src": "assets/img/lactech-logo.png",

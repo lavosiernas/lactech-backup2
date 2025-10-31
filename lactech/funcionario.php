@@ -33,7 +33,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/js/config_mysql.js"></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
-    <script src="assets/js/api.js"></script>
     <script src="assets/js/modal-system.js"></script>
     <script src="assets/js/offline-manager.js"></script>
     <!-- <script src="assets/js/offline-loading.js"></script> --> <!-- Desabilitado - reconexão silenciosa -->
@@ -4519,13 +4518,13 @@
                 await supabase.auth.signOut();
                 
                 log('✅ Logout realizado com sucesso');
-                safeRedirect('login.php');
+                safeRedirect('inicio-login.php');
                 
             } catch (error) {
                 log('❌ Erro no logout: ' + error.message);
                 cleanupRealtimeUpdates();
                 clearUserSession();
-                safeRedirect('login.php');
+                safeRedirect('inicio-login.php');
             }
         }
 
@@ -4547,7 +4546,7 @@
                     
                     showNotification('Sessão expirada. Redirecionando para login...', 'error');
                     setTimeout(() => {
-                        safeRedirect('login.php');
+                        safeRedirect('inicio-login.php');
                     }, 2000);
                     return;
                 }
@@ -4622,7 +4621,7 @@
                 clearUserSession();
                 
                 setTimeout(() => {
-                    safeRedirect('login.php');
+                    safeRedirect('inicio-login.php');
                 }, 2000);
             }
         }
@@ -5608,7 +5607,7 @@
                 log('❌ Muitas tentativas de redirecionamento, limpando sessão');
                 clearUserSession();
                 sessionStorage.removeItem('redirectCount');
-                safeRedirect('login.php');
+                safeRedirect('inicio-login.php');
             return;
         }
         
@@ -6434,7 +6433,7 @@
                 sessionStorage.removeItem('currentSecondaryAccount');
                 
                 // Redirecionar para o painel do gerente
-                window.location.replace('gerente.php');
+                window.location.replace('gerente-completo.php');
             }
         }
         
@@ -7144,7 +7143,7 @@
                     // Fazer logout após 5 segundos
                     setTimeout(async () => {
                         await supabase.auth.signOut();
-                        window.location.href = 'login.php';
+                        window.location.href = 'inicio-login.php';
                     }, 5000);
                 }
                 

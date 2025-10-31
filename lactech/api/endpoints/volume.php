@@ -1,180 +1,103 @@
 <?php
-/**
- * Endpoint para gerenciar registros de volume
- * GET /api/rest.php/volume - Listar registros de volume
- * POST /api/rest.php/volume - Adicionar registro de volume
- * PUT /api/rest.php/volume - Atualizar registro
- * DELETE /api/rest.php/volume - Deletar registro
- */
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-$method = Request::getMethod();
-
-switch ($method) {
-    case 'GET':
-        $userId = Auth::checkAuth();
-        
-        $limit = Request::getParam('limit', 50);
-        $dateFrom = Request::getParam('date_from', null);
-        $dateTo = Request::getParam('date_to', null);
-        $period = Request::getParam('period', null);
-        
-        try {
-            $query = "SELECT 
-                vr.id,
-                vr.volume,
-                vr.collection_date,
-                vr.period,
-                vr.temperature,
-                vr.created_at,
-                u.name as recorded_by_name,
-                p.name as producer_name
-                FROM volume_records vr
-                LEFT JOIN users u ON vr.recorded_by = u.id
-                LEFT JOIN producers p ON vr.producer_id = p.id
-                WHERE 1=1";
-            
-            $params = [];
-            
-            if ($dateFrom) {
-                $query .= " AND DATE(vr.collection_date) >= ?";
-                $params[] = $dateFrom;
-            }
-            
-            if ($dateTo) {
-                $query .= " AND DATE(vr.collection_date) <= ?";
-                $params[] = $dateTo;
-            }
-            
-            if ($period) {
-                $query .= " AND vr.period = ?";
-                $params[] = $period;
-            }
-            
-            $query .= " ORDER BY vr.collection_date DESC LIMIT ?";
-            $params[] = (int)$limit;
-            
-            $stmt = $db->prepare($query);
-            $stmt->execute($params);
-            $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            ApiResponse::success($records, 'Registros de volume carregados com sucesso');
-            
+try {
+    require_once '../../includes/Database.class.php';
+    
+    $db = Database::getInstance();
+    $pdo = $db->getConnection();
+    
+    // 1. Volume de hoje
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(SUM(volume), 0) as total_volume,
+            COUNT(DISTINCT animal_id) as milking_animals,
+            COALESCE(AVG(volume), 0) as avg_per_animal
+        FROM milk_production 
+        WHERE production_date = CURDATE() AND farm_id = 1
+    ");
+    $stmt->execute();
+    $today = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // 2. Volume da semana
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(SUM(volume), 0) as total_volume,
+            COALESCE(AVG(volume), 0) as avg_daily_volume
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+    ");
+    $stmt->execute();
+    $week = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // 3. Volume do mês
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(SUM(volume), 0) as total_volume,
+            COALESCE(AVG(volume), 0) as avg_daily_volume
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+    ");
+    $stmt->execute();
+    $month = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // 4. Gráfico de volume dos últimos 30 dias
+    $stmt = $pdo->prepare("
+        SELECT 
+            production_date,
+            SUM(volume) as daily_volume
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+        GROUP BY production_date
+        ORDER BY production_date ASC
+    ");
+    $stmt->execute();
+    $chart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // 5. Top produtores
+    $stmt = $pdo->prepare("
+        SELECT 
+            a.animal_number,
+            a.name,
+            COALESCE(SUM(mp.volume), 0) as total_volume,
+            COUNT(mp.id) as production_days
+        FROM animals a
+        LEFT JOIN milk_production mp ON a.id = mp.animal_id 
+            AND mp.production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            AND mp.production_date <= CURDATE()
+        WHERE a.farm_id = 1 AND a.is_active = 1
+        GROUP BY a.id, a.animal_number, a.name
+        ORDER BY total_volume DESC
+        LIMIT 10
+    ");
+    $stmt->execute();
+    $topProducers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $volumeData = [
+        'today' => $today,
+        'week' => $week,
+        'month' => $month,
+        'chart' => $chart,
+        'top_producers' => $topProducers
+    ];
+    
+    echo json_encode([
+        'success' => true,
+        'data' => $volumeData
+    ]);
+    
         } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao buscar registros de volume: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'POST':
-        $userId = Auth::checkAuth();
-        
-        Validator::required($data, ['volume', 'collection_date']);
-        Validator::numeric($data['volume'], 'volume');
-        
-        try {
-            $stmt = $db->prepare("INSERT INTO volume_records (producer_id, volume, collection_date, period, temperature, recorded_by, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([
-                $data['producer_id'] ?? null,
-                $data['volume'],
-                $data['collection_date'],
-                $data['period'] ?? 'manha',
-                $data['temperature'] ?? null,
-                $userId
-            ]);
-            
-            $recordId = $db->lastInsertId();
-            
-            ApiResponse::success([
-                'id' => $recordId,
-                'volume' => $data['volume'],
-                'collection_date' => $data['collection_date'],
-                'period' => $data['period'] ?? 'manha'
-            ], 'Registro de volume adicionado com sucesso', 201);
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao adicionar registro de volume: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'PUT':
-        $userId = Auth::checkAuth();
-        
-        $recordId = Request::getParam('id');
-        if (!$recordId) {
-            ApiResponse::error('ID do registro é obrigatório');
-        }
-        
-        try {
-            $updateFields = [];
-            $params = [];
-            
-            if (isset($data['volume'])) {
-                Validator::numeric($data['volume'], 'volume');
-                $updateFields[] = "volume = ?";
-                $params[] = $data['volume'];
-            }
-            
-            if (isset($data['collection_date'])) {
-                $updateFields[] = "collection_date = ?";
-                $params[] = $data['collection_date'];
-            }
-            
-            if (isset($data['period'])) {
-                $updateFields[] = "period = ?";
-                $params[] = $data['period'];
-            }
-            
-            if (isset($data['temperature'])) {
-                $updateFields[] = "temperature = ?";
-                $params[] = $data['temperature'];
-            }
-            
-            if (empty($updateFields)) {
-                ApiResponse::error('Nenhum campo para atualizar');
-            }
-            
-            $updateFields[] = "updated_at = NOW()";
-            $params[] = $recordId;
-            
-            $query = "UPDATE volume_records SET " . implode(', ', $updateFields) . " WHERE id = ?";
-            $stmt = $db->prepare($query);
-            $stmt->execute($params);
-            
-            if ($stmt->rowCount() === 0) {
-                ApiResponse::notFound('Registro não encontrado');
-            }
-            
-            ApiResponse::success(null, 'Registro atualizado com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao atualizar registro: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'DELETE':
-        $userId = Auth::checkAuth();
-        
-        $recordId = Request::getParam('id');
-        if (!$recordId) {
-            ApiResponse::error('ID do registro é obrigatório');
-        }
-        
-        try {
-            $stmt = $db->prepare("DELETE FROM volume_records WHERE id = ?");
-            $stmt->execute([$recordId]);
-            
-            if ($stmt->rowCount() === 0) {
-                ApiResponse::notFound('Registro não encontrado');
-            }
-            
-            ApiResponse::success(null, 'Registro removido com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao remover registro: ' . $e->getMessage());
-        }
-        break;
-        
-    default:
-        ApiResponse::error('Método não permitido', 405);
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
 ?>
-

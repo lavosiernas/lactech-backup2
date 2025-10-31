@@ -303,15 +303,15 @@
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                window.location.href = 'login.php';
+                window.location.href = 'inicio-login.php';
             }
         }
 
         // Função para voltar
         function goBack() {
             const referrer = document.referrer;
-            if (referrer && referrer.includes('gerente.php')) {
-                window.location.href = 'gerente.php';
+            if (referrer && referrer.includes('gerente-completo.php')) {
+                window.location.href = 'gerente-completo.php';
             } else {
                 window.location.href = 'index.php';
             }

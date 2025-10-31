@@ -15,7 +15,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
     switch ($role) {
         case 'manager':
         case 'gerente':
-            header("Location: gerente.php", true, 302);
+            header("Location: gerente-completo.php", true, 302);
             exit();
             
         case 'owner':
@@ -25,13 +25,10 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             
         case 'veterinarian':
         case 'veterinario':
-            header("Location: veterinario.php", true, 302);
-            exit();
-            
         case 'employee':
         case 'funcionario':
             header("Location: funcionario.php", true, 302);
-    exit();
+            exit();
             
         default:
             // Papel não reconhecido, destruir sessão e continuar para login
@@ -509,12 +506,12 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         function getRedirectUrl(userType) {
             const redirectMap = {
                 'proprietario': 'proprietario.php',
-                'gerente': 'gerente.php',
+                'gerente': 'gerente-completo.php',
                 'funcionario': 'funcionario.php',
-                'veterinario': 'veterinario.php'
+                'veterinario': 'funcionario.php'
             };
             
-            return redirectMap[userType] || 'gerente.php'; // Default fallback
+            return redirectMap[userType] || 'gerente-completo.php'; // Default fallback
         }
 
         // Handle form submission

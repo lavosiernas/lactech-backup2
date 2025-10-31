@@ -1,212 +1,85 @@
 <?php
-/**
- * Endpoint para gerenciar testes de qualidade
- * GET /api/rest.php/quality - Listar testes de qualidade
- * POST /api/rest.php/quality - Adicionar teste de qualidade
- * PUT /api/rest.php/quality - Atualizar teste
- * DELETE /api/rest.php/quality - Deletar teste
- */
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-$method = Request::getMethod();
-
-switch ($method) {
-    case 'GET':
-        $userId = Auth::checkAuth();
-        
-        $limit = Request::getParam('limit', 50);
-        $dateFrom = Request::getParam('date_from', null);
-        $dateTo = Request::getParam('date_to', null);
-        $status = Request::getParam('status', null);
-        
-        try {
-            $query = "SELECT 
-                qt.id,
-                qt.test_date,
-                qt.fat_percentage,
-                qt.protein_percentage,
-                qt.lactose_percentage,
-                qt.ccs,
-                qt.cbt,
-                qt.temperature,
-                qt.ph,
-                qt.status,
-                qt.created_at,
-                u.name as tested_by_name,
-                p.name as producer_name
-                FROM quality_tests qt
-                LEFT JOIN users u ON qt.tested_by = u.id
-                LEFT JOIN producers p ON qt.producer_id = p.id
-                WHERE 1=1";
-            
-            $params = [];
-            
-            if ($dateFrom) {
-                $query .= " AND DATE(qt.test_date) >= ?";
-                $params[] = $dateFrom;
-            }
-            
-            if ($dateTo) {
-                $query .= " AND DATE(qt.test_date) <= ?";
-                $params[] = $dateTo;
-            }
-            
-            if ($status) {
-                $query .= " AND qt.status = ?";
-                $params[] = $status;
-            }
-            
-            $query .= " ORDER BY qt.test_date DESC LIMIT ?";
-            $params[] = (int)$limit;
-            
-            $stmt = $db->prepare($query);
-            $stmt->execute($params);
-            $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            ApiResponse::success($tests, 'Testes de qualidade carregados com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao buscar testes de qualidade: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'POST':
-        $userId = Auth::checkAuth();
-        
-        Validator::required($data, ['test_date']);
-        
-        try {
-            $stmt = $db->prepare("INSERT INTO quality_tests (producer_id, test_date, fat_percentage, protein_percentage, lactose_percentage, ccs, cbt, temperature, ph, status, tested_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([
-                $data['producer_id'] ?? null,
-                $data['test_date'],
-                $data['fat_percentage'] ?? null,
-                $data['protein_percentage'] ?? null,
-                $data['lactose_percentage'] ?? null,
-                $data['ccs'] ?? null,
-                $data['cbt'] ?? null,
-                $data['temperature'] ?? null,
-                $data['ph'] ?? null,
-                $data['status'] ?? 'pending',
-                $userId
-            ]);
-            
-            $testId = $db->lastInsertId();
-            
-            ApiResponse::success([
-                'id' => $testId,
-                'test_date' => $data['test_date'],
-                'status' => $data['status'] ?? 'pending'
-            ], 'Teste de qualidade adicionado com sucesso', 201);
+try {
+    require_once '../../includes/Database.class.php';
+    
+    $db = Database::getInstance();
+    $pdo = $db->getConnection();
+    
+    // 1. Qualidade geral dos últimos 7 dias
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(AVG(fat_content), 0) as avg_fat,
+            COALESCE(AVG(protein_content), 0) as avg_protein,
+            COALESCE(AVG(somatic_cells), 0) as avg_scc,
+            COUNT(*) as total_tests
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        AND farm_id = 1
+        AND (fat_content IS NOT NULL OR protein_content IS NOT NULL OR somatic_cells IS NOT NULL)
+    ");
+    $stmt->execute();
+    $overall = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // 2. Gráfico de qualidade dos últimos 30 dias
+    $stmt = $pdo->prepare("
+        SELECT 
+            production_date,
+            AVG(fat_content) as avg_fat,
+            AVG(protein_content) as avg_protein,
+            AVG(somatic_cells) as avg_scc
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+        AND (fat_content IS NOT NULL OR protein_content IS NOT NULL OR somatic_cells IS NOT NULL)
+        GROUP BY production_date
+        ORDER BY production_date ASC
+    ");
+    $stmt->execute();
+    $chart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // 3. Qualidade por animal
+    $stmt = $pdo->prepare("
+        SELECT 
+            a.animal_number,
+            a.name,
+            AVG(mp.fat_content) as avg_fat,
+            AVG(mp.protein_content) as avg_protein,
+            AVG(mp.somatic_cells) as avg_scc,
+            COUNT(mp.id) as test_count
+        FROM animals a
+        LEFT JOIN milk_production mp ON a.id = mp.animal_id 
+            AND mp.production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            AND mp.production_date <= CURDATE()
+            AND (mp.fat_content IS NOT NULL OR mp.protein_content IS NOT NULL OR mp.somatic_cells IS NOT NULL)
+        WHERE a.farm_id = 1 AND a.is_active = 1
+        GROUP BY a.id, a.animal_number, a.name
+        HAVING test_count > 0
+        ORDER BY avg_fat DESC
+        LIMIT 10
+    ");
+    $stmt->execute();
+    $byAnimal = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $qualityData = [
+        'overall' => $overall,
+        'chart' => $chart,
+        'by_animal' => $byAnimal
+    ];
+    
+    echo json_encode([
+        'success' => true,
+        'data' => $qualityData
+    ]);
             
         } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao adicionar teste de qualidade: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'PUT':
-        $userId = Auth::checkAuth();
-        
-        $testId = Request::getParam('id');
-        if (!$testId) {
-            ApiResponse::error('ID do teste é obrigatório');
-        }
-        
-        try {
-            $updateFields = [];
-            $params = [];
-            
-            if (isset($data['test_date'])) {
-                $updateFields[] = "test_date = ?";
-                $params[] = $data['test_date'];
-            }
-            
-            if (isset($data['fat_percentage'])) {
-                $updateFields[] = "fat_percentage = ?";
-                $params[] = $data['fat_percentage'];
-            }
-            
-            if (isset($data['protein_percentage'])) {
-                $updateFields[] = "protein_percentage = ?";
-                $params[] = $data['protein_percentage'];
-            }
-            
-            if (isset($data['lactose_percentage'])) {
-                $updateFields[] = "lactose_percentage = ?";
-                $params[] = $data['lactose_percentage'];
-            }
-            
-            if (isset($data['ccs'])) {
-                $updateFields[] = "ccs = ?";
-                $params[] = $data['ccs'];
-            }
-            
-            if (isset($data['cbt'])) {
-                $updateFields[] = "cbt = ?";
-                $params[] = $data['cbt'];
-            }
-            
-            if (isset($data['temperature'])) {
-                $updateFields[] = "temperature = ?";
-                $params[] = $data['temperature'];
-            }
-            
-            if (isset($data['ph'])) {
-                $updateFields[] = "ph = ?";
-                $params[] = $data['ph'];
-            }
-            
-            if (isset($data['status'])) {
-                $updateFields[] = "status = ?";
-                $params[] = $data['status'];
-            }
-            
-            if (empty($updateFields)) {
-                ApiResponse::error('Nenhum campo para atualizar');
-            }
-            
-            $updateFields[] = "updated_at = NOW()";
-            $params[] = $testId;
-            
-            $query = "UPDATE quality_tests SET " . implode(', ', $updateFields) . " WHERE id = ?";
-            $stmt = $db->prepare($query);
-            $stmt->execute($params);
-            
-            if ($stmt->rowCount() === 0) {
-                ApiResponse::notFound('Teste não encontrado');
-            }
-            
-            ApiResponse::success(null, 'Teste atualizado com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao atualizar teste: ' . $e->getMessage());
-        }
-        break;
-        
-    case 'DELETE':
-        $userId = Auth::checkAuth();
-        
-        $testId = Request::getParam('id');
-        if (!$testId) {
-            ApiResponse::error('ID do teste é obrigatório');
-        }
-        
-        try {
-            $stmt = $db->prepare("DELETE FROM quality_tests WHERE id = ?");
-            $stmt->execute([$testId]);
-            
-            if ($stmt->rowCount() === 0) {
-                ApiResponse::notFound('Teste não encontrado');
-            }
-            
-            ApiResponse::success(null, 'Teste removido com sucesso');
-            
-        } catch (Exception $e) {
-            ApiResponse::serverError('Erro ao remover teste: ' . $e->getMessage());
-        }
-        break;
-        
-    default:
-        ApiResponse::error('Método não permitido', 405);
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
 ?>
-

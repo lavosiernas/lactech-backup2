@@ -6,10 +6,10 @@ Sitemap: https://lactechsys.com/sitemap.xml
 
 # Permitir indexação de páginas principais
 Allow: /index.php
-Allow: /lactech.php
+Allow: /index.php
 Allow: /agrosmart.php
 Allow: /inicio-login.php
-Allow: /gerente.php
+Allow: /gerente-completo.php
 Allow: /funcionario.php
 Allow: /proprietario.php
 

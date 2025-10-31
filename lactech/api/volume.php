@@ -222,48 +222,76 @@ try {
             break;
             
         case 'get_individual':
-            $animal_id = $_GET['animal_id'] ?? 1;
+            $animal_id = isset($_GET['animal_id']) ? (int)$_GET['animal_id'] : 0;
+            if ($animal_id <= 0) {
+                sendJSONResponse(null, 'animal_id inválido');
+            }
+            $rows = $db->query("SELECT production_date as date, volume, quality_score FROM milk_production WHERE animal_id = ? AND farm_id = 1 ORDER BY production_date DESC, id DESC LIMIT 30", [$animal_id]);
             $data = [
                 'animal_id' => $animal_id,
-                'records' => [
-                    ['date' => '2024-01-15', 'volume' => 25.5, 'quality' => 95],
-                    ['date' => '2024-01-14', 'volume' => 24.8, 'quality' => 93],
-                    ['date' => '2024-01-13', 'volume' => 26.2, 'quality' => 97]
-                ]
+                'records' => array_map(function($r){
+                    return [
+                        'date' => $r['date'],
+                        'volume' => (float)$r['volume'],
+                        'quality' => isset($r['quality_score']) ? (float)$r['quality_score'] : null
+                    ];
+                }, $rows)
             ];
             sendJSONResponse($data);
             break;
             
         case 'get_by_id':
-            $id = $_GET['id'] ?? 1;
+            $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+            if ($id <= 0) { sendJSONResponse(null, 'id inválido'); }
+            $rows = $db->query("SELECT id, record_date as date, shift, total_volume, total_animals, average_per_animal, notes FROM volume_records WHERE id = ? AND farm_id = 1", [$id]);
+            if (empty($rows)) { sendJSONResponse(null, 'Registro não encontrado'); }
+            $r = $rows[0];
             $data = [
-                'id' => $id,
-                'animal_id' => 1,
-                'volume' => 25.5,
-                'date' => '2024-01-15',
-                'time' => '08:30:00',
-                'quality_score' => 95
+                'id' => (int)$r['id'],
+                'date' => $r['date'],
+                'shift' => $r['shift'],
+                'total_volume' => (float)$r['total_volume'],
+                'total_animals' => (int)$r['total_animals'],
+                'average_per_animal' => (float)$r['average_per_animal'],
+                'notes' => $r['notes']
             ];
             sendJSONResponse($data);
             break;
             
         case 'get_by_date':
-            $date_from = $_GET['date_from'] ?? '2024-01-01';
-            $date_to = $_GET['date_to'] ?? '2024-01-31';
+            $date_from = $_GET['date_from'] ?? null;
+            $date_to = $_GET['date_to'] ?? null;
+            if (!$date_from || !$date_to) { sendJSONResponse(null, 'Parâmetros date_from e date_to são obrigatórios'); }
+            $rows = $db->query("SELECT id, record_date, shift, total_volume, total_animals, average_per_animal FROM volume_records WHERE record_date BETWEEN ? AND ? AND farm_id = 1 ORDER BY record_date ASC", [$date_from, $date_to]);
             $data = [
                 'date_from' => $date_from,
                 'date_to' => $date_to,
-                'records' => [
-                    ['id' => 1, 'volume' => 25.5, 'date' => '2024-01-15'],
-                    ['id' => 2, 'volume' => 28.2, 'date' => '2024-01-16'],
-                    ['id' => 3, 'volume' => 22.8, 'date' => '2024-01-17']
-                ]
+                'records' => array_map(function($r){
+                    return [
+                        'id' => (int)$r['id'],
+                        'date' => $r['record_date'],
+                        'shift' => $r['shift'],
+                        'total_volume' => (float)$r['total_volume'],
+                        'total_animals' => (int)$r['total_animals'],
+                        'average_per_animal' => (float)$r['average_per_animal'],
+                    ];
+                }, $rows)
             ];
             sendJSONResponse($data);
             break;
             
         case 'test':
             sendJSONResponse(['status' => 'online', 'timestamp' => date('Y-m-d H:i:s')]);
+            break;
+
+        case 'get_temperature':
+            // Temperatura média por dia (últimos 30 dias)
+            $rows = $db->query("SELECT production_date as date, AVG(temperature) as avg_temp FROM milk_production WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND production_date <= CURDATE() AND farm_id = 1 AND temperature IS NOT NULL GROUP BY production_date ORDER BY production_date ASC");
+            $data = [
+                'labels' => array_map(function($r){ return $r['date']; }, $rows),
+                'data' => array_map(function($r){ return (float)$r['avg_temp']; }, $rows)
+            ];
+            sendJSONResponse($data);
             break;
             
         default:

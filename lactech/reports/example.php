@@ -8,7 +8,7 @@ session_start();
 
 // Verificar autenticação básica
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
-    header('Location: ../login.php');
+    header('Location: ../inicio-login.php');
     exit;
 }
 
