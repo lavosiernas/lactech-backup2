@@ -1,8 +1,6 @@
 <?php
-// Sistema MySQL - Lagoa Do Mato
 session_start();
 
-// Verificar autenticação básica
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
     header('Location: ../inicio-login.php');
     exit;
@@ -11,11 +9,11 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
 $user = [
     'id' => $_SESSION['user_id'],
     'role' => $_SESSION['user_role'],
-    'farm_id' => 1 // Lagoa Do Mato
+    'farm_id' => 1 
 ];
 
 // Verificar permissões
-$allowedRoles = ['gerente', 'funcionario', 'veterinario', 'proprietario'];
+$allowedRoles = ['gerente', 'funcionario', 'proprietario'];
 if (!in_array($user['role'], $allowedRoles)) {
     header('Location: ../index.php');
     exit;

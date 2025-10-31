@@ -15,7 +15,7 @@ $user = [
 ];
 
 // Verificar permissões
-$allowedRoles = ['gerente', 'funcionario', 'veterinario'];
+$allowedRoles = ['gerente', 'funcionario'];
 if (!in_array($user['role'], $allowedRoles)) {
     header('Location: ../index.php');
     exit;

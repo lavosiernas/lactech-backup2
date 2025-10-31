@@ -10,8 +10,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
     $redirectMap = [
         'proprietario' => 'proprietario.php',
         'gerente' => 'gerente-completo.php',
-        'funcionario' => 'funcionario.php',
-        'veterinario' => 'funcionario.php'
+        'funcionario' => 'funcionario.php'
     ];
     header('Location: ' . ($redirectMap[$role] ?? 'gerente-completo.php'));
     exit;

@@ -23,8 +23,6 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             header("Location: proprietario.php", true, 302);
             exit();
             
-        case 'veterinarian':
-        case 'veterinario':
         case 'employee':
         case 'funcionario':
             header("Location: funcionario.php", true, 302);
@@ -181,6 +179,14 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
     <!-- Mobile Layout -->
     <div class="md:hidden min-h-screen flex flex-col">
         <div class="flex-1 bg-white p-6 pt-12">
+            <!-- Botão Voltar -->
+            <a href="index.php" class="inline-flex items-center text-slate-600 hover:text-slate-900 mb-4 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                <span class="text-sm font-medium">Voltar</span>
+            </a>
+            
             <!-- Logo e título no topo -->
             <div class="text-center mb-8">
                 <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4">
@@ -269,6 +275,14 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         <!-- Right Side - Form -->
         <div class="flex-1 flex items-center justify-center p-8">
             <div class="w-full max-w-md">
+                <!-- Botão Voltar -->
+                <a href="index.php" class="inline-flex items-center text-slate-600 hover:text-slate-900 mb-6 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    <span class="text-sm font-medium">Voltar</span>
+                </a>
+                
                 <!-- Logo acima do bem-vindo -->
                 <div class="text-center mb-8">
                     <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4">
@@ -507,8 +521,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             const redirectMap = {
                 'proprietario': 'proprietario.php',
                 'gerente': 'gerente-completo.php',
-                'funcionario': 'funcionario.php',
-                'veterinario': 'funcionario.php'
+                'funcionario': 'funcionario.php'
             };
             
             return redirectMap[userType] || 'gerente-completo.php'; // Default fallback

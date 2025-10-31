@@ -232,6 +232,214 @@ $v = time();
                 padding: 1rem;
             }
         }
+        
+        /* Bottom Navigation Bar (Mobile) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            background: linear-gradient(135deg, rgba(31, 122, 90, 0.75), rgba(26, 98, 73, 0.75));
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.15), 0 -2px 8px rgba(0, 0, 0, 0.1);
+            padding-bottom: env(safe-area-inset-bottom);
+            backdrop-filter: blur(10px);
+            transform: translateY(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+        
+        .bottom-nav.hidden {
+            transform: translateY(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .bottom-nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0.5rem 0.5rem 0.625rem;
+            gap: 0.125rem;
+            max-width: 100%;
+        }
+        
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.4rem 0.125rem;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            min-height: 60px;
+            border-radius: 0.75rem;
+            position: relative;
+            text-decoration: none;
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        
+        /* Animação em cascata - entrada */
+        .bottom-nav .bottom-nav-item {
+            animation: cascadeIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+        
+        .bottom-nav .bottom-nav-item:nth-child(1) { animation-delay: 0s; }
+        .bottom-nav .bottom-nav-item:nth-child(2) { animation-delay: 0.08s; }
+        .bottom-nav .bottom-nav-item:nth-child(3) { animation-delay: 0.16s; }
+        .bottom-nav .bottom-nav-item:nth-child(4) { animation-delay: 0.24s; }
+        .bottom-nav .bottom-nav-item:nth-child(5) { animation-delay: 0.32s; }
+        .bottom-nav .bottom-nav-item:nth-child(6) { animation-delay: 0.4s; }
+        
+        /* Animação em cascata - saída (ordem reversa) */
+        .bottom-nav.hidden .bottom-nav-item {
+            animation: cascadeOut 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards !important;
+        }
+        
+        .bottom-nav.hidden .bottom-nav-item:nth-child(1) { animation-delay: 0.25s !important; }
+        .bottom-nav.hidden .bottom-nav-item:nth-child(2) { animation-delay: 0.2s !important; }
+        .bottom-nav.hidden .bottom-nav-item:nth-child(3) { animation-delay: 0.15s !important; }
+        .bottom-nav.hidden .bottom-nav-item:nth-child(4) { animation-delay: 0.1s !important; }
+        .bottom-nav.hidden .bottom-nav-item:nth-child(5) { animation-delay: 0.05s !important; }
+        .bottom-nav.hidden .bottom-nav-item:nth-child(6) { animation-delay: 0s !important; }
+        
+        @keyframes cascadeIn {
+            0% {
+                transform: translateY(40px) scale(0.6) rotate(-5deg);
+                opacity: 0;
+                filter: blur(4px);
+            }
+            50% {
+                transform: translateY(-8px) scale(1.08) rotate(2deg);
+                opacity: 0.8;
+                filter: blur(1px);
+            }
+            75% {
+                transform: translateY(2px) scale(0.98) rotate(-1deg);
+                opacity: 0.95;
+            }
+            100% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+        
+        @keyframes cascadeOut {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                opacity: 1;
+                filter: blur(0);
+            }
+            50% {
+                transform: translateY(10px) scale(0.95) rotate(3deg);
+                opacity: 0.5;
+                filter: blur(2px);
+            }
+            100% {
+                transform: translateY(30px) scale(0.7) rotate(5deg);
+                opacity: 0;
+                filter: blur(6px);
+            }
+        }
+        
+        .bottom-nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 0 0 3px 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .bottom-nav-item.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .bottom-nav-item.active::before {
+            width: 40px;
+        }
+        
+        .bottom-nav-item:active {
+            transform: scale(0.92);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .bottom-nav-item:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .bottom-nav-icon {
+            width: 21px;
+            height: 21px;
+            margin-bottom: 0.375rem;
+            stroke-width: 2;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Ícone do financeiro mantém tamanho maior */
+        .bottom-nav-item[data-tab="payments"] .bottom-nav-icon,
+        .bottom-nav-item[data-tab="payments"] svg.bottom-nav-icon {
+            width: 26px;
+            height: 26px;
+        }
+        
+        .bottom-nav-item.active .bottom-nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .bottom-nav-label {
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.1;
+            letter-spacing: 0.01em;
+            transition: font-weight 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .bottom-nav-item.active .bottom-nav-label {
+            font-weight: 700;
+        }
+        
+        /* Botão Mais especial */
+        .bottom-nav-item.more-item {
+            position: relative;
+        }
+        
+        .bottom-nav-item.more-item::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #fbbf24;
+            border-radius: 50%;
+            border: 2px solid var(--forest-600);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Espaçamento para o menu inferior em mobile */
+        @media (max-width: 767px) {
+            main {
+                padding-bottom: 75px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-inter">
@@ -241,7 +449,7 @@ $v = time();
             <div class="flex items-center justify-between h-16">
                 <!-- Logo e Título -->
                 <div class="flex items-center space-x-4">
-                    <div class="w-14 h-14 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
                         <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="LacTech Logo" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <img src="./assets/img/lactech-logo.png" alt="LacTech Logo" class="w-full h-full object-contain" style="display: none;" onerror="this.style.display='none';">
                     </div>
@@ -871,6 +1079,48 @@ $v = time();
         </div>
     </main>
 
+    <!-- Bottom Navigation Bar (Mobile Only) -->
+    <nav class="bottom-nav md:hidden">
+        <div class="bottom-nav-container">
+            <button class="bottom-nav-item active" data-tab="dashboard" onclick="switchBottomTab('dashboard')">
+                <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span class="bottom-nav-label">Dashboard</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="volume" onclick="switchBottomTab('volume')">
+                <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                </svg>
+                <span class="bottom-nav-label">Volume</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="quality" onclick="switchBottomTab('quality')">
+                <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="bottom-nav-label">Qualidade</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="payments" onclick="switchBottomTab('payments')">
+                <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                </svg>
+                <span class="bottom-nav-label">Financeiro</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="users" onclick="switchBottomTab('users')">
+                <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span class="bottom-nav-label">Usuários</span>
+            </button>
+            <a href="includes/modalmore.php" class="bottom-nav-item more-item" onclick="handleMoreClick(event)">
+                <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                </svg>
+                <span class="bottom-nav-label">Mais</span>
+            </a>
+        </div>
+    </nav>
+
     <!-- Overlays -->
     <!-- General Volume Overlay -->
     <div id="generalVolumeOverlay" class="fixed inset-0 z-50 hidden">
@@ -1420,12 +1670,12 @@ $v = time();
                                 <p class="text-xs text-red-700">Sair do sistema encerrará sua sessão atual.</p>
                             </div>
                         </div>
-                        <a href="logout.php" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        <button onclick="openLogoutModal()" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                             </svg>
                             Sair do Sistema
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1531,6 +1781,40 @@ $v = time();
                         <p>Carregando dispositivos...</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Logout -->
+    <div id="logoutModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeLogoutModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <!-- Ícone de alerta -->
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Título e Mensagem -->
+            <div class="text-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Confirmar Saída</h3>
+                <p class="text-gray-600 text-sm">Tem certeza que deseja sair do sistema? Sua sessão será encerrada.</p>
+            </div>
+            
+            <!-- Botões -->
+            <div class="flex gap-3">
+                <button onclick="closeLogoutModal()" class="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancelar
+                </button>
+                <a href="logout.php" class="flex-1 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-center">
+                    Sim, Sair
+                </a>
             </div>
         </div>
     </div>
@@ -1657,6 +1941,16 @@ $v = time();
             document.getElementById('addUserForm').reset();
         }
         
+        function openLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
         function saveProfile() {
             // Implementar salvamento do perfil
             alert('Perfil salvo com sucesso!');
@@ -1699,6 +1993,8 @@ $v = time();
         window.closeProfileOverlay = closeProfileOverlay;
         window.openAddUserModal = openAddUserModal;
         window.closeAddUserModal = closeAddUserModal;
+        window.openLogoutModal = openLogoutModal;
+        window.closeLogoutModal = closeLogoutModal;
         window.saveProfile = saveProfile;
         window.toggleUserPasswordVisibility = toggleUserPasswordVisibility;
         
@@ -1717,63 +2013,212 @@ $v = time();
             navButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const tabName = this.getAttribute('data-tab');
-                    console.log('🖱️ Clicou na aba:', tabName);
-                    
-                    // Remover classe active de todos os botões
-                    navButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Adicionar classe active ao botão clicado
-                    this.classList.add('active');
-                    
-                    // Esconder todos os conteúdos
-                    tabContents.forEach(content => {
-                        content.classList.add('hidden');
-                        content.classList.remove('active');
-                    });
-                    
-                    // Mostrar o conteúdo da aba selecionada
-                    const selectedTab = document.getElementById(tabName + '-tab');
-                    console.log('🔍 Procurando elemento:', tabName + '-tab');
-                    console.log('🔍 Elemento encontrado:', !!selectedTab);
-                    
-                    if (selectedTab) {
-                        selectedTab.classList.remove('hidden');
-                        selectedTab.classList.add('active');
-                        console.log('✅ Aba', tabName, 'mostrada com sucesso!');
-                        
-                        // Carregar dados específicos da aba
-                        switch (tabName) {
-                            case 'volume':
-                                loadVolumeData();
-                                break;
-                            case 'quality':
-                                loadQualityData();
-                                break;
-                            case 'payments':
-                                loadFinancialData();
-                                break;
-                            case 'users':
-                                loadUsersData();
-                                break;
-                        }
-                    } else {
-                        console.error('❌ Aba', tabName, 'não encontrada!');
-                    }
+                    switchTab(tabName);
                 });
             });
             
             console.log('✅ Controle das abas configurado!');
         });
         
-        // Função showTab para compatibilidade
-        function showTab(tabName) {
-            const button = document.querySelector(`[data-tab="${tabName}"]`);
-            if (button) {
-                button.click();
+        // Função para mudar de aba (usada tanto pelo menu superior quanto inferior)
+        function switchTab(tabName) {
+            // Selecionar todos os botões de navegação (superior e inferior)
+            const navButtons = document.querySelectorAll('.nav-item[data-tab]');
+            const bottomNavButtons = document.querySelectorAll('.bottom-nav-item[data-tab]');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Remover classe active de todos os botões (superior e inferior)
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            bottomNavButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Adicionar classe active aos botões correspondentes
+            navButtons.forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabName) {
+                    btn.classList.add('active');
+                }
+            });
+            bottomNavButtons.forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabName) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Esconder todos os conteúdos
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('active');
+            });
+            
+            // Mostrar o conteúdo da aba selecionada
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+                selectedTab.classList.add('active');
+                
+                // Scroll para o topo da página
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Carregar dados específicos da aba
+                switch (tabName) {
+                    case 'volume':
+                        if (typeof loadVolumeData === 'function') loadVolumeData();
+                        break;
+                    case 'quality':
+                        if (typeof loadQualityData === 'function') loadQualityData();
+                        break;
+                    case 'payments':
+                        if (typeof loadFinancialData === 'function') loadFinancialData();
+                        break;
+                    case 'users':
+                        if (typeof loadUsersData === 'function') loadUsersData();
+                        break;
+                }
             }
         }
         
+        // Função específica para o menu inferior
+        function switchBottomTab(tabName) {
+            switchTab(tabName);
+        }
+        
+        // Função para lidar com o clique no botão "Mais"
+        function handleMoreClick(event) {
+            // Salvar estado atual antes de navegar
+            const state = {
+                scrollY: window.pageYOffset,
+                timestamp: Date.now(),
+                url: window.location.href
+            };
+            localStorage.setItem('lactech_dashboard_state', JSON.stringify(state));
+            
+            // Permitir navegação normal
+            return true;
+        }
+        
+        // Controle de visibilidade do menu mobile no scroll com animações suaves
+        (function() {
+            let lastScrollTop = 0;
+            let ticking = false;
+            const bottomNav = document.querySelector('.bottom-nav');
+            
+            if (!bottomNav) return;
+            
+            // Função para forçar animação em cascata
+            function forceCascadeAnimation(nav, direction) {
+                const items = nav.querySelectorAll('.bottom-nav-item');
+                
+                // Primeiro, remover todas as animações
+                items.forEach((item) => {
+                    item.style.animation = 'none';
+                    item.style.opacity = direction === 'out' ? '1' : '0';
+                });
+                
+                // Forçar reflow do navegador
+                void nav.offsetWidth;
+                
+                // Restaurar animações após um pequeno delay para garantir o reset
+                setTimeout(() => {
+                    items.forEach((item, index) => {
+                        // Remover estilo inline para permitir que CSS controle
+                        item.style.animation = '';
+                        item.style.opacity = '';
+                        
+                        // Se for entrada, garantir que o elemento está visível
+                        if (direction === 'in') {
+                            item.style.opacity = '0';
+                            // Pequeno delay para garantir que a animação CSS seja aplicada
+                            requestAnimationFrame(() => {
+                                item.style.opacity = '';
+                            });
+                        }
+                    });
+                }, 10);
+            }
+            
+            function handleScroll() {
+                ticking = false; // Sempre resetar o ticking
+                
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Só funciona em mobile (largura < 768px)
+                if (window.innerWidth >= 768) {
+                    bottomNav.classList.remove('hidden');
+                    lastScrollTop = scrollTop;
+                    return;
+                }
+                
+                // Se estiver no topo, sempre mostrar
+                if (scrollTop <= 10) {
+                    bottomNav.classList.remove('hidden');
+                    lastScrollTop = scrollTop;
+                    return;
+                }
+                
+                // Detectar direção do scroll
+                const scrollDifference = scrollTop - lastScrollTop;
+                
+                // Só reagir se o scroll for significativo (mais de 5px)
+                if (Math.abs(scrollDifference) >= 5) {
+                    if (scrollDifference > 0) {
+                        // Rolando para baixo - esconder menu suavemente com animação em cascata
+                        if (!bottomNav.classList.contains('hidden')) {
+                            bottomNav.classList.add('hidden');
+                            // Forçar reanimação em cascata
+                            forceCascadeAnimation(bottomNav, 'out');
+                        }
+                    } else {
+                        // Rolando para cima - mostrar menu suavemente com animação em cascata
+                        if (bottomNav.classList.contains('hidden')) {
+                            bottomNav.classList.remove('hidden');
+                            // Forçar reanimação em cascata
+                            forceCascadeAnimation(bottomNav, 'in');
+                        }
+                    }
+                }
+            }
+            
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(handleScroll);
+                    ticking = true;
+                }
+            }, { passive: true });
+            
+            // Resetar ao redimensionar
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) {
+                    bottomNav.classList.remove('hidden');
+                }
+                lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            });
+            
+            // Inicializar lastScrollTop
+            lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Inicializar animação de cascata quando a página carregar (mobile)
+            if (window.innerWidth < 768 && !bottomNav.classList.contains('hidden')) {
+                // Garantir que os itens começam invisíveis
+                const items = bottomNav.querySelectorAll('.bottom-nav-item');
+                items.forEach((item) => {
+                    item.style.opacity = '0';
+                });
+                
+                // Triggerar animação após um pequeno delay
+                setTimeout(() => {
+                    forceCascadeAnimation(bottomNav, 'in');
+                }, 100);
+            }
+        })();
+        
+        // Função showTab para compatibilidade
+        function showTab(tabName) {
+            switchTab(tabName);
+        }
+        
         window.showTab = showTab;
+        window.switchTab = switchTab;
+        window.switchBottomTab = switchBottomTab;
+        window.handleMoreClick = handleMoreClick;
     </script>
 </body>
 </html>

@@ -616,7 +616,6 @@
                                 <option value="all">Todos os funcionários</option>
                                 <option value="gerente">Gerentes</option>
                                 <option value="funcionario">Funcionários</option>
-                                <option value="veterinario">Veterinários</option>
                             </select>
                             <!-- Proprietário apenas visualiza - sem botões de adicionar -->
                         </div>
@@ -655,17 +654,6 @@
                         </div>
                         <div class="text-xl font-bold text-slate-900 mb-1" id="employeesCount">--</div>
                         <div class="text-xs text-slate-500 font-medium">Funcionários</div>
-                        <div class="text-xs text-slate-600 font-semibold mt-1">Ativos</div>
-                    </div>
-                    
-                    <div class="data-card rounded-2xl p-4 text-center">
-                        <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-xl font-bold text-slate-900 mb-1" id="veterinariansCount">--</div>
-                        <div class="text-xs text-slate-500 font-medium">Veterinários</div>
                         <div class="text-xs text-slate-600 font-semibold mt-1">Ativos</div>
                     </div>
                 </div>
@@ -1633,12 +1621,10 @@
                 const totalUsers = users.length;
                 const managersCount = users.filter(u => u.role === 'gerente').length;
                 const employeesCount = users.filter(u => u.role === 'funcionario').length;
-                const veterinariansCount = users.filter(u => u.role === 'veterinario').length;
 
                 document.getElementById('totalUsers').textContent = totalUsers;
                 document.getElementById('managersCount').textContent = managersCount;
                 document.getElementById('employeesCount').textContent = employeesCount;
-                document.getElementById('veterinariansCount').textContent = veterinariansCount;
 
                 // Update team list
                 displayTeamList(users);
@@ -1677,15 +1663,13 @@
                 const roleColors = {
                     'proprietario': 'bg-purple-100 text-purple-800',
                     'gerente': 'bg-blue-100 text-blue-800',
-                    'funcionario': 'bg-green-100 text-green-800',
-                    'veterinario': 'bg-orange-100 text-orange-800'
+                    'funcionario': 'bg-green-100 text-green-800'
                 };
 
                 const roleIcons = {
                     'proprietario': 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
                     'gerente': 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-                    'funcionario': 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-                    'veterinario': 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
+                    'funcionario': 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
                 };
 
                 return `
