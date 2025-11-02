@@ -575,7 +575,7 @@ try {
     <!-- Modal Gestão de Rebanho -->
     <div id="modal-animals" class="modal">
         <div class="modal-content">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                         <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -587,13 +587,13 @@ try {
                         <p class="text-sm text-gray-600">Lista completa e pedigree dos animais</p>
                     </div>
                 </div>
-                <button onclick="closeModal('animals')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                <button onclick="closeSubModal('animals')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
                     <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div class="space-y-4 px-2">
+            <div class="space-y-4 px-6 pb-6 overflow-y-auto max-h-[calc(100vh-200px)]">
                 <!-- Indicadores do Rebanho - Mobile First -->
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
                     <h3 class="text-base font-bold text-gray-900 mb-3">Resumo do Rebanho</h3>
@@ -643,10 +643,24 @@ try {
 
                 <!-- Lista de Animais - Mobile Cards -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <h3 class="text-base font-bold text-gray-900 mb-3">Lista de Animais</h3>
-                    <div class="space-y-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-base font-bold text-gray-900">Lista de Animais</h3>
+                        <button onclick="openAddAnimalModal()" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all text-sm shadow-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Adicionar Animal</span>
+                        </button>
+                    </div>
+                    <div id="animalsListContainer" class="space-y-3">
                         <?php foreach($animals as $animal): ?>
-                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="animal-card p-3 bg-gray-50 rounded-lg border border-gray-200" 
+                             data-name="<?php echo htmlspecialchars(strtolower($animal['name'] ?? '')); ?>"
+                             data-number="<?php echo htmlspecialchars(strtolower($animal['animal_number'] ?? '')); ?>"
+                             data-status="<?php echo htmlspecialchars($animal['status'] ?? ''); ?>"
+                             data-breed="<?php echo htmlspecialchars(strtolower($animal['breed'] ?? '')); ?>"
+                             data-id="<?php echo $animal['id'] ?? ''; ?>"
+                             data-animal-number="<?php echo htmlspecialchars($animal['animal_number'] ?? ''); ?>">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-10 h-10 bg-gradient-to-br from-<?php echo $animal['status'] === 'Lactante' ? 'green' : ($animal['status'] === 'Touro' ? 'red' : 'blue'); ?>-500 to-<?php echo $animal['status'] === 'Lactante' ? 'green' : ($animal['status'] === 'Touro' ? 'red' : 'blue'); ?>-600 rounded-lg flex items-center justify-center">
@@ -667,13 +681,13 @@ try {
                                 </div>
                             </div>
                             <div class="mt-2 flex space-x-2">
-                                <button onclick="showPedigree('<?php echo $animal['animal_number']; ?>')" class="flex-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg hover:bg-blue-200 transition-colors">
+                                <button onclick="showPedigreeModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg hover:bg-blue-200 transition-colors">
                                     Ver Pedigree
                                 </button>
-                                <button onclick="editAnimal('<?php echo $animal['animal_number']; ?>')" class="flex-1 px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-lg hover:bg-gray-200 transition-colors">
+                                <button onclick="editAnimalModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-lg hover:bg-gray-200 transition-colors">
                                     Editar
                                 </button>
-                                <button onclick="viewAnimal('<?php echo $animal['animal_number']; ?>')" class="flex-1 px-3 py-1 bg-green-100 text-green-700 text-xs rounded-lg hover:bg-green-200 transition-colors">
+                                <button onclick="viewAnimalModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-1 bg-green-100 text-green-700 text-xs rounded-lg hover:bg-green-200 transition-colors">
                                     Ver
                                 </button>
                             </div>
@@ -723,13 +737,19 @@ try {
 
                 <!-- Lista de Animais do Rebanho -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div class="p-6 border-b border-gray-200">
+                    <div class="p-6 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-gray-900 flex items-center">
                             <svg class="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
                             </svg>
                             Rebanho Completo (<?php echo count($animals); ?> animais)
                         </h3>
+                        <button onclick="openAddAnimalModal()" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all text-sm shadow-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Adicionar Animal</span>
+                        </button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -745,7 +765,12 @@ try {
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <?php foreach($animals as $animal): ?>
-                                <tr class="hover:bg-gray-50">
+                                <tr class="animal-table-row hover:bg-gray-50"
+                                    data-name="<?php echo htmlspecialchars(strtolower($animal['name'] ?? '')); ?>"
+                                    data-number="<?php echo htmlspecialchars(strtolower($animal['animal_number'] ?? '')); ?>"
+                                    data-status="<?php echo htmlspecialchars($animal['status'] ?? ''); ?>"
+                                    data-breed="<?php echo htmlspecialchars(strtolower($animal['breed'] ?? '')); ?>"
+                                    data-id="<?php echo $animal['id'] ?? ''; ?>">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
@@ -791,17 +816,17 @@ try {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <div class="flex items-center space-x-2">
-                                            <button onclick="showPedigree(<?php echo $animal['id']; ?>)" class="text-green-600 hover:text-green-800 font-medium">
+                                            <button onclick="showPedigreeModal(<?php echo $animal['id']; ?>)" class="text-green-600 hover:text-green-800 font-medium">
                                                 Ver Pedigree
                                             </button>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
-                                            <button onclick="editAnimal(<?php echo $animal['id']; ?>)" class="text-blue-600 hover:text-blue-800">
+                                            <button onclick="editAnimalModal(<?php echo $animal['id']; ?>)" class="text-blue-600 hover:text-blue-800">
                                                 Editar
                                             </button>
-                                            <button onclick="viewAnimal(<?php echo $animal['id']; ?>)" class="text-green-600 hover:text-green-800">
+                                            <button onclick="viewAnimalModal(<?php echo $animal['id']; ?>)" class="text-green-600 hover:text-green-800">
                                                 Ver
                                             </button>
                                         </div>
@@ -2084,118 +2109,494 @@ try {
     <!-- Modal Controle de Novilhas -->
     <div id="modal-heifers" class="modal">
         <div class="modal-content">
-            <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-900">Controle de Novilhas</h2>
-                <button onclick="closeModal('heifers')" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Controle de Novilhas</h2>
+                        <p class="text-sm text-gray-600">Gestão de custos do nascimento aos 26 meses</p>
+                    </div>
+                </div>
+                <button onclick="closeSubModal('heifers')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div class="text-gray-700">
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Novilhas Cadastradas</h3>
-                    <div class="space-y-2">
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-fuchsia-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Estrela (N001)</p>
-                                        <p class="text-sm text-gray-600">Holandesa - 2 anos - Crescimento</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Pronta para IA</span>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-fuchsia-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Flor (N002)</p>
-                                        <p class="text-sm text-gray-600">Holandesa - 2 anos - Crescimento</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Pronta para IA</span>
-                            </div>
-                        </div>
+            
+            <!-- Dashboard de Estatísticas -->
+            <div class="px-6 pb-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+                <!-- Cards de Estatísticas -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                        <div class="text-2xl font-bold text-blue-600 mb-1" id="heifer-total-count">0</div>
+                        <div class="text-xs text-blue-700 font-medium">Total Novilhas</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+                        <div class="text-2xl font-bold text-green-600 mb-1" id="heifer-total-cost">R$ 0</div>
+                        <div class="text-xs text-green-700 font-medium">Investimento Total</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                        <div class="text-2xl font-bold text-purple-600 mb-1" id="heifer-avg-cost">R$ 0</div>
+                        <div class="text-xs text-purple-700 font-medium">Custo Médio/Animal</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                        <div class="text-2xl font-bold text-orange-600 mb-1" id="heifer-avg-monthly">R$ 0</div>
+                        <div class="text-xs text-orange-700 font-medium">Custo Médio/Mês</div>
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Custos de Criação</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center p-3 bg-green-50 rounded-lg">
-                            <p class="text-xl font-bold text-green-600">R$ 234</p>
-                            <p class="text-sm text-gray-600">Custo Total</p>
-                        </div>
-                        <div class="text-center p-3 bg-blue-50 rounded-lg">
-                            <p class="text-xl font-bold text-blue-600">R$ 78</p>
-                            <p class="text-sm text-gray-600">Custo Médio/Mês</p>
-                        </div>
+
+                <!-- Fases por Quantidade -->
+                <div class="bg-white rounded-xl p-4 border border-gray-200 mb-6">
+                    <h3 class="font-bold text-lg text-gray-900 mb-4">Distribuição por Fase</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="heifer-phases-stats">
+                        <!-- Preenchido via JavaScript -->
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Fases de Criação</h3>
-                    <div class="space-y-2">
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium">Aleitamento (0-60 dias)</span>
-                                <span class="text-sm text-gray-600">6L leite/dia</span>
-                            </div>
-                        </div>
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium">Transição (61-90 dias)</span>
-                                <span class="text-sm text-gray-600">3L leite + concentrado</span>
-                            </div>
-                        </div>
-                        <div class="p-2 bg-gray-50 rounded">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium">Recria (91-365 dias)</span>
-                                <span class="text-sm text-gray-600">Concentrado + volumoso</span>
-                            </div>
+
+                <!-- Botões de Ação -->
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <button onclick="openHeiferCostForm()" class="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white rounded-xl hover:from-fuchsia-600 hover:to-fuchsia-700 transition-all shadow-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Registrar Custo</span>
+                    </button>
+                    <button onclick="openHeiferDailyConsumptionForm()" class="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span>Registrar Consumo Diário</span>
+                    </button>
+                    <button onclick="loadHeiferReports()" class="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span>Relatórios</span>
+                    </button>
+                </div>
+
+                <!-- Lista de Novilhas -->
+                <div class="bg-white rounded-xl border border-gray-200 p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-lg text-gray-900">Novilhas Cadastradas</h3>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="heifer-search" placeholder="Buscar novilha..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
                         </div>
                     </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Funcionalidades</h3>
-                    <ul class="space-y-2">
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Controle de custos por fase
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Acompanhamento de desenvolvimento
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Análise de investimento
-                        </li>
-                    </ul>
+                    <div id="heifers-list" class="space-y-3">
+                        <!-- Lista preenchida via JavaScript -->
+                        <div class="text-center py-8 text-gray-500">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-fuchsia-600 mx-auto mb-2"></div>
+                            <p>Carregando novilhas...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal Registrar Custo de Novilha -->
+    <div id="modal-heifer-cost" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Registrar Custo de Novilha</h2>
+                </div>
+                <button onclick="closeSubModal('heifer-cost')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="heiferCostForm" class="px-6 pb-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Novilha</label>
+                        <select name="animal_id" id="heifer-cost-animal" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
+                            <option value="">Selecione a novilha</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data do Custo</label>
+                        <input type="date" name="cost_date" required value="<?php echo date('Y-m-d'); ?>" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                        <select name="cost_category" id="heifer-cost-category" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
+                            <option value="">Selecione a categoria</option>
+                            <option value="Alimentação">Alimentação</option>
+                            <option value="Medicamentos">Medicamentos</option>
+                            <option value="Vacinas">Vacinas</option>
+                            <option value="Manejo">Manejo</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Alimento/Item</label>
+                        <select name="category_id" id="heifer-cost-item-type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
+                            <option value="">Selecione o tipo</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Apenas para categoria Alimentação</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade</label>
+                        <input type="number" name="quantity" id="heifer-cost-quantity" step="0.001" min="0" required value="1" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Unidade</label>
+                        <select name="unit" id="heifer-cost-unit" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
+                            <option value="Litros">Litros</option>
+                            <option value="Kg">Kg</option>
+                            <option value="Dias">Dias</option>
+                            <option value="Unidade">Unidade</option>
+                            <option value="Hora">Hora</option>
+                            <option value="Mês">Mês</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preço Unitário (R$)</label>
+                        <input type="number" name="unit_price" id="heifer-cost-unit-price" step="0.01" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Total (R$)</label>
+                        <input type="number" name="cost_amount" id="heifer-cost-total" step="0.01" min="0" readonly class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea name="description" rows="3" required placeholder="Ex: Leite sucedâneo diário - 6 litros por dia durante fase de aleitamento" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"></textarea>
+                </div>
+                <div id="heifer-cost-message" class="hidden"></div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeSubModal('heifer-cost')" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white rounded-xl hover:from-fuchsia-600 hover:to-fuchsia-700 transition-all shadow-md">
+                        Registrar Custo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Registrar Consumo Diário -->
+    <div id="modal-heifer-consumption" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Registrar Consumo Diário</h2>
+                </div>
+                <button onclick="closeSubModal('heifer-consumption')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="heiferConsumptionForm" class="px-6 pb-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Novilha</label>
+                        <select name="animal_id" id="heifer-consumption-animal" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Selecione a novilha</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data</label>
+                        <input type="date" name="consumption_date" required value="<?php echo date('Y-m-d'); ?>" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Leite/Sucedâneo (Litros)</label>
+                        <input type="number" name="milk_liters" step="0.01" min="0" value="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Concentrado (kg)</label>
+                        <input type="number" name="concentrate_kg" step="0.01" min="0" value="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Volumoso (kg)</label>
+                        <input type="number" name="roughage_kg" step="0.01" min="0" value="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Peso Atual (kg)</label>
+                        <input type="number" name="weight_kg" step="0.01" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
+                </div>
+                <div id="heifer-consumption-message" class="hidden"></div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeSubModal('heifer-consumption')" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-md">
+                        Registrar Consumo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes da Novilha -->
+    <div id="modal-heifer-details" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900" id="heifer-details-title">Detalhes da Novilha</h2>
+                        <p class="text-sm text-gray-500" id="heifer-details-subtitle">Informações completas</p>
+                    </div>
+                </div>
+                <button onclick="closeSubModal('heifer-details')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="px-6 pb-6 space-y-6">
+                <!-- Informações Básicas -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Informações Básicas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Nome</p>
+                            <p class="font-semibold text-gray-900" id="heifer-detail-name">-</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Número/Ear Tag</p>
+                            <p class="font-semibold text-gray-900" id="heifer-detail-ear-tag">-</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Data de Nascimento</p>
+                            <p class="font-semibold text-gray-900" id="heifer-detail-birth-date">-</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Idade</p>
+                            <p class="font-semibold text-gray-900" id="heifer-detail-age">-</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Fase Atual</p>
+                            <p class="font-semibold text-gray-900" id="heifer-detail-phase">-</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Status</p>
+                            <p class="font-semibold text-gray-900" id="heifer-detail-status">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo de Custos -->
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Resumo de Custos</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-1">Custo Total</p>
+                            <p class="text-2xl font-bold text-green-600" id="heifer-detail-total-cost">R$ 0,00</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-1">Registros</p>
+                            <p class="text-2xl font-bold text-blue-600" id="heifer-detail-total-records">0</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-1">Custo Médio/Dia</p>
+                            <p class="text-2xl font-bold text-purple-600" id="heifer-detail-avg-daily">R$ 0,00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custos por Categoria -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Custos por Categoria</h3>
+                    <div id="heifer-detail-categories" class="space-y-2">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Custos por Fase -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Custos por Fase</h3>
+                    <div id="heifer-detail-phases" class="space-y-2">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Últimos Registros -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Últimos Registros de Custos</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody id="heifer-detail-recent-costs" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Animal -->
+    <div id="modal-add-animal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Adicionar Novo Animal</h2>
+                        <p class="text-sm text-gray-500">Cadastre um novo animal no rebanho</p>
+                    </div>
+                </div>
+                <button onclick="closeSubModal('add-animal')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="addAnimalForm" class="px-6 pb-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número do Animal *</label>
+                        <input type="text" name="animal_number" id="animal-number" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="Ex: 001, 002, etc">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+                        <input type="text" name="name" id="animal-name" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="Nome do animal">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Raça *</label>
+                        <select name="breed" id="animal-breed" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Selecione a raça</option>
+                            <option value="Holandesa">Holandesa</option>
+                            <option value="Gir">Gir</option>
+                            <option value="Girolando">Girolando</option>
+                            <option value="Jersey">Jersey</option>
+                            <option value="Guernsey">Guernsey</option>
+                            <option value="Pardo Suíço">Pardo Suíço</option>
+                            <option value="Outra">Outra</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sexo *</label>
+                        <select name="gender" id="animal-gender" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Selecione o sexo</option>
+                            <option value="femea">Fêmea</option>
+                            <option value="macho">Macho</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento *</label>
+                        <input type="date" name="birth_date" id="animal-birth-date" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               max="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                        <select name="status" id="animal-status" required 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Selecione o status</option>
+                            <option value="Lactante">Lactante</option>
+                            <option value="Seco">Seco</option>
+                            <option value="Prenha">Prenha</option>
+                            <option value="Novilha">Novilha</option>
+                            <option value="Bezerra">Bezerra</option>
+                            <option value="Bezerro">Bezerro</option>
+                            <option value="Touro">Touro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Peso (kg)</label>
+                        <input type="number" step="0.01" name="weight" id="animal-weight" min="0" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="Peso atual">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Código RFID</label>
+                        <input type="text" name="rfid_code" id="animal-rfid" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="Código do transponder">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pai (Sire)</label>
+                    <input type="text" name="sire" id="animal-sire" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="Nome ou código do pai">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mãe (Dam)</label>
+                    <input type="text" name="dam" id="animal-dam" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="Nome ou código da mãe">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                    <textarea name="notes" id="animal-notes" rows="3" 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="Observações sobre o animal"></textarea>
+                </div>
+                
+                <div id="add-animal-message" class="hidden"></div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeSubModal('add-animal')" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-md">
+                        Cadastrar Animal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Formulário de Registro de Saúde -->
     <div id="healthFormModal" class="modal">
@@ -2681,20 +3082,141 @@ try {
         }
 
         // Funções para Gestão de Rebanho
-        function showPedigree(animalId) {
-            // Implementar modal de pedigree
-            alert('Funcionalidade de Pedigree será implementada para o animal ID: ' + animalId);
+        function showPedigreeModal(animalId) {
+            // Buscar dados do pedigree do animal
+            fetch(`api/animals.php?action=get_pedigree&animal_id=${animalId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        // Criar modal de pedigree (simplificado por enquanto)
+                        alert('Pedigree do animal ID: ' + animalId + '\n\nEsta funcionalidade será implementada em breve.');
+                    } else {
+                        alert('Erro ao carregar pedigree do animal.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Pedigree do animal ID: ' + animalId + '\n\nEsta funcionalidade será implementada em breve.');
+                });
         }
 
-        function editAnimal(animalId) {
-            // Implementar edição de animal
-            alert('Funcionalidade de Edição será implementada para o animal ID: ' + animalId);
+        function editAnimalModal(animalId) {
+            // Redirecionar ou abrir modal de edição
+            window.location.href = `edit-animal.php?id=${animalId}`;
+            // Alternativa: abrir modal de edição
+            // alert('Abrindo edição do animal ID: ' + animalId);
         }
 
-        function viewAnimal(animalId) {
-            // Implementar visualização detalhada
-            alert('Funcionalidade de Visualização será implementada para o animal ID: ' + animalId);
+        function viewAnimalModal(animalId) {
+            // Buscar dados detalhados do animal
+            fetch(`api/animals.php?action=get_by_id&id=${animalId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        const animal = data.data;
+                        // Criar modal de visualização (simplificado por enquanto)
+                        const info = `Nome: ${animal.name || 'N/A'}\n` +
+                                   `Número: ${animal.animal_number || 'N/A'}\n` +
+                                   `Raça: ${animal.breed || 'N/A'}\n` +
+                                   `Status: ${animal.status || 'N/A'}\n` +
+                                   `Data de Nascimento: ${animal.birth_date || 'N/A'}`;
+                        alert('Detalhes do Animal:\n\n' + info);
+                    } else {
+                        alert('Erro ao carregar dados do animal.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Visualizando animal ID: ' + animalId);
+                });
         }
+        
+        // Sistema de busca e filtros para Gestão de Rebanho
+        function initAnimalSearchAndFilters() {
+            const searchInput = document.getElementById('searchAnimal');
+            const filterStatus = document.getElementById('filterStatus');
+            const filterBreed = document.getElementById('filterBreed');
+            
+            if (!searchInput || !filterStatus || !filterBreed) {
+                return; // Elementos ainda não carregados
+            }
+            
+            function filterAnimals() {
+                const searchTerm = (searchInput.value || '').toLowerCase().trim();
+                const statusFilter = filterStatus.value || '';
+                const breedFilter = (filterBreed.value || '').toLowerCase();
+                
+                // Filtrar cards
+                const cards = document.querySelectorAll('#animalsListContainer .animal-card');
+                cards.forEach(card => {
+                    const name = (card.dataset.name || '').toLowerCase();
+                    const number = (card.dataset.number || '').toLowerCase();
+                    const status = card.dataset.status || '';
+                    const breed = (card.dataset.breed || '').toLowerCase();
+                    
+                    const matchesSearch = !searchTerm || name.includes(searchTerm) || number.includes(searchTerm);
+                    const matchesStatus = !statusFilter || status === statusFilter;
+                    const matchesBreed = !breedFilter || breed.includes(breedFilter);
+                    
+                    if (matchesSearch && matchesStatus && matchesBreed) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Filtrar linhas da tabela
+                const rows = document.querySelectorAll('.animal-table-row');
+                rows.forEach(row => {
+                    const name = (row.dataset.name || '').toLowerCase();
+                    const number = (row.dataset.number || '').toLowerCase();
+                    const status = row.dataset.status || '';
+                    const breed = (row.dataset.breed || '').toLowerCase();
+                    
+                    const matchesSearch = !searchTerm || name.includes(searchTerm) || number.includes(searchTerm);
+                    const matchesStatus = !statusFilter || status === statusFilter;
+                    const matchesBreed = !breedFilter || breed.includes(breedFilter);
+                    
+                    if (matchesSearch && matchesStatus && matchesBreed) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Adicionar event listeners
+            searchInput.addEventListener('input', filterAnimals);
+            filterStatus.addEventListener('change', filterAnimals);
+            filterBreed.addEventListener('change', filterAnimals);
+        }
+        
+        // Inicializar busca e filtros quando o modal for aberto
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tentar inicializar imediatamente
+            setTimeout(initAnimalSearchAndFilters, 100);
+            
+            // Observar quando o modal de animais for aberto
+            const animalsModal = document.getElementById('modal-animals');
+            if (animalsModal) {
+                // Usar MutationObserver para detectar quando o modal é mostrado
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const isVisible = animalsModal.classList.contains('show');
+                            if (isVisible) {
+                                setTimeout(initAnimalSearchAndFilters, 100);
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(animalsModal, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            }
+        });
 
         // Funções para outros modais
         function openHealthForm() {

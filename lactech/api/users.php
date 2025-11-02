@@ -176,13 +176,29 @@ try {
             break;
             
         case 'update':
-            $data = [
-                'success' => true,
-                'data' => [
-                    'message' => 'Usuário atualizado com sucesso'
-                ],
-                'timestamp' => date('Y-m-d H:i:s')
-            ];
+            // Atualizar usuário
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+            $userId = $input['user_id'] ?? $input['id'] ?? null;
+            $name = $input['name'] ?? null;
+            
+            if (!$userId || !$name) {
+                $data = [
+                    'success' => false,
+                    'error' => 'ID do usuário e nome são obrigatórios'
+                ];
+            } else {
+                // Atualizar nome do usuário
+                $db->query("UPDATE users SET name = ?, updated_at = NOW() WHERE id = ?", [$name, $userId]);
+                
+                $data = [
+                    'success' => true,
+                    'data' => [
+                        'message' => 'Usuário atualizado com sucesso',
+                        'user_id' => $userId
+                    ],
+                    'timestamp' => date('Y-m-d H:i:s')
+                ];
+            }
             break;
             
         case 'delete':

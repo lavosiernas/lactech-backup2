@@ -33,12 +33,25 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// Fazer login
+// Verificar conexão com banco antes de tentar login
+$db = getDatabase();
+if (!$db) {
+    http_response_code(500);
+    $errorMsg = 'Erro de conexão com banco de dados';
+    if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
+        $errorMsg .= '. Verifique se o MySQL está rodando e se o banco "' . DB_NAME . '" existe.';
+    }
+    echo json_encode([
+        'success' => false,
+        'error' => $errorMsg
+    ]);
+    exit;
+}
+
 $result = loginUser($email, $password);
 
 if ($result['success']) {
-    // Determinar página de redirecionamento
-    $redirect = 'gerente-completo.php'; // padrão
+    $redirect = 'gerente-completo.php'; 
     switch ($result['user']['role']) {
         case 'proprietario':
             $redirect = 'proprietario.php';
@@ -58,7 +71,10 @@ if ($result['success']) {
         'redirect' => $redirect
     ]);
 } else {
-    http_response_code(401);
+    $isConnectionError = strpos($result['error'] ?? '', 'conexão') !== false || 
+                         strpos($result['error'] ?? '', 'banco') !== false;
+    
+    http_response_code($isConnectionError ? 500 : 401);
     echo json_encode([
         'success' => false,
         'error' => $result['error']

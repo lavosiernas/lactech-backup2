@@ -132,10 +132,21 @@ try {
             
         case 'add_volume_general':
             // Registrar volume geral (volume_records)
+            $total_volume = isset($_POST['total_volume']) ? (float)$_POST['total_volume'] : 0;
+            $total_animals = isset($_POST['total_animals']) ? (int)$_POST['total_animals'] : 1;
+            
+            // Validar que tem pelo menos 1 vaca
+            if ($total_animals < 1) {
+                echo json_encode(['success' => false, 'error' => 'Informe o número de vacas participantes']);
+                exit;
+            }
+            
             $data = [
                 'collection_date' => $_POST['collection_date'] ?? date('Y-m-d'),
                 'period' => $_POST['period'] ?? 'manha',
-                'volume' => isset($_POST['total_volume']) ? (float)$_POST['total_volume'] : 0,
+                'volume' => $total_volume,
+                'total_animals' => $total_animals,
+                'temperature' => isset($_POST['temperature']) && $_POST['temperature'] !== '' ? (float)$_POST['temperature'] : null,
                 'notes' => $_POST['notes'] ?? null,
                 'recorded_by' => $_SESSION['user_id'] ?? 1,
             ];

@@ -1,40 +1,89 @@
 <?php
 /**
  * CONFIGURAÇÃO LOGIN - LACTECH
- * Configuração unificada do sistema
+ * Configuração unificada do sistema com detecção automática de ambiente
  */
 
-// Configurações do banco de dados
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'u311882628_lactech_lgmato');
-define('DB_USER', 'u311882628_xandriaAgro');
-define('DB_PASS', 'Lavosier0012!');
-define('DB_CHARSET', 'utf8mb4');
+// =====================================================
+// DETECÇÃO AUTOMÁTICA DE AMBIENTE (LOCAL OU PRODUÇÃO)
+// =====================================================
+
+// Detectar se está em localhost
+if (!isset($isLocal)) {
+    $isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']) ||
+               strpos($_SERVER['SERVER_NAME'] ?? '', '192.168.') === 0 ||
+               strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+}
+
+// Detectar URL base automaticamente
+if (!function_exists('getBaseUrl')) {
+    function getBaseUrl() {
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $script = $_SERVER['SCRIPT_NAME'] ?? '';
+        $path = str_replace('\\', '/', dirname($script));
+        
+        // Remover index.php ou qualquer arquivo do final
+        $path = rtrim($path, '/') . '/';
+        
+        return $protocol . '://' . $host . $path;
+    }
+}
+
+// =====================================================
+// CONFIGURAÇÕES DO BANCO DE DADOS
+// =====================================================
+
+if ($isLocal) {
+    // AMBIENTE LOCAL (XAMPP/WAMP)
+    if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+    if (!defined('DB_NAME')) define('DB_NAME', 'lactech_lgmato'); // Banco local (conforme dump .sql)
+    if (!defined('DB_USER')) define('DB_USER', 'root');
+    if (!defined('DB_PASS')) define('DB_PASS', '');
+    if (!defined('BASE_URL')) define('BASE_URL', getBaseUrl()); // Detecta automaticamente
+    if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'LOCAL');
+} else {
+    // AMBIENTE DE PRODUÇÃO (HOSPEDAGEM)
+    if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+    if (!defined('DB_NAME')) define('DB_NAME', 'u311882628_lactech_lgmato'); // Banco hospedagem
+    if (!defined('DB_USER')) define('DB_USER', 'u311882628_xandriaAgro');
+    if (!defined('DB_PASS')) define('DB_PASS', 'Lavosier0012!');
+    if (!defined('BASE_URL')) define('BASE_URL', 'https://lactechsys.com/');
+    if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'PRODUCTION');
+}
+
+if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
 
 // Configurações da aplicação
-define('APP_NAME', 'LacTech - Lagoa do Mato');
-define('APP_VERSION', '2.0.0');
-define('FARM_NAME', 'Lagoa do Mato');
-define('FARM_ID', 1);
+if (!defined('APP_NAME')) define('APP_NAME', 'LacTech - Lagoa do Mato');
+if (!defined('APP_VERSION')) define('APP_VERSION', '2.0.0');
+if (!defined('FARM_NAME')) define('FARM_NAME', 'Lagoa do Mato');
+if (!defined('FARM_ID')) define('FARM_ID', 1);
 
 // URLs do sistema
-define('BASE_URL', 'https://lactechsys.com/');
-define('LOGIN_URL', 'inicio-login.php');
-define('DASHBOARD_URL', 'gerente-completo.php');
+if (!defined('LOGIN_URL')) define('LOGIN_URL', 'inicio-login.php');
+if (!defined('DASHBOARD_URL')) define('DASHBOARD_URL', 'gerente-completo.php');
 
-// Configurações de sessão
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 1); // HTTPS em produção
-
-// Iniciar sessão se não estiver iniciada
+// Configurações de sessão (antes de iniciar a sessão)
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
+        ini_set('session.cookie_secure', 0); // HTTP local
+    } else {
+        ini_set('session.cookie_secure', 1); // HTTPS em produção
+    }
     session_start();
 }
 
-// Configurações de erro - DESABILITADO EM PRODUÇÃO
-error_reporting(0);
-ini_set('display_errors', 0);
+// Configurações de erro baseadas no ambiente
+if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');
@@ -45,7 +94,11 @@ function getDatabase() {
     
     if ($pdo === null) {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            if (!defined('DB_HOST') || !defined('DB_NAME') || !defined('DB_USER') || !defined('DB_PASS')) {
+                throw new PDOException("Configurações do banco de dados não definidas");
+            }
+            
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
             $pdo = new PDO($dsn, DB_USER, DB_PASS, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -53,7 +106,14 @@ function getDatabase() {
                 PDO::MYSQL_ATTR_FOUND_ROWS => true
             ]);
         } catch (PDOException $e) {
-            error_log("Erro de conexão: " . $e->getMessage());
+            $errorMsg = "Erro de conexão com banco de dados: " . $e->getMessage();
+            error_log($errorMsg);
+            
+            // Em ambiente local, mostrar erro mais detalhado
+            if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
+                error_log("Detalhes do erro (LOCAL): Host=" . DB_HOST . ", DB=" . DB_NAME . ", User=" . DB_USER);
+            }
+            
             return false;
         }
     }

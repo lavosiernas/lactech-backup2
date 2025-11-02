@@ -2,19 +2,31 @@
 /**
  * CLASSE DATABASE BÁSICA - LACTECH
  * Classe simples para conexão com banco
+ * Detecta automaticamente ambiente local ou produção
  */
 
-require_once __DIR__ . '/config.php';
+// SEMPRE carregar config_mysql.php PRIMEIRO para detectar ambiente
+require_once __DIR__ . '/config_mysql.php';
+
+// NÃO carregar config.php aqui - ele pode sobrescrever as constantes corretas
+// Se config_mysql.php foi carregado corretamente, as constantes já estarão definidas
 
 class Database {
-    private $host = 'localhost';
-    private $db_name = 'u311882628_lactech_lgmato';
-    private $username = 'u311882628_xandriaAgro';
-    private $password = 'Lavosier0012!';
-    private $charset = 'utf8mb4';
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
+    private $charset;
     private $pdo;
 
     public function __construct() {
+        // Usar constantes definidas (detectam automaticamente local vs produção)
+        $this->host = defined('DB_HOST') ? DB_HOST : 'localhost';
+        $this->db_name = defined('DB_NAME') ? DB_NAME : 'lactech_lgmato';
+        $this->username = defined('DB_USER') ? DB_USER : 'root';
+        $this->password = defined('DB_PASS') ? DB_PASS : '';
+        $this->charset = defined('DB_CHARSET') ? DB_CHARSET : 'utf8mb4';
+        
         $this->connect();
     }
 
@@ -29,7 +41,8 @@ class Database {
 
             $this->pdo = new PDO($dsn, $this->username, $this->password, $options);
         } catch (PDOException $e) {
-            throw new PDOException($e->getMessage(), (int)$e->getCode());
+            error_log("Erro de conexão Database: " . $e->getMessage() . " | Host: {$this->host} | DB: {$this->db_name} | User: {$this->username}");
+            throw new PDOException("Erro de conexão: " . $e->getMessage(), (int)$e->getCode());
         }
     }
 

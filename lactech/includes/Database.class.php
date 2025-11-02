@@ -483,7 +483,7 @@ class Database {
      */
     public function getAllAnimals() {
         try {
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT a.*, 
                        f.name as father_name,
                        m.name as mother_name,
@@ -494,8 +494,10 @@ class Database {
                 WHERE a.is_active = 1
                 ORDER BY a.animal_number
             ");
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // O método query() já retorna um array, não precisa de fetchAll()
+            return is_array($results) ? $results : [];
         } catch (PDOException $e) {
+            error_log("Erro ao buscar animais: " . $e->getMessage());
             return [];
         }
     }
@@ -505,17 +507,24 @@ class Database {
      */
     public function getAnimalById($id) {
         try {
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT a.*, 
                        f.name as father_name,
-                       m.name as mother_name
+                       m.name as mother_name,
+                       DATEDIFF(CURDATE(), a.birth_date) as age_days
                 FROM animals a
                 LEFT JOIN animals f ON a.father_id = f.id
                 LEFT JOIN animals m ON a.mother_id = m.id
                 WHERE a.id = ?
             ", [$id]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // O método query() retorna um array, pegar o primeiro elemento
+            if (is_array($results) && count($results) > 0) {
+                return $results[0];
+            }
+            return null;
         } catch (PDOException $e) {
+            error_log("Erro ao buscar animal por ID: " . $e->getMessage());
             return null;
         }
     }
@@ -543,13 +552,16 @@ class Database {
      */
     public function getAnimalPedigree($id) {
         try {
-            $stmt = $this->query("
+            $results = $this->query("
                 SELECT * FROM pedigree_records 
                 WHERE animal_id = ?
                 ORDER BY generation, position
             ", [$id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // O método query() retorna um array
+            return is_array($results) ? $results : [];
         } catch (PDOException $e) {
+            error_log("Erro ao buscar pedigree: " . $e->getMessage());
             return [];
         }
     }
@@ -921,15 +933,21 @@ class Database {
                 ]);
             } else {
                 // Se não tem producer_id, inserir na tabela volume_records (geral da fazenda)
+                $total_volume = (float)($data['volume'] ?? 0);
+                $total_animals = isset($data['total_animals']) ? (int)$data['total_animals'] : 1;
+                
+                // Calcular média por animal
+                $average_per_animal = $total_animals > 0 ? ($total_volume / $total_animals) : 0;
+                
                 $stmt = $this->query("
                     INSERT INTO volume_records (record_date, shift, total_volume, total_animals, average_per_animal, notes, recorded_by, farm_id)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ", [
                     $data['collection_date'] ?? date('Y-m-d'),
                     $data['period'] ?? 'manha',
-                    $data['volume'],
-                    1, // total_animals
-                    $data['volume'], // average_per_animal
+                    $total_volume,
+                    $total_animals,
+                    $average_per_animal,
                     $data['notes'] ?? null,
                     $data['recorded_by'] ?? 1,
                     self::FARM_ID

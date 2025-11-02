@@ -43,45 +43,119 @@ $current_user_role = $_SESSION['user_role'] ?? 'gerente';
 // Buscar foto do perfil do banco
 try {
     $db = Database::getInstance();
-    $userData = $db->query("SELECT profile_photo, phone FROM users WHERE id = " . (int)$current_user_id);
-    $current_user_photo = $userData[0]['profile_photo'] ?? null;
+    // Usar prepared statement para maior segurança
+    $userData = $db->query("SELECT profile_photo, phone FROM users WHERE id = ?", [(int)$current_user_id]);
     
-    // Debug: verificar se a foto está vindo do banco (ativar temporariamente)
-    error_log("DEBUG - Foto do banco (raw): " . ($current_user_photo ?? 'NULL'));
-    if (!empty($current_user_photo)) {
-        $photoPathClean = trim($current_user_photo, '/\\');
-        $debugPath1 = __DIR__ . '/' . $photoPathClean;
-        $debugPath2 = __DIR__ . '/../' . $photoPathClean;
-        $debugPath3 = __DIR__ . '/uploads/profiles/' . basename($photoPathClean);
+    // Verificar se os dados foram retornados antes de acessar
+    if (!empty($userData) && isset($userData[0])) {
+        $current_user_photo = $userData[0]['profile_photo'] ?? null;
         
-        error_log("DEBUG - Caminho 1 (__DIR__/path): " . $debugPath1 . " - Existe: " . (file_exists($debugPath1) ? 'SIM' : 'NÃO'));
-        error_log("DEBUG - Caminho 2 (__DIR__/../path): " . $debugPath2 . " - Existe: " . (file_exists($debugPath2) ? 'SIM' : 'NÃO'));
-        error_log("DEBUG - Caminho 3 (uploads/profiles): " . $debugPath3 . " - Existe: " . (file_exists($debugPath3) ? 'SIM' : 'NÃO'));
-        
-        // Determinar qual caminho usar
-        if (file_exists($debugPath1)) {
-            error_log("DEBUG - Usando caminho 1");
-        } elseif (file_exists($debugPath2)) {
-            error_log("DEBUG - Usando caminho 2");
-        } elseif (file_exists($debugPath3)) {
-            error_log("DEBUG - Usando caminho 3");
-        } else {
-            error_log("DEBUG - Nenhum caminho encontrado!");
+        // Debug: verificar se a foto está vindo do banco (ativar temporariamente)
+        error_log("DEBUG - Foto do banco (raw): " . ($current_user_photo ?? 'NULL'));
+        if (!empty($current_user_photo)) {
+            $photoPathClean = trim($current_user_photo, '/\\');
+            $debugPath1 = __DIR__ . '/' . $photoPathClean;
+            $debugPath2 = __DIR__ . '/../' . $photoPathClean;
+            $debugPath3 = __DIR__ . '/uploads/profiles/' . basename($photoPathClean);
+            
+            error_log("DEBUG - Caminho 1 (__DIR__/path): " . $debugPath1 . " - Existe: " . (file_exists($debugPath1) ? 'SIM' : 'NÃO'));
+            error_log("DEBUG - Caminho 2 (__DIR__/../path): " . $debugPath2 . " - Existe: " . (file_exists($debugPath2) ? 'SIM' : 'NÃO'));
+            error_log("DEBUG - Caminho 3 (uploads/profiles): " . $debugPath3 . " - Existe: " . (file_exists($debugPath3) ? 'SIM' : 'NÃO'));
+            
+            // Determinar qual caminho usar
+            if (file_exists($debugPath1)) {
+                error_log("DEBUG - Usando caminho 1");
+            } elseif (file_exists($debugPath2)) {
+                error_log("DEBUG - Usando caminho 2");
+            } elseif (file_exists($debugPath3)) {
+                error_log("DEBUG - Usando caminho 3");
+            } else {
+                error_log("DEBUG - Nenhum caminho encontrado!");
+            }
         }
+        $current_user_phone = $userData[0]['phone'] ?? '(11) 99999-9999';
+    } else {
+        $current_user_photo = null;
+        $current_user_phone = '(11) 99999-9999';
     }
-    $current_user_phone = $userData[0]['phone'] ?? '(11) 99999-9999';
     
-    // Buscar dados da fazenda
-    $farmData = $db->query("SELECT name, cnpj, address FROM farms WHERE id = 1");
-    $farm_name = $farmData[0]['name'] ?? 'Lagoa Do Mato';
-    $farm_cnpj = $farmData[0]['cnpj'] ?? '12.345.678/0001-90';
-    $farm_address = $farmData[0]['address'] ?? 'Fazenda Lagoa Do Mato, Zona Rural, São Paulo - SP';
+    // Buscar dados da fazenda usando prepared statement
+    $farmData = $db->query("SELECT name, cnpj, address FROM farms WHERE id = ?", [1]);
+    
+    // Verificar se os dados foram retornados antes de acessar
+    if (!empty($farmData) && isset($farmData[0])) {
+        $farm_name = $farmData[0]['name'] ?? 'Lagoa Do Mato';
+        $farm_cnpj = $farmData[0]['cnpj'] ?? '12.345.678/0001-90';
+        $farm_address = $farmData[0]['address'] ?? 'Fazenda Lagoa Do Mato, Zona Rural, São Paulo - SP';
+    } else {
+        $farm_name = 'Lagoa Do Mato';
+        $farm_cnpj = '12.345.678/0001-90';
+        $farm_address = 'Fazenda Lagoa Do Mato, Zona Rural, São Paulo - SP';
+    }
 } catch (Exception $e) {
+    error_log("Erro ao buscar dados do usuário/fazenda: " . $e->getMessage());
     $current_user_photo = null;
     $current_user_phone = '(11) 99999-9999';
     $farm_name = 'Lagoa Do Mato';
     $farm_cnpj = '12.345.678/0001-90';
     $farm_address = 'Fazenda Lagoa Do Mato, Zona Rural, São Paulo - SP';
+}
+
+       // Buscar dados para o modal Mais Opções
+       try {
+           $db = Database::getInstance();
+           
+           // Buscar dados dos animais com cálculo de idade em meses
+           $animals_raw = $db->getAllAnimals();
+           // Adicionar age_months e processar dados
+           $more_options_animals = array_map(function($animal) {
+               $age_days = $animal['age_days'] ?? 0;
+               $animal['age_months'] = floor($age_days / 30);
+               return $animal;
+           }, $animals_raw);
+    
+    // Buscar dados de produção de leite (últimos 7 dias)
+    $more_options_milk_data = $db->query("
+        SELECT 
+            DATE(production_date) as date,
+            SUM(volume) as daily_volume,
+            AVG(fat_content) as avg_fat,
+            AVG(protein_content) as avg_protein,
+            AVG(somatic_cells) as avg_somatic_cells
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        GROUP BY DATE(production_date)
+        ORDER BY date DESC
+        LIMIT 7
+    ");
+    
+    // Calcular estatísticas gerais
+    $more_options_total_animals = count($more_options_animals);
+    $more_options_lactating_cows = count(array_filter($more_options_animals, function($a) { 
+        return ($a['status'] ?? '') === 'Lactante'; 
+    }));
+    $more_options_pregnant_cows = count(array_filter($more_options_animals, function($a) { 
+        return ($a['reproductive_status'] ?? '') === 'prenha'; 
+    }));
+    
+    // Calcular produção total dos últimos 7 dias
+    $more_options_production_result = $db->query("
+        SELECT SUM(volume) as total_volume
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    ");
+    $more_options_total_production = $more_options_production_result[0]['total_volume'] ?? 0;
+    $more_options_avg_daily_production = $more_options_total_production / 7;
+    
+} catch (Exception $e) {
+    error_log("Erro ao buscar dados para Mais Opções: " . $e->getMessage());
+    $more_options_animals = [];
+    $more_options_milk_data = [];
+    $more_options_total_animals = 0;
+    $more_options_lactating_cows = 0;
+    $more_options_pregnant_cows = 0;
+    $more_options_total_production = 0;
+    $more_options_avg_daily_production = 0;
 }
 
 // Versão para cache busting
@@ -350,6 +424,35 @@ $v = time();
             }
         }
         
+        /* Animações para modais */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .animate-slideUp {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
         .bottom-nav-item::before {
             content: '';
             position: absolute;
@@ -440,9 +543,70 @@ $v = time();
                 padding-bottom: 75px;
             }
         }
+        
+        /* Estilos para tela de carregamento */
+        #loadingMessage {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading-dot {
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        
+        .loading-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-inter">
+    <!-- Tela de Carregamento -->
+    <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div class="flex flex-col items-center justify-center space-y-8">
+            <!-- Círculo de carregamento -->
+            <div class="relative">
+                <div class="w-24 h-24 border-8 border-green-100 border-t-green-600 rounded-full animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mensagens rotativas -->
+            <div class="text-center space-y-4">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Carregando...</h2>
+                <p id="loadingMessage" class="text-lg text-gray-600 font-medium min-h-[32px] transition-all duration-500">
+                    Preparando tudo para você! 🚀
+                </p>
+                <div class="flex items-center justify-center space-x-2 mt-4">
+                    <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+                    <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                    <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Header -->
     <header class="gradient-forest text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -476,12 +640,12 @@ $v = time();
                     <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="users">
                         Usuários
                     </button>
-                    <a href="includes/modalmore.php" class="px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg flex items-center space-x-2">
+                    <button onclick="openMoreOptionsModal()" class="px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 12.5c0 .828-.672 1.5-1.5 1.5s-1.5-.672-1.5-1.5.672-1.5 1.5-1.5 1.5.672 1.5 1.5zM18.5 12.5c0 .828-.672 1.5-1.5 1.5s-1.5-.672-1.5-1.5.672-1.5 1.5-1.5 1.5.672 1.5 1.5zM12 20c-2.5 0-4.5-2-4.5-4.5S9.5 11 12 11s4.5 2 4.5 4.5S14.5 20 12 20zM12 8c-1.5 0-2.5-1-2.5-2.5S10.5 3 12 3s2.5 1 2.5 2.5S13.5 8 12 8z"/>
                         </svg>
                         <span>MAIS</span>
-                    </a>
+                    </button>
                 </nav>
                 
                 <!-- Perfil do Usuário -->
@@ -770,8 +934,8 @@ $v = time();
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Período</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Volume (L)</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Temperatura</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Volume Total (L)</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Animais</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Ações</th>
                                 </tr>
                             </thead>
@@ -1112,239 +1276,558 @@ $v = time();
                 </svg>
                 <span class="bottom-nav-label">Usuários</span>
             </button>
-            <a href="includes/modalmore.php" class="bottom-nav-item more-item" onclick="handleMoreClick(event)">
+            <button onclick="openMoreOptionsModal()" class="bottom-nav-item more-item">
                 <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
                 </svg>
                 <span class="bottom-nav-label">Mais</span>
-            </a>
+            </button>
         </div>
     </nav>
 
     <!-- Overlays -->
-    <!-- General Volume Overlay -->
-    <div id="generalVolumeOverlay" class="fixed inset-0 z-50 hidden">
-        <div class="w-full h-full bg-white p-0 overflow-y-auto">
-            <div class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
-                <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-gray-900">Registrar Volume Geral</h3>
-                <button onclick="closeGeneralVolumeOverlay()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            </div>
-            <form id="generalVolumeForm" class="px-4 sm:px-6 py-5 space-y-5">
-                <div class="max-w-3xl mx-auto space-y-6">
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Informações da Coleta</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Data</label>
-                    <input type="date" name="collection_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Período</label>
-                    <select name="period" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                        <option value="manha">Manhã</option>
-                        <option value="tarde">Tarde</option>
-                        <option value="noite">Noite</option>
-                    </select>
-                </div>
+    <!-- Modal Volume Geral - Melhorado -->
+    <div id="generalVolumeOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeGeneralVolumeOverlay()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13l8 0c1.11 0 2.08-.402 2.599-1M21 13l-8 0c-1.11 0-2.08-.402-2.599-1M16 8V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v3m4 6h.01M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Registrar Volume Geral</h3>
+                            <p class="text-sm text-white/90">Registro de produção total</p>
                         </div>
                     </div>
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Medições</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Volume Total (L)</label>
-                    <input type="number" name="total_volume" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                    <button onclick="closeGeneralVolumeOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
-                <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Temperatura (°C) <span class="text-gray-400 font-normal">(opcional)</span></label>
-                    <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t">
-                    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex justify-end gap-3">
-                        <button type="button" onclick="closeGeneralVolumeOverlay()" class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Registrar</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Volume Overlay -->
-    <div id="volumeOverlay" class="fixed inset-0 z-50 hidden">
-        <div class="w-full h-full bg-white p-0 overflow-y-auto">
-            <div class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
-                <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-gray-900">Registrar Volume por Vaca</h3>
-                <button onclick="closeVolumeOverlay()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            </div>
-            <form id="volumeForm" class="px-4 sm:px-6 py-5 space-y-5">
-                <div class="max-w-3xl mx-auto space-y-6">
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Identificação</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Vaca</label>
-                    <select name="animal_id" id="volumeAnimalSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                        <option value="">Selecione uma vaca</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Data</label>
-                    <input type="date" name="collection_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Medições</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Período</label>
-                    <select name="period" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                        <option value="manha">Manhã</option>
-                        <option value="tarde">Tarde</option>
-                        <option value="noite">Noite</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Volume (L)</label>
-                    <input type="number" name="volume" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                </div>
-                <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Temperatura (°C) <span class="text-gray-400 font-normal">(opcional)</span></label>
-                    <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t">
-                    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex justify-end gap-3">
-                        <button type="button" onclick="closeVolumeOverlay()" class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Registrar</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+                <!-- Form -->
+                <form id="generalVolumeForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="p-6 space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="generalVolumeMessage" class="hidden p-4 rounded-xl border"></div>
 
-    <!-- Quality Overlay -->
-    <div id="qualityOverlay" class="fixed inset-0 z-50 hidden">
-        <div class="w-full h-full bg-white p-0 overflow-y-auto">
-            <div class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
-                <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-gray-900">Registrar Teste de Qualidade</h3>
-                <button onclick="closeQualityOverlay()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            </div>
-            <form id="qualityForm" class="px-4 sm:px-6 py-5 space-y-5">
-                <div class="max-w-3xl mx-auto space-y-6">
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Dados do Teste</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Data do Teste</label>
-                    <input type="date" name="test_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Laboratório <span class="text-gray-400 font-normal">(opcional)</span></label>
-                                <input type="text" name="laboratory" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <!-- Informações da Coleta -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Informações da Coleta</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Data da Coleta
+                                        </span>
+                                    </label>
+                                    <input type="date" name="collection_date" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            Período
+                                        </span>
+                                    </label>
+                                    <select name="period" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
+                                        <option value="manha">Manhã</option>
+                                        <option value="tarde">Tarde</option>
+                                        <option value="noite">Noite</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medições -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Medições</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                            </svg>
+                                            Número de Vacas
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="total_animals" id="totalAnimalsInput" step="1" min="1" placeholder="0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
+                                        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1">Quantas vacas participaram desta coleta?</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                            </svg>
+                                            Volume Total
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="total_volume" id="totalVolumeInput" step="0.1" min="0" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">L</span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1" id="averagePerCowDisplay">Média por vaca: -- L</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1V9a5 5 0 00-10 0v6a4 4 0 004 4zm0-10a2 2 0 112 2"/>
+                                            </svg>
+                                            Temperatura
+                                            <span class="text-xs font-normal text-slate-500">(opcional)</span>
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="temperature" step="0.1" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">°C</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Resultados</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Gordura (%)</label>
-                    <input type="number" name="fat_content" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Proteína (%)</label>
-                    <input type="number" name="protein_content" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Células Somáticas</label>
-                    <input type="number" name="somatic_cells" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                </div>
-                </div>
+
+                    <!-- Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeGeneralVolumeOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Volume
+                        </button>
                     </div>
-                </div>
-                <div class="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t">
-                    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex justify-end gap-3">
-                        <button type="button" onclick="closeQualityOverlay()" class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Registrar</button>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- Sales Overlay -->
-    <div id="salesOverlay" class="fixed inset-0 z-50 hidden">
-        <div class="w-full h-full bg-white p-0 overflow-y-auto">
-            <div class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
-                <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-gray-900">Registrar Venda</h3>
-                <button onclick="closeSalesOverlay()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            </div>
-            <form id="salesForm" class="px-4 sm:px-6 py-5 space-y-5">
-                <div class="max-w-3xl mx-auto space-y-6">
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Detalhes da Venda</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Data da Venda</label>
-                    <input type="date" name="sale_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
-                    <input type="text" name="customer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
+    <!-- Modal Volume por Vaca - Melhorado -->
+    <div id="volumeOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeVolumeOverlay()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Registrar Volume por Vaca</h3>
+                            <p class="text-sm text-white/90">Produção individual do animal</p>
                         </div>
                     </div>
-                    <div class="bg-gray-50 border rounded-xl p-3">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-3">Valores</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Volume Vendido (L)</label>
-                    <input type="number" name="volume_sold" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                    <button onclick="closeVolumeOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Valor Total (R$)</label>
-                    <input type="number" name="total_amount" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
+
+                <!-- Form -->
+                <form id="volumeForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="p-6 space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="volumeMessage" class="hidden p-4 rounded-xl border"></div>
+
+                        <!-- Identificação -->
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Identificação do Animal</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
+                                            </svg>
+                                            Selecionar Vaca
+                                        </span>
+                                    </label>
+                                    <select name="animal_id" id="volumeAnimalSelect" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white" required>
+                                        <option value="">Selecione uma vaca</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Data da Coleta
+                                        </span>
+                                    </label>
+                                    <input type="date" name="collection_date" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medições -->
+                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Medições de Produção</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            Período
+                                        </span>
+                                    </label>
+                                    <select name="period" class="w-full px-4 py-3 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white" required>
+                                        <option value="manha">Manhã</option>
+                                        <option value="tarde">Tarde</option>
+                                        <option value="noite">Noite</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                            </svg>
+                                            Volume
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="volume" step="0.1" min="0" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white font-semibold text-indigo-700" required>
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-600 font-bold">L</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1V9a5 5 0 00-10 0v6a4 4 0 004 4zm0-10a2 2 0 112 2"/>
+                                            </svg>
+                                            Temperatura
+                                            <span class="text-xs font-normal text-slate-500">(opcional)</span>
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="temperature" step="0.1" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white font-semibold text-indigo-700">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-600 font-bold">°C</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="sticky bottom-0 z-10 bg-white/90 backdrop-blur border-t">
-                    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex justify-end gap-3">
-                        <button type="button" onclick="closeSalesOverlay()" class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Registrar</button>
+
+                    <!-- Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeVolumeOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Volume
+                        </button>
                     </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Teste de Qualidade - Melhorado -->
+    <div id="qualityOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeQualityOverlay()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Registrar Teste de Qualidade</h3>
+                            <p class="text-sm text-white/90">Análise laboratorial do leite</p>
+                        </div>
+                    </div>
+                    <button onclick="closeQualityOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
-            </form>
+
+                <!-- Form -->
+                <form id="qualityForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="p-6 space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="qualityMessage" class="hidden p-4 rounded-xl border"></div>
+
+                        <!-- Dados do Teste -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Dados do Teste</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Data do Teste
+                                        </span>
+                                    </label>
+                                    <input type="date" name="test_date" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            </svg>
+                                            Laboratório
+                                            <span class="text-xs font-normal text-slate-500">(opcional)</span>
+                                        </span>
+                                    </label>
+                                    <input type="text" name="laboratory" placeholder="Nome do laboratório" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resultados -->
+                        <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Resultados da Análise</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                                            </svg>
+                                            Gordura
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="fat_content" step="0.01" min="0" max="100" placeholder="0.00" class="w-full px-4 py-3 pl-12 border-2 border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white font-semibold text-emerald-700">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold">%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                                            </svg>
+                                            Proteína
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="protein_content" step="0.01" min="0" max="100" placeholder="0.00" class="w-full px-4 py-3 pl-12 border-2 border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white font-semibold text-emerald-700">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold">%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                            </svg>
+                                            Células Somáticas
+                                        </span>
+                                    </label>
+                                    <input type="number" name="somatic_cells" min="0" placeholder="0" class="w-full px-4 py-3 border-2 border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white font-semibold text-emerald-700">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeQualityOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl hover:from-emerald-700 hover:to-teal-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Teste
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registrar Venda - Melhorado -->
+    <div id="salesOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeSalesOverlay()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Registrar Venda</h3>
+                            <p class="text-sm text-white/90">Registro de comercialização</p>
+                        </div>
+                    </div>
+                    <button onclick="closeSalesOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <form id="salesForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="p-6 space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="salesMessage" class="hidden p-4 rounded-xl border"></div>
+
+                        <!-- Detalhes da Venda -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Detalhes da Venda</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Data da Venda
+                                        </span>
+                                    </label>
+                                    <input type="date" name="sale_date" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                            Cliente
+                                        </span>
+                                    </label>
+                                    <input type="text" name="customer" placeholder="Nome do cliente" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Valores -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Valores</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                            </svg>
+                                            Volume Vendido
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="volume_sold" step="0.1" min="0" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">L</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            Valor Total
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" name="total_amount" step="0.01" min="0" placeholder="0.00" class="w-full px-4 py-3 pl-10 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">R$</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeSalesOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Venda
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -1691,73 +2174,166 @@ $v = time();
     </div>
 
     <!-- Modal de Adicionar Usuário -->
-    <div id="addUserModal" class="fixed inset-0 z-50 hidden">
-        <div class="w-full h-full bg-white p-0 overflow-y-auto">
-            <div class="sticky top-0 z-10 bg-white/90 backdrop-blur flex items-center justify-between p-4 border-b">
-                <h3 class="text-base font-semibold text-gray-900">Adicionar Novo Usuário</h3>
-                <button onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="addUserForm" class="p-4 sm:p-5 space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
-                        <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Senha *</label>
-                        <div class="relative">
-                            <input type="password" name="password" id="userPassword" required class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <button type="button" onclick="toggleUserPasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" id="userPasswordToggle">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </button>
+    <!-- Modal Adicionar Novo Usuário - Melhorado -->
+    <div id="addUserModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAddUserModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Adicionar Novo Usuário</h3>
+                            <p class="text-sm text-white/90">Criar nova conta no sistema</p>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar Senha *</label>
-                        <input type="password" name="confirm_password" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Papel *</label>
-                        <select name="role" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Selecione...</option>
-                            <option value="funcionario">Funcionário</option>
-                            <option value="gerente">Gerente</option>
-                            <option value="proprietario">Proprietário</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-                        <input type="tel" name="phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-                
-                <div class="sticky bottom-0 z-10 bg-white/90 backdrop-blur p-4 border-t flex justify-end space-x-3">
-                    <button type="button" onclick="closeAddUserModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Adicionar Usuário
+                    <button onclick="closeAddUserModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
                     </button>
                 </div>
-            </form>
+
+                <!-- Form -->
+                <form id="addUserForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="p-6 space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="addUserMessage" class="hidden p-4 rounded-xl border"></div>
+
+                        <!-- Informações Pessoais -->
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Informações Pessoais</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                            Nome Completo
+                                        </span>
+                                    </label>
+                                    <input type="text" name="name" required placeholder="Nome completo do usuário" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                            </svg>
+                                            Email
+                                        </span>
+                                    </label>
+                                    <input type="email" name="email" required placeholder="usuario@email.com" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                        </svg>
+                                        Telefone
+                                        <span class="text-xs font-normal text-slate-500">(opcional)</span>
+                                    </span>
+                                </label>
+                                <input type="tel" name="phone" placeholder="(00) 00000-0000" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                            </div>
+                        </div>
+
+                        <!-- Credenciais -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Credenciais de Acesso</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                            Senha
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" name="password" id="userPassword" required placeholder="Mínimo 6 caracteres" class="w-full px-4 py-3 pr-12 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                        <button type="button" onclick="toggleUserPasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors" id="userPasswordToggle">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                            </svg>
+                                            Confirmar Senha
+                                        </span>
+                                    </label>
+                                    <input type="password" name="confirm_password" required placeholder="Digite a senha novamente" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Permissões -->
+                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Permissões e Papel</h4>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                        </svg>
+                                        Papel no Sistema
+                                    </span>
+                                </label>
+                                <select name="role" required class="w-full px-4 py-3 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white">
+                                    <option value="">Selecione o papel...</option>
+                                    <option value="funcionario">Funcionário</option>
+                                    <option value="gerente">Gerente</option>
+                                    <option value="proprietario">Proprietário</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeAddUserModal()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Adicionar Usuário
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -1819,8 +2395,621 @@ $v = time();
         </div>
     </div>
 
+    <!-- Modal Ver Pedigree - Full Screen -->
+    <div id="pedigreeModal" class="fixed inset-0 z-[110] hidden">
+        <!-- Header Fixo -->
+        <div class="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg z-10 flex items-center justify-between px-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-white" id="pedigreeTitle">Pedigree do Animal</h2>
+                    <p class="text-blue-100 text-sm" id="pedigreeSubtitle">Árvore genealógica completa</p>
+                </div>
+            </div>
+            <button onclick="closePedigreeModal()" class="w-12 h-12 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl transition-all text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Conteúdo Principal (Full Screen) -->
+        <div id="pedigreeContent" class="absolute inset-0 pt-20 overflow-auto bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+            <!-- Árvore Genealógica será renderizada aqui -->
+        </div>
+    </div>
+
+    <!-- Modal Informações do Animal no Pedigree -->
+    <div id="animalPedigreeInfoModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeAnimalPedigreeInfoModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold text-white" id="animalInfoTitle">Informações do Animal</h3>
+                </div>
+                <button onclick="closeAnimalPedigreeInfoModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="animalInfoContent" class="flex-1 overflow-y-auto p-6">
+                <!-- Carregando -->
+                <div id="animalInfoLoading" class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                </div>
+                <!-- Conteúdo será preenchido aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Animal -->
+    <div id="editAnimalModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeEditAnimalModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-gray-500 to-gray-600">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold text-white">Editar Animal</h3>
+                </div>
+                <button onclick="closeEditAnimalModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="editAnimalForm" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nome</label>
+                        <input type="text" name="name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Número do Animal</label>
+                        <input type="text" name="animal_number" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Raça</label>
+                        <select name="breed" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500" required>
+                            <option value="">Selecione</option>
+                            <option value="Holandesa">Holandesa</option>
+                            <option value="Gir">Gir</option>
+                            <option value="Girolando">Girolando</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Sexo</label>
+                        <select name="gender" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500" required>
+                            <option value="">Selecione</option>
+                            <option value="femea">Fêmea</option>
+                            <option value="macho">Macho</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                        <select name="status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500" required>
+                            <option value="">Selecione</option>
+                            <option value="Lactante">Lactante</option>
+                            <option value="Seco">Seco</option>
+                            <option value="Prenha">Prenha</option>
+                            <option value="Novilha">Novilha</option>
+                            <option value="Touro">Touro</option>
+                            <option value="Bezerra">Bezerra</option>
+                            <option value="Bezerro">Bezerro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data de Nascimento</label>
+                        <input type="date" name="birth_date" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Observações</label>
+                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeEditAnimalModal()" class="px-6 py-3 text-sm font-semibold border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all shadow-lg">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ver Animal -->
+    <div id="viewAnimalModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeViewAnimalModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-500 to-green-600">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold text-white">Detalhes do Animal</h3>
+                </div>
+                <button onclick="closeViewAnimalModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="viewAnimalContent" class="flex-1 overflow-y-auto p-6">
+                <!-- Conteúdo será carregado dinamicamente -->
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="assets/js/gerente-completo.js?v=<?php echo $v; ?>"></script>
+    
+    <!-- Modal Mais Opções - Fullscreen -->
+    <div id="moreOptionsModal" class="fixed inset-0 z-[100] hidden bg-white">
+        <style>
+            /* Estilos específicos do modal Mais Opções */
+            #moreOptionsModal {
+                background: white;
+            }
+            #moreOptionsModal.hidden {
+                display: none !important;
+            }
+            #moreOptionsModal:not(.hidden) {
+                display: block !important;
+            }
+            #moreOptionsModal .app-item {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            #moreOptionsModal .app-item:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            }
+            #moreOptionsModal .submodal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99999;
+                display: none;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+            #moreOptionsModal .submodal.show {
+                display: flex;
+                opacity: 1;
+                align-items: center;
+                justify-content: center;
+            }
+            #moreOptionsModal .submodal-content {
+                background: white;
+                width: 100%;
+                height: 100vh;
+                overflow-y: auto;
+                position: relative;
+                padding: 24px;
+            }
+            @media (max-width: 768px) {
+                #moreOptionsModal .submodal-content {
+                    padding: 16px;
+                }
+            }
+        </style>
+        <div class="w-full h-full bg-white overflow-y-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 bg-white sticky top-0 z-10 shadow-sm border-b border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Mais Opções</h2>
+                        <p class="text-sm text-gray-600">Acesse ferramentas e recursos do sistema</p>
+                    </div>
+                </div>
+                <button onclick="closeMoreOptionsModal()" class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-xl transition-all duration-200 shadow-sm">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span class="text-gray-700 font-semibold">Voltar ao Dashboard</span>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-8">
+                <div class="max-w-7xl mx-auto">
+                    <?php 
+                    // Usar variáveis já carregadas
+                    $total_production = $more_options_total_production;
+                    $avg_daily_production = $more_options_avg_daily_production;
+                    $lactating_cows = $more_options_lactating_cows;
+                    $pregnant_cows = $more_options_pregnant_cows;
+                    $total_animals = $more_options_total_animals;
+                    $animals = $more_options_animals;
+                    $milk_data = $more_options_milk_data;
+                    ?>
+                    
+                    <!-- Ferramentas Principais -->
+                    <div class="mb-10">
+                        <h3 class="text-lg font-bold text-gray-800 mb-5 flex items-center">
+                            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            Ferramentas Principais
+                        </h3>
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            <!-- Relatórios -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('reports')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Relatórios</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Análises e dados</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Gestão de Rebanho -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('animals')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Gestão de Rebanho</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Animais e IA</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Gestão Sanitária -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('health')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Gestão Sanitária</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Saúde e vacinas</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Reprodução -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('reproduction')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Reprodução</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Prenhez e DPP</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dashboard Analítico -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('analytics')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Dashboard Analítico</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Indicadores e KPIs</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Central de Ações -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('actions')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Central de Ações</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Tarefas prioritárias</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sistema RFID -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('rfid')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Sistema RFID</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Transponders</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Condição Corporal -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('bcs')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Condição Corporal</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Avaliação BCS</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Grupos e Lotes -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('groups')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Grupos e Lotes</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Organização</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Insights de IA -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('ai')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Insights de IA</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Previsões</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Suporte -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('support')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Suporte</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Ajuda e contato</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Utilitários -->
+                    <div class="mb-10">
+                        <h3 class="text-lg font-bold text-gray-800 mb-5 flex items-center">
+                            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                                </svg>
+                            </div>
+                            Utilitários
+                        </h3>
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            <!-- Alimentação -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('feeding')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-lime-500 to-lime-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Alimentação</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Concentrado e ração</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sistema de Touros -->
+                            <a href="sistema-touros.php" class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                                            <circle cx="12" cy="8" r="2" fill="white"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Sistema de Touros</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Touros e inseminações</p>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- Controle de Novilhas -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('heifers')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Controle de Novilhas</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Custos de criação</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submodais (Relatórios, Gestão de Rebanho, etc) -->
+        <?php
+        // Definir variáveis locais para uso nos modais (elas serão usadas no eval)
+        $total_production = $more_options_total_production;
+        $avg_daily_production = $more_options_avg_daily_production;
+        $lactating_cows = $more_options_lactating_cows;
+        $pregnant_cows = $more_options_pregnant_cows;
+        $total_animals = $more_options_total_animals;
+        $animals = $more_options_animals;
+        $milk_data = $more_options_milk_data;
+        
+        // Ler o arquivo modalmore.php como string (sem executar o PHP)
+        $modalmore_file_path = __DIR__ . '/includes/modalmore.php';
+        if (!file_exists($modalmore_file_path)) {
+            $modalmore_file_path = 'includes/modalmore.php';
+        }
+        
+        if (file_exists($modalmore_file_path)) {
+            $modalmore_file = file_get_contents($modalmore_file_path);
+            
+            // Extrair apenas os modais do modalmore.php (do comentário até antes do script)
+            // Procurar por todos os modais - pegar tudo entre "<!-- Modals -->" e "<script"
+            if (preg_match('/<!-- Modals -->(.*?)(<script|<\/body>|<\/html>)/s', $modalmore_file, $matches)) {
+                $modals_content = $matches[1];
+            } elseif (preg_match('/<!-- Added modals for all[^>]*>(.*?)(<script|<\/body>|<\/html>)/s', $modalmore_file, $matches)) {
+                $modals_content = $matches[1];
+            } elseif (preg_match('/<!-- Modal Relatórios -->(.*?)(<script|<\/body>|<\/html>)/s', $modalmore_file, $matches)) {
+                $modals_content = $matches[1];
+            } else {
+                $modals_content = null;
+            }
+            
+            if ($modals_content) {
+                // Substituir class="modal" por class="submodal"
+                $modals_content = preg_replace('/class="modal"/', 'class="submodal"', $modals_content);
+                // Substituir class="modal-content" por class="submodal-content"
+                $modals_content = preg_replace('/class="modal-content"/', 'class="submodal-content"', $modals_content);
+                // Substituir closeModal por closeSubModal
+                $modals_content = preg_replace('/closeModal\(/', 'closeSubModal(', $modals_content);
+                
+                // Processar o conteúdo PHP corretamente usando eval com variáveis do escopo atual
+                ob_start();
+                eval('?>' . $modals_content);
+                $processed_modals = ob_get_clean();
+                
+                echo $processed_modals;
+            } else {
+                // Fallback: criar modais básicos se não conseguir extrair
+                echo '<!-- Modais serão carregados aqui -->';
+            }
+        } else {
+            echo '<!-- Arquivo modalmore.php não encontrado -->';
+        }
+        ?>
+    </div>
+    
+    <script>
+        // Funções para gerenciar submodais dentro do modal Mais Opções
+        let currentSubModal = null;
+        
+        function openSubModal(modalName) {
+            console.log('🔓 Abrindo submodal:', modalName);
+            if (currentSubModal) {
+                currentSubModal.classList.remove('show');
+            }
+            
+            const modal = document.getElementById('modal-' + modalName);
+            if (modal) {
+                modal.classList.add('show');
+                currentSubModal = modal;
+                // Não bloquear o scroll do body aqui, pois o modal principal já está aberto
+                console.log('✅ Submodal aberto:', modalName);
+                
+                // Se for o modal de animais, inicializar busca e filtros
+                if (modalName === 'animals') {
+                    setTimeout(() => {
+                        if (typeof window.initAnimalSearchAndFilters === 'function') {
+                            if (window.animalFiltersInitialized !== undefined) {
+                                window.animalFiltersInitialized = false; // Reset para reinicializar
+                            }
+                            window.initAnimalSearchAndFilters();
+                        } else {
+                            console.warn('⚠️ Função initAnimalSearchAndFilters não encontrada');
+                        }
+                    }, 400);
+                }
+            } else {
+                console.error('❌ Submodal não encontrado: modal-' + modalName);
+            }
+        }
+        
+        function closeSubModal(modalName) {
+            console.log('🔒 Fechando submodal:', modalName || 'atual');
+            const modal = modalName ? document.getElementById('modal-' + modalName) : currentSubModal;
+            if (modal) {
+                modal.classList.remove('show');
+                currentSubModal = null;
+                console.log('✅ Submodal fechado');
+            }
+        }
+        
+        // Tornar funções globais
+        window.openSubModal = openSubModal;
+        window.closeSubModal = closeSubModal;
+        
+        // Fechar submodal ao clicar fora ou pressionar ESC
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('submodal')) {
+                closeSubModal();
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && currentSubModal) {
+                closeSubModal();
+            }
+        });
+        
+        // Também disponibilizar openModal e closeModal como aliases para compatibilidade
+        window.openModal = openSubModal;
+        window.closeModal = closeSubModal;
+    </script>
     
     <script>
         // Teste direto para verificar se os elementos existem
@@ -1931,14 +3120,43 @@ $v = time();
         }
         
         function openAddUserModal() {
-            document.getElementById('addUserModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            const modal = document.getElementById('addUserModal');
+            const form = document.getElementById('addUserForm');
+            const messageDiv = document.getElementById('addUserMessage');
+            
+            if (modal) {
+                // Resetar formulário e mensagens
+                if (form) {
+                    form.reset();
+                }
+                if (messageDiv) {
+                    messageDiv.classList.add('hidden');
+                    messageDiv.className = 'hidden p-4 rounded-xl border';
+                }
+                
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
         }
         
         function closeAddUserModal() {
-            document.getElementById('addUserModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-            document.getElementById('addUserForm').reset();
+            const modal = document.getElementById('addUserModal');
+            const form = document.getElementById('addUserForm');
+            const messageDiv = document.getElementById('addUserMessage');
+            
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+            
+            // Limpar formulário e mensagens
+            if (form) {
+                form.reset();
+            }
+            if (messageDiv) {
+                messageDiv.classList.add('hidden');
+                messageDiv.className = 'hidden p-4 rounded-xl border';
+            }
         }
         
         function openLogoutModal() {
@@ -2219,6 +3437,68 @@ $v = time();
         window.switchTab = switchTab;
         window.switchBottomTab = switchBottomTab;
         window.handleMoreClick = handleMoreClick;
+        
+        // Funções para o modal Mais Opções
+        function openMoreOptionsModal() {
+            console.log('🔓 Tentando abrir modal Mais Opções...');
+            const modal = document.getElementById('moreOptionsModal');
+            if (!modal) {
+                console.error('❌ Modal maisOptionsModal não encontrado!');
+                alert('Erro: Modal não encontrado. Verifique o console para mais detalhes.');
+                return;
+            }
+            console.log('✅ Modal encontrado, removendo classe hidden...');
+            // Remover hidden e garantir display block
+            modal.classList.remove('hidden');
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            console.log('✅ Modal Mais Opções aberto!');
+        }
+        
+        function closeMoreOptionsModal() {
+            console.log('🔒 Fechando modal Mais Opções...');
+            const modal = document.getElementById('moreOptionsModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                console.log('✅ Modal fechado!');
+            }
+        }
+        
+        // Tornar funções globais
+        window.openMoreOptionsModal = openMoreOptionsModal;
+        window.closeMoreOptionsModal = closeMoreOptionsModal;
+        
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('moreOptionsModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeMoreOptionsModal();
+                }
+            }
+        });
+        
+        // Verificar se o modal existe ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('moreOptionsModal');
+            if (modal) {
+                console.log('✅ Modal Mais Opções encontrado e pronto!');
+                // Garantir que está oculto inicialmente
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            } else {
+                console.error('❌ Modal Mais Opções NÃO encontrado no DOM!');
+            }
+            
+            // Testar função
+            if (typeof window.openMoreOptionsModal === 'function') {
+                console.log('✅ Função openMoreOptionsModal está disponível globalmente');
+            } else {
+                console.error('❌ Função openMoreOptionsModal NÃO está disponível globalmente!');
+            }
+        });
     </script>
 </body>
 </html>

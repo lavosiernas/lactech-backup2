@@ -2,14 +2,29 @@
 /**
  * CONFIGURAÇÃO PRINCIPAL - LACTECH
  * Arquivo de configuração unificado
+ * 
+ * NOTA: Este arquivo só define constantes se elas ainda não existirem.
+ * A detecção de ambiente deve ser feita pelo config_mysql.php
  */
 
-// Configurações do banco de dados
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'u311882628_lactech_lgmato');
-define('DB_USER', 'u311882628_xandriaAgro');
-define('DB_PASS', 'Lavosier0012!');
-define('DB_CHARSET', 'utf8mb4');
+// Se config_mysql.php já foi carregado, usar as constantes dele
+// Caso contrário, usar valores padrão (produção - será sobrescrito se estiver em local)
+if (!defined('DB_HOST')) {
+    // Tentar carregar config_mysql.php primeiro para detecção automática
+    $configMysqlPath = __DIR__ . '/config_mysql.php';
+    if (file_exists($configMysqlPath)) {
+        require_once $configMysqlPath;
+    }
+    
+    // Se ainda não foram definidas, usar valores padrão de produção
+    if (!defined('DB_HOST')) {
+        define('DB_HOST', 'localhost');
+        define('DB_NAME', 'u311882628_lactech_lgmato');
+        define('DB_USER', 'u311882628_xandriaAgro');
+        define('DB_PASS', 'Lavosier0012!');
+        define('DB_CHARSET', 'utf8mb4');
+    }
+}
 
 // Configurações da aplicação
 define('APP_NAME', 'LacTech - Lagoa do Mato');

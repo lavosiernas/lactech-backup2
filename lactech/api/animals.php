@@ -1,28 +1,48 @@
 <?php
 // API para Gestão de Animais
 
-error_reporting(0);
+// Iniciar output buffering para evitar saída antes do JSON
+ob_start();
+
+// Desabilitar erros visíveis
+error_reporting(E_ALL);
 ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-header('Content-Type: application/json');
-
 $dbPath = __DIR__ . '/../includes/Database.class.php';
 if (!file_exists($dbPath)) {
-    echo json_encode(['success' => false, 'error' => 'Database class não encontrada']);
+    ob_clean();
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Database class não encontrada'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 require_once $dbPath;
 
 function sendResponse($data = null, $error = null) {
+    // Limpar qualquer saída anterior (warnings, notices, etc)
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    
     $response = ['success' => $error === null];
-    if ($data !== null) $response['data'] = $data;
-    if ($error !== null) $response['error'] = $error;
-    echo json_encode($response);
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+    if ($error !== null) {
+        $response['error'] = $error;
+    }
+    
+    // Limpar headers anteriores
+    header_remove();
+    header('Content-Type: application/json; charset=utf-8');
+    http_response_code(200);
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 
@@ -42,9 +62,21 @@ try {
                 
             case 'get_by_id':
                 $id = $_GET['id'] ?? null;
-                if (!$id) sendResponse(null, 'ID não fornecido');
+                if (!$id) {
+                    sendResponse(null, 'ID não fornecido');
+                }
                 $animal = $db->getAnimalById($id);
-                sendResponse($animal);
+                if ($animal === null || $animal === false) {
+                    sendResponse(null, 'Animal não encontrado');
+                } else {
+                    // Adicionar cálculo de idade
+                    if (isset($animal['birth_date']) && $animal['birth_date']) {
+                        $animal['age_days'] = floor((time() - strtotime($animal['birth_date'])) / 86400);
+                    } else {
+                        $animal['age_days'] = 0;
+                    }
+                    sendResponse($animal);
+                }
                 break;
                 
             case 'get_pregnant':
@@ -54,8 +86,14 @@ try {
                 
             case 'get_pedigree':
                 $id = $_GET['id'] ?? null;
-                if (!$id) sendResponse(null, 'ID não fornecido');
+                if (!$id) {
+                    sendResponse(null, 'ID não fornecido');
+                }
                 $pedigree = $db->getAnimalPedigree($id);
+                // Sempre retornar array, mesmo que vazio
+                if (!is_array($pedigree)) {
+                    $pedigree = [];
+                }
                 sendResponse($pedigree);
                 break;
                 
@@ -100,7 +138,11 @@ try {
     }
     
 } catch (Exception $e) {
+    error_log("Erro na API animals.php: " . $e->getMessage());
     sendResponse(null, $e->getMessage());
+} catch (Error $e) {
+    error_log("Erro fatal na API animals.php: " . $e->getMessage());
+    sendResponse(null, 'Erro interno: ' . $e->getMessage());
 }
 ?>
 

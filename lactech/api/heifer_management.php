@@ -9,17 +9,52 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Limpar qualquer saída anterior
+while (ob_get_level() > 0) {
+    ob_end_clean();
+}
 ob_start();
-ob_clean();
 
-@session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
-require_once '../includes/config.php';
-require_once '../includes/database.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verificar se os arquivos existem
+$configMysqlPath = __DIR__ . '/../includes/config_mysql.php';
+$dbPath = __DIR__ . '/../includes/database.php';
+
+// SEMPRE carregar config_mysql.php PRIMEIRO (tem detecção de ambiente)
+if (!file_exists($configMysqlPath)) {
+    ob_clean();
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Arquivo config_mysql.php não encontrado']);
+    exit;
+}
+
+if (!file_exists($dbPath)) {
+    ob_clean();
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Arquivo database.php não encontrado']);
+    exit;
+}
+
+// Carregar config_mysql.php PRIMEIRO (detecta ambiente e define constantes)
+require_once $configMysqlPath;
+
+// Depois carregar database.php (usa as constantes já definidas)
+require_once $dbPath;
 
 try {
     $db = new Database();
     $conn = $db->getConnection();
+    
+    if (!$conn) {
+        throw new Exception('Erro ao conectar ao banco de dados');
+    }
     
     $action = $_GET['action'] ?? $_POST['action'] ?? 'get_dashboard';
     $response = ['success' => false];
@@ -31,6 +66,10 @@ try {
         // ==========================================
         case 'get_dashboard':
             $farm_id = $_SESSION['farm_id'] ?? 1;
+            
+            if (!$farm_id) {
+                $farm_id = 1;
+            }
             
             // Estatísticas gerais
             $stmt = $conn->prepare("
@@ -142,7 +181,9 @@ try {
             
             $response = [
                 'success' => true,
-                'data' => $heifers
+                'data' => [
+                    'heifers' => $heifers
+                ]
             ];
             break;
         
@@ -278,7 +319,7 @@ try {
         case 'add_cost':
             $data = json_decode(file_get_contents('php://input'), true);
             
-            $required = ['animal_id', 'cost_date', 'unit_price'];
+            $required = ['animal_id', 'cost_date', 'cost_category', 'cost_amount'];
             foreach ($required as $field) {
                 if (!isset($data[$field]) || $data[$field] === '') {
                     throw new Exception("Campo obrigatório: {$field}");
@@ -288,21 +329,20 @@ try {
             $farm_id = $_SESSION['farm_id'] ?? 1;
             $user_id = $_SESSION['user_id'] ?? 1;
             
-            // Determinar categoria
-            $cost_category = 'Outros';
-            if (isset($data['category_id'])) {
-                $categories_map = [
-                    1 => 'Alimentação', 2 => 'Alimentação', 3 => 'Alimentação', 4 => 'Alimentação',
-                    5 => 'Alimentação', 6 => 'Alimentação', 7 => 'Alimentação', 8 => 'Manejo',
-                    9 => 'Medicamentos', 10 => 'Vacinas', 11 => 'Medicamentos', 12 => 'Medicamentos',
-                    13 => 'Manejo', 14 => 'Manejo', 15 => 'Transporte', 16 => 'Outros', 17 => 'Outros', 18 => 'Outros'
-                ];
-                $cost_category = $categories_map[$data['category_id']] ?? 'Outros';
+            // Usar cost_category diretamente do formulário, ou calcular se não fornecido
+            $cost_category = $data['cost_category'] ?? 'Outros';
+            
+            // Se cost_amount não foi fornecido, calcular
+            $cost_amount = $data['cost_amount'] ?? 0;
+            if ($cost_amount == 0 && isset($data['quantity']) && isset($data['unit_price'])) {
+                $quantity = floatval($data['quantity'] ?? 1);
+                $unit_price = floatval($data['unit_price'] ?? 0);
+                $cost_amount = $quantity * $unit_price;
             }
             
-            // Calcular custo total
-            $quantity = $data['quantity'] ?? 1;
-            $cost_amount = $quantity * $data['unit_price'];
+            if ($cost_amount <= 0) {
+                throw new Exception('Valor do custo deve ser maior que zero');
+            }
             
             $stmt = $conn->prepare("
                 INSERT INTO heifer_costs 
@@ -349,18 +389,101 @@ try {
             ];
             break;
         
+        // ==========================================
+        // ADICIONAR CONSUMO DIÁRIO
+        // ==========================================
+        case 'add_daily_consumption':
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            $required = ['animal_id', 'consumption_date'];
+            foreach ($required as $field) {
+                if (!isset($data[$field]) || $data[$field] === '') {
+                    throw new Exception("Campo obrigatório: {$field}");
+                }
+            }
+            
+            $farm_id = $_SESSION['farm_id'] ?? 1;
+            $user_id = $_SESSION['user_id'] ?? 1;
+            
+            // Calcular idade em dias
+            $stmt = $conn->prepare("SELECT birth_date FROM animals WHERE id = ?");
+            $stmt->execute([$data['animal_id']]);
+            $animal = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$animal) {
+                throw new Exception('Animal não encontrado');
+            }
+            
+            $age_days = floor((strtotime($data['consumption_date']) - strtotime($animal['birth_date'])) / 86400);
+            
+            // Determinar fase baseada na idade
+            $stmt = $conn->prepare("
+                SELECT id FROM heifer_phases
+                WHERE ? BETWEEN start_day AND end_day
+                AND active = 1
+                LIMIT 1
+            ");
+            $stmt->execute([$age_days]);
+            $phase = $stmt->fetch(PDO::FETCH_ASSOC);
+            $phase_id = $phase ? $phase['id'] : null;
+            
+            $stmt = $conn->prepare("
+                INSERT INTO heifer_daily_consumption 
+                (animal_id, consumption_date, age_days, phase_id, milk_liters, concentrate_kg, roughage_kg, weight_kg, notes, recorded_by, farm_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            
+            $stmt->execute([
+                $data['animal_id'],
+                $data['consumption_date'],
+                $age_days,
+                $phase_id,
+                $data['milk_liters'] ?? 0,
+                $data['concentrate_kg'] ?? 0,
+                $data['roughage_kg'] ?? 0,
+                $data['weight_kg'] ?? null,
+                $data['notes'] ?? null,
+                $user_id,
+                $farm_id
+            ]);
+            
+            $consumption_id = $conn->lastInsertId();
+            
+            $response = [
+                'success' => true,
+                'message' => 'Consumo diário registrado com sucesso!',
+                'consumption_id' => $consumption_id
+            ];
+            break;
+        
         default:
             throw new Exception('Ação não reconhecida: ' . $action);
     }
     
 } catch (Exception $e) {
+    error_log("Erro na API heifer_management.php: " . $e->getMessage());
     $response = [
         'success' => false,
         'message' => $e->getMessage(),
-        'error' => $e->getTrace()
+        'error' => $e->getMessage()
+    ];
+} catch (Error $e) {
+    error_log("Erro fatal na API heifer_management.php: " . $e->getMessage());
+    $response = [
+        'success' => false,
+        'message' => 'Erro interno: ' . $e->getMessage(),
+        'error' => $e->getMessage()
     ];
 }
 
-echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+// Limpar qualquer saída anterior e enviar JSON
+while (ob_get_level() > 0) {
+    ob_end_clean();
+}
+
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+exit;
 ?>
 
