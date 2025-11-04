@@ -1,42 +1,43 @@
 <?php
-/**
- * Página Inicial - LacTech
- * Verifica sessão PHP e redireciona IMEDIATAMENTE ou mostra tela de login
- */
 
-// Incluir configuração e iniciar sessão
 require_once __DIR__ . '/includes/config_login.php';
 
-// VERIFICAÇÃO IMEDIATA - Se está logado, redireciona ANTES de qualquer output
 if (isLoggedIn() && isset($_SESSION['user_role'])) {
-    $role = $_SESSION['user_role'];
-    
-    // Redirecionar IMEDIATAMENTE para o dashboard correto
-    switch ($role) {
-        case 'manager':
-        case 'gerente':
-            header("Location: gerente-completo.php", true, 302);
-            exit();
-            
-        case 'owner':
-        case 'proprietario':
-            header("Location: proprietario.php", true, 302);
-            exit();
-            
-        case 'employee':
-        case 'funcionario':
-            header("Location: funcionario.php", true, 302);
-            exit();
-            
-        default:
-            // Papel não reconhecido, destruir sessão e continuar para login
-            session_destroy();
-            session_start();
-            break;
+
+    $referer = $_SERVER['HTTP_REFERER'] ?? '';
+    $cameFromGerente = strpos($referer, 'gerente-completo.php') !== false;
+    $isLoopRedirect = (
+        strpos($referer, 'proprietario.php') !== false ||
+        strpos($referer, 'funcionario.php') !== false
+    ) && !$cameFromGerente;
+        if ($isLoopRedirect) {
+        session_destroy();
+        session_start();
+    } else {
+        $role = $_SESSION['user_role'];
+        switch ($role) {
+            case 'manager':
+            case 'gerente':
+                safeRedirect('gerente-completo.php');
+                break;
+                
+            case 'owner':
+            case 'proprietario':
+                safeRedirect('proprietario.php');
+                break;
+                
+            case 'employee':
+            case 'funcionario':
+                safeRedirect('funcionario.php');
+                break;
+                
+            default:
+                session_destroy();
+                session_start();
+                break;
+        }
     }
 }
-
-// Se chegou aqui, usuário NÃO está logado - mostrar tela de login
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -248,6 +249,27 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 </button>
             </form>
 
+            <!-- Divisor -->
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-200"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-4 text-slate-500">ou</span>
+                </div>
+            </div>
+
+            <!-- Botão Login com Google -->
+            <button type="button" onclick="loginWithGoogle()" id="googleLoginBtn" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span>Entrar com Google</span>
+            </button>
+
             <div class="mt-8 text-center">
                 <p class="text-slate-600 text-sm">
                     Fazenda Lagoa do Mato - Entre em contato com o administrador para criar sua conta.
@@ -341,6 +363,27 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         <span id="loginTextDesktop">Entrar</span>
                     </button>
                 </form>
+
+                <!-- Divisor -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-white text-slate-500">ou</span>
+                    </div>
+                </div>
+
+                <!-- Botão Login com Google -->
+                <button type="button" onclick="loginWithGoogle()" id="googleLoginBtnDesktop" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-semibold hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    <span>Entrar com Google</span>
+                </button>
 
                 <div class="mt-8 text-center">
                     <p class="text-slate-600 text-sm">
@@ -590,6 +633,147 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 } else {
                     showError(error.message || 'Erro no servidor. Tente novamente em alguns minutos.', isDesktop);
                 }
+            }
+        }
+
+        // Função para login com Google
+        async function loginWithGoogle() {
+            try {
+                // Obter URL de autorização do Google para login
+                const response = await fetch('api/google-login.php?action=get_auth_url');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    // Se for erro de ambiente local, mostrar mensagem mais detalhada
+                    if (result.local_detected) {
+                        let errorMsg = result.error + '\n\n';
+                        if (result.solutions) {
+                            errorMsg += 'Soluções:\n' + result.solutions.join('\n');
+                        }
+                        alert(errorMsg);
+                    } else {
+                        alert('Erro ao iniciar login com Google: ' + (result.error || 'Erro desconhecido'));
+                    }
+                    return;
+                }
+                
+                // Debug: mostrar redirect_uri no console
+                if (result.debug) {
+                    console.log('🔍 Google Login - redirect_uri:', result.debug.redirect_uri);
+                    console.log('🔍 Google Login - expected_uri:', result.debug.expected_uri);
+                    if (result.debug.redirect_uri !== result.debug.expected_uri) {
+                        console.warn('⚠️ AVISO: redirect_uri diferente do esperado!');
+                        console.warn('⚠️ Isso pode causar erro no Google OAuth.');
+                        console.warn('⚠️ Certifique-se de adicionar no Google Console:', result.debug.redirect_uri);
+                    }
+                }
+                
+                // Abrir popup do Google OAuth
+                const width = 500;
+                const height = 600;
+                const left = (window.innerWidth - width) / 2;
+                const top = (window.innerHeight - height) / 2;
+                
+                const popup = window.open(
+                    result.auth_url,
+                    'google-login',
+                    `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,menubar=no`
+                );
+                
+                // Escutar mensagens do popup (quando callback retorna)
+                const messageHandler = async function(event) {
+                    // Verificar origem por segurança
+                    if (event.origin !== window.location.origin && event.origin !== 'https://lactechsys.com') {
+                        return;
+                    }
+                    
+                    // Verificar se tem dados e tipo
+                    if (!event.data || !event.data.type) {
+                        return;
+                    }
+                    
+                    if (event.data.type === 'google_login_success') {
+                        // Remover listener
+                        window.removeEventListener('message', messageHandler);
+                        
+                        // Fechar popup se ainda estiver aberto
+                        if (popup && !popup.closed) {
+                            try {
+                                popup.close();
+                            } catch (e) {
+                                // Ignorar erro se popup já foi fechado
+                            }
+                        }
+                        
+                        // Mostrar sucesso
+                        showSuccess('Login com Google realizado com sucesso! Redirecionando...', false);
+                        showSuccess('Login com Google realizado com sucesso! Redirecionando...', true);
+                        
+                        // Redirecionar imediatamente (sem delay)
+                        const redirectUrl = event.data.redirect || 'gerente-completo.php';
+                        window.location.href = redirectUrl;
+                        
+                    } else if (event.data.type === 'google_login_error') {
+                        // Remover listener
+                        window.removeEventListener('message', messageHandler);
+                        
+                        // Fechar popup se ainda estiver aberto
+                        if (popup && !popup.closed) {
+                            try {
+                                popup.close();
+                            } catch (e) {
+                                // Ignorar erro se popup já foi fechado
+                            }
+                        }
+                        
+                        // Mensagem de erro mais detalhada
+                        let errorMsg = event.data.message || 'Erro ao fazer login com Google.';
+                        
+                        // Se for erro de conta não vinculada, mostrar mensagem especial
+                        if (event.data.error_code === 'account_not_linked' || event.data.requires_linking) {
+                            errorMsg = 'Conta Google não vinculada.\n\n' +
+                                     'Para fazer login com Google, você precisa:\n' +
+                                     '1. Fazer login normalmente com seu email e senha\n' +
+                                     '2. Ir no perfil e vincular sua conta Google\n' +
+                                     '3. Depois disso, você poderá fazer login com Google';
+                            
+                            // Mostrar mensagem mais destacada
+                            showError(errorMsg, false);
+                            showError(errorMsg, true);
+                        } else if (event.data.error_code === 'invalid_request' || event.data.error_code === 'unauthorized_client') {
+                            // Se for erro de redirect_uri, adicionar instruções
+                            errorMsg += '\n\n⚠️ Certifique-se de adicionar este URI no Google Console:\nhttps://lactechsys.com/google-login-callback.php';
+                            showError(errorMsg, false);
+                            showError(errorMsg, true);
+                        } else {
+                            // Outros erros
+                            showError(errorMsg, false);
+                            showError(errorMsg, true);
+                        }
+                        
+                        // Log no console para debug
+                        console.error('❌ Erro no login Google:', event.data);
+                    }
+                };
+                
+                window.addEventListener('message', messageHandler);
+                
+                // Fallback: verificar se popup foi fechado manualmente
+                const checkPopupInterval = setInterval(() => {
+                    try {
+                        if (popup.closed) {
+                            clearInterval(checkPopupInterval);
+                            window.removeEventListener('message', messageHandler);
+                        }
+                    } catch (e) {
+                        // Ignorar erro de cross-origin
+                        clearInterval(checkPopupInterval);
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Erro ao iniciar login com Google:', error);
+                alert('Erro ao iniciar login com Google. Tente novamente.');
             }
         }
 

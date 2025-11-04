@@ -294,6 +294,29 @@ try {
             sendJSONResponse($data);
             break;
             
+        case 'delete':
+            // Excluir registro de volume
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+            $id = isset($input['id']) ? (int)$input['id'] : 0;
+            
+            if ($id <= 0) {
+                sendJSONResponse(null, 'ID inválido');
+                break;
+            }
+            
+            // Verificar se o registro existe
+            $existing = $db->query("SELECT id FROM volume_records WHERE id = ? AND farm_id = 1", [$id]);
+            if (empty($existing)) {
+                sendJSONResponse(null, 'Registro não encontrado');
+                break;
+            }
+            
+            // Excluir registro
+            $db->query("DELETE FROM volume_records WHERE id = ? AND farm_id = 1", [$id]);
+            
+            sendJSONResponse(['message' => 'Registro excluído com sucesso', 'id' => $id]);
+            break;
+            
         default:
             sendJSONResponse(null, 'Ação não encontrada');
     }

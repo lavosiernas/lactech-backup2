@@ -414,17 +414,43 @@ async function loadVolumeRecordsTable() {
             return shifts[shift] || shift || '-';
         };
         
-        tbody.innerHTML = rows.map(r => `
+        tbody.innerHTML = rows.map(r => {
+            const formattedDate = formatDate(r.record_date);
+            const formattedShift = formatShift(r.shift);
+            const formattedVolume = (Number(r.total_volume)||0).toFixed(2);
+            const animalsCount = r.total_animals || 0;
+            const animalsText = animalsCount == 1 ? 'animal' : 'animais';
+            
+            return `
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                <td class="py-3 px-4">${formatDate(r.record_date)}</td>
-                <td class="py-3 px-4 capitalize">${formatShift(r.shift)}</td>
-                <td class="py-3 px-4 font-semibold text-blue-600">${(Number(r.total_volume)||0).toFixed(2)} L</td>
-                <td class="py-3 px-4 text-gray-600">${r.total_animals || 0} ${r.total_animals == 1 ? 'animal' : 'animais'}</td>
-                <td class="py-3 px-4 text-right">
-                    <button onclick="viewVolumeDetails(${r.id})" class="text-blue-600 hover:text-blue-800 hover:underline font-medium text-sm" data-id="${r.id}">Detalhes</button>
+                <td class="py-3 px-4">${formattedDate}</td>
+                <td class="py-3 px-4 capitalize">${formattedShift}</td>
+                <td class="py-3 px-4 font-semibold text-blue-600">${formattedVolume} L</td>
+                <td class="py-3 px-4 text-gray-600">${animalsCount} ${animalsText}</td>
+                <td class="py-3 px-4">
+                    <div class="flex items-center justify-end gap-3">
+                        <button onclick="viewVolumeDetails(${r.id})" 
+                            class="text-blue-600 hover:text-blue-800 hover:underline font-medium text-sm px-2 py-1 rounded transition-colors" 
+                            data-id="${r.id}"
+                            title="Ver detalhes">
+                            Detalhes
+                        </button>
+                        <button onclick="confirmDeleteVolumeRecord(${r.id})" 
+                            class="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1" 
+                            title="Excluir registro"
+                            data-date="${formattedDate}"
+                            data-shift="${formattedShift}"
+                            data-volume="${formattedVolume}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Excluir
+                        </button>
+                    </div>
                 </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
         
         console.log(`✅ ${rows.length} registros de volume carregados`);
     } catch (e) {
@@ -436,11 +462,267 @@ async function loadVolumeRecordsTable() {
 }
 
 // Função para visualizar detalhes de um registro
-function viewVolumeDetails(id) {
-    console.log('Visualizar detalhes do registro:', id);
-    // Implementar modal de detalhes se necessário
-    alert('Detalhes do registro ID: ' + id);
+async function viewVolumeDetails(id) {
+    try {
+        const response = await fetch(`./api/volume.php?action=get_by_id&id=${id}`);
+        const result = await response.json();
+        
+        if (!result.success || !result.data) {
+            showErrorModal('Erro ao carregar detalhes do registro');
+            return;
+        }
+        
+        const record = result.data;
+        
+        // Formatar período
+        const formatShift = (shift) => {
+            const shifts = {
+                'manha': 'Manhã',
+                'tarde': 'Tarde',
+                'noite': 'Noite'
+            };
+            return shifts[shift] || shift || '-';
+        };
+        
+        // Formatar data
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        };
+        
+        // Criar modal de detalhes
+        const modalHtml = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeVolumeDetailsModal()">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 flex items-center justify-between sticky top-0">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Detalhes do Registro de Volume</h3>
+                            <p class="text-sm text-blue-100">ID: #${record.id}</p>
+                        </div>
+                        <button onclick="closeVolumeDetailsModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="p-6 space-y-6">
+                        <!-- Informações Principais -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Informações Principais
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Data da Coleta</label>
+                                    <p class="text-base font-medium text-slate-900">${formatDate(record.date)}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Período</label>
+                                    <p class="text-base font-medium text-slate-900">${formatShift(record.shift)}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Volume e Estatísticas -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13l8 0c1.11 0 2.08-.402 2.599-1M21 13l-8 0c-1.11 0-2.08-.402-2.599-1M16 8V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v3m4 6h.01M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                Volume e Estatísticas
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Volume Total</label>
+                                    <p class="text-2xl font-bold text-blue-600">${(record.total_volume || 0).toFixed(2)} L</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Total de Animais</label>
+                                    <p class="text-2xl font-bold text-blue-600">${record.total_animals || 0}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Média por Animal</label>
+                                    <p class="text-2xl font-bold text-blue-600">${(record.average_per_animal || 0).toFixed(2)} L</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${record.notes ? `
+                        <!-- Observações -->
+                        <div class="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Observações
+                            </h4>
+                            <p class="text-sm text-slate-700 whitespace-pre-wrap">${record.notes}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                        <button onclick="closeVolumeDetailsModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remover modal anterior se existir
+        const existingModal = document.getElementById('volumeDetailsModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Criar e adicionar novo modal
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'volumeDetailsModal';
+        modalDiv.innerHTML = modalHtml;
+        document.body.appendChild(modalDiv);
+        
+    } catch (error) {
+        console.error('Erro ao carregar detalhes:', error);
+        showErrorModal('Erro ao carregar detalhes do registro');
+    }
 }
+
+function closeVolumeDetailsModal() {
+    const modal = document.getElementById('volumeDetailsModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Função para confirmar exclusão de registro
+function confirmDeleteVolumeRecord(id) {
+    // Buscar dados do botão clicado
+    const button = event.target.closest('button');
+    const date = button?.getAttribute('data-date') || '-';
+    const shift = button?.getAttribute('data-shift') || '-';
+    const volume = button?.getAttribute('data-volume') || '-';
+    // Criar modal de confirmação
+    const modalHtml = `
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeDeleteVolumeModal()">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full" onclick="event.stopPropagation()">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Confirmar Exclusão</h3>
+                        <p class="text-sm text-red-100">Esta ação não pode ser desfeita</p>
+                    </div>
+                    <button onclick="closeDeleteVolumeModal()" class="ml-auto text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6">
+                    <p class="text-base text-slate-700 mb-4">
+                        Tem certeza que deseja excluir este registro de volume?
+                    </p>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <p class="text-sm font-semibold text-red-800 mb-2">Registro a ser excluído:</p>
+                        <ul class="text-sm text-red-700 space-y-1">
+                            <li><strong>Data:</strong> ${date}</li>
+                            <li><strong>Período:</strong> ${shift}</li>
+                            <li><strong>Volume:</strong> ${volume} L</li>
+                        </ul>
+                    </div>
+                    <p class="text-sm text-red-600 font-semibold">⚠️ Esta ação é permanente e não pode ser desfeita!</p>
+                </div>
+                
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                    <button onclick="closeDeleteVolumeModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="deleteVolumeRecord(${id})" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Sim, Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior se existir
+    const existingModal = document.getElementById('deleteVolumeModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Criar e adicionar novo modal
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'deleteVolumeModal';
+    modalDiv.innerHTML = modalHtml;
+    document.body.appendChild(modalDiv);
+}
+
+function closeDeleteVolumeModal() {
+    const modal = document.getElementById('deleteVolumeModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Função para excluir registro de volume
+async function deleteVolumeRecord(id) {
+    try {
+        const response = await fetch('./api/volume.php?action=delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: id })
+        });
+        
+        const result = await response.json();
+        
+        // Fechar modal de confirmação
+        closeDeleteVolumeModal();
+        
+        if (result.success) {
+            showSuccessModal('Registro excluído com sucesso!');
+            // Recarregar tabela
+            await loadVolumeRecordsTable();
+        } else {
+            showErrorModal(result.error || 'Erro ao excluir registro');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir registro:', error);
+        closeDeleteVolumeModal();
+        showErrorModal('Erro ao excluir registro');
+    }
+}
+
+window.viewVolumeDetails = viewVolumeDetails;
+window.closeVolumeDetailsModal = closeVolumeDetailsModal;
+window.confirmDeleteVolumeRecord = confirmDeleteVolumeRecord;
+window.closeDeleteVolumeModal = closeDeleteVolumeModal;
+window.deleteVolumeRecord = deleteVolumeRecord;
 
 // Atualizar atividades recentes
 function updateRecentActivities(activities) {
@@ -612,22 +894,326 @@ async function loadQualityRecordsTable() {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum registro</td></tr>';
             return;
         }
-        tbody.innerHTML = rows.map(r => `
-            <tr class="border-b border-gray-100">
-                <td class="py-3 px-4">${r.test_date}</td>
-                <td class="py-3 px-4">${r.fat_content ? Number(r.fat_content).toFixed(2) : '-'}</td>
-                <td class="py-3 px-4">${r.protein_content ? Number(r.protein_content).toFixed(2) : '-'}</td>
-                <td class="py-3 px-4">${r.somatic_cells ?? '-'}</td>
-                <td class="py-3 px-4 text-right">
-                    <span class="text-gray-500 text-xs">${r.laboratory || ''}</span>
+        // Formatar data para exibição
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('pt-BR');
+        };
+        
+        tbody.innerHTML = rows.map(r => {
+            const formattedDate = formatDate(r.test_date);
+            const fatContent = r.fat_content ? Number(r.fat_content).toFixed(2) : '-';
+            const proteinContent = r.protein_content ? Number(r.protein_content).toFixed(2) : '-';
+            const somaticCells = r.somatic_cells ?? '-';
+            
+            return `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td class="py-3 px-4">${formattedDate}</td>
+                <td class="py-3 px-4">${fatContent}%</td>
+                <td class="py-3 px-4">${proteinContent}%</td>
+                <td class="py-3 px-4">${somaticCells}</td>
+                <td class="py-3 px-4">
+                    <div class="flex items-center justify-end gap-3">
+                        <button onclick="viewQualityDetails(${r.id})" 
+                            class="text-blue-600 hover:text-blue-800 hover:underline font-medium text-sm px-2 py-1 rounded transition-colors" 
+                            data-id="${r.id}"
+                            title="Ver detalhes">
+                            Detalhes
+                        </button>
+                        <button onclick="confirmDeleteQualityRecord(${r.id})" 
+                            class="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1" 
+                            title="Excluir registro"
+                            data-date="${formattedDate}"
+                            data-fat="${fatContent}"
+                            data-protein="${proteinContent}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Excluir
+                        </button>
+                    </div>
                 </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
     } catch (e) {
         const tbody = document.getElementById('qualityRecordsTable');
         if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros</td></tr>';
     }
 }
+
+// ==================== FUNÇÕES DE GESTÃO DE QUALIDADE ====================
+async function viewQualityDetails(id) {
+    try {
+        const response = await fetch(`./api/quality.php?action=get_by_id&id=${id}`);
+        const result = await response.json();
+        
+        if (!result.success || !result.data) {
+            showErrorModal('Erro ao carregar detalhes do registro');
+            return;
+        }
+        
+        const record = result.data;
+        
+        // Formatar data
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        };
+        
+        // Criar modal de detalhes
+        const modalHtml = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeQualityDetailsModal()">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4 flex items-center justify-between sticky top-0">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Detalhes do Teste de Qualidade</h3>
+                            <p class="text-sm text-green-100">ID: #${record.id}</p>
+                        </div>
+                        <button onclick="closeQualityDetailsModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="p-6 space-y-6">
+                        <!-- Informações Principais -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Informações Principais
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Data do Teste</label>
+                                    <p class="text-base font-medium text-slate-900">${formatDate(record.test_date)}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Tipo de Teste</label>
+                                    <p class="text-base font-medium text-slate-900">${record.test_type || '-'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Resultados do Teste -->
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Resultados do Teste
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white rounded-lg p-4 border border-green-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Gordura (%)</label>
+                                    <p class="text-2xl font-bold text-green-600">${(record.fat_content || 0).toFixed(2)}%</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 border border-green-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Proteína (%)</label>
+                                    <p class="text-2xl font-bold text-green-600">${(record.protein_content || 0).toFixed(2)}%</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 border border-green-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">CCS</label>
+                                    <p class="text-2xl font-bold text-green-600">${record.somatic_cells || '-'}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 border border-green-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Contagem de Bactérias</label>
+                                    <p class="text-2xl font-bold text-green-600">${record.bacteria_count || '-'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${record.laboratory ? `
+                        <!-- Laboratório -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                Laboratório
+                            </h4>
+                            <p class="text-sm text-slate-700">${record.laboratory}</p>
+                            ${record.cost ? `<p class="text-sm text-slate-600 mt-2">Custo: R$ ${(record.cost).toFixed(2)}</p>` : ''}
+                        </div>
+                        ` : ''}
+                        
+                        ${record.antibiotics ? `
+                        <!-- Antibióticos -->
+                        <div class="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                Antibióticos
+                            </h4>
+                            <p class="text-sm text-slate-700">${record.antibiotics}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                        <button onclick="closeQualityDetailsModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remover modal anterior se existir
+        const existingModal = document.getElementById('qualityDetailsModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Criar e adicionar novo modal
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'qualityDetailsModal';
+        modalDiv.innerHTML = modalHtml;
+        document.body.appendChild(modalDiv);
+        
+    } catch (error) {
+        console.error('Erro ao carregar detalhes:', error);
+        showErrorModal('Erro ao carregar detalhes do registro');
+    }
+}
+
+function closeQualityDetailsModal() {
+    const modal = document.getElementById('qualityDetailsModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Função para confirmar exclusão de registro de qualidade
+function confirmDeleteQualityRecord(id) {
+    // Buscar dados do botão clicado
+    const button = event.target.closest('button');
+    const date = button?.getAttribute('data-date') || '-';
+    const fat = button?.getAttribute('data-fat') || '-';
+    const protein = button?.getAttribute('data-protein') || '-';
+    
+    // Criar modal de confirmação
+    const modalHtml = `
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeDeleteQualityModal()">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full" onclick="event.stopPropagation()">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Confirmar Exclusão</h3>
+                        <p class="text-sm text-red-100">Esta ação não pode ser desfeita</p>
+                    </div>
+                    <button onclick="closeDeleteQualityModal()" class="ml-auto text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6">
+                    <p class="text-base text-slate-700 mb-4">
+                        Tem certeza que deseja excluir este registro de qualidade?
+                    </p>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <p class="text-sm font-semibold text-red-800 mb-2">Registro a ser excluído:</p>
+                        <ul class="text-sm text-red-700 space-y-1">
+                            <li><strong>Data:</strong> ${date}</li>
+                            <li><strong>Gordura:</strong> ${fat}%</li>
+                            <li><strong>Proteína:</strong> ${protein}%</li>
+                        </ul>
+                    </div>
+                    <p class="text-sm text-red-600 font-semibold">⚠️ Esta ação é permanente e não pode ser desfeita!</p>
+                </div>
+                
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                    <button onclick="closeDeleteQualityModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="deleteQualityRecord(${id})" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Sim, Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior se existir
+    const existingModal = document.getElementById('deleteQualityModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Criar e adicionar novo modal
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'deleteQualityModal';
+    modalDiv.innerHTML = modalHtml;
+    document.body.appendChild(modalDiv);
+}
+
+function closeDeleteQualityModal() {
+    const modal = document.getElementById('deleteQualityModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Função para excluir registro de qualidade
+async function deleteQualityRecord(id) {
+    try {
+        const response = await fetch('./api/quality.php?action=delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: id })
+        });
+        
+        const result = await response.json();
+        
+        // Fechar modal de confirmação
+        closeDeleteQualityModal();
+        
+        if (result.success) {
+            showSuccessModal('Registro excluído com sucesso!');
+            // Recarregar tabela
+            await loadQualityRecordsTable();
+        } else {
+            showErrorModal(result.error || 'Erro ao excluir registro');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir registro:', error);
+        closeDeleteQualityModal();
+        showErrorModal('Erro ao excluir registro');
+    }
+}
+
+window.viewQualityDetails = viewQualityDetails;
+window.closeQualityDetailsModal = closeQualityDetailsModal;
+window.confirmDeleteQualityRecord = confirmDeleteQualityRecord;
+window.closeDeleteQualityModal = closeDeleteQualityModal;
+window.deleteQualityRecord = deleteQualityRecord;
 
 // ==================== FINANCEIRO ====================
 async function loadFinancialData() {
@@ -716,27 +1302,337 @@ async function loadFinancialRecordsTable() {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum registro</td></tr>';
             return;
         }
-        tbody.innerHTML = rows.map(r => `
-            <tr class="border-b border-gray-100">
-                <td class="py-3 px-4">${r.record_date}</td>
-                <td class="py-3 px-4">${r.type}</td>
-                <td class="py-3 px-4">${r.description || ''}</td>
-                <td class="py-3 px-4">R$ ${(Number(r.amount)||0).toFixed(2)}</td>
-                <td class="py-3 px-4 text-right"><span class="text-gray-500 text-xs">${r.created_at}</span></td>
+        // Formatar data para exibição
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('pt-BR');
+        };
+        
+        // Formatar tipo
+        const formatType = (type) => {
+            const types = {
+                'receita': 'Receita',
+                'despesa': 'Despesa',
+                'income': 'Receita',
+                'expense': 'Despesa'
+            };
+            return types[type] || type || '-';
+        };
+        
+        tbody.innerHTML = rows.map(r => {
+            const formattedDate = formatDate(r.record_date);
+            const formattedType = formatType(r.type);
+            const description = r.description || '-';
+            const amount = (Number(r.amount)||0).toFixed(2);
+            const isIncome = r.type === 'receita' || r.type === 'income';
+            
+            return `
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td class="py-3 px-4">${formattedDate}</td>
+                <td class="py-3 px-4">
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                        ${formattedType}
+                    </span>
+                </td>
+                <td class="py-3 px-4">${description}</td>
+                <td class="py-3 px-4 font-semibold ${isIncome ? 'text-green-600' : 'text-red-600'}">R$ ${amount}</td>
+                <td class="py-3 px-4">
+                    <div class="flex items-center justify-end gap-3">
+                        <button onclick="viewFinancialDetails(${r.id})" 
+                            class="text-blue-600 hover:text-blue-800 hover:underline font-medium text-sm px-2 py-1 rounded transition-colors" 
+                            data-id="${r.id}"
+                            title="Ver detalhes">
+                            Detalhes
+                        </button>
+                        <button onclick="confirmDeleteFinancialRecord(${r.id})" 
+                            class="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1" 
+                            title="Excluir registro"
+                            data-date="${formattedDate}"
+                            data-type="${formattedType}"
+                            data-amount="${amount}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Excluir
+                        </button>
+                    </div>
+                </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
     } catch (e) {
         const tbody = document.getElementById('financialRecordsTable');
         if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros</td></tr>';
     }
 }
 
+// ==================== FUNÇÕES DE GESTÃO FINANCEIRA ====================
+async function viewFinancialDetails(id) {
+    try {
+        const response = await fetch(`./api/financial.php?action=get_by_id&id=${id}`);
+        const result = await response.json();
+        
+        if (!result.success || !result.data) {
+            showErrorModal('Erro ao carregar detalhes do registro');
+            return;
+        }
+        
+        const record = result.data;
+        
+        // Formatar data
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        };
+        
+        // Formatar tipo
+        const formatType = (type) => {
+            const types = {
+                'receita': 'Receita',
+                'despesa': 'Despesa',
+                'income': 'Receita',
+                'expense': 'Despesa'
+            };
+            return types[type] || type || '-';
+        };
+        
+        const isIncome = record.type === 'receita' || record.type === 'income';
+        
+        // Criar modal de detalhes
+        const modalHtml = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeFinancialDetailsModal()">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r ${isIncome ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'} px-6 py-4 flex items-center justify-between sticky top-0">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Detalhes do Registro Financeiro</h3>
+                            <p class="text-sm ${isIncome ? 'text-green-100' : 'text-red-100'}">ID: #${record.id}</p>
+                        </div>
+                        <button onclick="closeFinancialDetailsModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="p-6 space-y-6">
+                        <!-- Informações Principais -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 ${isIncome ? 'text-green-600' : 'text-red-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Informações Principais
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Data</label>
+                                    <p class="text-base font-medium text-slate-900">${formatDate(record.record_date)}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Tipo</label>
+                                    <p class="text-base font-medium text-slate-900">
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                            ${formatType(record.type)}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Valor -->
+                        <div class="bg-gradient-to-br ${isIncome ? 'from-green-50 to-green-100 border-2 border-green-200' : 'from-red-50 to-red-100 border-2 border-red-200'} rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 ${isIncome ? 'text-green-600' : 'text-red-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Valor
+                            </h4>
+                            <div class="bg-white rounded-lg p-4 border ${isIncome ? 'border-green-200' : 'border-red-200'}">
+                                <p class="text-4xl font-bold ${isIncome ? 'text-green-600' : 'text-red-600'}">R$ ${(record.amount || 0).toFixed(2)}</p>
+                            </div>
+                        </div>
+                        
+                        ${record.description ? `
+                        <!-- Descrição -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Descrição
+                            </h4>
+                            <p class="text-sm text-slate-700 whitespace-pre-wrap">${record.description}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                        <button onclick="closeFinancialDetailsModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remover modal anterior se existir
+        const existingModal = document.getElementById('financialDetailsModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Criar e adicionar novo modal
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'financialDetailsModal';
+        modalDiv.innerHTML = modalHtml;
+        document.body.appendChild(modalDiv);
+        
+    } catch (error) {
+        console.error('Erro ao carregar detalhes:', error);
+        showErrorModal('Erro ao carregar detalhes do registro');
+    }
+}
+
+function closeFinancialDetailsModal() {
+    const modal = document.getElementById('financialDetailsModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Função para confirmar exclusão de registro financeiro
+function confirmDeleteFinancialRecord(id) {
+    // Buscar dados do botão clicado
+    const button = event.target.closest('button');
+    const date = button?.getAttribute('data-date') || '-';
+    const type = button?.getAttribute('data-type') || '-';
+    const amount = button?.getAttribute('data-amount') || '-';
+    
+    // Criar modal de confirmação
+    const modalHtml = `
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeDeleteFinancialModal()">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full" onclick="event.stopPropagation()">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Confirmar Exclusão</h3>
+                        <p class="text-sm text-red-100">Esta ação não pode ser desfeita</p>
+                    </div>
+                    <button onclick="closeDeleteFinancialModal()" class="ml-auto text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6">
+                    <p class="text-base text-slate-700 mb-4">
+                        Tem certeza que deseja excluir este registro financeiro?
+                    </p>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <p class="text-sm font-semibold text-red-800 mb-2">Registro a ser excluído:</p>
+                        <ul class="text-sm text-red-700 space-y-1">
+                            <li><strong>Data:</strong> ${date}</li>
+                            <li><strong>Tipo:</strong> ${type}</li>
+                            <li><strong>Valor:</strong> R$ ${amount}</li>
+                        </ul>
+                    </div>
+                    <p class="text-sm text-red-600 font-semibold">⚠️ Esta ação é permanente e não pode ser desfeita!</p>
+                </div>
+                
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                    <button onclick="closeDeleteFinancialModal()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="deleteFinancialRecord(${id})" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Sim, Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior se existir
+    const existingModal = document.getElementById('deleteFinancialModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Criar e adicionar novo modal
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'deleteFinancialModal';
+    modalDiv.innerHTML = modalHtml;
+    document.body.appendChild(modalDiv);
+}
+
+function closeDeleteFinancialModal() {
+    const modal = document.getElementById('deleteFinancialModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Função para excluir registro financeiro
+async function deleteFinancialRecord(id) {
+    try {
+        const response = await fetch('./api/financial.php?action=delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: id })
+        });
+        
+        const result = await response.json();
+        
+        // Fechar modal de confirmação
+        closeDeleteFinancialModal();
+        
+        if (result.success) {
+            showSuccessModal('Registro excluído com sucesso!');
+            // Recarregar tabela
+            await loadFinancialRecordsTable();
+        } else {
+            showErrorModal(result.error || 'Erro ao excluir registro');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir registro:', error);
+        closeDeleteFinancialModal();
+        showErrorModal('Erro ao excluir registro');
+    }
+}
+
+window.viewFinancialDetails = viewFinancialDetails;
+window.closeFinancialDetailsModal = closeFinancialDetailsModal;
+window.confirmDeleteFinancialRecord = confirmDeleteFinancialRecord;
+window.closeDeleteFinancialModal = closeDeleteFinancialModal;
+window.deleteFinancialRecord = deleteFinancialRecord;
+
 // ==================== USUÁRIOS ====================
 async function loadUsersData() {
     console.log('📊 Carregando dados de usuários...');
     
     try {
-        const response = await fetch('./api/endpoints/users.php');
+        const response = await fetch('./api/users.php?action=select');
         const result = await response.json();
         
         if (result.success) {
@@ -744,13 +1640,25 @@ async function loadUsersData() {
             
             // Atualizar métricas de usuários
             const n = (v) => { const num = typeof v === 'number' ? v : parseFloat(v); return Number.isFinite(num) ? num : 0; };
+            
+            // Total de usuários
             const totalUsersEl = document.getElementById('totalUsers');
             if (totalUsersEl) {
-                totalUsersEl.textContent = String(n(data.stats?.total_users).toFixed(0));
+                totalUsersEl.textContent = String(n(data.total).toFixed(0));
             }
-            const activeUsersMetric = document.querySelector('#users-tab #activeUsers');
-            if (activeUsersMetric) {
-                activeUsersMetric.textContent = String(n(data.stats?.active_users).toFixed(0));
+            
+            // Usuários ativos - atualizar todos os elementos com esse ID
+            const activeUsersMetrics = document.querySelectorAll('#activeUsers');
+            activeUsersMetrics.forEach(el => {
+                const activeCount = n(data.active);
+                el.textContent = String(activeCount.toFixed(0));
+            });
+            
+            // Debug se necessário
+            if (activeUsersMetrics.length === 0) {
+                console.warn('Elemento activeUsers não encontrado');
+            } else {
+                console.log('✅ Usuários Ativos atualizado:', data.active, 'elementos encontrados:', activeUsersMetrics.length);
             }
             
             // Preencher tabela de usuários
@@ -758,19 +1666,78 @@ async function loadUsersData() {
             if (tbody) {
                 const rows = Array.isArray(data.users) ? data.users : [];
                 if (rows.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum usuário</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum usuário</td></tr>';
                 } else {
-                    tbody.innerHTML = rows.map(u => `
-                        <tr class=\"border-b border-gray-100\"> 
-                            <td class=\"py-3 px-4\">${u.name}</td>
-                            <td class=\"py-3 px-4\">${u.email}</td>
-                            <td class=\"py-3 px-4\">${u.role}</td>
-                            <td class=\"py-3 px-4\">${u.is_active == 1 ? 'Ativo' : 'Inativo'}</td>
-                            <td class=\"py-3 px-4 text-right\">
-                                <span class=\"text-gray-500 text-xs\">${u.last_login ?? ''}</span>
-                            </td>
-                        </tr>
-                    `).join('');
+                    tbody.innerHTML = rows.map(u => {
+                        // Foto do usuário ou ícone padrão
+                        const photoUrl = u.profile_photo ? `./uploads/profiles/${u.profile_photo.split('/').pop()}` : null;
+                        const photoHtml = photoUrl ? 
+                            `<img src="${photoUrl}?t=${Date.now()}" alt="${u.name}" class="w-10 h-10 rounded-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                             <svg class="w-10 h-10 text-gray-400 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                             </svg>` :
+                            `<svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                             </svg>`;
+                        
+                        // Status badge
+                        const statusBadge = u.is_active ? 
+                            '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Ativo</span>' :
+                            '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Bloqueado</span>';
+                        
+                        // Ações (bloquear/desbloquear e excluir)
+                        let actionsHtml = '<div class="flex items-center gap-2">';
+                        
+                        if (u.can_block) {
+                            const blockAction = u.is_active ? 'bloquear' : 'desbloquear';
+                            const blockIcon = u.is_active ? 
+                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>' :
+                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+                            const blockColor = u.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600';
+                            const blockText = u.is_active ? 'Bloquear' : 'Desbloquear';
+                            
+                            actionsHtml += `<button onclick="toggleUserBlock(${u.id}, ${u.is_active ? 0 : 1})" 
+                                class="${blockColor} text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" 
+                                title="${blockText} usuário">
+                                ${blockIcon}
+                                ${blockText}
+                            </button>`;
+                        }
+                        
+                        if (u.can_delete) {
+                            actionsHtml += `<button onclick="deleteUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" 
+                                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" 
+                                title="Excluir usuário">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Excluir
+                            </button>`;
+                        }
+                        
+                        if (!u.can_block && !u.can_delete) {
+                            actionsHtml += '<span class="text-gray-400 text-xs">Sem ações disponíveis</span>';
+                        }
+                        
+                        actionsHtml += '</div>';
+                        
+                        return `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors"> 
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center justify-center">
+                                        ${photoHtml}
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 font-medium">${u.name}</td>
+                                <td class="py-3 px-4 text-gray-600">${u.email}</td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold capitalize">${u.role}</span>
+                                </td>
+                                <td class="py-3 px-4">${statusBadge}</td>
+                                <td class="py-3 px-4">${actionsHtml}</td>
+                            </tr>
+                        `;
+                    }).join('');
                 }
             }
             
@@ -782,6 +1749,66 @@ async function loadUsersData() {
         console.error('Erro na requisição de usuários:', error);
     }
 }
+
+// ==================== FUNÇÕES DE GESTÃO DE USUÁRIOS ====================
+async function toggleUserBlock(userId, newStatus) {
+    if (!confirm(`Tem certeza que deseja ${newStatus === 1 ? 'desbloquear' : 'bloquear'} este usuário?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('./api/users.php?action=toggle_block', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccessModal(result.data.message);
+            loadUsersData(); // Recarregar lista
+        } else {
+            showErrorModal(result.error || 'Erro ao bloquear/desbloquear usuário');
+        }
+    } catch (error) {
+        console.error('Erro ao bloquear/desbloquear usuário:', error);
+        showErrorModal('Erro ao bloquear/desbloquear usuário');
+    }
+}
+
+async function deleteUser(userId, userName) {
+    if (!confirm(`Tem certeza que deseja excluir o usuário "${userName}"?\n\nEsta ação não pode ser desfeita!`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('./api/users.php?action=delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccessModal(result.data.message);
+            loadUsersData(); // Recarregar lista
+        } else {
+            showErrorModal(result.error || 'Erro ao excluir usuário');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir usuário:', error);
+        showErrorModal('Erro ao excluir usuário');
+    }
+}
+
+window.toggleUserBlock = toggleUserBlock;
+window.deleteUser = deleteUser;
 
 // ==================== EXPORTAR FUNÇÕES GLOBAIS ====================
 window.loadDashboardData = loadDashboardData;
@@ -955,24 +1982,33 @@ document.addEventListener('DOMContentLoaded', () => {
             
             formData.append('action', 'add_volume_general');
             try {
-                const resp = await fetch('./api/actions.php', { method: 'POST', body: formData });
-                const result = await resp.json();
+                const result = await offlineFetch('./api/actions.php', formData, 'volume_general');
                 if (result.success) {
                     // Mostrar mensagem de sucesso
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
+                        if (result.offline) {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> ' + (result.message || 'Registro salvo offline. Será sincronizado quando a conexão for restaurada.');
+                        } else {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
+                        }
                         messageDiv.classList.remove('hidden');
                     }
 
                     // Resetar formulário
                     generalVolumeForm.reset();
 
-                    // Fechar modal após 1.5s
-                    setTimeout(() => {
-                        if (window.closeGeneralVolumeOverlay) window.closeGeneralVolumeOverlay();
-                        loadVolumeData();
-                    }, 1500);
+                    // Fechar modal após 1.5s (apenas se estiver online)
+                    if (!result.offline) {
+                        setTimeout(() => {
+                            if (window.closeGeneralVolumeOverlay) window.closeGeneralVolumeOverlay();
+                            loadVolumeData();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            if (window.closeGeneralVolumeOverlay) window.closeGeneralVolumeOverlay();
+                        }, 2000);
+                    }
                 } else {
                     // Mostrar mensagem de erro
                     if (messageDiv) {
@@ -987,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Falha ao registrar volume geral:', err);
                 if (messageDiv) {
                     messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
-                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro de conexão. Tente novamente.';
+                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro ao processar registro. ' + (err.message || 'Tente novamente.');
                     messageDiv.classList.remove('hidden');
                 }
                 submitBtn.disabled = false;
@@ -1017,24 +2053,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(volumeForm);
             formData.append('action', 'add_volume_by_animal');
             try {
-                const resp = await fetch('./api/actions.php', { method: 'POST', body: formData });
-                const result = await resp.json();
+                const result = await offlineFetch('./api/actions.php', formData, 'volume_animal');
                 if (result.success) {
                     // Mostrar mensagem de sucesso
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
+                        if (result.offline) {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> ' + (result.message || 'Registro salvo offline. Será sincronizado quando a conexão for restaurada.');
+                        } else {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
+                        }
                         messageDiv.classList.remove('hidden');
                     }
 
                     // Resetar formulário
                     volumeForm.reset();
 
-                    // Fechar modal após 1.5s
-                    setTimeout(() => {
-                        if (window.closeVolumeOverlay) window.closeVolumeOverlay();
-                        loadVolumeData();
-                    }, 1500);
+                    // Fechar modal após 1.5s (apenas se estiver online)
+                    if (!result.offline) {
+                        setTimeout(() => {
+                            if (window.closeVolumeOverlay) window.closeVolumeOverlay();
+                            loadVolumeData();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            if (window.closeVolumeOverlay) window.closeVolumeOverlay();
+                        }, 2000);
+                    }
                 } else {
                     // Mostrar mensagem de erro
                     if (messageDiv) {
@@ -1079,24 +2124,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(qualityForm);
             formData.append('action', 'add_quality_test');
             try {
-                const resp = await fetch('./api/actions.php', { method: 'POST', body: formData });
-                const result = await resp.json();
+                const result = await offlineFetch('./api/actions.php', formData, 'quality');
                 if (result.success) {
                     // Mostrar mensagem de sucesso
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Teste registrado com sucesso!';
+                        if (result.offline) {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> ' + (result.message || 'Registro salvo offline. Será sincronizado quando a conexão for restaurada.');
+                        } else {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Teste registrado com sucesso!';
+                        }
                         messageDiv.classList.remove('hidden');
                     }
 
                     // Resetar formulário
                     qualityForm.reset();
 
-                    // Fechar modal após 1.5s
-                    setTimeout(() => {
-                        if (window.closeQualityOverlay) window.closeQualityOverlay();
-                        loadQualityData();
-                    }, 1500);
+                    // Fechar modal após 1.5s (apenas se estiver online)
+                    if (!result.offline) {
+                        setTimeout(() => {
+                            if (window.closeQualityOverlay) window.closeQualityOverlay();
+                            loadQualityData();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            if (window.closeQualityOverlay) window.closeQualityOverlay();
+                        }, 2000);
+                    }
                 } else {
                     // Mostrar mensagem de erro
                     if (messageDiv) {
@@ -1145,24 +2199,33 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('description', `Venda para ${formData.get('customer')}`);
             formData.append('amount', formData.get('total_amount'));
             try {
-                const resp = await fetch('./api/actions.php', { method: 'POST', body: formData });
-                const result = await resp.json();
+                const result = await offlineFetch('./api/actions.php', formData, 'financial');
                 if (result.success) {
                     // Mostrar mensagem de sucesso
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Venda registrada com sucesso!';
+                        if (result.offline) {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> ' + (result.message || 'Registro salvo offline. Será sincronizado quando a conexão for restaurada.');
+                        } else {
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Venda registrada com sucesso!';
+                        }
                         messageDiv.classList.remove('hidden');
                     }
 
                     // Resetar formulário
                     salesForm.reset();
 
-                    // Fechar modal após 1.5s
-                    setTimeout(() => {
-                        if (window.closeSalesOverlay) window.closeSalesOverlay();
-                        loadFinancialData();
-                    }, 1500);
+                    // Fechar modal após 1.5s (apenas se estiver online)
+                    if (!result.offline) {
+                        setTimeout(() => {
+                            if (window.closeSalesOverlay) window.closeSalesOverlay();
+                            loadFinancialData();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            if (window.closeSalesOverlay) window.closeSalesOverlay();
+                        }, 2000);
+                    }
                 } else {
                     // Mostrar mensagem de erro
                     if (messageDiv) {
@@ -3689,11 +4752,15 @@ async function loadNotifications() {
     const bellCountEl = document.getElementById('notificationsBellCount');
     if (!list) return;
     list.innerHTML = '<div class="text-sm text-gray-500">Carregando...</div>';
-    const res = await fetch('./api/endpoints/notifications.php');
+    
+    // Usar a nova API de notificações
+    const res = await fetch('./api/notifications-api.php?action=get');
     if (!res.ok) { list.innerHTML = '<div class="text-sm text-red-500">Erro ao carregar</div>'; return; }
     const data = await res.json().catch(() => ({}));
     const items = (data.notifications || data.items || data.data || []);
-    const unreadCount = Array.isArray(items) ? items.filter(i => (i.read === 0 || i.lida === 0 || i.unread === true || i.read === false)).length : 0;
+    
+    // Usar is_read do banco de dados
+    const unreadCount = Array.isArray(items) ? items.filter(i => (i.is_read === 0 || i.is_read === false || i.read === 0 || i.read === false)).length : (data.unread_count || 0);
     
     // Atualizar contador no cabeçalho do drawer
     if (countEl) {
@@ -3721,7 +4788,8 @@ function renderNotificationItem(item) {
     const title = (item.title || item.tipo || 'Notificação');
     const message = (item.message || item.mensagem || item.descricao || '');
     const dateStr = (item.created_at || item.data || item.date || '');
-    const unread = (item.read === 0 || item.lida === 0 || item.unread === true);
+    // Usar is_read do banco de dados
+    const unread = (item.is_read === 0 || item.is_read === false || item.read === 0 || item.lida === 0 || item.unread === true);
     const type = (item.type || item.tipo || '').toString().toLowerCase();
     const color = type.includes('alert') || type.includes('erro') || type.includes('crit') ? 'red' :
                   type.includes('warn') || type.includes('aten') ? 'amber' :
@@ -3753,12 +4821,149 @@ function renderNotificationItem(item) {
 
 window.markAllNotificationsRead = async function markAllNotificationsRead() {
     try {
-        await fetch('./api/endpoints/notifications.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'mark_all_read' }) });
+        await fetch('./api/notifications-api.php?action=mark_all_read', { method: 'POST' });
         await loadNotifications();
     } catch (e) {
         console.error('Erro ao marcar como lidas', e);
     }
 };
+
+// Função para verificar e mostrar notificações push
+function checkAndShowPushNotifications(notifications) {
+    // Verificar se a API de Notificações está disponível
+    if (!('Notification' in window)) {
+        console.log('Notificações não suportadas neste navegador');
+        return;
+    }
+    
+    // Verificar permissão
+    if (Notification.permission === 'granted') {
+        // Buscar notificações não lidas e recentes (últimos 5 minutos)
+        const recentUnread = notifications.filter(n => {
+            const isUnread = (n.is_read === 0 || n.is_read === false);
+            if (!isUnread) return false;
+            
+            const createdAt = new Date(n.created_at);
+            const now = new Date();
+            const diffMinutes = (now - createdAt) / (1000 * 60);
+            
+            // Mostrar apenas notificações dos últimos 5 minutos
+            return diffMinutes <= 5;
+        });
+        
+        // Mostrar push para notificações recentes
+        recentUnread.forEach(notification => {
+            showPushNotification(notification);
+        });
+    } else if (Notification.permission === 'default') {
+        // Solicitar permissão se ainda não foi solicitada
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                checkAndShowPushNotifications(notifications);
+            }
+        });
+    }
+}
+
+// Função para mostrar notificação push
+function showPushNotification(notification) {
+    const title = notification.title || 'Nova Notificação';
+    const message = notification.message || '';
+    
+    const notificationObj = new Notification(title, {
+        body: message,
+        icon: '/assets/img/lactech-logo.png',
+        badge: '/assets/img/lactech-logo.png',
+        tag: 'lactech-notification-' + notification.id,
+        requireInteraction: false,
+        data: {
+            notificationId: notification.id,
+            link: notification.link || null
+        }
+    });
+    
+    // Ao clicar na notificação, abrir o link ou focar na janela
+    notificationObj.onclick = function(event) {
+        event.preventDefault();
+        window.focus();
+        
+        if (notification.link) {
+            window.location.href = notification.link;
+        } else {
+            // Abrir drawer de notificações
+            if (typeof openNotificationsDrawer === 'function') {
+                openNotificationsDrawer();
+            }
+        }
+        
+        // Marcar como lida
+        if (notification.id) {
+            fetch(`./api/notifications-api.php?action=mark_read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: notification.id })
+            });
+        }
+        
+        notificationObj.close();
+    };
+    
+    // Fechar automaticamente após 5 segundos
+    setTimeout(() => {
+        notificationObj.close();
+    }, 5000);
+}
+
+// Função para alterar senha com OTP
+async function changePasswordWithOTP(newPassword, confirmPassword) {
+    try {
+        // 1. Gerar OTP
+        const otpResponse = await fetch('./api/security.php?action=generate_otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action_type: 'password_change' })
+        });
+        
+        const otpResult = await otpResponse.json();
+        
+        if (!otpResult.success) {
+            showErrorModal(otpResult.error || 'Erro ao gerar código OTP');
+            return;
+        }
+        
+        // 2. Solicitar código OTP do usuário via modal
+        openOtpPasswordModal('Alterar Senha', 'Digite o código OTP enviado para seu e-mail Google vinculado:', false, async function(otpCode) {
+            // 3. Alterar senha com OTP
+            const changePasswordResponse = await fetch('./api/security.php?action=change_password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    new_password: newPassword,
+                    confirm_password: confirmPassword,
+                    otp_code: otpCode
+                })
+            });
+            
+            const changePasswordResult = await changePasswordResponse.json();
+            
+            if (changePasswordResult.success) {
+                showSuccessModal('Senha alterada com sucesso! Todas as sessões foram encerradas por segurança.');
+                // Limpar campos
+                document.getElementById('profileNewPassword').value = '';
+                document.getElementById('profileConfirmPassword').value = '';
+                
+                if (typeof loadAccountActions === 'function') {
+                    loadAccountActions();
+                }
+            } else {
+                showErrorModal(changePasswordResult.error || 'Erro ao alterar senha');
+            }
+        });
+    } catch (e) {
+        console.error('Erro ao alterar senha:', e);
+        showErrorModal('Erro ao alterar senha. Tente novamente.');
+    }
+}
 
 function escapeHtml(s){
     if (s == null) return '';
@@ -3770,35 +4975,669 @@ let profileOriginalValues = {};
 let profileEditMode = false;
 let profilePhotoFile = null;
 
+// Funções de segurança do perfil - ATIVADO
+window.loadSecurityStatus = async function loadSecurityStatus() {
+    try {
+        // Carregar status do Google
+        const response = await fetch('./api/google-auth.php?action=get_status');
+        const result = await response.json();
+        
+        if (result.success) {
+            const isLinked = result.linked || false;
+            const googleData = result.data || null;
+            window.googleAccountUserEmail = result.user_email || null;
+            
+            // Atualizar UI do Google
+            updateGoogleUI(isLinked, googleData);
+            
+            // Sempre habilitar campos de senha (Google não é mais obrigatório)
+            togglePasswordFields(isLinked);
+        } else {
+            console.error('Erro ao carregar status do Google:', result.error);
+            // Em caso de erro, mostrar como não vinculado
+            updateGoogleUI(false, null);
+            togglePasswordFields(false);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar status de segurança:', error);
+        // Em caso de erro, mostrar como não vinculado
+        updateGoogleUI(false, null);
+        togglePasswordFields(false);
+    }
+};
+
+function updateGoogleUI(isLinked, googleData) {
+    const statusEl = document.getElementById('googleAccountStatus');
+    const linkBtn = document.getElementById('linkGoogleBtn');
+    const unlinkBtn = document.getElementById('unlinkGoogleBtn');
+    const googleEmailEl = document.getElementById('googleAccountEmail');
+    const googleSettingsBtn = document.getElementById('googleAccountSettingsBtn');
+    const googleNotLinkedText = document.getElementById('googleAccountNotLinkedText');
+    
+    // Armazenar dados globalmente para uso no modal
+    window.googleAccountData = googleData || {};
+    
+    if (statusEl) {
+        if (isLinked && googleData) {
+            statusEl.textContent = 'Vinculada';
+            statusEl.className = 'text-xs px-2 py-1 rounded-lg bg-green-100 text-green-700';
+            if (linkBtn) linkBtn.classList.add('hidden');
+            if (unlinkBtn) unlinkBtn.classList.remove('hidden');
+            if (googleSettingsBtn) googleSettingsBtn.classList.remove('hidden');
+            if (googleNotLinkedText) googleNotLinkedText.classList.add('hidden');
+            
+            // Mostrar email vinculado
+            if (googleEmailEl) {
+                const emailSpan = googleEmailEl.querySelector('span');
+                if (emailSpan) {
+                    // Verificar se tem email, caso contrário mostrar mensagem
+                    const email = googleData.email || null;
+                    const userEmail = window.googleAccountUserEmail || null;
+                    
+                    if (email && email.trim() !== '' && email !== 'null' && email !== 'undefined') {
+                        emailSpan.textContent = email;
+                        emailSpan.classList.remove('text-red-600', 'text-yellow-600');
+                        emailSpan.classList.add('text-green-600');
+                    } else if (userEmail && userEmail.trim() !== '') {
+                        // Usar email do sistema como fallback
+                        emailSpan.textContent = userEmail + ' (email do sistema)';
+                        emailSpan.classList.remove('text-red-600', 'text-green-600');
+                        emailSpan.classList.add('text-yellow-600');
+                    } else {
+                        emailSpan.textContent = 'Email não disponível - Verifique sua conta Google';
+                        emailSpan.classList.remove('text-green-600', 'text-yellow-600');
+                        emailSpan.classList.add('text-red-600');
+                    }
+                }
+                googleEmailEl.classList.remove('hidden');
+            }
+        } else {
+            statusEl.textContent = 'Não vinculada';
+            statusEl.className = 'text-xs px-2 py-1 rounded-lg bg-gray-200 text-gray-700';
+            if (linkBtn) linkBtn.classList.remove('hidden');
+            if (unlinkBtn) unlinkBtn.classList.add('hidden');
+            if (googleSettingsBtn) googleSettingsBtn.classList.add('hidden');
+            if (googleEmailEl) googleEmailEl.classList.add('hidden');
+            if (googleNotLinkedText) googleNotLinkedText.classList.remove('hidden');
+        }
+    }
+}
+
+// Abrir modal de configurações da conta Google
+window.openGoogleAccountSettings = function openGoogleAccountSettings() {
+    openGoogleSettingsModal();
+};
+
+// Abrir e preencher modal de configurações da conta Google
+async function openGoogleSettingsModal() {
+    const modal = document.getElementById('googleSettingsModal');
+    if (!modal) {
+        console.error('Modal de configurações Google não encontrado');
+        return;
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    
+    // Carregar dados do Google
+    try {
+        const response = await fetch('./api/google-auth.php?action=get_status');
+        const result = await response.json();
+        
+        if (result.success && result.linked && result.data) {
+            const googleData = result.data;
+            
+            // Preencher email
+            const emailEl = document.getElementById('googleSettingsEmail');
+            if (emailEl) {
+                emailEl.textContent = googleData.email || 'N/A';
+            }
+            
+            // Preencher nome
+            const nameEl = document.getElementById('googleSettingsName');
+            if (nameEl) {
+                nameEl.textContent = googleData.name || 'N/A';
+            }
+            
+            // Preencher data de vinculação
+            const linkedAtEl = document.getElementById('googleSettingsLinkedAt');
+            if (linkedAtEl && googleData.linked_at) {
+                const linkedDate = new Date(googleData.linked_at);
+                const formattedDate = linkedDate.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                linkedAtEl.textContent = formattedDate;
+            } else if (linkedAtEl) {
+                linkedAtEl.textContent = 'N/A';
+            }
+        } else {
+            // Se não estiver vinculado, mostrar mensagem
+            const emailEl = document.getElementById('googleSettingsEmail');
+            const nameEl = document.getElementById('googleSettingsName');
+            const linkedAtEl = document.getElementById('googleSettingsLinkedAt');
+            
+            if (emailEl) emailEl.textContent = 'Nenhuma conta vinculada';
+            if (nameEl) nameEl.textContent = 'N/A';
+            if (linkedAtEl) linkedAtEl.textContent = 'N/A';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados do Google:', error);
+        
+        // Mostrar erro nos campos
+        const emailEl = document.getElementById('googleSettingsEmail');
+        const nameEl = document.getElementById('googleSettingsName');
+        const linkedAtEl = document.getElementById('googleSettingsLinkedAt');
+        
+        if (emailEl) emailEl.textContent = 'Erro ao carregar';
+        if (nameEl) nameEl.textContent = 'Erro ao carregar';
+        if (linkedAtEl) linkedAtEl.textContent = 'Erro ao carregar';
+    }
+}
+
+// Fechar modal de configurações da conta Google
+window.closeGoogleSettingsModal = function closeGoogleSettingsModal() {
+    const modal = document.getElementById('googleSettingsModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+};
+
+// FUNÇÃO DESATIVADA - Campos de senha sempre habilitados agora (sem necessidade de Google)
+function togglePasswordFields(isGoogleLinked) {
+    // DESATIVADO: Sempre habilitar campos de senha (não precisa mais de Google vinculado)
+    const newPasswordInput = document.getElementById('profileNewPassword');
+    const confirmPasswordInput = document.getElementById('profileConfirmPassword');
+    const passwordToggle = document.getElementById('profilePasswordToggle');
+    const warningEl = document.getElementById('passwordChangeWarning');
+    
+    // Sempre habilitar (independente do Google)
+    if (newPasswordInput) {
+        newPasswordInput.disabled = false;
+        newPasswordInput.classList.remove('cursor-not-allowed');
+    }
+    if (confirmPasswordInput) {
+        confirmPasswordInput.disabled = false;
+        confirmPasswordInput.classList.remove('cursor-not-allowed');
+    }
+    if (passwordToggle) {
+        passwordToggle.disabled = false;
+    }
+    if (warningEl) {
+        warningEl.classList.add('hidden'); // Esconder aviso
+    }
+}
+
+// Vincular conta Google via OAuth
+window.linkGoogleAccount = async function linkGoogleAccount() {
+    try {
+        // Obter URL de autorização do Google
+        const response = await fetch('./api/google-auth.php?action=get_auth_url');
+        const result = await response.json();
+        
+        if (!result.success) {
+            // Se for erro de ambiente local, mostrar mensagem mais detalhada
+            if (result.local_detected) {
+                let errorMsg = result.error + '\n\n';
+                if (result.solutions) {
+                    errorMsg += 'Soluções:\n' + result.solutions.join('\n');
+                }
+                showErrorModal(errorMsg);
+            } else {
+                showErrorModal(result.error || 'Erro ao iniciar vinculação Google. Verifique se as credenciais estão configuradas.');
+            }
+            return;
+        }
+        
+        // IMPORTANTE: Verificar se a redirect_uri está correta
+        if (result.debug && result.debug.redirect_uri) {
+            console.log('🔍 Google OAuth - redirect_uri:', result.debug.redirect_uri);
+            console.log('🔍 Google OAuth - auth_url:', result.auth_url);
+            
+            // Validar que a redirect_uri está correta (sem /lactech/ na raiz do domínio)
+            const expectedUri = 'https://lactechsys.com/google-callback.php';
+            if (result.debug.redirect_uri !== expectedUri) {
+                console.warn('⚠️ AVISO: redirect_uri diferente do esperado');
+                console.warn('⚠️ Esperado:', expectedUri);
+                console.warn('⚠️ Recebido:', result.debug.redirect_uri);
+                // Não bloquear, apenas logar aviso (pode ser ambiente local ou configuração diferente)
+                // A validação real será feita pelo Google durante o OAuth
+            }
+        }
+        
+        // Abrir popup do Google OAuth
+        const width = 500;
+        const height = 600;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        
+        const popup = window.open(
+            result.auth_url,
+            'google-oauth',
+            `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,menubar=no`
+        );
+        
+        // Usar postMessage em vez de verificar window.closed (evita erro Cross-Origin-Opener-Policy)
+        // O callback do Google enviará mensagem para este window quando concluir
+        
+        // Escutar mensagens do popup (quando callback retorna)
+        const messageHandler = async function(event) {
+            // Verificar origem por segurança
+            if (event.origin !== window.location.origin && event.origin !== 'https://lactechsys.com') {
+                return;
+            }
+            
+            // Verificar se tem dados e tipo
+            if (!event.data || !event.data.type) {
+                return;
+            }
+            
+            if (event.data.type === 'google_oauth_success') {
+                // Remover listener
+                window.removeEventListener('message', messageHandler);
+                
+                // Fechar popup se ainda estiver aberto
+                if (popup && !popup.closed) {
+                    try {
+                        popup.close();
+                    } catch (e) {
+                        // Ignorar erro se popup já foi fechado ou bloqueado por Cross-Origin
+                    }
+                }
+                
+                // Fechar popup imediatamente (garantir que feche)
+                if (popup && !popup.closed) {
+                    try {
+                        popup.close();
+                    } catch (e) {
+                        // Ignorar erro se popup já foi fechado
+                    }
+                }
+                
+                // Mostrar modal de conta vinculada
+                showGoogleLinkedModal(event.data.message || 'Conta Google vinculada com sucesso! Você pode receber códigos OTP por e-mail.');
+                
+                // Recarregar status de segurança
+                if (typeof loadSecurityStatus === 'function') {
+                    await loadSecurityStatus();
+                }
+            } else if (event.data.type === 'google_oauth_error') {
+                // Remover listener
+                window.removeEventListener('message', messageHandler);
+                
+                // Fechar popup se ainda estiver aberto
+                if (popup && !popup.closed) {
+                    try {
+                        popup.close();
+                    } catch (e) {
+                        // Ignorar erro se popup já foi fechado ou bloqueado por Cross-Origin
+                    }
+                }
+                
+                // Mostrar erro
+                showErrorModal(event.data.message || 'Erro ao vincular conta Google.');
+            }
+        };
+        
+        window.addEventListener('message', messageHandler);
+        
+        // Fallback: verificar se popup foi fechado manualmente (com tratamento de erro para Cross-Origin)
+        const checkPopupInterval = setInterval(() => {
+            try {
+                if (popup.closed) {
+                    clearInterval(checkPopupInterval);
+                    window.removeEventListener('message', messageHandler);
+                    // Se fechou manualmente, verificar status
+                    setTimeout(async () => {
+                        if (typeof loadSecurityStatus === 'function') {
+                            await loadSecurityStatus();
+                        }
+                    }, 1000);
+                }
+            } catch (e) {
+                // Se der erro Cross-Origin-Opener-Policy, ignorar e confiar apenas no postMessage
+                // Não limpar o intervalo, apenas ignorar o erro
+            }
+        }, 1000);
+        
+    } catch (e) {
+        console.error('Erro ao vincular Google:', e);
+        showErrorModal('Erro ao iniciar vinculação Google. Tente novamente.');
+    }
+};
+
+// Abrir modal de confirmação para desvincular Google
+window.unlinkGoogleAccount = function unlinkGoogleAccount() {
+    openUnlinkGoogleModal();
+};
+
+// Confirmar desvincular Google
+window.confirmUnlinkGoogle = async function confirmUnlinkGoogle() {
+    closeUnlinkGoogleModal();
+    
+    try {
+        // Primeiro, gerar OTP
+        const otpResponse = await fetch('./api/security.php?action=generate_otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action_type: 'google_unlink' })
+        });
+        
+        const otpResult = await otpResponse.json();
+        
+        if (!otpResult.success) {
+            showErrorModal(otpResult.error || 'Erro ao gerar código OTP');
+            return;
+        }
+        
+        // Abrir modal para inserir OTP e senha
+        openOtpPasswordModal('Desvincular Conta Google', 'Digite o código OTP enviado para seu e-mail e sua senha atual:', true, async function(otpCode, currentPassword) {
+            try {
+                const response = await fetch('./api/google-auth.php?action=unlink_account', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        otp_code: otpCode,
+                        current_password: currentPassword
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccessModal('Conta Google desvinculada com sucesso');
+                    if (typeof loadSecurityStatus === 'function') {
+                        await loadSecurityStatus();
+                    }
+                } else {
+                    showErrorModal(result.error || 'Erro ao desvincular conta Google');
+                }
+            } catch (e) {
+                console.error('Erro ao desvincular Google:', e);
+                showErrorModal('Erro ao desvincular conta Google');
+            }
+        });
+    } catch (e) {
+        console.error('Erro ao desvincular Google:', e);
+        showErrorModal('Erro ao desvincular conta Google');
+    }
+};
+
+// Configurar 2FA (placeholder)
+window.setup2FA = function setup2FA() {
+    showErrorModal('Funcionalidade 2FA será implementada em breve');
+};
+
+// Desativar 2FA (placeholder)
+window.disable2FA = function disable2FA() {
+    showErrorModal('Funcionalidade 2FA será implementada em breve');
+};
+
+// ==================== MÁSCARAS DE FORMATAÇÃO ====================
+
+/**
+ * Formata número de telefone brasileiro
+ * Suporta celular (11 dígitos) e fixo (10 dígitos)
+ * @param {string} value - Número sem formatação
+ * @returns {string} - Número formatado: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+ */
+function formatPhone(value) {
+    if (!value) return '';
+    
+    // Remove tudo que não é dígito
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos (celular) ou 10 dígitos (fixo)
+    const limited = numbers.slice(0, 11);
+    
+    // Aplica máscara
+    if (limited.length <= 10) {
+        // Telefone fixo: (XX) XXXX-XXXX
+        return limited.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    } else {
+        // Celular: (XX) XXXXX-XXXX
+        return limited.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    }
+}
+
+/**
+ * Formata CNPJ brasileiro
+ * @param {string} value - CNPJ sem formatação
+ * @returns {string} - CNPJ formatado: XX.XXX.XXX/XXXX-XX
+ */
+function formatCNPJ(value) {
+    if (!value) return '';
+    
+    // Remove tudo que não é dígito
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limita a 14 dígitos
+    const limited = numbers.slice(0, 14);
+    
+    // Aplica máscara: XX.XXX.XXX/XXXX-XX
+    return limited.replace(
+        /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+        '$1.$2.$3/$4-$5'
+    );
+}
+
+/**
+ * Configura máscaras nos campos de telefone e CNPJ do perfil
+ */
+function setupProfileMasks() {
+    // Máscara para telefone do usuário
+    const profilePhoneEl = document.getElementById('profilePhone');
+    if (profilePhoneEl) {
+        // Remover listeners antigos
+        profilePhoneEl.removeEventListener('input', handlePhoneInput);
+        // Adicionar novo listener
+        profilePhoneEl.addEventListener('input', handlePhoneInput);
+    }
+    
+    // Máscara para telefone da fazenda
+    const farmPhoneEl = document.getElementById('farmPhone');
+    if (farmPhoneEl) {
+        // Remover listeners antigos
+        farmPhoneEl.removeEventListener('input', handlePhoneInput);
+        // Adicionar novo listener
+        farmPhoneEl.addEventListener('input', handlePhoneInput);
+    }
+    
+    // Máscara para CNPJ
+    const farmCNPJEl = document.getElementById('farmCNPJ');
+    if (farmCNPJEl) {
+        // Remover listeners antigos
+        farmCNPJEl.removeEventListener('input', handleCNPJInput);
+        // Adicionar novo listener
+        farmCNPJEl.addEventListener('input', handleCNPJInput);
+    }
+}
+
+/**
+ * Handler para input de telefone
+ */
+function handlePhoneInput(e) {
+    const cursorPos = e.target.selectionStart;
+    const oldValue = e.target.value;
+    const formatted = formatPhone(e.target.value);
+    
+    e.target.value = formatted;
+    
+    // Ajustar posição do cursor após formatação
+    // Contar quantos caracteres não-dígitos foram adicionados antes da posição do cursor
+    const digitsBeforeCursor = (oldValue.slice(0, cursorPos).match(/\d/g) || []).length;
+    const digitsInFormatted = formatted.match(/\d/g) || [];
+    
+    // Encontrar a posição do cursor no texto formatado baseado nos dígitos
+    let newCursorPos = 0;
+    let digitsCount = 0;
+    
+    for (let i = 0; i < formatted.length; i++) {
+        if (/\d/.test(formatted[i])) {
+            digitsCount++;
+            if (digitsCount === digitsBeforeCursor) {
+                newCursorPos = i + 1;
+                break;
+            }
+        }
+        if (digitsCount < digitsBeforeCursor) {
+            newCursorPos = i + 1;
+        }
+    }
+    
+    // Limitar posição ao tamanho do texto
+    newCursorPos = Math.min(newCursorPos, formatted.length);
+    
+    // Restaurar cursor
+    setTimeout(() => {
+        e.target.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+    
+    // Atualizar atributo value também
+    e.target.setAttribute('value', formatted);
+}
+
+/**
+ * Handler para input de CNPJ
+ */
+function handleCNPJInput(e) {
+    const cursorPos = e.target.selectionStart;
+    const oldValue = e.target.value;
+    const formatted = formatCNPJ(e.target.value);
+    
+    e.target.value = formatted;
+    
+    // Ajustar posição do cursor após formatação
+    // Contar quantos caracteres não-dígitos foram adicionados antes da posição do cursor
+    const digitsBeforeCursor = (oldValue.slice(0, cursorPos).match(/\d/g) || []).length;
+    const digitsInFormatted = formatted.match(/\d/g) || [];
+    
+    // Encontrar a posição do cursor no texto formatado baseado nos dígitos
+    let newCursorPos = 0;
+    let digitsCount = 0;
+    
+    for (let i = 0; i < formatted.length; i++) {
+        if (/\d/.test(formatted[i])) {
+            digitsCount++;
+            if (digitsCount === digitsBeforeCursor) {
+                newCursorPos = i + 1;
+                break;
+            }
+        }
+        if (digitsCount < digitsBeforeCursor) {
+            newCursorPos = i + 1;
+        }
+    }
+    
+    // Limitar posição ao tamanho do texto
+    newCursorPos = Math.min(newCursorPos, formatted.length);
+    
+    // Restaurar cursor
+    setTimeout(() => {
+        e.target.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+    
+    // Atualizar atributo value também
+    e.target.setAttribute('value', formatted);
+}
+
 window.openProfileOverlay = function openProfileOverlay() {
     const modal = document.getElementById('profileOverlay');
     if (!modal) return;
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
-    // Resetar modo edição
-    profileEditMode = false;
-    updateProfileEditMode();
-    
     // Resetar foto
     profilePhotoFile = null;
     if (document.getElementById('profilePhotoInput')) document.getElementById('profilePhotoInput').value = '';
     
-    // Armazenar valores originais
+    // Atualizar UI do modo offline quando abrir o perfil
+    if (typeof offlineManager !== 'undefined' && offlineManager.updateUI) {
+        offlineManager.updateUI();
+    }
+    
+    // IMPORTANTE: Armazenar valores originais ANTES de chamar updateProfileEditMode
+    // Ler do atributo value ou do value do input
+    const nameEl = document.getElementById('profileName');
+    const phoneEl = document.getElementById('profilePhone');
+    const farmNameEl = document.getElementById('farmName');
+    const farmPhoneEl = document.getElementById('farmPhone');
+    const farmCNPJEl = document.getElementById('farmCNPJ');
+    const farmAddressEl = document.getElementById('farmAddress');
+    const pushNotificationsEl = document.getElementById('pushNotifications');
+    
+    // Função auxiliar para ler valor corretamente mesmo quando desabilitado
+    const getValue = (el) => {
+        if (!el) return '';
+        // Para inputs, ler do atributo value primeiro (mais confiável quando desabilitado)
+        // Depois tentar a propriedade value
+        const attrValue = el.getAttribute('value');
+        const propValue = el.value;
+        
+        // Para textarea, verificar também textContent
+        if (el.tagName === 'TEXTAREA') {
+            const textValue = el.value || el.textContent || el.innerText || '';
+            return textValue.trim();
+        }
+        
+        // Retornar o que tiver valor, priorizando atributo
+        return attrValue || propValue || '';
+    };
+    
+    // Salvar valores originais imediatamente - garantir que sempre tenham valores
+    const nameValue = String(getValue(nameEl)).trim();
+    const phoneValue = String(getValue(phoneEl)).trim();
+    const farmNameValue = String(getValue(farmNameEl)).trim();
+    const farmPhoneValue = String(getValue(farmPhoneEl)).trim();
+    const farmCNPJValue = String(getValue(farmCNPJEl)).trim();
+    const farmAddressValue = String(getValue(farmAddressEl)).trim();
+    
     profileOriginalValues = {
-        name: document.getElementById('profileName')?.value || '',
-        phone: document.getElementById('profilePhone')?.value || '',
-        farmName: document.getElementById('farmName')?.value || '',
-        farmCNPJ: document.getElementById('farmCNPJ')?.value || '',
-        farmAddress: document.getElementById('farmAddress')?.value || '',
-        pushNotifications: document.getElementById('pushNotifications')?.checked || false,
+        name: nameValue,
+        phone: phoneValue,
+        farmName: farmNameValue,
+        farmPhone: farmPhoneValue,
+        farmCNPJ: farmCNPJValue,
+        farmAddress: farmAddressValue,
+        pushNotifications: pushNotificationsEl ? (pushNotificationsEl.checked || false) : false,
         newPassword: '',
         confirmPassword: ''
     };
     
+    // Log para debug (mostrar valores lidos)
+    console.log('Valores originais salvos:', profileOriginalValues);
+    console.log('Elementos encontrados:', {
+        nameEl: !!nameEl, phoneEl: !!phoneEl, farmNameEl: !!farmNameEl,
+        farmPhoneEl: !!farmPhoneEl, farmCNPJEl: !!farmCNPJEl, farmAddressEl: !!farmAddressEl
+    });
+    
+    // AGORA sim, resetar modo edição
+    profileEditMode = false;
+    updateProfileEditMode();
+    
     // Ocultar footer inicialmente
     const footer = document.getElementById('profileFooter');
     if (footer) footer.classList.add('hidden');
+    
+    // Aplicar máscaras nos campos de telefone e CNPJ
+    setupProfileMasks();
+    
+    // Formatar valores iniciais se já estiverem preenchidos
+    if (phoneEl && phoneEl.value) {
+        phoneEl.value = formatPhone(phoneEl.value);
+        phoneEl.setAttribute('value', phoneEl.value);
+    }
+    if (farmPhoneEl && farmPhoneEl.value) {
+        farmPhoneEl.value = formatPhone(farmPhoneEl.value);
+        farmPhoneEl.setAttribute('value', farmPhoneEl.value);
+    }
+    if (farmCNPJEl && farmCNPJEl.value) {
+        farmCNPJEl.value = formatCNPJ(farmCNPJEl.value);
+        farmCNPJEl.setAttribute('value', farmCNPJEl.value);
+    }
     
     // Adicionar listeners para detectar mudanças (só quando em modo edição)
     setupProfileChangeDetection();
@@ -3823,6 +5662,30 @@ function updateProfileEditMode() {
             }
         });
         
+        // Habilitar campos de senha e botão de mostrar senha (SEM necessidade de Google)
+        const newPasswordInput = document.getElementById('profileNewPassword');
+        const confirmPasswordInput = document.getElementById('profileConfirmPassword');
+        const passwordToggle = document.getElementById('profilePasswordToggle');
+        
+        if (newPasswordInput) {
+            newPasswordInput.disabled = false;
+            newPasswordInput.classList.remove('bg-gray-50', 'text-gray-500', 'cursor-not-allowed');
+            newPasswordInput.classList.add('bg-white', 'text-gray-900');
+        }
+        if (confirmPasswordInput) {
+            confirmPasswordInput.disabled = false;
+            confirmPasswordInput.classList.remove('bg-gray-50', 'text-gray-500', 'cursor-not-allowed');
+            confirmPasswordInput.classList.add('bg-white', 'text-gray-900');
+        }
+        if (passwordToggle) {
+            passwordToggle.disabled = false;
+            passwordToggle.classList.remove('opacity-50', 'cursor-not-allowed');
+            passwordToggle.classList.add('cursor-pointer');
+        }
+        
+        // Aplicar máscaras quando entrar em modo de edição
+        setupProfileMasks();
+        
         // Atualizar botão
         if (btn) {
             btn.innerHTML = `
@@ -3845,12 +5708,63 @@ function updateProfileEditMode() {
             input.classList.add('border-gray-200', 'bg-gray-50', 'text-gray-500', 'cursor-not-allowed');
         });
         
-        // Restaurar valores originais
-        if (document.getElementById('profileName')) document.getElementById('profileName').value = profileOriginalValues.name;
-        if (document.getElementById('profilePhone')) document.getElementById('profilePhone').value = profileOriginalValues.phone;
-        if (document.getElementById('farmName')) document.getElementById('farmName').value = profileOriginalValues.farmName;
-        if (document.getElementById('farmCNPJ')) document.getElementById('farmCNPJ').value = profileOriginalValues.farmCNPJ;
-        if (document.getElementById('farmAddress')) document.getElementById('farmAddress').value = profileOriginalValues.farmAddress;
+        // Desabilitar botão de mostrar senha quando o campo estiver desabilitado
+        const passwordToggle = document.getElementById('profilePasswordToggle');
+        if (passwordToggle) {
+            passwordToggle.disabled = true;
+            passwordToggle.classList.add('opacity-50', 'cursor-not-allowed');
+            passwordToggle.classList.remove('cursor-pointer');
+        }
+        
+        // NÃO restaurar valores quando em modo visualização
+        // Os valores já devem estar corretos nos inputs
+        // Só garantir que os atributos value estejam sincronizados com .value
+        const nameEl = document.getElementById('profileName');
+        const phoneEl = document.getElementById('profilePhone');
+        const farmNameEl = document.getElementById('farmName');
+        const farmPhoneEl = document.getElementById('farmPhone');
+        const farmCNPJEl = document.getElementById('farmCNPJ');
+        const farmAddressEl = document.getElementById('farmAddress');
+        
+        // Sincronizar atributo value com a propriedade value (mantém valores atuais)
+        if (nameEl) {
+            const currentValue = nameEl.value || '';
+            nameEl.setAttribute('value', currentValue);
+            nameEl.defaultValue = currentValue;
+        }
+        if (phoneEl) {
+            const currentValue = phoneEl.value || '';
+            // Formatar telefone antes de salvar
+            const formattedPhone = formatPhone(currentValue);
+            phoneEl.value = formattedPhone;
+            phoneEl.setAttribute('value', formattedPhone);
+            phoneEl.defaultValue = formattedPhone;
+        }
+        if (farmNameEl) {
+            const currentValue = farmNameEl.value || '';
+            farmNameEl.setAttribute('value', currentValue);
+            farmNameEl.defaultValue = currentValue;
+        }
+        if (farmPhoneEl) {
+            const currentValue = farmPhoneEl.value || '';
+            // Formatar telefone antes de salvar
+            const formattedFarmPhone = formatPhone(currentValue);
+            farmPhoneEl.value = formattedFarmPhone;
+            farmPhoneEl.setAttribute('value', formattedFarmPhone);
+            farmPhoneEl.defaultValue = formattedFarmPhone;
+        }
+        if (farmCNPJEl) {
+            const currentValue = farmCNPJEl.value || '';
+            // Formatar CNPJ antes de salvar
+            const formattedCNPJ = formatCNPJ(currentValue);
+            farmCNPJEl.value = formattedCNPJ;
+            farmCNPJEl.setAttribute('value', formattedCNPJ);
+            farmCNPJEl.defaultValue = formattedCNPJ;
+        }
+        if (farmAddressEl) {
+            // Para textarea, apenas garantir que o valor está correto
+            // Não há necessidade de sincronizar atributo value
+        }
         if (document.getElementById('profileNewPassword')) document.getElementById('profileNewPassword').value = '';
         if (document.getElementById('profileConfirmPassword')) document.getElementById('profileConfirmPassword').value = '';
         
@@ -3892,7 +5806,7 @@ window.closeProfileOverlay = function closeProfileOverlay() {
 };
 
 function setupProfileChangeDetection() {
-    const inputs = ['profileName', 'profilePhone', 'farmName', 'farmCNPJ', 'farmAddress', 'profileNewPassword', 'profileConfirmPassword'];
+    const inputs = ['profileName', 'profilePhone', 'farmName', 'farmPhone', 'farmCNPJ', 'farmAddress', 'profileNewPassword', 'profileConfirmPassword'];
     const checkboxes = ['pushNotifications'];
     
     const checkForChanges = () => {
@@ -3900,6 +5814,7 @@ function setupProfileChangeDetection() {
             (document.getElementById('profileName')?.value !== profileOriginalValues.name) ||
             (document.getElementById('profilePhone')?.value !== profileOriginalValues.phone) ||
             (document.getElementById('farmName')?.value !== profileOriginalValues.farmName) ||
+            (document.getElementById('farmPhone')?.value !== profileOriginalValues.farmPhone) ||
             (document.getElementById('farmCNPJ')?.value !== profileOriginalValues.farmCNPJ) ||
             (document.getElementById('farmAddress')?.value !== profileOriginalValues.farmAddress) ||
             (document.getElementById('pushNotifications')?.checked !== profileOriginalValues.pushNotifications) ||
@@ -3931,15 +5846,110 @@ function setupProfileChangeDetection() {
 }
 
 window.cancelProfileChanges = function cancelProfileChanges() {
-    // Restaurar valores originais
-    if (document.getElementById('profileName')) document.getElementById('profileName').value = profileOriginalValues.name;
-    if (document.getElementById('profilePhone')) document.getElementById('profilePhone').value = profileOriginalValues.phone;
-    if (document.getElementById('farmName')) document.getElementById('farmName').value = profileOriginalValues.farmName;
-    if (document.getElementById('farmCNPJ')) document.getElementById('farmCNPJ').value = profileOriginalValues.farmCNPJ;
-    if (document.getElementById('farmAddress')) document.getElementById('farmAddress').value = profileOriginalValues.farmAddress;
-    if (document.getElementById('pushNotifications')) document.getElementById('pushNotifications').checked = profileOriginalValues.pushNotifications;
-    if (document.getElementById('profileNewPassword')) document.getElementById('profileNewPassword').value = '';
-    if (document.getElementById('profileConfirmPassword')) document.getElementById('profileConfirmPassword').value = '';
+    // Log para debug
+    console.log('Cancelando alterações. Valores originais:', profileOriginalValues);
+    
+    // Restaurar valores originais - garantir que sejam sempre strings válidas
+    const nameEl = document.getElementById('profileName');
+    const phoneEl = document.getElementById('profilePhone');
+    const farmNameEl = document.getElementById('farmName');
+    const farmPhoneEl = document.getElementById('farmPhone');
+    const farmCNPJEl = document.getElementById('farmCNPJ');
+    const farmAddressEl = document.getElementById('farmAddress');
+    const pushNotificationsEl = document.getElementById('pushNotifications');
+    
+    // SEMPRE recarregar valores do HTML para garantir que estejam corretos
+    // Isso evita problemas se profileOriginalValues foi perdido ou corrompido
+    const currentName = nameEl ? (nameEl.getAttribute('value') || nameEl.value || '').trim() : '';
+    const currentPhone = phoneEl ? (phoneEl.getAttribute('value') || phoneEl.value || '').trim() : '';
+    const currentFarmName = farmNameEl ? (farmNameEl.getAttribute('value') || farmNameEl.value || '').trim() : '';
+    const currentFarmPhone = farmPhoneEl ? (farmPhoneEl.getAttribute('value') || farmPhoneEl.value || '').trim() : '';
+    const currentFarmCNPJ = farmCNPJEl ? (farmCNPJEl.getAttribute('value') || farmCNPJEl.value || '').trim() : '';
+    const currentFarmAddress = farmAddressEl ? (farmAddressEl.value || farmAddressEl.textContent || '').trim() : '';
+    
+    // Restaurar valores originais (usar profileOriginalValues se disponível, senão usar valores atuais)
+    const originalName = (profileOriginalValues.name || currentName || '').trim();
+    const originalPhone = (profileOriginalValues.phone || currentPhone || '').trim();
+    const originalFarmName = (profileOriginalValues.farmName || currentFarmName || '').trim();
+    const originalFarmPhone = (profileOriginalValues.farmPhone || currentFarmPhone || '').trim();
+    const originalFarmCNPJ = (profileOriginalValues.farmCNPJ || currentFarmCNPJ || '').trim();
+    const originalFarmAddress = (profileOriginalValues.farmAddress || currentFarmAddress || '').trim();
+    
+    // Formatar telefones e CNPJ antes de restaurar
+    const formattedOriginalPhone = formatPhone(originalPhone);
+    const formattedOriginalFarmPhone = formatPhone(originalFarmPhone);
+    const formattedOriginalCNPJ = formatCNPJ(originalFarmCNPJ);
+    
+    // Se profileOriginalValues não existir ou estiver vazio, usar valores atuais do HTML
+    // Caso contrário, usar os valores originais salvos
+    if (!profileOriginalValues || Object.keys(profileOriginalValues).length === 0 || 
+        !profileOriginalValues.name || profileOriginalValues.name === '') {
+        console.warn('Valores originais não encontrados ou vazios, usando valores atuais do HTML');
+        profileOriginalValues = {
+            name: currentName || '',
+            phone: currentPhone || '',
+            farmName: currentFarmName || '',
+            farmPhone: currentFarmPhone || '',
+            farmCNPJ: currentFarmCNPJ || '',
+            farmAddress: currentFarmAddress || '',
+            pushNotifications: pushNotificationsEl ? (pushNotificationsEl.checked || false) : false,
+            newPassword: '',
+            confirmPassword: ''
+        };
+    }
+    
+    // Garantir que os valores originais sejam sempre strings válidas e atualizar tanto o value quanto o atributo
+    if (nameEl) {
+        const val = profileOriginalValues.name !== undefined && profileOriginalValues.name !== null ? String(profileOriginalValues.name) : '';
+        nameEl.value = val;
+        nameEl.setAttribute('value', val);
+        console.log('Restaurado nome:', val);
+    }
+    if (phoneEl) {
+        const val = formattedOriginalPhone || (profileOriginalValues.phone !== undefined && profileOriginalValues.phone !== null ? String(profileOriginalValues.phone) : '');
+        const formattedVal = formatPhone(val);
+        phoneEl.value = formattedVal;
+        phoneEl.setAttribute('value', formattedVal);
+        console.log('Restaurado telefone:', formattedVal);
+    }
+    if (farmNameEl) {
+        const val = profileOriginalValues.farmName !== undefined && profileOriginalValues.farmName !== null ? String(profileOriginalValues.farmName) : '';
+        farmNameEl.value = val;
+        farmNameEl.setAttribute('value', val);
+        console.log('Restaurado nome fazenda:', val);
+    }
+    if (farmPhoneEl) {
+        const val = formattedOriginalFarmPhone || (profileOriginalValues.farmPhone !== undefined && profileOriginalValues.farmPhone !== null ? String(profileOriginalValues.farmPhone) : '');
+        const formattedVal = formatPhone(val);
+        farmPhoneEl.value = formattedVal;
+        farmPhoneEl.setAttribute('value', formattedVal);
+        console.log('Restaurado telefone fazenda:', formattedVal);
+    }
+    if (farmCNPJEl) {
+        const val = formattedOriginalCNPJ || (profileOriginalValues.farmCNPJ !== undefined && profileOriginalValues.farmCNPJ !== null ? String(profileOriginalValues.farmCNPJ) : '');
+        const formattedVal = formatCNPJ(val);
+        farmCNPJEl.value = formattedVal;
+        farmCNPJEl.setAttribute('value', formattedVal);
+        console.log('Restaurado CNPJ:', formattedVal);
+    }
+    if (farmAddressEl) {
+        const val = profileOriginalValues.farmAddress !== undefined && profileOriginalValues.farmAddress !== null ? String(profileOriginalValues.farmAddress) : '';
+        farmAddressEl.value = val;
+        console.log('Restaurado endereço:', val);
+    }
+    if (pushNotificationsEl) pushNotificationsEl.checked = profileOriginalValues.pushNotifications || false;
+    
+    // Limpar campos de senha ao cancelar (sem restaurar valores, pois não têm valores originais)
+    const newPasswordEl = document.getElementById('profileNewPassword');
+    const confirmPasswordEl = document.getElementById('profileConfirmPassword');
+    if (newPasswordEl) {
+        newPasswordEl.value = '';
+        newPasswordEl.setAttribute('value', '');
+    }
+    if (confirmPasswordEl) {
+        confirmPasswordEl.value = '';
+        confirmPasswordEl.setAttribute('value', '');
+    }
     
     // Resetar foto
     if (document.getElementById('profilePhotoInput')) document.getElementById('profilePhotoInput').value = '';
@@ -4751,36 +6761,64 @@ window.handleProfilePhotoUpload = async function handleProfilePhotoUpload(event)
         const result = await resp.json();
         
         if (result.success) {
-            // Exibir preview da foto salva
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const avatarDisplay = document.getElementById('profileAvatarDisplay');
-                const avatarImg = document.getElementById('profileAvatarImg');
-                const avatarIcon = document.getElementById('profileAvatarIcon');
-                
-                if (avatarDisplay) {
-                    if (avatarImg) {
-                        avatarImg.src = e.target.result;
-                        if (avatarIcon) avatarIcon.style.display = 'none';
-                    } else {
-                        const img = document.createElement('img');
-                        img.id = 'profileAvatarImg';
-                        img.src = e.target.result;
-                        img.alt = 'Foto do perfil';
-                        img.className = 'w-full h-full object-cover';
-                        avatarDisplay.innerHTML = '';
-                        avatarDisplay.appendChild(img);
+                // Exibir preview da foto salva
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarDisplay = document.getElementById('profileAvatarDisplay');
+                    const avatarImg = document.getElementById('profileAvatarImg');
+                    const avatarIcon = document.getElementById('profileAvatarIcon');
+                    
+                    if (avatarDisplay) {
+                        if (avatarImg) {
+                            avatarImg.src = e.target.result;
+                            if (avatarIcon) avatarIcon.style.display = 'none';
+                        } else {
+                            const img = document.createElement('img');
+                            img.id = 'profileAvatarImg';
+                            img.src = e.target.result;
+                            img.alt = 'Foto do perfil';
+                            img.className = 'w-full h-full object-cover';
+                            avatarDisplay.innerHTML = '';
+                            avatarDisplay.appendChild(img);
+                        }
                     }
-                }
-                
-                // Atualizar foto no servidor se retornou URL
-                if (result.data && result.data.profile_photo) {
-                    if (avatarImg) {
-                        avatarImg.src = result.data.profile_photo + '?t=' + Date.now();
+                    
+                    // NOVO: Atualizar foto no header imediatamente (preview local)
+                    const headerPhotoImg = document.getElementById('headerProfilePhoto');
+                    const headerPhotoIcon = document.getElementById('headerProfilePhotoIcon');
+                    
+                    if (headerPhotoImg) {
+                        headerPhotoImg.src = e.target.result;
+                        headerPhotoImg.style.display = 'block';
+                        if (headerPhotoIcon) headerPhotoIcon.style.display = 'none';
+                    } else if (headerPhotoIcon && headerPhotoIcon.parentElement) {
+                        // Criar imagem no header se não existir
+                        const newImg = document.createElement('img');
+                        newImg.id = 'headerProfilePhoto';
+                        newImg.src = e.target.result;
+                        newImg.alt = 'Foto do perfil';
+                        newImg.className = 'w-full h-full object-cover';
+                        newImg.onerror = function() {
+                            this.style.display = 'none';
+                            headerPhotoIcon.style.display = 'flex';
+                        };
+                        headerPhotoIcon.style.display = 'none';
+                        headerPhotoIcon.parentElement.insertBefore(newImg, headerPhotoIcon);
                     }
-                }
-            };
-            reader.readAsDataURL(file);
+                    
+                    // Atualizar foto no servidor se retornou URL
+                    if (result.data && result.data.profile_photo) {
+                        const photoUrl = result.data.profile_photo + '?t=' + Date.now();
+                        if (avatarImg) {
+                            avatarImg.src = photoUrl;
+                        }
+                        // Atualizar header com URL do servidor
+                        if (headerPhotoImg) {
+                            headerPhotoImg.src = photoUrl;
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
             
             // Atualizar foto no DOM com timestamp para evitar cache
             if (result.data && result.data.profile_photo) {
@@ -4823,7 +6861,8 @@ window.handleProfilePhotoUpload = async function handleProfilePhotoUpload(event)
                 // Atualizar foto no modal de perfil
                 const profileAvatarImg = document.getElementById('profileAvatarImg');
                 if (profileAvatarImg && result.data.profile_photo) {
-                    profileAvatarImg.src = result.data.profile_photo + '?t=' + Date.now();
+                    const photoUrl = result.data.profile_photo + '?t=' + Date.now();
+                    profileAvatarImg.src = photoUrl;
                     profileAvatarImg.style.display = 'block';
                     const profileAvatarIcon = document.getElementById('profileAvatarIcon');
                     if (profileAvatarIcon) {
@@ -4831,14 +6870,35 @@ window.handleProfilePhotoUpload = async function handleProfilePhotoUpload(event)
                     }
                 }
                 
-                // Atualizar foto no header também
-                const headerProfileImg = document.querySelector('#profileButton img');
-                if (headerProfileImg && result.data.profile_photo) {
-                    headerProfileImg.src = result.data.profile_photo + '?t=' + Date.now();
-                    headerProfileImg.style.display = 'block';
-                    const headerProfileIcon = headerProfileImg.nextElementSibling;
-                    if (headerProfileIcon && headerProfileIcon.tagName === 'svg') {
-                        headerProfileIcon.style.display = 'none';
+                // Atualizar foto no header em tempo real
+                const headerPhotoImg = document.getElementById('headerProfilePhoto');
+                const headerPhotoIcon = document.getElementById('headerProfilePhotoIcon');
+                
+                if (result.data && result.data.profile_photo) {
+                    const photoUrl = result.data.profile_photo + '?t=' + Date.now();
+                    
+                    if (headerPhotoImg) {
+                        // Atualizar imagem existente no header
+                        headerPhotoImg.src = photoUrl;
+                        headerPhotoImg.style.display = 'block';
+                        headerPhotoImg.onerror = function() {
+                            this.style.display = 'none';
+                            if (headerPhotoIcon) headerPhotoIcon.style.display = 'flex';
+                        };
+                        if (headerPhotoIcon) headerPhotoIcon.style.display = 'none';
+                    } else if (headerPhotoIcon && headerPhotoIcon.parentElement) {
+                        // Criar imagem no header se não existir
+                        const newImg = document.createElement('img');
+                        newImg.id = 'headerProfilePhoto';
+                        newImg.src = photoUrl;
+                        newImg.alt = 'Foto do perfil';
+                        newImg.className = 'w-full h-full object-cover';
+                        newImg.onerror = function() {
+                            this.style.display = 'none';
+                            headerPhotoIcon.style.display = 'flex';
+                        };
+                        headerPhotoIcon.style.display = 'none';
+                        headerPhotoIcon.parentElement.insertBefore(newImg, headerPhotoIcon);
                     }
                 }
             }
@@ -4875,76 +6935,355 @@ window.handleProfilePhotoUpload = async function handleProfilePhotoUpload(event)
 };
 
 window.saveProfile = async function saveProfile() {
+    console.log('💾 Função saveProfile chamada!');
+    
     const name = document.getElementById('profileName')?.value;
     const phone = document.getElementById('profilePhone')?.value;
     const farmName = document.getElementById('farmName')?.value;
+    const farmPhone = document.getElementById('farmPhone')?.value;
     const farmCNPJ = document.getElementById('farmCNPJ')?.value;
     const farmAddress = document.getElementById('farmAddress')?.value;
     const pushNotifications = document.getElementById('pushNotifications')?.checked;
     const newPassword = document.getElementById('profileNewPassword')?.value;
     const confirmPassword = document.getElementById('profileConfirmPassword')?.value;
     
-    // Validar senhas se fornecidas
+    console.log('📝 Dados coletados:', { name, phone, farmName, farmPhone, farmCNPJ, farmAddress });
+    
+    // Validar senhas se fornecidas (SIMPLIFICADO - SEM OTP)
     if (newPassword || confirmPassword) {
-        if (newPassword !== confirmPassword) {
-            showErrorModal('As senhas não coincidem');
+        // Se preencheu um campo, o outro também deve ser preenchido
+        if (newPassword && !confirmPassword) {
+            showErrorModal('Por favor, confirme a nova senha');
             return;
         }
-        if (newPassword.length < 6) {
-            showErrorModal('A senha deve ter pelo menos 6 caracteres');
+        if (confirmPassword && !newPassword) {
+            showErrorModal('Por favor, digite a nova senha');
             return;
+        }
+        // Se ambos foram preenchidos, validar
+        if (newPassword && confirmPassword) {
+            if (newPassword !== confirmPassword) {
+                showErrorModal('As senhas não coincidem');
+                return;
+            }
+            if (newPassword.length < 6) {
+                showErrorModal('A senha deve ter pelo menos 6 caracteres');
+                return;
+            }
+            // A senha será enviada junto com os outros dados
+            // Não precisa de OTP ou Google vinculado
         }
     }
     
     try {
+        console.log('🚀 Enviando dados para API...');
         const formData = new FormData();
         formData.append('action', 'update_profile');
         formData.append('name', name);
-        formData.append('phone', phone);
+        // Remover formatação de telefones e CNPJ antes de enviar para a API (apenas números)
+        const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+        const cleanFarmPhone = farmPhone ? farmPhone.replace(/\D/g, '') : '';
+        const cleanCNPJ = farmCNPJ ? farmCNPJ.replace(/\D/g, '') : '';
+        
+        formData.append('phone', cleanPhone);
         formData.append('farm_name', farmName);
-        formData.append('farm_cnpj', farmCNPJ);
+        formData.append('farm_phone', cleanFarmPhone);
+        formData.append('farm_cnpj', cleanCNPJ);
         formData.append('farm_address', farmAddress);
         formData.append('push_notifications', pushNotifications ? '1' : '0');
         if (newPassword) formData.append('password', newPassword);
         if (profilePhotoFile) formData.append('profile_photo', profilePhotoFile);
         
         const resp = await fetch('./api/actions.php', { method: 'POST', body: formData });
+        
+        if (!resp.ok) {
+            throw new Error('Erro na resposta do servidor: ' + resp.status);
+        }
+        
         const result = await resp.json();
         
+        console.log('📥 Resposta da API:', result);
+        
         if (result.success) {
-            // Atualizar valores originais
+            console.log('✅ Salvamento bem-sucedido! Atualizando página...');
+            // Usar dados retornados pela API para atualizar a página (mais confiável que os valores do formulário)
+            const savedUserData = result.data?.user || {};
+            const savedFarmData = result.data?.farm || {};
+            
+            // Dados do usuário (usar dados retornados ou fallback para valores do formulário)
+            const savedName = savedUserData.name || name || '';
+            const savedPhone = savedUserData.phone || phone || '';
+            
+            // Dados da fazenda (usar dados retornados ou fallback para valores do formulário)
+            const savedFarmName = savedFarmData.name || farmName || '';
+            const savedFarmPhone = savedFarmData.phone || farmPhone || '';
+            const savedFarmCNPJ = savedFarmData.cnpj || farmCNPJ || '';
+            const savedFarmAddress = savedFarmData.address || farmAddress || '';
+            
+            // Atualizar valores originais com os dados salvos
             profileOriginalValues = {
-                name, phone, farmName, farmCNPJ, farmAddress,
-                pushNotifications,
-                newPassword: '', confirmPassword: ''
+                name: savedName,
+                phone: savedPhone,
+                farmName: savedFarmName,
+                farmPhone: savedFarmPhone,
+                farmCNPJ: savedFarmCNPJ,
+                farmAddress: savedFarmAddress,
+                pushNotifications: pushNotifications || false,
+                newPassword: '',
+                confirmPassword: ''
             };
             
-            // Limpar senhas e foto
-            if (document.getElementById('profileNewPassword')) document.getElementById('profileNewPassword').value = '';
-            if (document.getElementById('profileConfirmPassword')) document.getElementById('profileConfirmPassword').value = '';
+            // Atualizar os inputs com os dados salvos (em tempo real)
+            const nameEl = document.getElementById('profileName');
+            const phoneEl = document.getElementById('profilePhone');
+            const farmNameEl = document.getElementById('farmName');
+            const farmPhoneEl = document.getElementById('farmPhone');
+            const farmCNPJEl = document.getElementById('farmCNPJ');
+            const farmAddressEl = document.getElementById('farmAddress');
+            
+            // Função helper para atualizar valores (definida antes de usar)
+            const updateInputValue = (element, newValue) => {
+                if (!element) return;
+                const valueToSet = newValue || '';
+                
+                // Para inputs, atualizar propriedade, atributo E defaultValue
+                if (element.tagName === 'INPUT') {
+                    // Atualizar em múltiplas etapas para garantir
+                    element.value = valueToSet;
+                    element.defaultValue = valueToSet;
+                    element.setAttribute('value', valueToSet);
+                    
+                    // Forçar atualização visual
+                    element.blur();
+                    element.focus();
+                    element.blur();
+                    
+                    // Log para debug
+                    console.log(`  ↳ ${element.id}: "${valueToSet}" (value=${element.value}, attr=${element.getAttribute('value')}, default=${element.defaultValue})`);
+                } 
+                // Para textarea, apenas propriedade value
+                else if (element.tagName === 'TEXTAREA') {
+                    element.value = valueToSet;
+                    console.log(`  ↳ ${element.id}: "${valueToSet}"`);
+                }
+            };
+            
+            // ATUALIZAR OS VALORES NOS INPUTS ANTES DE DESABILITAR
+            
+            console.log('📋 Atualizando valores nos inputs...');
+            console.log('📋 Dados recebidos da API:', {
+                user: savedUserData,
+                farm: savedFarmData
+            });
+            
+            // Atualizar TODOS os campos (formatar telefones e CNPJ)
+            updateInputValue(nameEl, savedName);
+            updateInputValue(phoneEl, formatPhone(savedPhone || ''));
+            updateInputValue(farmNameEl, savedFarmName);
+            updateInputValue(farmPhoneEl, formatPhone(savedFarmPhone || ''));
+            updateInputValue(farmCNPJEl, formatCNPJ(savedFarmCNPJ || ''));
+            updateInputValue(farmAddressEl, savedFarmAddress);
+            
+            // Garantir que os valores estão visíveis ANTES de desabilitar
+            // Usar getComputedStyle para forçar renderização
+            if (nameEl) {
+                const computed = window.getComputedStyle(nameEl);
+                // Forçar reflow
+                nameEl.offsetHeight;
+            }
+            
+            console.log('📋 Valores após atualização:', {
+                name: nameEl?.value,
+                phone: phoneEl?.value,
+                farmName: farmNameEl?.value,
+                farmPhone: farmPhoneEl?.value,
+                farmCNPJ: farmCNPJEl?.value,
+                farmAddress: farmAddressEl?.value
+            });
+            
+            // Limpar senhas e foto após salvar com sucesso
+            const newPasswordEl = document.getElementById('profileNewPassword');
+            const confirmPasswordEl = document.getElementById('profileConfirmPassword');
+            
+            if (newPasswordEl) {
+                newPasswordEl.value = '';
+                newPasswordEl.setAttribute('value', '');
+                console.log('✅ Campo de nova senha limpo');
+            }
+            if (confirmPasswordEl) {
+                confirmPasswordEl.value = '';
+                confirmPasswordEl.setAttribute('value', '');
+                console.log('✅ Campo de confirmação de senha limpo');
+            }
+            
+            // Atualizar valores originais para não considerar senhas como mudança
+            profileOriginalValues.newPassword = '';
+            profileOriginalValues.confirmPassword = '';
+            
             if (document.getElementById('profilePhotoInput')) document.getElementById('profilePhotoInput').value = '';
             profilePhotoFile = null;
             
-            // Atualizar foto se foi enviada
-            if (result.data && result.data.profile_photo) {
+            // Atualizar foto se foi retornada pela API
+            if (savedUserData.profile_photo) {
                 const avatarDisplay = document.getElementById('profileAvatarDisplay');
                 const avatarImg = document.getElementById('profileAvatarImg');
+                const avatarIcon = document.getElementById('profileAvatarIcon');
+                
                 if (avatarImg) {
-                    avatarImg.src = result.data.profile_photo + '?t=' + Date.now();
+                    avatarImg.src = savedUserData.profile_photo + '?t=' + Date.now();
+                    avatarImg.style.display = 'block';
+                }
+                if (avatarIcon) {
+                    avatarIcon.style.display = 'none';
+                }
+                
+                // Atualizar foto no header também
+                const headerProfileImg = document.querySelector('#profileButton img');
+                if (headerProfileImg) {
+                    headerProfileImg.src = savedUserData.profile_photo + '?t=' + Date.now();
+                    headerProfileImg.style.display = 'block';
+                    const headerProfileIcon = headerProfileImg.nextElementSibling;
+                    if (headerProfileIcon && headerProfileIcon.tagName === 'svg') {
+                        headerProfileIcon.style.display = 'none';
+                    }
                 }
             }
             
-            // Sair do modo edição e voltar para visualização
+            // IMPORTANTE: Sair do modo edição APÓS atualizar valores
+            // Isso garante que updateProfileEditMode() não restaure valores antigos
             profileEditMode = false;
             updateProfileEditMode();
             
-            showSuccessModal('Perfil atualizado com sucesso!');
+            // Atualizar TODOS os lugares onde o nome aparece (header, etc) - EM TEMPO REAL
+            
+            // 1. Atualizar "Bem-vindo, [nome]!" no dashboard
+            const managerWelcome = document.getElementById('managerWelcome');
+            if (managerWelcome) {
+                managerWelcome.textContent = savedName;
+                console.log('✅ Nome atualizado no managerWelcome:', savedName);
+            }
+            
+            // 2. Atualizar nome no header do perfil (ao lado da foto) - IMPORTANTE!
+            const headerProfileName = document.getElementById('headerProfileName');
+            if (headerProfileName) {
+                headerProfileName.textContent = savedName;
+                console.log('✅ Nome atualizado no headerProfileName:', savedName);
+            } else {
+                // Fallback: procurar pelo seletor
+                const headerProfileSection = document.querySelector('.text-right');
+                if (headerProfileSection) {
+                    const nameParagraph = headerProfileSection.querySelector('p.text-sm.font-medium');
+                    if (nameParagraph) {
+                        nameParagraph.textContent = savedName;
+                        console.log('✅ Nome atualizado no header (fallback):', savedName);
+                    }
+                }
+            }
+            
+            // 3. Atualizar qualquer elemento com data-profile-name
+            const profileNameElements = document.querySelectorAll('[data-profile-name]');
+            profileNameElements.forEach(el => {
+                el.textContent = savedName;
+            });
+            
+            // 4. Procurar por outros lugares onde o nome pode aparecer
+            // Buscar elementos que contêm o nome antigo
+            const oldName = profileOriginalValues?.name || '';
+            if (oldName && oldName !== savedName) {
+                // Atualizar todos os elementos de texto que contêm apenas o nome antigo
+                const textElements = document.querySelectorAll('p, span, h1, h2, h3, h4, h5, h6, div');
+                textElements.forEach(el => {
+                    // Verificar se o elemento contém apenas o nome (sem outros textos)
+                    const text = el.textContent.trim();
+                    if (text === oldName) {
+                        el.textContent = savedName;
+                        console.log(`✅ Nome atualizado em elemento:`, el.tagName, el.className);
+                    }
+                });
+            }
+            
+            // Forçar atualização visual novamente após desabilitar usando requestAnimationFrame
+            // Isso garante que o browser tenha processado o disabled antes de atualizar
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    console.log('🔄 Forçando atualização visual após desabilitar...');
+                    
+                    // Usar a mesma função helper para inputs (formatar telefones e CNPJ)
+                    updateInputValue(nameEl, savedName);
+                    updateInputValue(phoneEl, formatPhone(savedPhone || ''));
+                    updateInputValue(farmNameEl, savedFarmName);
+                    updateInputValue(farmPhoneEl, formatPhone(savedFarmPhone || ''));
+                    updateInputValue(farmCNPJEl, formatCNPJ(savedFarmCNPJ || ''));
+                    updateInputValue(farmAddressEl, savedFarmAddress);
+                    
+                    // ATUALIZAR NOME NO HEADER NOVAMENTE (para garantir)
+                    const headerProfileNameEl = document.getElementById('headerProfileName');
+                    if (headerProfileNameEl) {
+                        headerProfileNameEl.textContent = savedName;
+                        console.log('🔄 Nome no header atualizado novamente:', savedName);
+                    }
+                    
+                    const managerWelcomeEl = document.getElementById('managerWelcome');
+                    if (managerWelcomeEl) {
+                        managerWelcomeEl.textContent = savedName;
+                        console.log('🔄 Nome no managerWelcome atualizado novamente:', savedName);
+                    }
+                    
+                    // Verificar valores finais
+                    const finalValues = {
+                        name: nameEl?.value,
+                        phone: phoneEl?.value,
+                        farmName: farmNameEl?.value,
+                        farmPhone: farmPhoneEl?.value,
+                        farmCNPJ: farmCNPJEl?.value,
+                        farmAddress: farmAddressEl?.value,
+                        headerName: headerProfileNameEl?.textContent,
+                        welcomeName: managerWelcomeEl?.textContent
+                    };
+                    console.log('🔄 Valores finais após forçar atualização:', finalValues);
+                    
+                    // Se ainda não estiver correto, tentar mais uma vez
+                    if (nameEl && nameEl.value !== savedName) {
+                        console.warn('⚠️ Nome ainda não atualizado, tentando novamente...');
+                        nameEl.value = savedName;
+                        nameEl.setAttribute('value', savedName);
+                        nameEl.defaultValue = savedName;
+                    }
+                    
+                    if (headerProfileNameEl && headerProfileNameEl.textContent !== savedName) {
+                        console.warn('⚠️ Nome no header ainda não atualizado, tentando novamente...');
+                        headerProfileNameEl.textContent = savedName;
+                    }
+                }, 50);
+            });
+            
+            // Garantir atualização do header também após mais tempo (caso o modal tenha bloqueado)
+            setTimeout(() => {
+                const headerProfileNameEl = document.getElementById('headerProfileName');
+                if (headerProfileNameEl && headerProfileNameEl.textContent !== savedName) {
+                    headerProfileNameEl.textContent = savedName;
+                    console.log('⏰ Nome no header atualizado após delay adicional');
+                }
+                
+                const managerWelcomeEl = document.getElementById('managerWelcome');
+                if (managerWelcomeEl && managerWelcomeEl.textContent !== savedName) {
+                    managerWelcomeEl.textContent = savedName;
+                    console.log('⏰ Nome no managerWelcome atualizado após delay adicional');
+                }
+            }, 500);
+            
+            // Mostrar modal de sucesso com mensagem personalizada
+            let successMessage = 'Perfil salvo com sucesso!';
+            if (newPassword && newPassword.trim() !== '') {
+                successMessage = 'Perfil e senha atualizados com sucesso!';
+            }
+            showSuccessModal(successMessage);
         } else {
-            showErrorModal('Erro ao atualizar perfil: ' + (result.error || 'Erro desconhecido'));
+            showErrorModal('Erro ao salvar perfil: ' + (result.error || 'Erro desconhecido'));
         }
     } catch (err) {
         console.error('Falha ao salvar perfil:', err);
-        showErrorModal('Erro ao salvar perfil');
+        showErrorModal('Erro ao salvar perfil: ' + err.message);
     }
 };
 
@@ -5014,6 +7353,84 @@ function closeSuccessModalPhoto() {
     const modal = document.getElementById('successModalPhoto');
     if (modal) {
         const content = document.getElementById('successModalPhotoContent');
+        if (content) {
+            content.style.transform = 'scale(0.95)';
+            content.style.opacity = '0';
+        }
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Modal de conta Google vinculada
+function showGoogleLinkedModal(message) {
+    const existingModal = document.getElementById('googleLinkedModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'googleLinkedModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4';
+    
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 shadow-2xl" id="googleLinkedModalContent">
+            <!-- Header com ícone do Google -->
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Conta Vinculada!</h3>
+                <div class="w-16 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-full mx-auto"></div>
+            </div>
+            
+            <!-- Mensagem -->
+            <div class="text-center mb-8">
+                <p class="text-gray-600 leading-relaxed text-base">${message}</p>
+            </div>
+            
+            <!-- Informação adicional -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-green-800">
+                    <strong>✨ Benefícios:</strong> Agora você pode receber códigos OTP por e-mail e usar recursos de segurança avançados.
+                </p>
+            </div>
+            
+            <!-- Botão -->
+            <div class="text-center">
+                <button onclick="closeGoogleLinkedModal()" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 w-full">
+                    Entendi
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Adicionar evento de clique no fundo para fechar
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeGoogleLinkedModal();
+        }
+    });
+    
+    document.body.appendChild(modal);
+    
+    // Animar entrada
+    requestAnimationFrame(() => {
+        const content = document.getElementById('googleLinkedModalContent');
+        if (content) {
+            content.style.transform = 'scale(1)';
+            content.style.opacity = '1';
+        }
+    });
+}
+
+function closeGoogleLinkedModal() {
+    const modal = document.getElementById('googleLinkedModal');
+    if (modal) {
+        const content = document.getElementById('googleLinkedModalContent');
         if (content) {
             content.style.transform = 'scale(0.95)';
             content.style.opacity = '0';
@@ -5102,6 +7519,8 @@ function closeErrorModalPhoto() {
 
 window.closeSuccessModalPhoto = closeSuccessModalPhoto;
 window.closeErrorModalPhoto = closeErrorModalPhoto;
+window.showGoogleLinkedModal = showGoogleLinkedModal;
+window.closeGoogleLinkedModal = closeGoogleLinkedModal;
 
 // ==================== GERENCIAR DISPOSITIVOS / SESSÕES ====================
 async function registerCurrentSession() {

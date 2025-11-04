@@ -1,54 +1,41 @@
 {
-  "name": "LacTech - Sistema de Gestão Leiteira e Agropecuária",
+  "name": "LacTech - Sistema de Gestão",
   "short_name": "LacTech",
-  "description": "LacTech é o sistema mais completo para gestão de fazendas leiteiras no Brasil. Controle de rebanho, produção de leite, saúde animal e análise de dados.",
-  "version": "2.0.0",
-  "start_url": "/xandria-store.php",
+  "description": "Sistema completo de gestão para fazendas leiteiras",
+  "start_url": "/gerente-completo.php",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#01875f",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
   "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "pt-BR",
-  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "assets/img/lactech-logo.png",
+      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "assets/img/lactech-logo.png",
+      "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
+  "categories": ["productivity", "business"],
+  "screenshots": [],
   "shortcuts": [
     {
-      "name": "Gerente",
-      "short_name": "Gerente",
-      "description": "Abrir Painel do Gerente",
-      "url": "/gerente-completo.php",
+      "name": "Adicionar Volume",
+      "short_name": "Volume",
+      "description": "Registrar volume de leite",
+      "url": "/gerente-completo.php?action=add_volume",
       "icons": [
         {
-          "src": "assets/img/lactech-logo.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Funcionário",
-      "short_name": "Funcionário",
-      "description": "Abrir Painel do Funcionário",
-      "url": "/funcionario.php",
-      "icons": [
-        {
-          "src": "assets/img/lactech-logo.png",
+          "src": "https://i.postimg.cc/vmrkgDcB/lactech.png",
           "sizes": "192x192"
         }
       ]
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }

@@ -141,11 +141,82 @@ try {
             ];
             break;
             
+        case 'get_by_id':
+            $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+            if ($id <= 0) {
+                $data = [
+                    'success' => false,
+                    'error' => 'ID inválido'
+                ];
+                break;
+            }
+            
+            $rows = $db->query("SELECT * FROM financial_records WHERE id = ? AND farm_id = 1", [$id]);
+            if (empty($rows)) {
+                $data = [
+                    'success' => false,
+                    'error' => 'Registro não encontrado'
+                ];
+                break;
+            }
+            
+            $r = $rows[0];
+            $data = [
+                'success' => true,
+                'data' => [
+                    'id' => (int)$r['id'],
+                    'record_date' => $r['record_date'],
+                    'type' => $r['type'],
+                    'description' => $r['description'] ?? null,
+                    'amount' => (float)$r['amount'],
+                    'category' => $r['category'] ?? null,
+                    'created_at' => $r['created_at'] ?? null
+                ],
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+            break;
+            
+        case 'delete':
+            // Excluir registro financeiro
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+            $id = isset($input['id']) ? (int)$input['id'] : 0;
+            
+            if ($id <= 0) {
+                $data = [
+                    'success' => false,
+                    'error' => 'ID inválido'
+                ];
+                break;
+            }
+            
+            // Verificar se o registro existe
+            $existing = $db->query("SELECT id FROM financial_records WHERE id = ? AND farm_id = 1", [$id]);
+            if (empty($existing)) {
+                $data = [
+                    'success' => false,
+                    'error' => 'Registro não encontrado'
+                ];
+                break;
+            }
+            
+            // Excluir registro
+            $db->query("DELETE FROM financial_records WHERE id = ? AND farm_id = 1", [$id]);
+            
+            $data = [
+                'success' => true,
+                'data' => [
+                    'message' => 'Registro excluído com sucesso',
+                    'id' => $id
+                ],
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+            break;
+            
         default:
             $data = [
                 'success' => false,
                 'error' => 'Ação não encontrada',
-                'available_actions' => ['get_dashboard_data', 'get_stats', 'get_reports']
+                'available_actions' => ['get_dashboard_data', 'get_stats', 'get_reports', 'get_by_id', 'delete']
             ];
     }
     

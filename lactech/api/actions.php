@@ -150,8 +150,20 @@ try {
                 'notes' => $_POST['notes'] ?? null,
                 'recorded_by' => $_SESSION['user_id'] ?? 1,
             ];
+            
+            // Salvar registro de volume (isso já cria notificações automaticamente)
             $result = $db->addVolumeRecord($data);
-            echo json_encode($result);
+            
+            // Retornar resultado incluindo informação sobre notificações
+            if ($result['success']) {
+                echo json_encode([
+                    'success' => true,
+                    'id' => $result['id'],
+                    'message' => 'Volume registrado com sucesso! Os gerentes foram notificados.'
+                ]);
+            } else {
+                echo json_encode($result);
+            }
             break;
 
         case 'add_volume_by_animal':
@@ -217,100 +229,157 @@ try {
             $updates = [];
             $params = [];
             
-            // Atualizar campos básicos
-            if (isset($_POST['name'])) {
-                $updates[] = "name = :name";
-                $params[':name'] = $_POST['name'];
-            }
-            if (isset($_POST['phone'])) {
-                $updates[] = "phone = :phone";
-                $params[':phone'] = $_POST['phone'];
-            }
-            
-            // Atualizar dados da fazenda (tabela farms)
-            if (isset($_POST['farm_name'])) {
-                $stmt = $pdo->prepare("UPDATE farms SET name = :name WHERE id = 1");
-                $stmt->execute([':name' => $_POST['farm_name']]);
-            }
-            if (isset($_POST['farm_cnpj'])) {
-                $stmt = $pdo->prepare("UPDATE farms SET cnpj = :cnpj WHERE id = 1");
-                $stmt->execute([':cnpj' => $_POST['farm_cnpj']]);
-            }
-            if (isset($_POST['farm_address'])) {
-                $stmt = $pdo->prepare("UPDATE farms SET address = :address WHERE id = 1");
-                $stmt->execute([':address' => $_POST['farm_address']]);
-            }
-            
-            // Upload de foto
-            $profilePhotoPath = null;
-            if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = __DIR__ . '/../uploads/profiles/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
+            try {
+                // Preparar arrays para UPDATE do usuário
+                $userUpdates = [];
+                $userParams = [];
+                
+                // Atualizar campos básicos do usuário (tabela users)
+                if (isset($_POST['name'])) {
+                    $userUpdates[] = "name = :user_name";
+                    $userParams[':user_name'] = trim($_POST['name']);
+                }
+                if (isset($_POST['phone'])) {
+                    $userUpdates[] = "phone = :user_phone";
+                    $userParams[':user_phone'] = trim($_POST['phone']);
                 }
                 
-                $file = $_FILES['profile_photo'];
-                $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-                $maxSize = 5 * 1024 * 1024; // 5MB
-                
-                if (!in_array($file['type'], $allowedTypes)) {
-                    echo json_encode(['success' => false, 'error' => 'Tipo de arquivo não permitido. Use JPG, PNG ou GIF.']);
-                    exit;
-                }
-                
-                if ($file['size'] > $maxSize) {
-                    echo json_encode(['success' => false, 'error' => 'Arquivo muito grande. Tamanho máximo: 5MB.']);
-                    exit;
-                }
-                
-                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                $filename = 'profile_' . $user_id . '_' . time() . '.' . $extension;
-                $filepath = $uploadDir . $filename;
-                
-                if (move_uploaded_file($file['tmp_name'], $filepath)) {
-                    // Remover foto antiga se existir
-                    $stmt = $pdo->prepare("SELECT profile_photo FROM users WHERE id = :id");
-                    $stmt->execute([':id' => $user_id]);
-                    $oldPhoto = $stmt->fetch();
-                    if (!empty($oldPhoto['profile_photo']) && file_exists(__DIR__ . '/../' . $oldPhoto['profile_photo'])) {
-                        @unlink(__DIR__ . '/../' . $oldPhoto['profile_photo']);
+                // Upload de foto
+                $profilePhotoPath = null;
+                if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
+                    $uploadDir = __DIR__ . '/../uploads/profiles/';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
                     }
                     
-                    $profilePhotoPath = 'uploads/profiles/' . $filename;
-                    $updates[] = "profile_photo = :profile_photo";
-                    $params[':profile_photo'] = $profilePhotoPath;
-                } else {
-                    echo json_encode(['success' => false, 'error' => 'Erro ao salvar a foto.']);
-                    exit;
+                    $file = $_FILES['profile_photo'];
+                    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                    $maxSize = 5 * 1024 * 1024; // 5MB
+                    
+                    if (!in_array($file['type'], $allowedTypes)) {
+                        echo json_encode(['success' => false, 'error' => 'Tipo de arquivo não permitido. Use JPG, PNG ou GIF.']);
+                        exit;
+                    }
+                    
+                    if ($file['size'] > $maxSize) {
+                        echo json_encode(['success' => false, 'error' => 'Arquivo muito grande. Tamanho máximo: 5MB.']);
+                        exit;
+                    }
+                    
+                    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                    $filename = 'profile_' . $user_id . '_' . time() . '.' . $extension;
+                    $filepath = $uploadDir . $filename;
+                    
+                    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                        // Remover foto antiga se existir
+                        $stmt = $pdo->prepare("SELECT profile_photo FROM users WHERE id = :id");
+                        $stmt->execute([':id' => $user_id]);
+                        $oldPhoto = $stmt->fetch(PDO::FETCH_ASSOC);
+                        if (!empty($oldPhoto['profile_photo']) && file_exists(__DIR__ . '/../' . $oldPhoto['profile_photo'])) {
+                            @unlink(__DIR__ . '/../' . $oldPhoto['profile_photo']);
+                        }
+                        
+                        $profilePhotoPath = 'uploads/profiles/' . $filename;
+                        $userUpdates[] = "profile_photo = :user_profile_photo";
+                        $userParams[':user_profile_photo'] = $profilePhotoPath;
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Erro ao salvar a foto.']);
+                        exit;
+                    }
                 }
+                
+                // Atualizar senha se fornecida
+                if (!empty($_POST['password'])) {
+                    $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                    $userUpdates[] = "password = :user_password";
+                    $userUpdates[] = "password_changed_at = NOW()";
+                    $userParams[':user_password'] = $passwordHash;
+                }
+                
+                // Executar UPDATE na tabela users se houver campos para atualizar
+                if (!empty($userUpdates)) {
+                    $userParams[':user_id'] = $user_id;
+                    $sql = "UPDATE users SET " . implode(', ', $userUpdates) . " WHERE id = :user_id";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute($userParams);
+                    
+                    // ATUALIZAR SESSÃO com os novos valores salvos
+                    if (isset($_POST['name'])) {
+                        $_SESSION['user_name'] = trim($_POST['name']);
+                    }
+                }
+                
+                // Atualizar dados da fazenda (tabela farms) - sempre atualizar se os campos existirem no POST
+                // Isso permite tanto atualizar quanto limpar campos (setando NULL ou string vazia)
+                if (isset($_POST['farm_name'])) {
+                    $stmt = $pdo->prepare("UPDATE farms SET name = :farm_name WHERE id = 1");
+                    $stmt->execute([':farm_name' => trim($_POST['farm_name'])]);
+                }
+                if (isset($_POST['farm_phone'])) {
+                    $phone_value = trim($_POST['farm_phone']);
+                    // Converter string vazia para NULL se necessário
+                    $phone_value = $phone_value === '' ? null : $phone_value;
+                    $stmt = $pdo->prepare("UPDATE farms SET phone = :farm_phone WHERE id = 1");
+                    $stmt->execute([':farm_phone' => $phone_value]);
+                }
+                if (isset($_POST['farm_cnpj'])) {
+                    $cnpj_value = trim($_POST['farm_cnpj']);
+                    // Converter string vazia para NULL se necessário
+                    $cnpj_value = $cnpj_value === '' ? null : $cnpj_value;
+                    $stmt = $pdo->prepare("UPDATE farms SET cnpj = :farm_cnpj WHERE id = 1");
+                    $stmt->execute([':farm_cnpj' => $cnpj_value]);
+                }
+                if (isset($_POST['farm_address'])) {
+                    $stmt = $pdo->prepare("UPDATE farms SET address = :farm_address WHERE id = 1");
+                    $stmt->execute([':farm_address' => trim($_POST['farm_address'])]);
+                }
+                
+                // Buscar dados atualizados do usuário
+                $stmt = $pdo->prepare("SELECT id, name, email, phone, profile_photo FROM users WHERE id = :id");
+                $stmt->execute([':id' => $user_id]);
+                $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Buscar dados atualizados da fazenda
+                $stmt = $pdo->prepare("SELECT name, phone, cnpj, address FROM farms WHERE id = 1");
+                $stmt->execute();
+                $farmData = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Garantir que os valores não sejam null
+                if (!$userData) {
+                    $userData = ['id' => $user_id, 'name' => '', 'email' => '', 'phone' => '', 'profile_photo' => null];
+                }
+                if (!$farmData) {
+                    $farmData = ['name' => '', 'phone' => '', 'cnpj' => '', 'address' => ''];
+                }
+                
+                // Garantir que valores NULL sejam convertidos para strings vazias
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Perfil atualizado com sucesso!',
+                    'data' => [
+                        'user' => [
+                            'id' => $userData['id'] ?? $user_id,
+                            'name' => $userData['name'] ?? '',
+                            'email' => $userData['email'] ?? '',
+                            'phone' => $userData['phone'] ?? '',
+                            'profile_photo' => $userData['profile_photo'] ?? null
+                        ],
+                        'farm' => [
+                            'name' => $farmData['name'] ?? '',
+                            'phone' => $farmData['phone'] ?? '',
+                            'cnpj' => $farmData['cnpj'] ?? '',
+                            'address' => $farmData['address'] ?? ''
+                        ]
+                    ]
+                ], JSON_UNESCAPED_UNICODE);
+                
+            } catch (Exception $e) {
+                error_log("Erro ao atualizar perfil: " . $e->getMessage());
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Erro ao atualizar perfil: ' . $e->getMessage()
+                ]);
             }
-            
-            // Atualizar senha se fornecida
-            if (!empty($_POST['password'])) {
-                $passwordHash = password_hash($_POST['password'], PASSWORD_DEFAULT);
-                $updates[] = "password = :password";
-                $updates[] = "password_changed_at = NOW()";
-                $params[':password'] = $passwordHash;
-            }
-            
-            // Executar atualização
-            if (!empty($updates)) {
-                $params[':id'] = $user_id;
-                $sql = "UPDATE users SET " . implode(', ', $updates) . " WHERE id = :id";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($params);
-            }
-            
-            // Buscar dados atualizados
-            $stmt = $pdo->prepare("SELECT id, name, email, phone, profile_photo FROM users WHERE id = :id");
-            $stmt->execute([':id' => $user_id]);
-            $userData = $stmt->fetch();
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Perfil atualizado com sucesso!',
-                'data' => $userData
-            ]);
             break;
         
         case 'get_active_sessions':
@@ -733,6 +802,48 @@ try {
             }
             break;
 
+        case 'get_account_actions':
+            // Buscar ações da conta (alterações de senha, etc)
+            $user_id = $_SESSION['user_id'] ?? 1;
+            $pdo = $db->getConnection();
+            
+            try {
+                // Buscar data da última alteração de senha
+                $stmt = $pdo->prepare("
+                    SELECT 
+                        password_changed_at,
+                        updated_at,
+                        created_at
+                    FROM users 
+                    WHERE id = :user_id
+                ");
+                $stmt->execute([':user_id' => $user_id]);
+                $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                $passwordChanges = [];
+                
+                // Se houver data de alteração de senha, adicionar ao histórico
+                if ($userData && !empty($userData['password_changed_at'])) {
+                    $passwordChanges[] = [
+                        'password_changed_at' => $userData['password_changed_at'],
+                        'action' => 'Senha alterada'
+                    ];
+                }
+                
+                echo json_encode([
+                    'success' => true,
+                    'data' => [
+                        'password_changes' => $passwordChanges
+                    ]
+                ]);
+            } catch (Exception $e) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Erro ao buscar ações: ' . $e->getMessage()
+                ]);
+            }
+            break;
+            
         default:
             echo json_encode(['success' => false, 'error' => 'Ação inválida']);
     }

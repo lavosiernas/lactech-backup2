@@ -225,7 +225,7 @@ try {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-4">
-                    <a href="sistema-touros.php" class="flex items-center space-x-4">
+                    <button onclick="goBack()" class="flex items-center space-x-4 text-white hover:opacity-80 transition-opacity">
                         <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
                             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -235,10 +235,16 @@ try {
                             <h1 class="text-xl font-bold">Detalhes do Touro</h1>
                             <p class="text-forest-200 text-sm" id="bull-name-header">Carregando...</p>
                         </div>
-                    </a>
+                    </button>
                 </div>
                 
                 <div class="flex items-center space-x-4">
+                    <a href="gerente-completo.php" class="text-white hover:text-forest-200 p-2 flex items-center space-x-2" title="Voltar para o painel do gerente">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span class="text-sm font-medium">Voltar</span>
+                    </a>
                     <button onclick="editBull()" class="btn btn-primary flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>

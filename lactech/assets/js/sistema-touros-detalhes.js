@@ -114,20 +114,22 @@ async function loadBullData() {
         const result = await response.json();
         console.log('Resultado da API:', result);
         
+        // A API retorna { success: true, data: {...}, timestamp: "..." }
         if (result.success && result.data) {
             bullData = result.data;
             console.log('Dados do touro carregados:', bullData);
             renderBullInfo(bullData);
             loadTabContent(currentTab);
-        } else if (result.success && result) {
-            // Se não tem wrapper data, usar resultado direto
-            bullData = result;
-            console.log('Dados do touro carregados (sem wrapper):', bullData);
-            renderBullInfo(bullData);
-            loadTabContent(currentTab);
-        } else {
+        } else if (result.error) {
+            // Erro da API
             console.error('Erro na resposta da API:', result);
             showError(result.error || 'Erro ao carregar dados do touro');
+        } else {
+            // Tentar usar resultado direto se não tiver wrapper
+            console.warn('Resposta sem formato esperado, tentando usar resultado direto');
+            bullData = result;
+            renderBullInfo(bullData);
+            loadTabContent(currentTab);
         }
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -1697,6 +1699,11 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// Função global para voltar
+window.goBack = function() {
+    window.location.href = 'sistema-touros.php';
+};
 
 // Função global para editar touro
 window.editBull = function() {

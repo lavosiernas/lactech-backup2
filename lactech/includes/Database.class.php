@@ -912,10 +912,112 @@ class Database {
     }
     
     /**
+     * Criar notificação para usuários
+     */
+    public function createNotification($data) {
+        try {
+            $pdo = $this->getConnection();
+            $stmt = $pdo->prepare("
+                INSERT INTO notifications (
+                    user_id, title, message, link, type, notification_type, 
+                    priority, is_read, is_sent, related_table, related_id, farm_id, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, NOW())
+            ");
+            
+            $stmt->execute([
+                $data['user_id'] ?? null,
+                $data['title'] ?? 'Nova Notificação',
+                $data['message'] ?? '',
+                $data['link'] ?? null,
+                $data['type'] ?? 'info',
+                $data['notification_type'] ?? 'info',
+                $data['priority'] ?? 'medium',
+                $data['related_table'] ?? null,
+                $data['related_id'] ?? null,
+                self::FARM_ID
+            ]);
+            
+            return [
+                'success' => true,
+                'id' => $pdo->lastInsertId()
+            ];
+        } catch (PDOException $e) {
+            error_log("Erro ao criar notificação: " . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Notificar gerentes sobre novo volume cadastrado
+     */
+    public function notifyManagersAboutVolumeRecord($recorded_by, $volume, $date, $shift) {
+        try {
+            // Buscar todos os gerentes ativos
+            $managers = $this->query("
+                SELECT id, name, email 
+                FROM users 
+                WHERE role = 'gerente' 
+                AND is_active = 1 
+                AND farm_id = ?
+            ", [self::FARM_ID]);
+            
+            // Buscar nome do funcionário que registrou
+            $recordedByUser = $this->query("
+                SELECT name 
+                FROM users 
+                WHERE id = ?
+            ", [$recorded_by]);
+            
+            $recordedByName = $recordedByUser[0]['name'] ?? 'Funcionário';
+            
+            // Formatar volume
+            $volumeFormatted = number_format($volume, 2, ',', '.') . ' litros';
+            $shiftName = $shift === 'manha' ? 'Manhã' : ($shift === 'tarde' ? 'Tarde' : 'Noite');
+            
+            // Criar notificações para cada gerente
+            $notificationIds = [];
+            foreach ($managers as $manager) {
+                $notification = $this->createNotification([
+                    'user_id' => $manager['id'],
+                    'title' => 'Novo Registro de Volume',
+                    'message' => "{$recordedByName} registrou {$volumeFormatted} na coleta da {$shiftName} de " . date('d/m/Y', strtotime($date)),
+                    'link' => 'gerente-completo.php#volume',
+                    'type' => 'success',
+                    'notification_type' => 'info',
+                    'priority' => 'medium',
+                    'related_table' => 'volume_records',
+                    'related_id' => null
+                ]);
+                
+                if ($notification['success']) {
+                    $notificationIds[] = $notification['id'];
+                }
+            }
+            
+            return [
+                'success' => true,
+                'notifications_created' => count($notificationIds),
+                'notification_ids' => $notificationIds
+            ];
+        } catch (PDOException $e) {
+            error_log("Erro ao notificar gerentes: " . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
      * Adicionar registro de volume
      */
     public function addVolumeRecord($data) {
         try {
+            $recordId = null;
+            
             // Se tem producer_id (animal_id), inserir na tabela milk_production (individual por vaca)
             if (isset($data['producer_id']) && $data['producer_id']) {
                 $stmt = $this->query("
@@ -952,11 +1054,24 @@ class Database {
                     $data['recorded_by'] ?? 1,
                     self::FARM_ID
                 ]);
+                
+                $recordId = $this->getConnection()->lastInsertId();
+                
+                // Notificar gerentes sobre o novo registro de volume
+                // Apenas se for cadastro de volume geral (não individual por vaca)
+                if ($recordId && isset($data['recorded_by'])) {
+                    $this->notifyManagersAboutVolumeRecord(
+                        $data['recorded_by'],
+                        $total_volume,
+                        $data['collection_date'] ?? date('Y-m-d'),
+                        $data['period'] ?? 'manha'
+                    );
+                }
             }
             
             return [
                 'success' => true,
-                'id' => $this->getConnection()->lastInsertId()
+                'id' => $recordId ?? $this->getConnection()->lastInsertId()
             ];
         } catch (PDOException $e) {
             return [

@@ -118,3 +118,6 @@ O script `sistema_touros_migration.sql` foi ajustado para:
 
 **O sistema está pronto para uso após aplicar a migração!**
 
+
+
+

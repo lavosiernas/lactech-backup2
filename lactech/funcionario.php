@@ -665,22 +665,46 @@
                     </div>
                     
                     <!-- Modo Visualização -->
-                    <div id="profileViewMode" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">Nome Completo</label>
-                            <p class="text-gray-900 font-semibold text-base" id="profileFullName">Carregando...</p>
+                    <div id="profileViewMode">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">Nome Completo</label>
+                                <p class="text-gray-900 font-semibold text-base" id="profileFullName">Carregando...</p>
+                                    </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">Email</label>
+                                <p class="text-gray-900 font-semibold text-base" id="profileEmail2">Carregando...</p>
                                 </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">Email</label>
-                            <p class="text-gray-900 font-semibold text-base" id="profileEmail2">Carregando...</p>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">WhatsApp</label>
+                                <p class="text-gray-900 font-semibold text-base" id="profileWhatsApp">Não informado</p>
                             </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">WhatsApp</label>
-                            <p class="text-gray-900 font-semibold text-base" id="profileWhatsApp">Não informado</p>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">Cargo</label>
+                                <p class="text-gray-900 font-semibold text-base">Funcionário</p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">Cargo</label>
-                            <p class="text-gray-900 font-semibold text-base">Funcionário</p>
+                        
+                        <div class="border-t border-gray-200 pt-4 mt-4">
+                            <h5 class="text-md font-semibold text-gray-900 mb-4">Informações da Fazenda</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Nome da Fazenda</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmNameDisplay">Carregando...</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Telefone da Fazenda</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmPhone">Não informado</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">CNPJ</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmCNPJ">Não informado</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Endereço da Fazenda</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmAddress">Não informado</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -703,6 +727,28 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-2">Cargo</label>
                                     <input type="text" value="Funcionário" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-gray-100 text-gray-500" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4 mt-4">
+                                <h5 class="text-md font-semibold text-gray-900 mb-4">Informações da Fazenda</h5>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">Nome da Fazenda</label>
+                                        <input type="text" id="editFarmName" name="farm_name" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="Nome da fazenda">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">Telefone da Fazenda</label>
+                                        <input type="tel" id="editFarmPhone" name="farm_phone" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="(00) 0000-0000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">CNPJ</label>
+                                        <input type="text" id="editFarmCNPJ" name="farm_cnpj" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="00.000.000/0000-00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">Endereço da Fazenda</label>
+                                        <textarea id="editFarmAddress" name="farm_address" rows="3" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white resize-none" placeholder="Endereço completo da fazenda"></textarea>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -3831,7 +3877,7 @@
             document.getElementById('profileModal').classList.remove('show');
         }
 
-        function toggleProfileEdit() {
+        async function toggleProfileEdit() {
             const viewMode = document.getElementById('profileViewMode');
             const editMode = document.getElementById('profileEditMode');
             const editBtn = document.getElementById('editProfileBtn');
@@ -3848,17 +3894,53 @@
                 `;
                 editBtn.onclick = cancelProfileEdit;
                 
-                // Preencher campos de edição
+                // Preencher campos de edição do usuário
                 document.getElementById('editProfileName').value = currentUser.name || '';
                 document.getElementById('editProfileEmail').value = currentUser.email || '';
                 document.getElementById('editProfileWhatsApp').value = currentUser.whatsapp || '';
+                
+                // Carregar e preencher dados da fazenda
+                try {
+                    const supabase = createSupabaseClient();
+                    
+                    // Buscar farm_id do usuário
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('farm_id')
+                        .eq('id', currentUser.id)
+                        .single();
+                    
+                    if (userData && userData.farm_id) {
+                        // Buscar dados da fazenda
+                        const { data: farmData } = await supabase
+                            .from('farms')
+                            .select('name, phone, cnpj, address')
+                            .eq('id', userData.farm_id)
+                            .single();
+                        
+                        if (farmData) {
+                            document.getElementById('editFarmName').value = farmData.name || '';
+                            document.getElementById('editFarmPhone').value = farmData.phone || '';
+                            document.getElementById('editFarmCNPJ').value = farmData.cnpj || '';
+                            
+                            // Se não houver endereço, usar o padrão especificado pelo usuário
+                            const defaultAddress = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
+                            document.getElementById('editFarmAddress').value = farmData.address || defaultAddress;
+                        }
+                    }
+                } catch (error) {
+                    log('Erro ao carregar dados da fazenda: ' + error.message);
+                }
             }
         }
 
-        function cancelProfileEdit() {
+        async function cancelProfileEdit() {
             const viewMode = document.getElementById('profileViewMode');
             const editMode = document.getElementById('profileEditMode');
             const editBtn = document.getElementById('editProfileBtn');
+            
+            // Recarregar dados originais antes de voltar para modo visualização
+            await loadProfileData();
             
             viewMode.classList.remove('hidden');
             editMode.classList.add('hidden');
@@ -3873,7 +3955,7 @@
 
         async function loadProfileData() {
             if (currentUser) {
-                // Atualizar todos os elementos do modal
+                // Atualizar todos os elementos do modal do usuário
                 document.getElementById('profileName').textContent = currentUser.name || 'Nome não informado';
                 document.getElementById('profileFarmName').textContent = currentFarmName || 'Fazenda não informada';
                 document.getElementById('profileFullName').textContent = currentUser.name || 'Nome não informado';
@@ -3884,16 +3966,35 @@
                     const supabase = createSupabaseClient();
                     const { data: userData } = await supabase
                     .from('users')
-                        .select('whatsapp')
+                        .select('whatsapp, farm_id')
                         .eq('id', currentUser.id)
                     .single();
                 
                     if (userData && userData.whatsapp) {
                         document.getElementById('profileWhatsApp').textContent = userData.whatsapp;
                         currentUser.whatsapp = userData.whatsapp;
-                }
-            } catch (error) {
-                    log('Erro ao carregar WhatsApp: ' + error.message);
+                    }
+                    
+                    // Carregar dados da fazenda
+                    if (userData && userData.farm_id) {
+                        const { data: farmData } = await supabase
+                            .from('farms')
+                            .select('name, phone, cnpj, address')
+                            .eq('id', userData.farm_id)
+                            .single();
+                        
+                        if (farmData) {
+                            document.getElementById('profileFarmNameDisplay').textContent = farmData.name || 'Não informado';
+                            document.getElementById('profileFarmPhone').textContent = farmData.phone || 'Não informado';
+                            document.getElementById('profileFarmCNPJ').textContent = farmData.cnpj || 'Não informado';
+                            
+                            // Se não houver endereço, usar o padrão
+                            const defaultAddress = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
+                            document.getElementById('profileFarmAddress').textContent = farmData.address || defaultAddress;
+                        }
+                    }
+                } catch (error) {
+                    log('Erro ao carregar dados: ' + error.message);
                 }
                 
                 // Load profile photo
@@ -4089,7 +4190,7 @@
                 const whatsapp = formData.get('whatsapp');
                 
                 // Atualizar dados do usuário
-                const { error } = await supabase
+                const { error: userError } = await supabase
                     .from('users')
                     .update({
                         name: name,
@@ -4097,8 +4198,46 @@
                     })
                     .eq('id', currentUser.id);
                 
-                if (error) {
-                    throw error;
+                if (userError) {
+                    throw userError;
+                }
+                
+                // Buscar farm_id do usuário para atualizar dados da fazenda
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (userData && userData.farm_id) {
+                    // Atualizar dados da fazenda
+                    const farmName = formData.get('farm_name');
+                    const farmPhone = formData.get('farm_phone');
+                    const farmCNPJ = formData.get('farm_cnpj');
+                    const farmAddress = formData.get('farm_address');
+                    
+                    const updateData = {};
+                    if (farmName) updateData.name = farmName;
+                    if (farmPhone !== null) updateData.phone = farmPhone || null;
+                    if (farmCNPJ !== null) updateData.cnpj = farmCNPJ || null;
+                    if (farmAddress !== null) updateData.address = farmAddress || null;
+                    
+                    if (Object.keys(updateData).length > 0) {
+                        const { error: farmError } = await supabase
+                            .from('farms')
+                            .update(updateData)
+                            .eq('id', userData.farm_id);
+                        
+                        if (farmError) {
+                            log('Erro ao atualizar fazenda: ' + farmError.message);
+                            // Não falhar completamente se houver erro na fazenda
+                        } else {
+                            // Atualizar nome da fazenda local se foi alterado
+                            if (farmName) {
+                                currentFarmName = farmName;
+                            }
+                        }
+                    }
                 }
                 
                 // Atualizar variáveis locais
@@ -4110,18 +4249,15 @@
                 document.getElementById('employeeName').textContent = firstName;
                 document.getElementById('employeeWelcome').textContent = firstName;
                 
-                // Recarregar dados do modal
-                await loadProfileData();
+                // Voltar para modo de visualização (já recarrega os dados)
+                await cancelProfileEdit();
                 
-                // Voltar para modo de visualização
-                cancelProfileEdit();
-                
+                showNotification('Perfil atualizado com sucesso!', 'success');
                 log('Perfil atualizado com sucesso!');
-                window.showAlert('Perfil atualizado com sucesso!', { type: 'success', title: 'Sucesso!' });
 
             } catch (error) {
                 log('ERRO ao atualizar perfil: ' + error.message);
-                window.showAlert('Erro ao atualizar perfil: ' + error.message, { type: 'error', title: 'Erro!' });
+                showNotification('Erro ao atualizar perfil: ' + error.message, 'error');
             }
         }
 

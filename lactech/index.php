@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- SEO Otimizado -->
     <title>LacTech - Sistema Completo de Gestão para Fazendas Leiteiras</title>
     <meta name="description" content="LacTech é o sistema mais completo para gestão de fazendas leiteiras. Controle de rebanho, produção de leite, saúde animal, análise de dados e muito mais. Aumente sua produtividade com tecnologia de ponta.">
     <meta name="keywords" content="lactech, lac tech, sistema leiteiro, gestão fazenda leiteira, controle rebanho bovino, produção leite, software pecuária, gestão gado leiteiro, controle ordenha, saúde animal, reprodução bovina, inseminação artificial, controle financeiro rural">
     <meta name="author" content="Xandria - LacTech">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://lactechsys.com/index.php">
-    
-    <!-- Open Graph -->
     <meta property="og:title" content="LacTech - Sistema Completo de Gestão para Fazendas Leiteiras">
     <meta property="og:description" content="LacTech é o sistema mais completo para gestão de fazendas leiteiras. Controle de rebanho, produção de leite, saúde animal e análise de dados em tempo real.">
     <meta property="og:image" content="https://i.postimg.cc/vmrkgDcB/lactech.png">
@@ -20,27 +16,15 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="LacTech">
     <meta property="og:locale" content="pt_BR">
-    
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="LacTech - Sistema Completo de Gestão para Fazendas Leiteiras">
     <meta name="twitter:description" content="LacTech é o sistema mais completo para gestão de fazendas leiteiras. Controle de rebanho, produção de leite e saúde animal em tempo real.">
     <meta name="twitter:image" content="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     <meta name="apple-mobile-web-app-title" content="LacTech">
     <meta name="application-name" content="LacTech">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y1DPSZ8DP0"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-Y1DPSZ8DP0', {
-        'page_title': 'LacTech - Sistema de Gestão Leiteira',
-        'send_page_view': true
-      });
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -61,7 +45,15 @@
             }
         }
     </script>
-    
+     <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Y1DPSZ8DP0', {
+        'page_title': 'LacTech - Sistema de Gestão Leiteira',
+        'send_page_view': true
+      });
+    </script>
     <style>
         * {
             font-family: 'Inter', sans-serif;
@@ -901,9 +893,9 @@
                                         Suporte por email
                                     </li>
                                 </ul>
-                                <button class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all">
-                                    Aguardando Retorno
-                                </button>
+                                <a href="pagamento-pix.php?plan=basico&name=Básico&value=199" class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-center block">
+                                    Assinar Plano
+                                </a>
                             </div>
                         </div>
                         
@@ -947,9 +939,9 @@
                                         App mobile
                                     </li>
                                 </ul>
-                                <button class="w-full px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all">
-                                    Aguardando Retorno
-                                </button>
+                                <a href="pagamento-pix.php?plan=profissional&name=Profissional&value=399" class="w-full px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all text-center block">
+                                    Assinar Plano
+                                </a>
                             </div>
                         </div>
                         
@@ -993,9 +985,9 @@
                                         Consultoria incluída
                                     </li>
                                 </ul>
-                                <button class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all">
-                                    Aguardando Retorno
-                                </button>
+                                <a href="pagamento-pix.php?plan=empresarial&name=Empresarial&value=799" class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-center block">
+                                    Assinar Plano
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -1037,9 +1029,9 @@
                             Suporte por email
                         </li>
                     </ul>
-                    <button class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all">
-                        Aguardando Retorno
-                    </button>
+                    <a href="pagamento-pix.php?plan=basico&name=Básico&value=199" class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-center block">
+                        Assinar Plano
+                    </a>
                 </div>
                 
                 <!-- Professional Plan -->
@@ -1081,9 +1073,9 @@
                             App mobile
                         </li>
                     </ul>
-                    <button class="w-full px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all">
-                        Aguardando Retorno
-                    </button>
+                    <a href="pagamento-pix.php?plan=profissional&name=Profissional&value=399" class="w-full px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all text-center block">
+                        Assinar Plano
+                    </a>
                 </div>
                 
                 <!-- Enterprise Plan -->
@@ -1125,9 +1117,9 @@
                             Consultoria incluída
                         </li>
                     </ul>
-                    <button class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all">
-                        Aguardando Retorno
-                    </button>
+                    <a href="pagamento-pix.php?plan=empresarial&name=Empresarial&value=799" class="w-full px-6 py-3 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-center block">
+                        Assinar Plano
+                    </a>
                 </div>
             </div>
         </div>
@@ -1442,14 +1434,13 @@
                 <!-- Payment Integration Section -->
                 <div class="mt-12 pt-8 border-t border-gray-800">
                     <div class="flex items-center justify-center gap-3">
-                        <span class="text-gray-400 text-sm">Pagamentos processados por:</span>
-                        <a href="https://www.abacatepay.com/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                            <img src="./assets/video/2497229-avocado-fruit-logo-healthy-food-symbols-gratis-vetor-removebg-preview.png" alt="AbacatePay Logo" class="w-6 h-6 object-contain">
-                            <span class="text-white font-semibold">AbacatePay</span>
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        <span class="text-gray-400 text-sm">Pagamentos via:</span>
+                        <span class="flex items-center space-x-2">
+                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                        </a>
+                            <span class="text-white font-semibold">LacPay - PIX</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1619,6 +1610,7 @@
                 window.requestAnimationFrame(updateVideo);
             }
         }, { passive: true });
+
 
     </script>
 </body>

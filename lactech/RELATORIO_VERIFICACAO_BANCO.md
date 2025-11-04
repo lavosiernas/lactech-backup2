@@ -305,3 +305,6 @@ O arquivo `gerente-completo.php` está conectado corretamente ao banco de dados.
 **Versão do PHP:** 8.2.12
 **SGBD:** MariaDB 10.4.32
 
+
+
+

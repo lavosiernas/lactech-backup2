@@ -12,24 +12,60 @@ header("Pragma: cache");
 require_once __DIR__ . '/includes/config_login.php';
 
 // Verificar autenticação
+// SOLUÇÃO DEFINITIVA: Quebrar o loop de redirecionamento
+// Se veio do Google callback e não tem sessão, mostrar página de espera em vez de redirecionar
+$isFromGoogleCallback = isset($_GET['google_linked']) || isset($_GET['google_error']);
+
 if (!isLoggedIn()) {
-    header("Location: index.php", true, 302);
-    exit();
+    // Se veio do Google callback, mostrar página de espera em vez de redirecionar
+    // Isso evita o loop: callback → gerente → login → gerente → loop
+    if ($isFromGoogleCallback) {
+        // Mostrar página de espera que tenta recarregar a sessão
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Processando...</title>
+            <meta http-equiv="refresh" content="2;url=gerente-completo.php">
+        </head>
+        <body>
+            <script>
+                // Aguardar 2 segundos e tentar recarregar a página
+                // Isso dá tempo para o cookie de sessão ser processado
+                setTimeout(function() {
+                    // Tentar recarregar a página
+                    window.location.reload();
+                }, 2000);
+            </script>
+            <p>Aguarde, processando vinculação...</p>
+        </body>
+        </html>
+        <?php
+        exit;
+    } else {
+        // Não veio do callback - redirecionar normalmente para login
+        session_destroy();
+        session_start();
+        safeRedirect('inicio-login.php');
+    }
+} else {
+    // Limpar flags do callback se estiverem presentes
+    unset($_SESSION['from_google_callback']);
+    unset($_SESSION['google_callback_time']);
 }
 
 // Verificar papel de gerente
 if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager') {
     switch ($_SESSION['user_role']) {
         case 'proprietario':
-            header("Location: proprietario.php", true, 302);
+            safeRedirect('proprietario.php');
             break;
         case 'funcionario':
-            header("Location: funcionario.php", true, 302);
+            safeRedirect('funcionario.php');
             break;
         default:
-            header("Location: index.php", true, 302);
+            safeRedirect('index.php');
     }
-    exit();
 }
 
 // Incluir classe de banco de dados
@@ -40,15 +76,22 @@ $current_user_id = $_SESSION['user_id'] ?? 1;
 $current_user_name = $_SESSION['user_name'] ?? 'Gerente';
 $current_user_role = $_SESSION['user_role'] ?? 'gerente';
 
-// Buscar foto do perfil do banco
+// Buscar dados COMPLETOS do usuário do banco (não confiar apenas na sessão)
 try {
     $db = Database::getInstance();
-    // Usar prepared statement para maior segurança
-    $userData = $db->query("SELECT profile_photo, phone FROM users WHERE id = ?", [(int)$current_user_id]);
+    // Buscar TODOS os dados do usuário do banco, não apenas da sessão
+    $userData = $db->query("SELECT name, email, profile_photo, phone FROM users WHERE id = ?", [(int)$current_user_id]);
     
     // Verificar se os dados foram retornados antes de acessar
     if (!empty($userData) && isset($userData[0])) {
+        // USAR DADOS DO BANCO (mais confiável que a sessão)
+        $current_user_name = $userData[0]['name'] ?? $_SESSION['user_name'] ?? 'Gerente';
+        $current_user_email = $userData[0]['email'] ?? $_SESSION['user_email'] ?? '';
         $current_user_photo = $userData[0]['profile_photo'] ?? null;
+        
+        // Atualizar sessão com dados do banco (sincronizar)
+        $_SESSION['user_name'] = $current_user_name;
+        $_SESSION['user_email'] = $current_user_email;
         
         // Debug: verificar se a foto está vindo do banco (ativar temporariamente)
         error_log("DEBUG - Foto do banco (raw): " . ($current_user_photo ?? 'NULL'));
@@ -75,30 +118,38 @@ try {
         }
         $current_user_phone = $userData[0]['phone'] ?? '(11) 99999-9999';
     } else {
+        // Se não encontrar no banco, usar sessão ou padrão
+        $current_user_name = $_SESSION['user_name'] ?? 'Gerente';
+        $current_user_email = $_SESSION['user_email'] ?? '';
         $current_user_photo = null;
         $current_user_phone = '(11) 99999-9999';
     }
     
     // Buscar dados da fazenda usando prepared statement
-    $farmData = $db->query("SELECT name, cnpj, address FROM farms WHERE id = ?", [1]);
+    $farmData = $db->query("SELECT name, phone, cnpj, address FROM farms WHERE id = ?", [1]);
     
     // Verificar se os dados foram retornados antes de acessar
     if (!empty($farmData) && isset($farmData[0])) {
         $farm_name = $farmData[0]['name'] ?? 'Lagoa Do Mato';
-        $farm_cnpj = $farmData[0]['cnpj'] ?? '12.345.678/0001-90';
-        $farm_address = $farmData[0]['address'] ?? 'Fazenda Lagoa Do Mato, Zona Rural, São Paulo - SP';
+        $farm_phone = $farmData[0]['phone'] ?? '';
+        $farm_cnpj = $farmData[0]['cnpj'] ?? '';
+        // Endereço padrão se não estiver no banco
+        $default_address = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
+        $farm_address = $farmData[0]['address'] ?? $default_address;
     } else {
         $farm_name = 'Lagoa Do Mato';
-        $farm_cnpj = '12.345.678/0001-90';
-        $farm_address = 'Fazenda Lagoa Do Mato, Zona Rural, São Paulo - SP';
+        $farm_phone = '';
+        $farm_cnpj = '';
+        $farm_address = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
     }
 } catch (Exception $e) {
     error_log("Erro ao buscar dados do usuário/fazenda: " . $e->getMessage());
     $current_user_photo = null;
     $current_user_phone = '(11) 99999-9999';
     $farm_name = 'Lagoa Do Mato';
-    $farm_cnpj = '12.345.678/0001-90';
-    $farm_address = 'Fazenda Lagoa Do Mato, Zona Rural, São Paulo - SP';
+    $farm_phone = '';
+    $farm_cnpj = ''; // Não usar valor padrão falso, deixar vazio se não houver no banco
+    $farm_address = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
 }
 
        // Buscar dados para o modal Mais Opções
@@ -165,8 +216,19 @@ $v = time();
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#16a34a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="LacTech">
+    <meta name="description" content="Sistema completo de gestão para fazendas leiteiras">
     <title>LacTech - Dashboard Gerente</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     
     <!-- Favicon -->
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
@@ -640,10 +702,7 @@ $v = time();
                     <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="users">
                         Usuários
                     </button>
-                    <button onclick="openMoreOptionsModal()" class="px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 12.5c0 .828-.672 1.5-1.5 1.5s-1.5-.672-1.5-1.5.672-1.5 1.5-1.5 1.5.672 1.5 1.5zM18.5 12.5c0 .828-.672 1.5-1.5 1.5s-1.5-.672-1.5-1.5.672-1.5 1.5-1.5 1.5.672 1.5 1.5zM12 20c-2.5 0-4.5-2-4.5-4.5S9.5 11 12 11s4.5 2 4.5 4.5S14.5 20 12 20zM12 8c-1.5 0-2.5-1-2.5-2.5S10.5 3 12 3s2.5 1 2.5 2.5S13.5 8 12 8z"/>
-                        </svg>
+                    <button onclick="openMoreOptionsModal()" class="px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg">
                         <span>MAIS</span>
                     </button>
                 </nav>
@@ -695,14 +754,14 @@ $v = time();
                             
                             if ($headerShowPhoto): 
                             ?>
-                                <img src="<?php echo htmlspecialchars($headerPhotoSrc); ?>?t=<?php echo time(); ?>" alt="Foto do perfil" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <img src="<?php echo htmlspecialchars($headerPhotoSrc); ?>?t=<?php echo time(); ?>" alt="Foto do perfil" class="w-full h-full object-cover" id="headerProfilePhoto" onerror="this.style.display='none'; document.getElementById('headerProfilePhotoIcon').style.display='flex';">
                             <?php endif; ?>
-                            <svg class="w-5 h-5 text-white <?php echo $headerShowPhoto ? 'hidden' : ''; ?>" fill="currentColor" viewBox="0 0 24 24">
+                            <svg id="headerProfilePhotoIcon" class="w-5 h-5 text-white <?php echo $headerShowPhoto ? 'hidden' : ''; ?>" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-medium"><?php echo htmlspecialchars($current_user_name); ?></p>
+                            <p class="text-sm font-medium" id="headerProfileName"><?php echo htmlspecialchars($current_user_name); ?></p>
                             <p class="text-xs text-forest-200">Gerente</p>
                         </div>
                     </button>
@@ -1224,6 +1283,7 @@ $v = time();
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Foto</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Nome</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Cargo</th>
@@ -1233,7 +1293,7 @@ $v = time();
                             </thead>
                             <tbody id="usersTable">
                                 <tr>
-                                    <td colspan="5" class="text-center py-8 text-gray-500">Carregando usuários...</td>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">Carregando usuários...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2034,17 +2094,109 @@ $v = time();
                                 <h4 class="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
+                                    </svg>
                                     Segurança
                                 </h4>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Nova Senha</label>
-                                        <input type="password" id="profileNewPassword" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed profile-input" placeholder="••••••••">
+                                <div class="space-y-5">
+                                    <!-- Vinculação Google - ATIVADO -->
+                                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                                </svg>
+                                                <span class="text-sm font-medium text-gray-900">Conta Google</span>
+                                            </div>
+                                            <span id="googleAccountStatus" class="text-xs px-2 py-1 rounded-lg bg-gray-200 text-gray-700">
+                                                Não vinculada
+                                            </span>
+                                        </div>
+                                        <p id="googleAccountEmail" class="text-xs text-gray-600 mb-3 hidden font-medium">
+                                            Email vinculado: <span class="text-green-600"></span>
+                                        </p>
+                                        <p id="googleAccountNotLinkedText" class="text-xs text-gray-600 mb-3">Vincule sua conta Google para receber códigos OTP por e-mail e alterar sua senha.</p>
+                                        <button type="button" onclick="linkGoogleAccount()" id="linkGoogleBtn" class="w-full px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                            </svg>
+                                            Vincular Conta Google
+                                        </button>
+                                        <button type="button" onclick="openGoogleAccountSettings()" id="googleAccountSettingsBtn" class="hidden w-full px-4 py-2 text-sm font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 mt-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            Configurações da Conta
+                                        </button>
+                                        <button type="button" onclick="unlinkGoogleAccount()" id="unlinkGoogleBtn" class="hidden w-full px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 mt-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Desvincular Conta Google
+                                        </button>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Senha</label>
-                                        <input type="password" id="profileConfirmPassword" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed profile-input" placeholder="••••••••">
+
+                                    <!-- Autenticação de Dois Fatores (2FA) - DESATIVADO -->
+                                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                                </svg>
+                                                <span class="text-sm font-medium text-gray-900">Autenticação de Dois Fatores (2FA)</span>
+                                            </div>
+                                            <span id="twoFactorStatus" class="text-xs px-2 py-1 rounded-lg bg-gray-200 text-gray-700">
+                                                Desativado
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mb-3">Adicione uma camada extra de segurança com autenticação de dois fatores.</p>
+                                        <button type="button" onclick="setup2FA()" id="setup2FABtn" class="w-full px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                            Configurar 2FA
+                                        </button>
+                                        <button type="button" onclick="disable2FA()" id="disable2FABtn" class="hidden w-full px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 mt-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Desativar 2FA
+                                        </button>
+                                    </div>
+
+                                    <!-- Alteração de Senha -->
+                                    <div class="border-t border-gray-200 pt-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                                            </svg>
+                                            <label class="text-sm font-medium text-gray-700">Alterar Senha</label>
+                                        </div>
+                                        <!-- AVISO DE SENHA - REMOVIDO (não precisa mais de Google) -->
+                                        <div id="passwordChangeWarning" class="mb-3 hidden">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Nova Senha</label>
+                                            <div class="relative">
+                                                <input type="password" id="profileNewPassword" class="w-full px-4 py-2.5 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 profile-input" placeholder="••••••••">
+                                                <button type="button" onclick="toggleProfilePasswordVisibility('profileNewPassword', 'profilePasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors" id="profilePasswordToggle">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Senha</label>
+                                            <input type="password" id="profileConfirmPassword" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 profile-input" placeholder="••••••••">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2067,7 +2219,7 @@ $v = time();
                         </div>
                         <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                        <input type="email" id="profileEmail" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed" value="gerente@lactech.com">
+                                        <input type="email" id="profileEmail" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed" value="<?php echo htmlspecialchars($current_user_email ?? $_SESSION['user_email'] ?? ''); ?>">
                         </div>
                         <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
@@ -2088,6 +2240,10 @@ $v = time();
                         <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Fazenda</label>
                                         <input type="text" id="farmName" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed profile-input" value="<?php echo htmlspecialchars($farm_name); ?>">
+                        </div>
+                        <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Telefone da Fazenda</label>
+                                        <input type="tel" id="farmPhone" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed profile-input" value="<?php echo htmlspecialchars($farm_phone); ?>">
                         </div>
                         <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">CNPJ</label>
@@ -2132,6 +2288,52 @@ $v = time();
                                             <input type="checkbox" id="pushNotifications" class="sr-only peer" checked>
                                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                         </label>
+                                    </div>
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            <span class="text-sm font-medium text-gray-700">Ações na Conta</span>
+                                        </div>
+                                        <button onclick="openAccountActionsModal()" class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                                            Ver Histórico
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <svg id="offline-icon-online" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+                                            </svg>
+                                            <svg id="offline-icon-offline" class="w-5 h-5 text-yellow-600 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414"/>
+                                            </svg>
+                                            <div class="flex-1">
+                                                <span class="text-sm font-medium text-gray-900 block">Modo Offline</span>
+                                                <span id="offline-status-text" class="text-xs text-gray-600">Sincronização automática ativada</span>
+                                            </div>
+                                        </div>
+                                        <button id="offline-toggle-btn" onclick="toggleOfflineMode()" class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors bg-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" role="switch" aria-checked="false">
+                                            <span id="offline-toggle-thumb" class="inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform translate-x-1"></span>
+                                            <span id="offline-pending-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-5 flex items-center justify-center px-1.5 hidden">0</span>
+                                        </button>
+                                    </div>
+                                    <div id="pwa-install-container" class="hidden flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                            <div>
+                                                <span class="text-sm font-medium text-gray-900 block">Instalar App</span>
+                                                <span class="text-xs text-gray-600">Baixe o aplicativo para acesso offline</span>
+                                            </div>
+                                        </div>
+                                        <button id="pwa-install-btn" onclick="installPWA()" class="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                            Instalar
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2395,6 +2597,230 @@ $v = time();
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Desvincular Google -->
+    <div id="unlinkGoogleModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeUnlinkGoogleModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <!-- Ícone de alerta -->
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Título -->
+            <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Desvincular Conta Google</h3>
+            <p class="text-sm text-gray-600 text-center mb-6">Tem certeza que deseja desvincular sua conta Google?<br><strong class="text-red-600">Você não poderá mais alterar sua senha.</strong></p>
+            
+            <!-- Botões -->
+            <div class="flex gap-3">
+                <button onclick="closeUnlinkGoogleModal()" class="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmUnlinkGoogle()" class="flex-1 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Sim, Desvincular
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Configurações da Conta Google -->
+    <div id="googleSettingsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeGoogleSettingsModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900">Configurações da Conta Google</h3>
+                </div>
+                <button onclick="closeGoogleSettingsModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Conteúdo -->
+            <div class="space-y-4">
+                <!-- Email vinculado -->
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Email Vinculado</label>
+                    <p id="googleSettingsEmail" class="text-sm font-medium text-gray-900">Carregando...</p>
+                </div>
+                
+                <!-- Nome -->
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Nome</label>
+                    <p id="googleSettingsName" class="text-sm font-medium text-gray-900">Carregando...</p>
+                </div>
+                
+                <!-- Data de vinculação -->
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Vinculada em</label>
+                    <p id="googleSettingsLinkedAt" class="text-sm font-medium text-gray-900">Carregando...</p>
+                </div>
+                
+                <!-- Informações -->
+                <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p class="text-xs text-yellow-800">
+                        <strong>Atenção:</strong> Esta conta será usada para receber códigos OTP e alterar sua senha.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Botões -->
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeGoogleSettingsModal()" class="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Fechar
+                </button>
+                <button onclick="closeGoogleSettingsModal(); setTimeout(() => unlinkGoogleAccount(), 300);" class="flex-1 px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Desvincular Conta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal OTP e Senha -->
+    <div id="otpPasswordModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeOtpPasswordModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900" id="otpModalTitle">Verificação de Segurança</h3>
+                </div>
+                <button onclick="closeOtpPasswordModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Conteúdo -->
+            <div class="space-y-4">
+                <p class="text-sm text-gray-600 mb-4" id="otpModalMessage">
+                    Digite o código OTP enviado para seu e-mail:
+                </p>
+                
+                <!-- OTP Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Código OTP</label>
+                    <input type="text" id="otpCodeInput" maxlength="6" pattern="[0-9]{6}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center text-2xl tracking-widest" placeholder="000000" autocomplete="off">
+                    <p class="text-xs text-gray-500 mt-1">Digite o código de 6 dígitos</p>
+                </div>
+                
+                <!-- Password Input -->
+                <div id="otpPasswordInputContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha Atual</label>
+                    <div class="relative">
+                        <input type="password" id="otpPasswordInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Digite sua senha atual" autocomplete="current-password">
+                        <button type="button" onclick="toggleOtpPasswordVisibility()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <svg id="otpPasswordEye" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botões -->
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeOtpPasswordModal()" class="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="submitOtpPassword()" id="otpSubmitBtn" class="flex-1 px-4 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ações na Conta -->
+    <div id="accountActionsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeAccountActionsModal()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all">
+            <!-- Header -->
+            <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Ações na Conta</h3>
+                        <p class="text-blue-100 text-sm">Histórico de alterações e atividades</p>
+                    </div>
+                </div>
+                <button onclick="closeAccountActionsModal()" class="w-10 h-10 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl transition-all text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-6">
+                <!-- Alterações de Senha -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        Alterações de Senha
+                    </h4>
+                    <div id="passwordChangesList" class="space-y-3">
+                        <div class="flex items-center justify-center py-8">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                                <p class="text-sm text-gray-500">Carregando histórico...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seção para futuras ações -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Outras Ações
+                    </h4>
+                    <p class="text-sm text-gray-500 italic">Mais funcionalidades serão adicionadas em breve...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Ver Pedigree - Full Screen -->
     <div id="pedigreeModal" class="fixed inset-0 z-[110] hidden">
         <!-- Header Fixo -->
@@ -2557,7 +2983,108 @@ $v = time();
     </div>
 
     <!-- Scripts -->
+    <script src="assets/js/offline-manager.js?v=<?php echo $v; ?>"></script>
     <script src="assets/js/gerente-completo.js?v=<?php echo $v; ?>"></script>
+    
+    <!-- PWA e Service Worker -->
+    <script>
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw-manager.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registrado com sucesso:', registration.scope);
+                        
+                        // Verificar atualizações periodicamente
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000); // A cada minuto
+                    })
+                    .catch((error) => {
+                        console.error('❌ Erro ao registrar Service Worker:', error);
+                    });
+            });
+        }
+        
+        // Detectar se PWA pode ser instalada
+        let deferredPrompt;
+        let installButton = null;
+        let pwaInstallContainer = null;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir o prompt padrão
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Mostrar botão de instalação no perfil
+            showInstallButton();
+        });
+        
+        function showInstallButton() {
+            // Mostrar container no perfil
+            pwaInstallContainer = document.getElementById('pwa-install-container');
+            if (pwaInstallContainer) {
+                pwaInstallContainer.classList.remove('hidden');
+            }
+        }
+        
+        function hideInstallButton() {
+            if (pwaInstallContainer) {
+                pwaInstallContainer.classList.add('hidden');
+            }
+            if (installButton) {
+                installButton.style.display = 'none';
+            }
+        }
+        
+        window.installPWA = async function installPWA() {
+            if (!deferredPrompt) {
+                return;
+            }
+            
+            // Mostrar prompt de instalação
+            deferredPrompt.prompt();
+            
+            // Aguardar resposta do usuário
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('✅ PWA instalada pelo usuário');
+                hideInstallButton();
+            } else {
+                console.log('❌ PWA não instalada');
+            }
+            
+            deferredPrompt = null;
+        };
+        
+        // Esconder botão se já estiver instalada
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA instalada');
+            hideInstallButton();
+            deferredPrompt = null;
+        });
+        
+        // Verificar se já está instalada ao carregar a página
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            hideInstallButton();
+        }
+        
+        // Função global para toggle modo offline
+        window.toggleOfflineMode = function() {
+            if (typeof offlineManager !== 'undefined') {
+                offlineManager.toggleOfflineMode();
+            }
+        };
+        
+        // Verificar se já está instalada como PWA
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            console.log('✅ PWA já instalada');
+            if (installButton) {
+                installButton.style.display = 'none';
+            }
+        }
+    </script>
     
     <!-- Modal Mais Opções - Fullscreen -->
     <div id="moreOptionsModal" class="fixed inset-0 z-[100] hidden bg-white">
@@ -2629,7 +3156,7 @@ $v = time();
                     <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    <span class="text-gray-700 font-semibold">Voltar ao Dashboard</span>
+                    <span class="text-gray-700 font-semibold">Voltar</span>
                 </button>
             </div>
             
@@ -3169,11 +3696,152 @@ $v = time();
             document.body.style.overflow = 'auto';
         }
         
-        function saveProfile() {
-            // Implementar salvamento do perfil
-            alert('Perfil salvo com sucesso!');
-            closeProfileOverlay();
+        function openUnlinkGoogleModal() {
+            document.getElementById('unlinkGoogleModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
+        
+        function closeUnlinkGoogleModal() {
+            document.getElementById('unlinkGoogleModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Modal OTP e Senha
+        function openOtpPasswordModal(title, message, requirePassword, callback) {
+            const modal = document.getElementById('otpPasswordModal');
+            if (!modal) return;
+            
+            // Armazenar callback
+            window.otpPasswordCallback = callback;
+            window.otpPasswordRequirePassword = requirePassword;
+            
+            // Atualizar texto
+            const titleEl = document.getElementById('otpModalTitle');
+            const messageEl = document.getElementById('otpModalMessage');
+            const passwordContainer = document.getElementById('otpPasswordInputContainer');
+            
+            if (titleEl) titleEl.textContent = title || 'Verificação de Segurança';
+            if (messageEl) messageEl.textContent = message || 'Digite o código OTP enviado para seu e-mail:';
+            
+            // Mostrar/esconder campo de senha
+            if (passwordContainer) {
+                if (requirePassword) {
+                    passwordContainer.classList.remove('hidden');
+                } else {
+                    passwordContainer.classList.add('hidden');
+                }
+            }
+            
+            // Limpar campos
+            const otpInput = document.getElementById('otpCodeInput');
+            const passwordInput = document.getElementById('otpPasswordInput');
+            if (otpInput) {
+                otpInput.value = '';
+                setTimeout(() => otpInput.focus(), 100);
+            }
+            if (passwordInput) passwordInput.value = '';
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeOtpPasswordModal() {
+            const modal = document.getElementById('otpPasswordModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+            // Limpar callback
+            window.otpPasswordCallback = null;
+            window.otpPasswordRequirePassword = false;
+        }
+        
+        function submitOtpPassword() {
+            const otpInput = document.getElementById('otpCodeInput');
+            const passwordInput = document.getElementById('otpPasswordInput');
+            const callback = window.otpPasswordCallback;
+            const requirePassword = window.otpPasswordRequirePassword;
+            
+            if (!otpInput || !callback) return;
+            
+            const otpCode = otpInput.value.trim().replace(/\D/g, ''); // Remover não-dígitos
+            const password = requirePassword && passwordInput ? passwordInput.value : null;
+            
+            if (!otpCode || otpCode.length !== 6) {
+                if (typeof showErrorModal === 'function') {
+                    showErrorModal('Código OTP inválido. Deve ter 6 dígitos.');
+                }
+                return;
+            }
+            
+            if (requirePassword && !password) {
+                if (typeof showErrorModal === 'function') {
+                    showErrorModal('Senha atual é obrigatória.');
+                }
+                return;
+            }
+            
+            // Fechar modal
+            closeOtpPasswordModal();
+            
+            // Executar callback
+            if (requirePassword) {
+                callback(otpCode, password);
+            } else {
+                callback(otpCode);
+            }
+        }
+        
+        function toggleOtpPasswordVisibility() {
+            const passwordInput = document.getElementById('otpPasswordInput');
+            const eyeIcon = document.getElementById('otpPasswordEye');
+            
+            if (!passwordInput || !eyeIcon) return;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+            }
+        }
+        
+        // Permitir Enter para submeter
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.getElementById('otpCodeInput');
+            if (otpInput) {
+                otpInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const passwordInput = document.getElementById('otpPasswordInput');
+                        const requirePassword = window.otpPasswordRequirePassword;
+                        
+                        if (requirePassword && passwordInput && !passwordInput.value) {
+                            passwordInput.focus();
+                        } else {
+                            submitOtpPassword();
+                        }
+                    }
+                });
+                
+                // Permitir apenas números
+                otpInput.addEventListener('input', function(e) {
+                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                });
+            }
+            
+            const passwordInput = document.getElementById('otpPasswordInput');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        submitOtpPassword();
+                    }
+                });
+            }
+        });
+        
+        // Função saveProfile está definida em gerente-completo.js
+        // Não definir aqui para não sobrescrever a função correta
         
         function toggleUserPasswordVisibility(inputId, buttonId) {
             const input = document.getElementById(inputId);
@@ -3185,6 +3853,109 @@ $v = time();
             } else {
                 input.type = 'password';
                 button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
+            }
+        }
+        
+        window.toggleProfilePasswordVisibility = function toggleProfilePasswordVisibility(inputId, buttonId) {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(buttonId);
+            
+            if (!input || !button) return;
+            
+            // Só funciona quando o campo não está desabilitado
+            if (input.disabled) return;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>';
+            } else {
+                input.type = 'password';
+                button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
+            }
+        }
+        
+        window.openAccountActionsModal = function openAccountActionsModal() {
+            const modal = document.getElementById('accountActionsModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Carregar histórico de ações
+            loadAccountActions();
+        };
+        
+        window.closeAccountActionsModal = function closeAccountActionsModal() {
+            const modal = document.getElementById('accountActionsModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+        
+        async function loadAccountActions() {
+            const passwordChangesList = document.getElementById('passwordChangesList');
+            if (!passwordChangesList) return;
+            
+            try {
+                const response = await fetch('./api/actions.php?action=get_account_actions');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const passwordChanges = result.data.password_changes || [];
+                    
+                    if (passwordChanges.length === 0) {
+                        passwordChangesList.innerHTML = `
+                            <div class="text-center py-8">
+                                <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <p class="text-sm text-gray-500">Nenhuma alteração de senha registrada ainda.</p>
+                            </div>
+                        `;
+                    } else {
+                        passwordChangesList.innerHTML = passwordChanges.map(change => {
+                            const date = new Date(change.password_changed_at);
+                            const formattedDate = date.toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
+                            return `
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-sm transition-shadow">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">Senha alterada</p>
+                                            <p class="text-xs text-gray-500">${formattedDate}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-lg">Concluída</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                } else {
+                    passwordChangesList.innerHTML = `
+                        <div class="text-center py-8">
+                            <p class="text-sm text-red-500">Erro ao carregar histórico: ${result.error || 'Erro desconhecido'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar ações da conta:', error);
+                passwordChangesList.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-sm text-red-500">Erro ao carregar histórico de ações.</p>
+                    </div>
+                `;
             }
         }
         
@@ -3207,13 +3978,64 @@ $v = time();
         // Exportar funções globais
         window.openNotificationsModal = openNotificationsModal;
         window.closeNotificationsModal = closeNotificationsModal;
-        window.openProfileOverlay = openProfileOverlay;
+        window.openProfileOverlay = function openProfileOverlay() {
+            document.getElementById('profileOverlay').classList.remove('hidden');
+            // Carregar status de segurança ao abrir
+            if (typeof loadSecurityStatus === 'function') {
+                loadSecurityStatus();
+            }
+            // Atualizar UI do modo offline quando abrir o perfil
+            if (typeof offlineManager !== 'undefined' && offlineManager.updateUI) {
+                offlineManager.updateUI();
+            }
+        };
+        
+        // Verificar resultados de vinculação Google e carregar status
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar status do Google automaticamente quando a página carregar
+            if (typeof loadSecurityStatus === 'function') {
+                loadSecurityStatus();
+            }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const googleLinked = urlParams.get('google_linked');
+            const googleError = urlParams.get('google_error');
+            
+            if (googleLinked === 'success') {
+                // Mostrar modal de sucesso e recarregar status
+                if (typeof showSuccessModal === 'function') {
+                    showSuccessModal('Conta Google vinculada com sucesso!');
+                }
+                if (typeof loadSecurityStatus === 'function') {
+                    setTimeout(() => loadSecurityStatus(), 500); // Recarregar após um delay
+                }
+                // Limpar URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            if (googleError) {
+                // Mostrar modal de erro
+                if (typeof showErrorModal === 'function') {
+                    showErrorModal('Erro ao vincular conta Google: ' + decodeURIComponent(googleError));
+                }
+                // Limpar URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
         window.closeProfileOverlay = closeProfileOverlay;
         window.openAddUserModal = openAddUserModal;
         window.closeAddUserModal = closeAddUserModal;
         window.openLogoutModal = openLogoutModal;
         window.closeLogoutModal = closeLogoutModal;
-        window.saveProfile = saveProfile;
+        window.openUnlinkGoogleModal = openUnlinkGoogleModal;
+        window.closeUnlinkGoogleModal = closeUnlinkGoogleModal;
+        window.openGoogleSettingsModal = openGoogleSettingsModal;
+        window.closeGoogleSettingsModal = closeGoogleSettingsModal;
+        window.openOtpPasswordModal = openOtpPasswordModal;
+        window.closeOtpPasswordModal = closeOtpPasswordModal;
+        window.submitOtpPassword = submitOtpPassword;
+        window.toggleOtpPasswordVisibility = toggleOtpPasswordVisibility;
+        // window.saveProfile não é exportado aqui pois está definido em gerente-completo.js
         window.toggleUserPasswordVisibility = toggleUserPasswordVisibility;
         
         // Sistema de controle de abas
