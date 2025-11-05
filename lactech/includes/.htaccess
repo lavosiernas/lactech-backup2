@@ -1,0 +1,34 @@
+# Proteger pasta includes contra acesso direto
+# Bloqueia acesso a arquivos .php de configuração via navegador
+
+# Bloquear acesso a arquivos de configuração sensíveis
+<FilesMatch "^(config_google|config_mysql|config_login|config)\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Bloquear acesso a arquivos .env
+<FilesMatch "\.env$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Bloquear acesso a arquivos .env.*
+<FilesMatch "\.env\.">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Permitir acesso apenas via PHP (include/require)
+# Arquivos podem ser incluídos, mas não acessados diretamente via URL
+
+# Bloquear listagem de diretório
+Options -Indexes
+
+# Bloquear acesso a arquivos de backup
+<FilesMatch "\.(sql|bak|backup|old)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+

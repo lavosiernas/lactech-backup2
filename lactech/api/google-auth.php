@@ -236,16 +236,16 @@ try {
                 exit;
             }
             
-            // Verificar se o Google ID já está vinculado a outra conta
+            // Verificar se o Google ID já está vinculado a outra conta ATIVA
             $stmt = $pdo->prepare("
-                SELECT id FROM google_accounts 
+                SELECT id, user_id FROM google_accounts 
                 WHERE google_id = :google_id 
                 AND (unlinked_at IS NULL OR unlinked_at = '')
             ");
             $stmt->execute([':google_id' => $googleId]);
             $existingGoogle = $stmt->fetch();
             
-            if ($existingGoogle) {
+            if ($existingGoogle && $existingGoogle['user_id'] != $userId) {
                 echo json_encode([
                     'success' => false,
                     'error' => 'Esta conta Google já está vinculada a outro usuário'
@@ -253,19 +253,60 @@ try {
                 exit;
             }
             
-            // Vincular conta
+            // Verificar se já existe um registro (mesmo desvinculado) para este google_id
             $stmt = $pdo->prepare("
-                INSERT INTO google_accounts (user_id, google_id, email, name, picture, is_primary, linked_at)
-                VALUES (:user_id, :google_id, :email, :name, :picture, 1, NOW())
+                SELECT id, user_id FROM google_accounts 
+                WHERE google_id = :google_id
+                LIMIT 1
             ");
+            $stmt->execute([':google_id' => $googleId]);
+            $existingRecord = $stmt->fetch();
             
-            $stmt->execute([
-                ':user_id' => $userId,
-                ':google_id' => $googleId,
-                ':email' => $email,
-                ':name' => $name,
-                ':picture' => $picture
-            ]);
+            if ($existingRecord) {
+                // Se o registro existe e pertence ao mesmo usuário, atualizar
+                if ($existingRecord['user_id'] == $userId) {
+                    $stmt = $pdo->prepare("
+                        UPDATE google_accounts 
+                        SET email = :email, 
+                            name = :name, 
+                            picture = :picture, 
+                            is_primary = 1, 
+                            linked_at = NOW(),
+                            unlinked_at = NULL
+                        WHERE google_id = :google_id 
+                        AND user_id = :user_id
+                    ");
+                    
+                    $stmt->execute([
+                        ':google_id' => $googleId,
+                        ':user_id' => $userId,
+                        ':email' => $email,
+                        ':name' => $name,
+                        ':picture' => $picture
+                    ]);
+                } else {
+                    // Se pertence a outro usuário, erro
+                    echo json_encode([
+                        'success' => false,
+                        'error' => 'Esta conta Google já está vinculada a outro usuário'
+                    ]);
+                    exit;
+                }
+            } else {
+                // Não existe registro, inserir novo
+                $stmt = $pdo->prepare("
+                    INSERT INTO google_accounts (user_id, google_id, email, name, picture, is_primary, linked_at)
+                    VALUES (:user_id, :google_id, :email, :name, :picture, 1, NOW())
+                ");
+                
+                $stmt->execute([
+                    ':user_id' => $userId,
+                    ':google_id' => $googleId,
+                    ':email' => $email,
+                    ':name' => $name,
+                    ':picture' => $picture
+                ]);
+            }
             
             // Atualizar e-mail do usuário se não tiver
             $userStmt = $pdo->prepare("UPDATE users SET email = :email WHERE id = :user_id AND (email IS NULL OR email = '')");

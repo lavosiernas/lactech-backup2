@@ -217,9 +217,9 @@ $v = time();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#16a34a">
+    <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="LacTech">
     <meta name="description" content="Sistema completo de gestão para fazendas leiteiras">
     <title>LacTech - Dashboard Gerente</title>
@@ -227,23 +227,38 @@ $v = time();
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
     
+    <!-- Preconnect para recursos externos (melhora velocidade) -->
+    <link rel="preconnect" href="https://i.postimg.cc">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     
     <!-- Favicon -->
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
     
-    <!-- Fonts -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS otimizado - usar build local se disponível -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <!-- Fallback: CDN com configuração otimizada -->
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
     
-    <!-- Chart.js -->
+    <!-- Chart.js (sem defer para estar disponível quando necessário) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- face-api.js para detecção facial -->
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <!-- face-api.js para detecção facial (defer - carrega depois) -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js" defer></script>
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo $v; ?>">
@@ -318,6 +333,7 @@ $v = time();
         /* Data cards */
         .data-card {
             transition: all 0.3s ease;
+            background: white;
         }
         
         .data-card:hover {
@@ -637,11 +653,513 @@ $v = time();
         .loading-dot:nth-child(3) {
             animation-delay: 0.4s;
         }
+        
+        /* ============================================
+           MODO ESCURO - CORES PROFISSIONAIS
+           Cor base: #121212 (cinza escuro profissional)
+           ============================================ */
+        .dark-mode {
+            background-color: #121212 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        /* Fundos principais - tons de cinza escuro baseados em #121212 */
+        .dark-mode .bg-gray-50,
+        .dark-mode .bg-slate-50 {
+            background-color: #1a1a1a !important;
+        }
+        
+        .dark-mode .bg-white {
+            background-color: #1e1e1e !important;
+        }
+        
+        .dark-mode .bg-gray-100 {
+            background-color: #1f1f1f !important;
+        }
+        
+        /* Cards - tons harmoniosos com #121212 */
+        .dark-mode .metric-card {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode .data-card {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        /* Chart containers - REMOVER FUNDO BRANCO */
+        .dark-mode .chart-container {
+            background: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        /* Textos - tons de cinza claro harmoniosos */
+        .dark-mode .text-gray-800,
+        .dark-mode .text-gray-900,
+        .dark-mode .text-slate-900 {
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode .text-gray-600,
+        .dark-mode .text-slate-600 {
+            color: #b0b0b0 !important;
+        }
+        
+        .dark-mode .text-gray-500,
+        .dark-mode .text-slate-500 {
+            color: #9a9a9a !important;
+        }
+        
+        .dark-mode .text-gray-400,
+        .dark-mode .text-slate-400 {
+            color: #7a7a7a !important;
+        }
+        
+        .dark-mode .text-gray-700,
+        .dark-mode .text-slate-700 {
+            color: #c0c0c0 !important;
+        }
+        
+        /* Bordas - tons harmoniosos */
+        .dark-mode .border-gray-200,
+        .dark-mode .border-slate-200 {
+            border-color: #2a2a2a !important;
+        }
+        
+        .dark-mode .border-gray-300,
+        .dark-mode .border-slate-300 {
+            border-color: #3a3a3a !important;
+        }
+        
+        /* Inputs e selects */
+        .dark-mode input,
+        .dark-mode select,
+        .dark-mode textarea {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode input:focus,
+        .dark-mode select:focus,
+        .dark-mode textarea:focus {
+            border-color: var(--forest-500) !important;
+            background-color: #242424 !important;
+        }
+        
+        .dark-mode input::placeholder,
+        .dark-mode textarea::placeholder {
+            color: #7a7a7a !important;
+        }
+        
+        /* Welcome section - REMOVER GRADIENTE */
+        .dark-mode .gradient-forest {
+            background: #1e1e1e !important;
+        }
+        
+        /* Loading screen - sempre branco para PWA */
+        #loadingScreen {
+            background: #ffffff !important;
+        }
+        
+        .dark-mode #loadingScreen {
+            background: #ffffff !important;
+        }
+        
+        .dark-mode #loadingScreen .text-gray-800 {
+            color: #1f2937 !important;
+        }
+        
+        .dark-mode #loadingScreen .text-gray-600 {
+            color: #4b5563 !important;
+        }
+        
+        /* Botão toggle modo escuro */
+        .dark-mode-toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #d1d5db;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+        
+        .dark-mode-toggle:hover {
+            background: #9ca3af;
+            border-color: #d1d5db;
+        }
+        
+        .dark-mode-toggle.active {
+            background: var(--forest-600);
+            border-color: var(--forest-500);
+        }
+        
+        .dark-mode-toggle.active:hover {
+            background: var(--forest-700);
+            border-color: var(--forest-600);
+        }
+        
+        .dark-mode-toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .dark-mode-toggle.active .dark-mode-toggle-slider {
+            transform: translateX(24px);
+            background: #ffffff;
+        }
+        
+        .dark-mode-toggle svg {
+            width: 12px;
+            height: 12px;
+            color: #6b7280;
+            transition: color 0.3s ease;
+        }
+        
+        .dark-mode-toggle.active svg {
+            color: #ffffff;
+        }
+        
+        /* Modo escuro - ajustes do toggle dentro do card */
+        .dark-mode .dark-mode-toggle {
+            background: #3a3a3a;
+            border-color: #4a4a4a;
+        }
+        
+        .dark-mode .dark-mode-toggle:hover {
+            background: #4a4a4a;
+            border-color: #5a5a5a;
+        }
+        
+        .dark-mode .dark-mode-toggle.active {
+            background: var(--forest-600);
+            border-color: var(--forest-500);
+        }
+        
+        .dark-mode .dark-mode-toggle svg {
+            color: #9a9a9a;
+        }
+        
+        .dark-mode .dark-mode-toggle.active svg {
+            color: #ffffff;
+        }
+        
+        /* Scrollbar modo escuro */
+        .dark-mode ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .dark-mode ::-webkit-scrollbar-track {
+            background: #0a0f0a;
+        }
+        
+        .dark-mode ::-webkit-scrollbar-thumb {
+            background: #1a3a1a;
+            border-radius: 4px;
+        }
+        
+        .dark-mode ::-webkit-scrollbar-thumb:hover {
+            background: #2a4a2a;
+        }
+        
+        /* Botões no modo escuro */
+        .dark-mode button:not(.gradient-forest):not(.dark-mode-toggle) {
+            background-color: #0f1f0f !important;
+            border-color: #1a3a1a !important;
+            color: #ffffff !important;
+        }
+        
+        .dark-mode button:not(.gradient-forest):not(.dark-mode-toggle):hover {
+            background-color: #1a3a1a !important;
+            border-color: var(--forest-500) !important;
+        }
+        
+        /* Cards de atividades */
+        .dark-mode .bg-gray-100 {
+            background-color: #0f1f0f !important;
+        }
+        
+        .dark-mode .text-gray-400 {
+            color: #6a906a !important;
+        }
+        
+        .dark-mode .text-gray-500 {
+            color: #8fb38f !important;
+        }
+        
+        /* Modais - REMOVER FUNDO BRANCO */
+        .dark-mode .modal-content,
+        .dark-mode [class*="modal"],
+        .dark-mode [id*="Overlay"] > div > div,
+        .dark-mode [id*="overlay"] > div > div {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        /* Overlays específicos */
+        .dark-mode #generalVolumeOverlay > div > div,
+        .dark-mode #volumeOverlay > div > div,
+        .dark-mode [id*="Overlay"] > div > div.bg-white {
+            background-color: #1e1e1e !important;
+        }
+        
+        /* Formulários dentro de modais */
+        .dark-mode [class*="bg-gradient-to-br"][class*="from-slate"],
+        .dark-mode [class*="bg-gradient-to-br"][class*="from-green"],
+        .dark-mode [class*="bg-gradient-to-br"][class*="from-blue"] {
+            background: #252525 !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        /* Footer dos modais */
+        .dark-mode [class*="sticky"][class*="bottom"] {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        /* Dropdowns */
+        .dark-mode [class*="dropdown"],
+        .dark-mode [class*="menu"] {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        .dark-mode [class*="dropdown"] a,
+        .dark-mode [class*="menu"] a {
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode [class*="dropdown"] a:hover,
+        .dark-mode [class*="menu"] a:hover {
+            background-color: #252525 !important;
+        }
+        
+        /* Listas */
+        .dark-mode ul,
+        .dark-mode ol {
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode li {
+            color: #e0e0e0 !important;
+        }
+        
+        /* Links */
+        .dark-mode a:not(.nav-item):not(.gradient-forest) {
+            color: var(--forest-400) !important;
+        }
+        
+        .dark-mode a:not(.nav-item):not(.gradient-forest):hover {
+            color: var(--forest-300) !important;
+        }
+        
+        /* Badges e labels */
+        .dark-mode [class*="badge"],
+        .dark-mode [class*="label"] {
+            background-color: #252525 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        /* Tooltips */
+        .dark-mode [class*="tooltip"] {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        /* Shadow adjustments */
+        .dark-mode .shadow-lg,
+        .dark-mode .shadow-xl,
+        .dark-mode .shadow-2xl {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        /* Overlay backgrounds */
+        .dark-mode [class*="overlay"] {
+            background-color: rgba(18, 18, 18, 0.95) !important;
+        }
+        
+        /* Bottom nav no modo escuro */
+        .dark-mode .bottom-nav {
+            background-color: #1a1a1a !important;
+            border-top-color: #2a2a2a !important;
+        }
+        
+        .dark-mode .bottom-nav-item {
+            color: #9a9a9a !important;
+        }
+        
+        .dark-mode .bottom-nav-item.active {
+            color: var(--forest-400) !important;
+            background-color: #1e1e1e !important;
+        }
+        
+        /* Tabelas */
+        .dark-mode table {
+            background-color: #1e1e1e !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode th {
+            background-color: #1a1a1a !important;
+            color: #e0e0e0 !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        /* Corrigir duplicatas de tabela */
+        .dark-mode table th {
+            background-color: #1a1a1a !important;
+            color: #e0e0e0 !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        .dark-mode table td {
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode table tr:hover {
+            background-color: #252525 !important;
+        }
+        
+        .dark-mode td {
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode tr:hover {
+            background-color: #252525 !important;
+        }
+        
+        /* Botões no modo escuro */
+        .dark-mode button:not(.gradient-forest):not(.dark-mode-toggle):not([class*="bg-green"]):not([class*="bg-blue"]) {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode button:not(.gradient-forest):not(.dark-mode-toggle):not([class*="bg-green"]):not([class*="bg-blue"]):hover {
+            background-color: #252525 !important;
+            border-color: #3a3a3a !important;
+        }
+        
+        /* Cards de atividades */
+        .dark-mode .bg-gray-100 {
+            background-color: #1f1f1f !important;
+        }
+        
+        /* Abas (tabs) */
+        .dark-mode .tab-content {
+            background-color: transparent !important;
+        }
+        
+        /* Imagens de fundo no banner - esconder no modo escuro */
+        .dark-mode .gradient-forest img {
+            opacity: 0 !important;
+        }
+        
+        /* Seletores específicos para modais - forçar modo escuro */
+        .dark-mode select.bg-white,
+        .dark-mode input.bg-white,
+        .dark-mode textarea.bg-white {
+            background-color: #1e1e1e !important;
+            color: #e0e0e0 !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        /* Formulários dentro de modais - todos os elementos */
+        .dark-mode [id*="Overlay"] input,
+        .dark-mode [id*="Overlay"] select,
+        .dark-mode [id*="Overlay"] textarea,
+        .dark-mode [id*="overlay"] input,
+        .dark-mode [id*="overlay"] select,
+        .dark-mode [id*="overlay"] textarea {
+            background-color: #1e1e1e !important;
+            color: #e0e0e0 !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        /* Labels e textos dentro de modais */
+        .dark-mode [id*="Overlay"] label,
+        .dark-mode [id*="overlay"] label,
+        .dark-mode [id*="Overlay"] .text-slate-700,
+        .dark-mode [id*="overlay"] .text-slate-700,
+        .dark-mode [id*="Overlay"] .text-slate-800,
+        .dark-mode [id*="overlay"] .text-slate-800 {
+            color: #e0e0e0 !important;
+        }
+        
+        /* Textos secundários dentro de modais */
+        .dark-mode [id*="Overlay"] .text-slate-500,
+        .dark-mode [id*="overlay"] .text-slate-500 {
+            color: #9a9a9a !important;
+        }
+        
+        /* Botões de cancelar dentro de modais */
+        .dark-mode [id*="Overlay"] button[type="button"]:not([class*="bg-green"]):not([class*="bg-blue"]),
+        .dark-mode [id*="overlay"] button[type="button"]:not([class*="bg-green"]):not([class*="bg-blue"]) {
+            background-color: #1e1e1e !important;
+            border-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark-mode [id*="Overlay"] button[type="button"]:not([class*="bg-green"]):not([class*="bg-blue"]):hover,
+        .dark-mode [id*="overlay"] button[type="button"]:not([class*="bg-green"]):not([class*="bg-blue"]):hover {
+            background-color: #252525 !important;
+        }
+        
+        /* Hover states para inputs e selects */
+        .dark-mode [id*="Overlay"] input:hover,
+        .dark-mode [id*="Overlay"] select:hover,
+        .dark-mode [id*="overlay"] input:hover,
+        .dark-mode [id*="overlay"] select:hover {
+            border-color: #3a3a3a !important;
+        }
+        
+        /* Scrollbar dentro de modais */
+        .dark-mode [id*="Overlay"] ::-webkit-scrollbar,
+        .dark-mode [id*="overlay"] ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .dark-mode [id*="Overlay"] ::-webkit-scrollbar-track,
+        .dark-mode [id*="overlay"] ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        
+        .dark-mode [id*="Overlay"] ::-webkit-scrollbar-thumb,
+        .dark-mode [id*="overlay"] ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+        
+        .dark-mode [id*="Overlay"] ::-webkit-scrollbar-thumb:hover,
+        .dark-mode [id*="overlay"] ::-webkit-scrollbar-thumb:hover {
+            background: #3a3a3a;
+        }
     </style>
 </head>
-<body class="bg-gray-50 font-inter">
+<body class="bg-gray-50 font-inter" id="mainBody">
     <!-- Tela de Carregamento -->
-    <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+    <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-white flex items-center justify-center">
         <div class="flex flex-col items-center justify-center space-y-8">
             <!-- Círculo de carregamento -->
             <div class="relative">
@@ -2333,6 +2851,27 @@ $v = time();
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                             </svg>
                                             Instalar
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3">
+                                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                                            </svg>
+                                            <div>
+                                                <span class="text-sm font-medium text-gray-900 block">Modo Escuro</span>
+                                                <span class="text-xs text-gray-600">Alternar entre tema claro e escuro</span>
+                                            </div>
+                                        </div>
+                                        <button id="darkModeToggle" class="dark-mode-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro">
+                                            <div class="dark-mode-toggle-slider">
+                                                <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                                </svg>
+                                                <svg class="moon-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                                </svg>
+                                            </div>
                                         </button>
                                     </div>
                                 </div>
@@ -4321,6 +4860,71 @@ $v = time();
                 console.error('❌ Função openMoreOptionsModal NÃO está disponível globalmente!');
             }
         });
+    </script>
+    
+    <!-- Modo Escuro -->
+    <script>
+        // Função para inicializar modo escuro
+        function initDarkMode() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.getElementById('mainBody');
+            const loadingScreen = document.getElementById('loadingScreen');
+            
+            if (!darkModeToggle || !body) return;
+            
+            // Verificar preferência salva
+            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+            
+            // Aplicar modo escuro se salvo (SEM aplicar na loadingScreen - sempre branca)
+            if (savedDarkMode) {
+                body.classList.add('dark-mode');
+                // NÃO aplicar dark-mode na loadingScreen - sempre branca
+                darkModeToggle.classList.add('active');
+                // Alternar ícones
+                const sunIcon = darkModeToggle.querySelector('.sun-icon');
+                const moonIcon = darkModeToggle.querySelector('.moon-icon');
+                if (sunIcon) sunIcon.classList.add('hidden');
+                if (moonIcon) moonIcon.classList.remove('hidden');
+            }
+            
+            // Event listener para toggle
+            darkModeToggle.addEventListener('click', function() {
+                const isDark = body.classList.contains('dark-mode');
+                
+                if (isDark) {
+                    // Desativar modo escuro
+                    body.classList.remove('dark-mode');
+                    // NÃO aplicar dark-mode na loadingScreen - sempre branca
+                    darkModeToggle.classList.remove('active');
+                    localStorage.setItem('darkMode', 'false');
+                    
+                    // Alternar ícones
+                    const sunIcon = darkModeToggle.querySelector('.sun-icon');
+                    const moonIcon = darkModeToggle.querySelector('.moon-icon');
+                    if (sunIcon) sunIcon.classList.remove('hidden');
+                    if (moonIcon) moonIcon.classList.add('hidden');
+                } else {
+                    // Ativar modo escuro
+                    body.classList.add('dark-mode');
+                    // NÃO aplicar dark-mode na loadingScreen - sempre branca
+                    darkModeToggle.classList.add('active');
+                    localStorage.setItem('darkMode', 'true');
+                    
+                    // Alternar ícones
+                    const sunIcon = darkModeToggle.querySelector('.sun-icon');
+                    const moonIcon = darkModeToggle.querySelector('.moon-icon');
+                    if (sunIcon) sunIcon.classList.add('hidden');
+                    if (moonIcon) moonIcon.classList.remove('hidden');
+                }
+            });
+        }
+        
+        // Inicializar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDarkMode);
+        } else {
+            initDarkMode();
+        }
     </script>
 </body>
 </html>

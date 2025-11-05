@@ -232,6 +232,12 @@ try {
     $existing = $stmt->fetch();
     
     if ($existing) {
+        // Se não houver foto do Google, usar logo do sistema como padrão
+        $pictureToUse = $userInfo['picture'] ?? null;
+        if (empty($pictureToUse)) {
+            $pictureToUse = 'https://i.postimg.cc/vmrkgDcB/lactech.png';
+        }
+        
         // Atualizar vinculação existente
         $stmt = $pdo->prepare("
             UPDATE google_accounts 
@@ -247,7 +253,7 @@ try {
             ':google_id' => $userInfo['id'],
             ':email' => $userInfo['email'],
             ':name' => $userInfo['name'] ?? null,
-            ':picture' => $userInfo['picture'] ?? null
+            ':picture' => $pictureToUse
         ]);
     } else {
         // Verificar se o Google ID já está vinculado a outra conta
@@ -263,18 +269,84 @@ try {
             safeRedirect('/gerente-completo.php?google_error=already_linked');
         }
         
-        // Criar nova vinculação
-        $stmt = $pdo->prepare("
-            INSERT INTO google_accounts (user_id, google_id, email, name, picture, is_primary, linked_at)
-            VALUES (:user_id, :google_id, :email, :name, :picture, 1, NOW())
+        // Se não houver foto do Google, usar logo do sistema como padrão
+        $pictureToUse = $userInfo['picture'] ?? null;
+        if (empty($pictureToUse)) {
+            $pictureToUse = 'https://i.postimg.cc/vmrkgDcB/lactech.png';
+        }
+        
+        // Verificar se já existe um registro com este google_id (mesmo que desvinculado)
+        $checkStmt = $pdo->prepare("
+            SELECT id, user_id FROM google_accounts 
+            WHERE google_id = :google_id
+            LIMIT 1
         ");
-        $stmt->execute([
-            ':user_id' => $userId,
-            ':google_id' => $userInfo['id'],
-            ':email' => $userInfo['email'],
-            ':name' => $userInfo['name'] ?? null,
-            ':picture' => $userInfo['picture'] ?? null
-        ]);
+        $checkStmt->execute([':google_id' => $userInfo['id']]);
+        $existingRecord = $checkStmt->fetch();
+        
+        if ($existingRecord) {
+            // Se o registro existe e pertence ao mesmo usuário, atualizar
+            if ($existingRecord['user_id'] == $userId) {
+                $stmt = $pdo->prepare("
+                    UPDATE google_accounts 
+                    SET email = :email, 
+                        name = :name, 
+                        picture = :picture, 
+                        is_primary = 1, 
+                        linked_at = NOW(),
+                        unlinked_at = NULL
+                    WHERE google_id = :google_id 
+                    AND user_id = :user_id
+                ");
+                
+                $stmt->execute([
+                    ':google_id' => $userInfo['id'],
+                    ':user_id' => $userId,
+                    ':email' => $userInfo['email'],
+                    ':name' => $userInfo['name'] ?? null,
+                    ':picture' => $pictureToUse
+                ]);
+            } else {
+                // Se pertence a outro usuário, erro
+                ob_end_clean();
+                ?>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Erro - Vinculação Google</title>
+                </head>
+                <body>
+                    <script>
+                        if (window.opener) {
+                            window.opener.postMessage({
+                                type: 'google_oauth_error',
+                                message: 'Erro: Esta conta Google já está vinculada a outro usuário'
+                            }, window.location.origin);
+                            window.close();
+                        } else {
+                            window.location.href = '/gerente-completo.php?google_error=' + encodeURIComponent('Esta conta Google já está vinculada a outro usuário');
+                        }
+                    </script>
+                    <p>Esta conta Google já está vinculada a outro usuário. Redirecionando...</p>
+                </body>
+                </html>
+                <?php
+                exit;
+            }
+        } else {
+            // Não existe registro, inserir novo
+            $stmt = $pdo->prepare("
+                INSERT INTO google_accounts (user_id, google_id, email, name, picture, is_primary, linked_at)
+                VALUES (:user_id, :google_id, :email, :name, :picture, 1, NOW())
+            ");
+            $stmt->execute([
+                ':user_id' => $userId,
+                ':google_id' => $userInfo['id'],
+                ':email' => $userInfo['email'],
+                ':name' => $userInfo['name'] ?? null,
+                ':picture' => $pictureToUse
+            ]);
+        }
     }
     
     // Atualizar e-mail do usuário se não tiver
@@ -323,8 +395,16 @@ try {
         $_SESSION['logged_in'] = true;
         $_SESSION['login_time'] = time();
         
+        // Se não houver foto de perfil, usar logo do sistema como padrão
         if (!empty($userData['profile_photo'])) {
             $_SESSION['profile_photo'] = $userData['profile_photo'];
+        } else {
+            // Usar logo do sistema como foto de perfil padrão
+            $_SESSION['profile_photo'] = 'https://i.postimg.cc/vmrkgDcB/lactech.png';
+            
+            // Salvar no banco também
+            $updatePhotoStmt = $pdo->prepare("UPDATE users SET profile_photo = ? WHERE id = ?");
+            $updatePhotoStmt->execute(['https://i.postimg.cc/vmrkgDcB/lactech.png', $userId]);
         }
         
         // SOLUÇÃO BASEADA EM CASOS REAIS: Marcar na sessão que veio do callback
@@ -368,15 +448,18 @@ try {
                 // SEMPRE verificar window.opener primeiro (mais confiável)
                 if (window.opener && !window.opener.closed) {
                     try {
-                        // Enviar mensagem para o parent
-                        window.opener.postMessage({
-                            type: 'google_oauth_success',
-                            message: 'Conta Google vinculada com sucesso! Você pode receber códigos OTP por e-mail.'
-                        }, window.location.origin);
-                        
-                        // Fechar popup imediatamente
+                        // Aguardar um pouco para garantir que a página principal está pronta
                         setTimeout(function() {
-                            window.close();
+                            // Enviar mensagem para o parent
+                            window.opener.postMessage({
+                                type: 'google_oauth_success',
+                                message: 'Conta Google vinculada com sucesso! Você pode receber códigos OTP por e-mail.'
+                            }, window.location.origin);
+                            
+                            // Fechar popup após enviar mensagem
+                            setTimeout(function() {
+                                window.close();
+                            }, 200);
                         }, 100);
                     } catch (e) {
                         console.error('Erro ao comunicar com parent:', e);
@@ -389,6 +472,12 @@ try {
                 }
             })();
         </script>
+        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: white; font-family: Arial, sans-serif;">
+            <div style="text-align: center;">
+                <p style="color: #16a34a; font-size: 18px; font-weight: bold;">Conta Google vinculada com sucesso!</p>
+                <p style="color: #666; font-size: 14px;">Fechando...</p>
+            </div>
+        </div>
     </body>
     </html>
     <?php

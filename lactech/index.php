@@ -24,27 +24,48 @@
     <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     <meta name="apple-mobile-web-app-title" content="LacTech">
     <meta name="application-name" content="LacTech">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y1DPSZ8DP0"></script>
+    <!-- Preconnect para recursos externos (melhora velocidade) -->
+    <link rel="preconnect" href="https://i.postimg.cc">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Google Analytics (defer para não bloquear renderização) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y1DPSZ8DP0"></script>
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#22c55e',
-                        'primary-dark': '#16a34a'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+    
+    <!-- Tailwind CSS otimizado - usar build local se disponível -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <!-- Fallback: CDN com configuração otimizada -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            // Otimizar Tailwind: desabilitar plugins não usados
+            tailwind.config = {
+                darkMode: 'class',
+                corePlugins: {
+                    preflight: true,
+                },
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#22c55e',
+                            'primary-dark': '#16a34a'
+                        },
+                        fontFamily: {
+                            sans: ['Inter', 'sans-serif'],
+                        }
                     }
                 }
             }
-        }
-    </script>
+        </script>
+    <?php endif; ?>
      <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -477,9 +498,9 @@
                 <div class="relative bg-blue-400 rounded-2xl overflow-hidden shadow-2xl w-full max-w-md" style="height: 35vh; min-height: 220px;">
                     <!-- Image Slides -->
                     <div class="relative w-full h-full">
-                        <img id="slide1-mobile" src="./assets/video/img12.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100">
-                        <img id="slide2-mobile" src="./assets/video/img13.jpg" alt="Fazenda leiteira moderna" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
-                        <img id="slide3-mobile" src="./assets/video/img14.jpg" alt="Tecnologia na agricultura" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
+                        <img id="slide1-mobile" src="./assets/video/img12.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100" loading="lazy" width="800" height="600">
+                        <img id="slide2-mobile" src="./assets/video/img13.jpg" alt="Fazenda leiteira moderna" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0" loading="lazy" width="800" height="600">
+                        <img id="slide3-mobile" src="./assets/video/img14.jpg" alt="Tecnologia na agricultura" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0" loading="lazy" width="800" height="600">
                     </div>
                 
                     <!-- Chat Bubble - Bottom Left -->
@@ -582,9 +603,9 @@
                 <div class="relative bg-blue-400 rounded-3xl overflow-hidden shadow-2xl" style="width: 90%; height: 85vh;">
                     <!-- Image Slides -->
                     <div class="relative w-full h-full">
-                        <img id="slide1" src="./assets/video/img12.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100">
-                        <img id="slide2" src="./assets/video/img13.jpg" alt="Fazenda leiteira moderna" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
-                        <img id="slide3" src="./assets/video/img14.jpg" alt="Tecnologia na agricultura" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0">
+                        <img id="slide1" src="./assets/video/img12.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100" loading="eager" width="1920" height="1080">
+                        <img id="slide2" src="./assets/video/img13.jpg" alt="Fazenda leiteira moderna" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0" loading="lazy" width="1920" height="1080">
+                        <img id="slide3" src="./assets/video/img14.jpg" alt="Tecnologia na agricultura" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0" loading="lazy" width="1920" height="1080">
                     </div>
                 
                     <!-- Chat Bubble - Bottom Left -->
@@ -1417,6 +1438,12 @@
                             <li><a href="#" class="text-white hover:text-gray-400 transition-colors">Central de Ajuda</a></li>
                             <li><a href="#" class="text-white hover:text-gray-400 transition-colors">Status do Sistema</a></li>
                             <li><a href="#" class="text-white hover:text-gray-400 transition-colors">Contato</a></li>
+                            <li><a href="teste-seguranca.php" class="text-white hover:text-gray-400 transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Segurança
+                            </a></li>
                         </ul>
                     </div>
                     
@@ -1462,6 +1489,13 @@
                         <a href="termos-condicoes.php" class="text-gray-400 hover:text-white transition-colors">Termos e Condições</a>
                         <span class="text-gray-600">|</span>
                         <a href="cookies.php" class="text-gray-400 hover:text-white transition-colors">Cookies</a>
+                        <span class="text-gray-600">|</span>
+                        <a href="teste-seguranca.php" class="text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Segurança
+                        </a>
                     </div>
                 </div>
             </div>

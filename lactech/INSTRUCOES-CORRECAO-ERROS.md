@@ -75,3 +75,5 @@ CREATE TABLE IF NOT EXISTS `volume_records` (
 3. Os redirects funcionarão corretamente
 4. O Service Worker será registrado sem erros
 
+
+

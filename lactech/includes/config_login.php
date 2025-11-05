@@ -34,21 +34,43 @@ if (!function_exists('getBaseUrl')) {
 // CONFIGURAÇÕES DO BANCO DE DADOS
 // =====================================================
 
+// Carregar variáveis de ambiente (se o loader existir)
+$envLoaderPath = __DIR__ . '/env_loader.php';
+if (file_exists($envLoaderPath)) {
+    require_once $envLoaderPath;
+}
+
+// Função auxiliar para obter variável de ambiente com fallback
+if (!function_exists('getEnvValue')) {
+    function getEnvValue($key, $default = null) {
+        if (function_exists('env')) {
+            return env($key, $default);
+        }
+        $value = getenv($key);
+        if ($value === false) {
+            $value = $_ENV[$key] ?? $_SERVER[$key] ?? null;
+        }
+        return $value !== null ? $value : $default;
+    }
+}
+
 if ($isLocal) {
     // AMBIENTE LOCAL (XAMPP/WAMP)
-    if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
-    if (!defined('DB_NAME')) define('DB_NAME', 'lactech_lgmato'); // Banco local (conforme dump .sql)
-    if (!defined('DB_USER')) define('DB_USER', 'root');
-    if (!defined('DB_PASS')) define('DB_PASS', '');
+    // Usar variáveis de ambiente se disponíveis, senão usar valores padrão
+    if (!defined('DB_HOST')) define('DB_HOST', getEnvValue('DB_HOST_LOCAL', 'localhost'));
+    if (!defined('DB_NAME')) define('DB_NAME', getEnvValue('DB_NAME_LOCAL', 'lactech_lgmato'));
+    if (!defined('DB_USER')) define('DB_USER', getEnvValue('DB_USER_LOCAL', 'root'));
+    if (!defined('DB_PASS')) define('DB_PASS', getEnvValue('DB_PASS_LOCAL', ''));
     if (!defined('BASE_URL')) define('BASE_URL', getBaseUrl()); // Detecta automaticamente
     if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'LOCAL');
 } else {
     // AMBIENTE DE PRODUÇÃO (HOSPEDAGEM)
-    if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
-    if (!defined('DB_NAME')) define('DB_NAME', 'u311882628_lactech_lgmato'); // Banco hospedagem
-    if (!defined('DB_USER')) define('DB_USER', 'u311882628_xandriaAgro');
-    if (!defined('DB_PASS')) define('DB_PASS', 'Lavosier0012!');
-    if (!defined('BASE_URL')) define('BASE_URL', 'https://lactechsys.com/');
+    // Usar variáveis de ambiente se disponíveis, senão usar valores padrão (fallback)
+    if (!defined('DB_HOST')) define('DB_HOST', getEnvValue('DB_HOST_PROD', 'localhost'));
+    if (!defined('DB_NAME')) define('DB_NAME', getEnvValue('DB_NAME_PROD', 'u311882628_lactech_lgmato'));
+    if (!defined('DB_USER')) define('DB_USER', getEnvValue('DB_USER_PROD', 'u311882628_xandriaAgro'));
+    if (!defined('DB_PASS')) define('DB_PASS', getEnvValue('DB_PASS_PROD', 'Lavosier0012!'));
+    if (!defined('BASE_URL')) define('BASE_URL', getEnvValue('BASE_URL_PROD', 'https://lactechsys.com/'));
     if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'PRODUCTION');
 }
 

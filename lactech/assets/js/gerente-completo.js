@@ -103,17 +103,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     initializeNavigation();
     initializeOverlays();
-    loadDashboardData();
-    startAutoRefresh();
-    updateDateTime();
-    registerCurrentSession();
     
-    // Atualizar última atividade periodicamente (a cada 5 minutos)
-    setInterval(function() {
-        updateSessionActivity();
-    }, 5 * 60 * 1000); // 5 minutos
+    // Aguardar Chart.js estar carregado antes de carregar dados
+    function initializeDashboard() {
+        if (typeof Chart !== 'undefined') {
+            console.log('✅ Chart.js carregado, inicializando dashboard...');
+            loadDashboardData();
+            startAutoRefresh();
+            updateDateTime();
+            registerCurrentSession();
+            
+            // Atualizar última atividade periodicamente (a cada 5 minutos)
+            setInterval(function() {
+                updateSessionActivity();
+            }, 5 * 60 * 1000); // 5 minutos
+            
+            console.log('✅ Dashboard Gerente Completo inicializado com sucesso!');
+        } else {
+            console.log('⏳ Aguardando Chart.js...');
+            setTimeout(initializeDashboard, 100);
+        }
+    }
     
-    console.log('✅ Dashboard Gerente Completo inicializado com sucesso!');
+    initializeDashboard();
 });
 
 // ==================== NAVEGAÇÃO ====================
@@ -183,10 +195,14 @@ async function loadDashboardData() {
         const response = await fetch('./api/endpoints/dashboard.php');
         console.log('📡 Resposta recebida:', response.status, response.statusText);
         
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const result = await response.json();
         console.log('📊 Dados recebidos:', result);
         
-        if (result.success) {
+        if (result.success && result.data) {
             const data = result.data;
             
             // Helper numérico seguro
@@ -195,42 +211,101 @@ async function loadDashboardData() {
                 return Number.isFinite(num) ? num : 0;
             };
             
-            // Atualizar métricas principais
+            // Atualizar métricas principais do dashboard
             const todayVolumeEl = document.getElementById('todayVolume');
             if (todayVolumeEl) {
-                todayVolumeEl.textContent = n(data.today_production?.today_volume).toFixed(1) + 'L';
+                const volume = n(data.today_production?.today_volume || 0);
+                todayVolumeEl.textContent = volume.toFixed(1) + ' L';
+                console.log('✅ Volume hoje (dashboard) atualizado:', volume);
+            }
+            
+            // Atualizar métricas da aba Volume
+            const volumeTodayEl = document.getElementById('volumeToday');
+            if (volumeTodayEl) {
+                const volume = n(data.today_production?.today_volume || 0);
+                volumeTodayEl.textContent = volume.toFixed(1) + ' L';
+                console.log('✅ Volume hoje (aba Volume) atualizado:', volume);
+            }
+            
+            // Média semanal
+            const volumeWeekAvgEl = document.getElementById('volumeWeekAvg');
+            if (volumeWeekAvgEl) {
+                const weekAvg = n(data.week_production?.avg_daily_volume || 0);
+                volumeWeekAvgEl.textContent = weekAvg.toFixed(1) + ' L';
+                console.log('✅ Média semanal atualizada:', weekAvg);
+            }
+            
+            // Total do mês
+            const volumeMonthTotalEl = document.getElementById('volumeMonthTotal');
+            if (volumeMonthTotalEl) {
+                const monthTotal = n(data.month_production?.month_volume || 0);
+                volumeMonthTotalEl.textContent = monthTotal.toFixed(0) + ' L';
+                console.log('✅ Total do mês atualizado:', monthTotal);
             }
             
             const qualityAverageEl = document.getElementById('qualityAverage');
             if (qualityAverageEl) {
-                qualityAverageEl.textContent = n(data.quality?.avg_fat).toFixed(1) + '%';
+                const fat = n(data.quality?.avg_fat || 0);
+                qualityAverageEl.textContent = fat.toFixed(1) + '%';
+                console.log('✅ Qualidade média atualizada:', fat);
             }
             
             const pendingPaymentsEl = document.getElementById('pendingPayments');
             if (pendingPaymentsEl) {
-                // Usar despesas do mês, pois não há campo "pendente" no schema
-                pendingPaymentsEl.textContent = 'R$ ' + n(data.expenses?.month_expenses).toFixed(2);
+                const expenses = n(data.expenses?.month_expenses || 0);
+                pendingPaymentsEl.textContent = 'R$ ' + expenses.toFixed(2);
+                console.log('✅ Pagamentos pendentes atualizados:', expenses);
             }
             
             const activeUsersEl = document.getElementById('activeUsers');
             if (activeUsersEl) {
                 try {
                     const usersResp = await fetch('./api/endpoints/users.php');
-                    const usersJson = await usersResp.json();
-                    const usersCount = usersJson?.data?.stats?.active_users ?? 0;
-                    activeUsersEl.textContent = String(n(usersCount).toFixed(0));
+                    if (usersResp.ok) {
+                        const usersJson = await usersResp.json();
+                        const usersCount = usersJson?.data?.stats?.active_users ?? 0;
+                        activeUsersEl.textContent = String(n(usersCount).toFixed(0));
+                        console.log('✅ Usuários ativos atualizados:', usersCount);
+                    } else {
+                        activeUsersEl.textContent = '0';
+                    }
                 } catch (e) {
+                    console.error('Erro ao carregar usuários:', e);
                     activeUsersEl.textContent = '0';
                 }
             }
             
             // Atualizar gráficos
-            renderMonthlyVolumeChart(data.production_chart);
-            renderWeeklyVolumeCharts();
-            renderTemperatureChart();
+            console.log('📊 Atualizando gráficos...');
+            if (data.production_chart && Array.isArray(data.production_chart)) {
+                renderMonthlyVolumeChart(data.production_chart);
+            } else {
+                console.warn('⚠️ Dados do gráfico mensal não disponíveis');
+                renderMonthlyVolumeChart([]);
+            }
+            
+            // Aguardar Chart.js estar pronto antes de renderizar
+            if (typeof Chart !== 'undefined') {
+                renderWeeklyVolumeCharts();
+                renderTemperatureChart();
+            } else {
+                console.error('❌ Chart.js não está carregado!');
+                // Tentar carregar novamente após um delay
+                setTimeout(() => {
+                    if (typeof Chart !== 'undefined') {
+                        renderWeeklyVolumeCharts();
+                        renderTemperatureChart();
+                    }
+                }, 1000);
+            }
             
             // Atualizar atividades recentes
-            updateRecentActivities(data.recent_activities);
+            if (data.recent_activities && Array.isArray(data.recent_activities)) {
+                updateRecentActivities(data.recent_activities);
+            } else {
+                console.warn('⚠️ Atividades recentes não disponíveis');
+                updateRecentActivities([]);
+            }
             
             // Atualizar data/hora
             const lastUpdateEl = document.getElementById('lastUpdate');
@@ -238,12 +313,36 @@ async function loadDashboardData() {
                 lastUpdateEl.textContent = new Date().toLocaleString('pt-BR');
             }
             
-            console.log('✅ Dados do dashboard carregados!');
+            console.log('✅ Dados do dashboard carregados com sucesso!');
         } else {
-            console.error('Erro na API:', result.error);
+            console.error('❌ Erro na API:', result.error || 'Dados não retornados');
+            // Definir valores padrão em caso de erro
+            const todayVolumeEl = document.getElementById('todayVolume');
+            if (todayVolumeEl) todayVolumeEl.textContent = '0.0 L';
+            
+            const qualityAverageEl = document.getElementById('qualityAverage');
+            if (qualityAverageEl) qualityAverageEl.textContent = '0.0%';
+            
+            const pendingPaymentsEl = document.getElementById('pendingPayments');
+            if (pendingPaymentsEl) pendingPaymentsEl.textContent = 'R$ 0.00';
+            
+            const activeUsersEl = document.getElementById('activeUsers');
+            if (activeUsersEl) activeUsersEl.textContent = '0';
         }
     } catch (error) {
-        console.error('Erro na requisição:', error);
+        console.error('❌ Erro na requisição:', error);
+        // Definir valores padrão em caso de erro
+        const todayVolumeEl = document.getElementById('todayVolume');
+        if (todayVolumeEl) todayVolumeEl.textContent = '0.0 L';
+        
+        const qualityAverageEl = document.getElementById('qualityAverage');
+        if (qualityAverageEl) qualityAverageEl.textContent = '0.0%';
+        
+        const pendingPaymentsEl = document.getElementById('pendingPayments');
+        if (pendingPaymentsEl) pendingPaymentsEl.textContent = 'R$ 0.00';
+        
+        const activeUsersEl = document.getElementById('activeUsers');
+        if (activeUsersEl) activeUsersEl.textContent = '0';
     }
 }
 
@@ -253,34 +352,89 @@ async function loadDashboardData() {
 // ==================== CHART HELPERS (Chart.js) ====================
 function createOrUpdateLineChart(canvasId, labels, data, color = '#10B981') {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+    if (!canvas) {
+        console.warn(`⚠️ Canvas não encontrado: ${canvasId}`);
+        return;
+    }
+    
+    // Verificar se Chart.js está disponível
+    if (typeof Chart === 'undefined') {
+        console.error('❌ Chart.js não está carregado!');
+        return;
+    }
+    
+    // Destruir gráfico anterior se existir
     if (charts[canvasId]) {
         charts[canvasId].destroy();
+        delete charts[canvasId];
     }
-    charts[canvasId] = new Chart(canvas.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: '',
-                data,
-                borderColor: color,
-                backgroundColor: color + '1A',
-                fill: true,
-                tension: 0.3,
-                borderWidth: 2,
-                pointRadius: 3,
-                showLine: true,
-                spanGaps: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: true }, y: { display: true, beginAtZero: true } }
-        }
-    });
+    
+    // Garantir que temos dados válidos
+    if (!Array.isArray(labels)) labels = [];
+    if (!Array.isArray(data)) data = [];
+    
+    // Garantir que labels e data tenham o mesmo tamanho
+    const minLength = Math.min(labels.length, data.length);
+    labels = labels.slice(0, minLength);
+    data = data.slice(0, minLength);
+    
+    // Se não há dados, criar dados vazios para mostrar o gráfico
+    if (labels.length === 0) {
+        labels = ['Sem dados'];
+        data = [0];
+    }
+    
+    try {
+        charts[canvasId] = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '',
+                    data: data,
+                    borderColor: color,
+                    backgroundColor: color + '1A',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    showLine: true,
+                    spanGaps: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: { 
+                    x: { 
+                        display: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }, 
+                    y: { 
+                        display: true, 
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    } 
+                }
+            }
+        });
+        console.log(`✅ Gráfico ${canvasId} criado/atualizado com sucesso`);
+    } catch (error) {
+        console.error(`❌ Erro ao criar gráfico ${canvasId}:`, error);
+    }
 }
 
 function renderMonthlyVolumeChart(chartData) {
@@ -297,9 +451,19 @@ function renderMonthlyVolumeChart(chartData) {
 
 async function renderWeeklyVolumeCharts() {
     try {
+        console.log('📊 Carregando dados para gráfico semanal...');
         const res = await fetch('./api/endpoints/volume.php');
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const json = await res.json();
+        console.log('📊 Dados do gráfico semanal recebidos:', json);
+        
         const series = Array.isArray(json?.data?.chart) ? json.data.chart : [];
+        console.log('📊 Séries encontradas:', series.length);
+        
         // Construir faixa dos últimos 7 dias e preencher faltantes com 0
         const dateKey = (d) => d.toISOString().slice(0,10);
         const today = new Date();
@@ -308,17 +472,41 @@ async function renderWeeklyVolumeCharts() {
             d.setDate(today.getDate() - (6 - idx));
             return dateKey(d);
         });
+        
         const map = {};
-        series.forEach(i => { map[i.production_date] = Number(i.daily_volume) || 0; });
+        series.forEach(i => { 
+            const date = i.production_date || i.date || i.record_date;
+            const volume = Number(i.daily_volume || i.total_volume || i.volume || 0);
+            if (date) {
+                map[date] = volume;
+            }
+        });
+        
         const labels7 = last7Dates;
         const data7 = labels7.map(d => map[d] ?? 0);
+        
+        console.log('📊 Labels:', labels7);
+        console.log('📊 Dados:', data7);
+        
+        // Garantir que temos dados válidos
+        if (data7.every(v => v === 0)) {
+            console.warn('⚠️ Nenhum dado encontrado para os últimos 7 dias');
+        }
+        
         // Garantir linha
-        if (data7.length === 1) { labels7.push(labels7[0]); data7.push(data7[0]); }
+        if (data7.length === 1) { 
+            labels7.push(labels7[0]); 
+            data7.push(data7[0]); 
+        }
+        
         createOrUpdateLineChart('volumeChart', labels7, data7, '#3B82F6');
         createOrUpdateLineChart('dashboardWeeklyChart', labels7, data7, '#6366F1');
+        
+        console.log('✅ Gráficos semanais renderizados com sucesso');
     } catch (e) {
-        const labels7 = [];
-        const data7 = [];
+        console.error('❌ Erro ao renderizar gráficos semanais:', e);
+        const labels7 = ['Sem dados'];
+        const data7 = [0];
         createOrUpdateLineChart('volumeChart', labels7, data7, '#3B82F6');
         createOrUpdateLineChart('dashboardWeeklyChart', labels7, data7, '#6366F1');
     }
@@ -326,10 +514,32 @@ async function renderWeeklyVolumeCharts() {
 
 async function renderTemperatureChart() {
     try {
+        console.log('🌡️ Carregando dados de temperatura...');
         const res = await fetch('./api/volume.php?action=get_temperature');
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const json = await res.json();
-        const srcLabels = Array.isArray(json?.data?.labels) ? json.data.labels : [];
-        const srcData = Array.isArray(json?.data?.data) ? json.data.data.map(v => Number(v) || 0) : [];
+        console.log('🌡️ Dados de temperatura recebidos:', json);
+        
+        let srcLabels = [];
+        let srcData = [];
+        
+        // Verificar diferentes formatos de resposta
+        if (json?.data?.labels && json?.data?.data) {
+            srcLabels = Array.isArray(json.data.labels) ? json.data.labels : [];
+            srcData = Array.isArray(json.data.data) ? json.data.data.map(v => Number(v) || 0) : [];
+        } else if (json?.data && Array.isArray(json.data)) {
+            // Formato alternativo: array de objetos com date e avg_temp
+            srcLabels = json.data.map(item => item.date || item.production_date || '');
+            srcData = json.data.map(item => Number(item.avg_temp || item.temperature || 0));
+        }
+        
+        console.log('🌡️ Labels:', srcLabels);
+        console.log('🌡️ Dados:', srcData);
+        
         // Preencher últimos 30 dias
         const dateKey = (d) => d.toISOString().slice(0,10);
         const today = new Date();
@@ -338,14 +548,34 @@ async function renderTemperatureChart() {
             d.setDate(today.getDate() - (29 - idx));
             return dateKey(d);
         });
+        
         const map = {};
-        srcLabels.forEach((d, i) => { map[d] = srcData[i] ?? 0; });
+        srcLabels.forEach((d, i) => { 
+            if (d) {
+                map[d] = srcData[i] ?? 0; 
+            }
+        });
+        
         const labels = last30;
         const data = labels.map(d => map[d] ?? 0);
-        if (data.length === 1) { labels.push(labels[0]); data.push(data[0]); }
+        
+        // Se não há dados, mostrar mensagem
+        if (data.every(v => v === 0)) {
+            console.warn('⚠️ Nenhum dado de temperatura encontrado');
+            labels.length = 0;
+            data.length = 0;
+        }
+        
+        if (data.length === 1) { 
+            labels.push(labels[0]); 
+            data.push(data[0]); 
+        }
+        
         createOrUpdateLineChart('temperatureChart', labels, data, '#F59E0B');
+        console.log('✅ Gráfico de temperatura renderizado com sucesso');
     } catch (e) {
-        createOrUpdateLineChart('temperatureChart', [], [], '#F59E0B');
+        console.error('❌ Erro ao renderizar gráfico de temperatura:', e);
+        createOrUpdateLineChart('temperatureChart', ['Sem dados'], [0], '#F59E0B');
     }
 }
 
@@ -5236,6 +5466,8 @@ window.linkGoogleAccount = async function linkGoogleAccount() {
             }
             
             if (event.data.type === 'google_oauth_success') {
+                console.log('✅ Mensagem de sucesso recebida do callback Google');
+                
                 // Remover listener
                 window.removeEventListener('message', messageHandler);
                 
@@ -5243,26 +5475,26 @@ window.linkGoogleAccount = async function linkGoogleAccount() {
                 if (popup && !popup.closed) {
                     try {
                         popup.close();
+                        console.log('✅ Popup fechado');
                     } catch (e) {
-                        // Ignorar erro se popup já foi fechado ou bloqueado por Cross-Origin
-                    }
-                }
-                
-                // Fechar popup imediatamente (garantir que feche)
-                if (popup && !popup.closed) {
-                    try {
-                        popup.close();
-                    } catch (e) {
-                        // Ignorar erro se popup já foi fechado
+                        console.warn('⚠️ Popup já estava fechado ou bloqueado:', e);
                     }
                 }
                 
                 // Mostrar modal de conta vinculada
-                showGoogleLinkedModal(event.data.message || 'Conta Google vinculada com sucesso! Você pode receber códigos OTP por e-mail.');
+                if (typeof showGoogleLinkedModal === 'function') {
+                    showGoogleLinkedModal(event.data.message || 'Conta Google vinculada com sucesso! Você pode receber códigos OTP por e-mail.');
+                    console.log('✅ Modal de sucesso exibido');
+                } else {
+                    console.error('❌ Função showGoogleLinkedModal não encontrada');
+                    // Fallback: mostrar alerta simples
+                    alert(event.data.message || 'Conta Google vinculada com sucesso!');
+                }
                 
                 // Recarregar status de segurança
                 if (typeof loadSecurityStatus === 'function') {
                     await loadSecurityStatus();
+                    console.log('✅ Status de segurança recarregado');
                 }
             } else if (event.data.type === 'google_oauth_error') {
                 // Remover listener

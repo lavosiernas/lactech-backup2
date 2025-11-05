@@ -285,11 +285,39 @@ try {
             break;
 
         case 'get_temperature':
-            // Temperatura média por dia (últimos 30 dias)
-            $rows = $db->query("SELECT production_date as date, AVG(temperature) as avg_temp FROM milk_production WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND production_date <= CURDATE() AND farm_id = 1 AND temperature IS NOT NULL GROUP BY production_date ORDER BY production_date ASC");
+            // Temperatura média por dia (últimos 30 dias) - usar volume_records
+            $rows = $db->query("
+                SELECT 
+                    DATE(record_date) as date, 
+                    AVG(temperature) as avg_temp 
+                FROM volume_records 
+                WHERE DATE(record_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+                AND DATE(record_date) <= CURDATE() 
+                AND farm_id = 1 
+                AND temperature IS NOT NULL 
+                GROUP BY DATE(record_date) 
+                ORDER BY date ASC
+            ");
+            
+            // Se não houver dados, usar milk_production como fallback
+            if (empty($rows)) {
+                $rows = $db->query("
+                    SELECT 
+                        production_date as date, 
+                        AVG(temperature) as avg_temp 
+                    FROM milk_production 
+                    WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+                    AND production_date <= CURDATE() 
+                    AND farm_id = 1 
+                    AND temperature IS NOT NULL 
+                    GROUP BY production_date 
+                    ORDER BY production_date ASC
+                ");
+            }
+            
             $data = [
                 'labels' => array_map(function($r){ return $r['date']; }, $rows),
-                'data' => array_map(function($r){ return (float)$r['avg_temp']; }, $rows)
+                'data' => array_map(function($r){ return (float)($r['avg_temp'] ?? 0); }, $rows)
             ];
             sendJSONResponse($data);
             break;

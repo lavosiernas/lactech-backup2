@@ -1,8 +1,32 @@
 # Arquivos de configuração sensíveis
+# ⚠️ NUNCA commite arquivos com dados sensíveis
+
+# Arquivo de variáveis de ambiente (contém senhas e secrets)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Arquivos de configuração com dados sensíveis
 includes/config_google.php
+includes/config_local.php
+includes/config_prod.php
 api/client_secret*.json
 
-# Outros arquivos sensíveis
+# Arquivos de log (podem conter informações sensíveis)
 *.log
-*.env
+logs/
+*.log.*
+
+# Arquivos de backup que podem conter dados sensíveis
+backup/*.sql
+backup/*.gz
+backup/*.zip
+
+# Outros arquivos sensíveis
 config_google.php
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx

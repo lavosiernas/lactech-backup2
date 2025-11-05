@@ -45,9 +45,41 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LacTech - Sistema de Gestão Leiteira</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Preconnect para recursos externos (melhora velocidade) -->
+    <link rel="preconnect" href="https://i.postimg.cc">
+    <link rel="preconnect" href="https://nutrimosaic.com.br">
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://nutrimosaic.com.br">
+    
+    <!-- Favicon -->
     <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    
+    <!-- Tailwind CSS otimizado - usar build local se disponível -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <!-- Fallback: CDN com configuração otimizada -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            // Otimizar Tailwind: desabilitar plugins não usados
+            tailwind.config = {
+                corePlugins: {
+                    preflight: true,
+                },
+                // Desabilitar recursos não usados
+                theme: {
+                    extend: {}
+                }
+            }
+        </script>
+    <?php endif; ?>
+    
+    <!-- CSS customizado --> 
     <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="assets/css/style.css" as="style">
     <style>
         .error-message {
             background-color: #fef2f2;
@@ -67,6 +99,74 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             border-radius: 8px;
             margin-bottom: 16px;
             display: none;
+        }
+
+        /* Modal de conta não vinculada */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #ffffff !important;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-content h3 {
+            color: #1e293b !important;
+        }
+
+        .modal-content p {
+            color: #475569 !important;
+        }
+
+        /* Remover modo escuro do modal - sempre usar cores claras */
+        @media (prefers-color-scheme: dark) {
+            .modal-content {
+                background: #ffffff !important;
+            }
+            
+            .modal-content h3 {
+                color: #1e293b !important;
+            }
+            
+            .modal-content p {
+                color: #475569 !important;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
     <script>
@@ -190,7 +290,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             
             <!-- Logo e título no topo -->
             <div class="text-center mb-8">
-                <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4">
+                <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4" loading="eager" width="64" height="64">
                 <h1 class="text-2xl font-bold text-slate-900 mb-1">LacTech</h1>
                 <p class="text-slate-600 text-sm mb-6">Sistema de Gestão Leiteira</p>
                 <h2 class="text-2xl font-bold text-slate-900 mb-2">Bem-vindo de volta!</h2>
@@ -255,7 +355,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                     <div class="w-full border-t border-slate-200"></div>
                 </div>
                 <div class="relative flex justify-center text-sm">
-                    <span class="px-4 text-slate-500">ou</span>
+                    <span class="px-4 text-slate-500 bg-transparent">ou</span>
                 </div>
             </div>
 
@@ -279,7 +379,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
     </div>
 
     <div class="hidden md:flex min-h-screen">
-        <div class="flex-1 relative bg-cover bg-center" style="background-image: url('https://nutrimosaic.com.br/wp-content/uploads/2024/11/vaca-holandesa-comendo-pasto-verde.jpg');">
+        <div class="flex-1 relative bg-cover bg-center" style="background-image: url('https://nutrimosaic.com.br/wp-content/uploads/2024/11/vaca-holandesa-comendo-pasto-verde.jpg');" loading="lazy">
             <div class="absolute inset-0 bg-black bg-opacity-40"></div>
             <div class="absolute inset-0 flex items-center justify-center">
                 <div class="text-center text-white p-8">
@@ -307,7 +407,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 
                 <!-- Logo acima do bem-vindo -->
                 <div class="text-center mb-8">
-                    <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4">
+                    <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4" loading="lazy" width="64" height="64">
                     <h2 class="text-3xl font-bold text-slate-900 mb-2">Bem-vindo de volta!</h2>
                     <p class="text-slate-600">Entre na sua conta da fazenda</p>
                 </div>
@@ -370,7 +470,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         <div class="w-full border-t border-slate-200"></div>
                     </div>
                     <div class="relative flex justify-center text-sm">
-                        <span class="px-4 bg-white text-slate-500">ou</span>
+                        <span class="px-4 text-slate-500 bg-transparent">ou</span>
                     </div>
                 </div>
 
@@ -729,17 +829,12 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         // Mensagem de erro mais detalhada
                         let errorMsg = event.data.message || 'Erro ao fazer login com Google.';
                         
-                        // Se for erro de conta não vinculada, mostrar mensagem especial
-                        if (event.data.error_code === 'account_not_linked' || event.data.requires_linking) {
-                            errorMsg = 'Conta Google não vinculada.\n\n' +
-                                     'Para fazer login com Google, você precisa:\n' +
-                                     '1. Fazer login normalmente com seu email e senha\n' +
-                                     '2. Ir no perfil e vincular sua conta Google\n' +
-                                     '3. Depois disso, você poderá fazer login com Google';
-                            
-                            // Mostrar mensagem mais destacada
-                            showError(errorMsg, false);
-                            showError(errorMsg, true);
+                        // Se for erro de conta desvinculada, mostrar modal
+                        if (event.data.error_code === 'account_unlinked') {
+                            showGoogleAccountModal('Esta conta Google foi desvinculada do sistema.');
+                        } else if (event.data.error_code === 'account_not_linked' || event.data.requires_linking) {
+                            // Se for erro de conta não vinculada, mostrar modal
+                            showGoogleAccountModal('Esta conta Google não está vinculada ao sistema.');
                         } else if (event.data.error_code === 'invalid_request' || event.data.error_code === 'unauthorized_client') {
                             // Se for erro de redirect_uri, adicionar instruções
                             errorMsg += '\n\n⚠️ Certifique-se de adicionar este URI no Google Console:\nhttps://lactechsys.com/google-login-callback.php';
@@ -841,6 +936,79 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             }
         })();
         */
+
+        // Função para mostrar modal de conta Google não vinculada
+        function showGoogleAccountModal(message) {
+            const modal = document.getElementById('googleAccountModal');
+            const modalMessage = document.getElementById('googleAccountModalMessage');
+            
+            if (modal && modalMessage) {
+                modalMessage.textContent = message;
+                modal.classList.add('active');
+            }
+        }
+
+        // Função para fechar modal
+        function closeGoogleAccountModal() {
+            const modal = document.getElementById('googleAccountModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // Fechar modal ao clicar fora dele
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('googleAccountModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeGoogleAccountModal();
+                    }
+                });
+            }
+
+            // Verificar parâmetros de URL para mostrar modal
+            const urlParams = new URLSearchParams(window.location.search);
+            const googleError = urlParams.get('google_error');
+            
+            if (googleError === 'account_not_linked' || googleError === 'account_unlinked') {
+                const message = googleError === 'account_unlinked' 
+                    ? 'Esta conta Google foi desvinculada do sistema.'
+                    : 'Esta conta Google não está vinculada ao sistema.';
+                showGoogleAccountModal(message);
+                
+                // Limpar parâmetros da URL
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        });
     </script>
+
+    <!-- Modal de Conta Google Não Vinculada -->
+    <div id="googleAccountModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center">
+                <!-- Ícone -->
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-3" style="background-color: #fee2e2;">
+                    <svg class="h-6 w-6" style="color: #dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                
+                <!-- Título -->
+                <h3 class="text-lg font-bold mb-2" style="color: #1e293b;">Conta não vinculada</h3>
+                
+                <!-- Mensagem -->
+                <p id="googleAccountModalMessage" class="mb-4 text-sm" style="color: #475569;">
+                    Esta conta Google não está vinculada ao sistema.
+                </p>
+                
+                <!-- Botão -->
+                <button onclick="closeGoogleAccountModal()" class="w-full px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors" style="background-color: #1e293b; color: #ffffff;">
+                    Entendi
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

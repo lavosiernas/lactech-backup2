@@ -212,30 +212,115 @@ try {
     $googleName = $userInfo['name'] ?? $userInfo['email'];
     $googlePicture = $userInfo['picture'] ?? null;
     
+    // Se não houver foto do Google, usar logo do sistema como padrão
+    if (empty($googlePicture)) {
+        $googlePicture = 'https://i.postimg.cc/vmrkgDcB/lactech.png';
+    }
+    
     // IMPORTANTE: Login com Google só funciona se a conta já estiver vinculada
     // Não criar conta automaticamente - usuário deve vincular primeiro no perfil
     $db = Database::getInstance();
     $pdo = $db->getConnection();
     
-    // Verificar se a conta Google está vinculada a algum usuário
+    // PRIMEIRO: Verificar se a conta Google foi desvinculada (unlinked_at não é NULL)
+    // Se foi desvinculada, mostrar mensagem específica imediatamente
     $stmt = $pdo->prepare("
-        SELECT ga.*, u.id as user_id, u.name, u.email, u.role, u.farm_id
+        SELECT ga.*, u.id as user_id, u.name, u.email, u.role, u.farm_id, u.is_active
         FROM google_accounts ga
         INNER JOIN users u ON ga.user_id = u.id
-        WHERE ga.google_id = :google_id 
-        AND ga.email = :email
-        AND (ga.unlinked_at IS NULL OR ga.unlinked_at = '')
+        WHERE (ga.google_id = :google_id OR ga.email = :email)
+        AND ga.unlinked_at IS NOT NULL 
+        AND ga.unlinked_at != ''
         LIMIT 1
     ");
     $stmt->execute([
         ':google_id' => $googleId,
         ':email' => $googleEmail
     ]);
+    $unlinkedAccount = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($unlinkedAccount) {
+        // Conta foi desvinculada - mostrar erro específico
+        error_log("🚫 Tentativa de login com Google desvinculado - Google ID: $googleId, Email: $googleEmail, IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+        $errorMessage = 'Esta conta Google foi desvinculada da sua conta LacTech. Para fazer login com Google novamente, faça login normalmente com seu email e senha e vincule sua conta Google no perfil.';
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Conta desvinculada - Login Google</title>
+            <meta charset="UTF-8">
+        </head>
+        <body>
+            <script>
+                (function() {
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.postMessage({
+                                type: 'google_login_error',
+                                message: '<?php echo addslashes($errorMessage); ?>',
+                                error_code: 'account_unlinked',
+                                requires_linking: true
+                            }, window.location.origin);
+                            
+                            setTimeout(function() {
+                                window.close();
+                            }, 100);
+                        } catch (e) {
+                            console.error('Erro ao comunicar com parent:', e);
+                            window.location.href = '/inicio-login.php?google_error=account_unlinked&message=<?php echo urlencode($errorMessage); ?>';
+                        }
+                    } else {
+                        window.location.href = '/inicio-login.php?google_error=account_unlinked&message=<?php echo urlencode($errorMessage); ?>';
+                    }
+                })();
+            </script>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+    
+    // SEGUNDO: Verificar se a conta Google está vinculada a algum usuário ATIVO
+    // Validação rigorosa: verifica google_id, email, se não foi desvinculada E se o usuário está ativo
+    $stmt = $pdo->prepare("
+        SELECT ga.*, u.id as user_id, u.name, u.email, u.role, u.farm_id, u.is_active
+        FROM google_accounts ga
+        INNER JOIN users u ON ga.user_id = u.id
+        WHERE ga.google_id = :google_id 
+        AND (ga.unlinked_at IS NULL OR ga.unlinked_at = '')
+        AND u.is_active = 1
+        LIMIT 1
+    ");
+    $stmt->execute([
+        ':google_id' => $googleId
+    ]);
     $googleAccount = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Se não encontrou por google_id, verificar também por email (para garantir)
+    if (!$googleAccount) {
+        $stmt = $pdo->prepare("
+            SELECT ga.*, u.id as user_id, u.name, u.email, u.role, u.farm_id, u.is_active
+            FROM google_accounts ga
+            INNER JOIN users u ON ga.user_id = u.id
+            WHERE ga.email = :email
+            AND (ga.unlinked_at IS NULL OR ga.unlinked_at = '')
+            AND u.is_active = 1
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':email' => $googleEmail
+        ]);
+        $googleAccount = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    // Log para auditoria de segurança
+    if (!$googleAccount) {
+        error_log("🚫 Tentativa de login com Google não vinculado - Google ID: $googleId, Email: $googleEmail, IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    }
     
     if (!$googleAccount) {
         // Conta Google não está vinculada - mostrar erro
-        $errorMessage = 'Esta conta Google não está vinculada à sua conta LacTech. Por favor, faça login normalmente e vincule sua conta Google no perfil primeiro.';
+        $errorMessage = 'Esta conta Google não está vinculada à sua conta LacTech. Por favor, faça login normalmente com seu email e senha e vincule sua conta Google no perfil primeiro.';
         ?>
         <!DOCTYPE html>
         <html>
@@ -274,14 +359,64 @@ try {
         exit;
     }
     
-    // Conta Google está vinculada - fazer login
-    $userId = $googleAccount['user_id'];
+    // Verificação adicional: garantir que o usuário ainda está ativo no banco
+    $stmt = $pdo->prepare("
+        SELECT id, name, email, role, farm_id, is_active 
+        FROM users 
+        WHERE id = :user_id 
+        AND is_active = 1
+        LIMIT 1
+    ");
+    $stmt->execute([':user_id' => $googleAccount['user_id']]);
+    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$userData) {
+        // Usuário foi desativado ou não existe mais - bloquear login
+        error_log("🚫 Tentativa de login com Google para usuário inativo ou inexistente - User ID: {$googleAccount['user_id']}, Google ID: $googleId, Email: $googleEmail");
+        $errorMessage = 'Conta não disponível. Por favor, entre em contato com o administrador.';
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Conta não disponível - Login Google</title>
+            <meta charset="UTF-8">
+        </head>
+        <body>
+            <script>
+                (function() {
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.postMessage({
+                                type: 'google_login_error',
+                                message: '<?php echo addslashes($errorMessage); ?>',
+                                error_code: 'account_inactive'
+                            }, window.location.origin);
+                            setTimeout(function() {
+                                window.close();
+                            }, 100);
+                        } catch (e) {
+                            console.error('Erro ao comunicar com parent:', e);
+                            window.location.href = '/inicio-login.php?google_error=account_inactive';
+                        }
+                    } else {
+                        window.location.href = '/inicio-login.php?google_error=account_inactive';
+                    }
+                })();
+            </script>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+    
+    // Conta Google está vinculada e usuário está ativo - fazer login
+    $userId = $userData['id'];
     $existingUser = [
-        'id' => $googleAccount['user_id'],
-        'name' => $googleAccount['name'],
-        'email' => $googleAccount['email'],
-        'role' => $googleAccount['role'],
-        'farm_id' => $googleAccount['farm_id']
+        'id' => $userData['id'],
+        'name' => $userData['name'],
+        'email' => $userData['email'],
+        'role' => $userData['role'],
+        'farm_id' => $userData['farm_id']
     ];
     
     // Atualizar dados da conta Google vinculada (último login)
@@ -312,8 +447,13 @@ try {
     $_SESSION['login_time'] = time();
     $_SESSION['login_method'] = 'google'; // Marcar que foi login via Google
     
+    // Sempre usar a foto (pode ser do Google ou logo do sistema como fallback)
+    $_SESSION['profile_photo'] = $googlePicture;
+    
+    // Salvar foto de perfil no banco de dados também
     if ($googlePicture) {
-        $_SESSION['profile_photo'] = $googlePicture;
+        $updatePhotoStmt = $pdo->prepare("UPDATE users SET profile_photo = ? WHERE id = ?");
+        $updatePhotoStmt->execute([$googlePicture, $userId]);
     }
     
     // Determinar redirect baseado no role

@@ -28,11 +28,32 @@
     <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
     
     <!-- PWA Manifest -->
-
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Preconnect para recursos externos (melhora velocidade) -->
+    <link rel="preconnect" href="https://i.postimg.cc">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Tailwind CSS otimizado - usar build local se disponível -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <!-- Fallback: CDN com configuração otimizada -->
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
+    
+    <!-- Chart.js (defer para não bloquear renderização) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    
+    <!-- jsPDF (defer para não bloquear renderização) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="assets/js/pdf-generator.js"></script>
     <script src="assets/js/config_mysql.js"></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->

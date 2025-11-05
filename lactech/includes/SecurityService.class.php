@@ -14,7 +14,7 @@ class SecurityService {
     
     // Configurações OTP
     const OTP_LENGTH = 6;
-    const OTP_EXPIRY_MINUTES = 5;
+    const OTP_EXPIRY_MINUTES = 10; // Aumentado de 5 para 10 minutos para dar mais tempo
     const MAX_OTP_ATTEMPTS = 5;
     
     private function __construct() {
@@ -80,8 +80,18 @@ class SecurityService {
             // Gerar código de 6 dígitos
             $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             
-            // Expira em 5 minutos
-            $expiresAt = date('Y-m-d H:i:s', strtotime('+' . self::OTP_EXPIRY_MINUTES . ' minutes'));
+            // Garantir que o código tem exatamente 6 dígitos (string)
+            $code = (string)$code;
+            $code = str_pad($code, 6, '0', STR_PAD_LEFT);
+            
+            // Expira em 10 minutos
+            // Usar timezone do servidor para garantir consistência
+            $timezone = date_default_timezone_get();
+            $now = new DateTime('now', new DateTimeZone($timezone));
+            $now->add(new DateInterval('PT' . self::OTP_EXPIRY_MINUTES . 'M'));
+            $expiresAt = $now->format('Y-m-d H:i:s');
+            
+            error_log("📧 OTP gerado - Código: '$code' (tamanho: " . strlen($code) . "), Expira em: $expiresAt (Timezone: $timezone)");
             
             // Obter IP e User Agent
             $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
@@ -101,6 +111,13 @@ class SecurityService {
                 ':ip_address' => $ipAddress,
                 ':user_agent' => $userAgent
             ]);
+            
+            // Verificar se foi salvo corretamente
+            $savedOtpId = $pdo->lastInsertId();
+            $verifyStmt = $pdo->prepare("SELECT code FROM otp_codes WHERE id = ?");
+            $verifyStmt->execute([$savedOtpId]);
+            $savedCode = $verifyStmt->fetch(PDO::FETCH_ASSOC);
+            error_log("📧 OTP salvo no banco - ID: $savedOtpId, Código salvo: '" . ($savedCode['code'] ?? 'NÃO ENCONTRADO') . "'");
             
             // Enviar OTP por e-mail
             $user = $this->db->query("SELECT name FROM users WHERE id = ?", [$userId]);
@@ -146,15 +163,42 @@ class SecurityService {
             // Limpar código (remover espaços e garantir string)
             $code = trim((string)$code);
             $code = preg_replace('/\s+/', '', $code); // Remover espaços
+            $code = preg_replace('/[^0-9]/', '', $code); // Remover caracteres não numéricos
+            
+            // Garantir que o código tem exatamente 6 dígitos com zeros à esquerda
+            $code = str_pad($code, 6, '0', STR_PAD_LEFT);
             
             if (empty($code) || strlen($code) != self::OTP_LENGTH) {
+                error_log("❌ OTP inválido - Código recebido: '" . $code . "' (tamanho: " . strlen($code) . ")");
                 return [
                     'success' => false,
                     'error' => 'Código inválido'
                 ];
             }
             
-            // Buscar OTP válido (verificar se ainda não expirou com margem de segurança)
+            error_log("🔍 Validando OTP - User ID: $userId, Code recebido: '$code' (tamanho: " . strlen($code) . "), Action: $action");
+            
+            // PRIMEIRO: Buscar TODOS os OTPs recentes para debug
+            $debugStmt = $pdo->prepare("
+                SELECT id, code, expires_at, is_used, created_at, action
+                FROM otp_codes
+                WHERE user_id = :user_id 
+                AND action = :action
+                ORDER BY created_at DESC
+                LIMIT 5
+            ");
+            $debugStmt->execute([
+                ':user_id' => $userId,
+                ':action' => $action
+            ]);
+            $allOtps = $debugStmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("🔍 OTPs encontrados no banco para este usuário e ação: " . count($allOtps));
+            foreach ($allOtps as $debugOtp) {
+                error_log("  - ID: " . $debugOtp['id'] . ", Code: '" . $debugOtp['code'] . "' (tamanho: " . strlen($debugOtp['code']) . "), Expira: " . $debugOtp['expires_at'] . ", Usado: " . $debugOtp['is_used'] . ", Comparação: " . ($debugOtp['code'] === $code ? 'IGUAL' : 'DIFERENTE'));
+            }
+            
+            // Buscar OTP pelo código (sem verificar expiração primeiro)
+            // Verificar expiração depois em PHP para evitar problemas de timezone
             $stmt = $pdo->prepare("
                 SELECT id, code, expires_at, is_used, created_at
                 FROM otp_codes
@@ -162,7 +206,6 @@ class SecurityService {
                 AND code = :code
                 AND action = :action
                 AND is_used = 0
-                AND expires_at > DATE_SUB(NOW(), INTERVAL 1 MINUTE)
                 ORDER BY created_at DESC
                 LIMIT 1
             ");
@@ -176,7 +219,7 @@ class SecurityService {
             $otp = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if (!$otp) {
-                // Verificar se existe mas expirou ou foi usado
+                // Verificar se existe mas foi usado
                 $checkStmt = $pdo->prepare("
                     SELECT id, expires_at, is_used, created_at
                     FROM otp_codes
@@ -197,22 +240,15 @@ class SecurityService {
                 
                 if ($existingOtp) {
                     if ($existingOtp['is_used'] == 1) {
+                        error_log("❌ OTP já foi utilizado - ID: " . $existingOtp['id']);
                         return [
                             'success' => false,
                             'error' => 'Código já foi utilizado'
                         ];
                     }
                     
-                    // Verificar expiração com mais detalhes
-                    $expiresAt = new DateTime($existingOtp['expires_at']);
-                    $now = new DateTime();
-                    
-                    if ($now > $expiresAt) {
-                        return [
-                            'success' => false,
-                            'error' => 'Código expirado'
-                        ];
-                    }
+                    // Se não foi usado mas não foi encontrado, pode ter sido usado em outra query
+                    error_log("⚠️ OTP encontrado mas is_used = " . $existingOtp['is_used']);
                 }
                 
                 // Log de tentativa inválida
@@ -221,22 +257,31 @@ class SecurityService {
                     'code_provided' => substr($code, 0, 2) . '****' // Não logar código completo
                 ]);
                 
+                error_log("❌ OTP não encontrado - User ID: $userId, Code: '$code', Action: $action");
                 return [
                     'success' => false,
-                    'error' => 'Código inválido ou expirado'
+                    'error' => 'Código inválido'
                 ];
             }
             
-            // Verificar novamente a expiração com PHP para garantir
-            $expiresAt = new DateTime($otp['expires_at']);
-            $now = new DateTime();
+            error_log("✅ OTP encontrado no banco - ID: " . $otp['id'] . ", Code: '" . $otp['code'] . "', Expira em: " . $otp['expires_at']);
+            
+            // Verificar expiração em PHP (mais confiável que SQL)
+            $timezone = date_default_timezone_get();
+            $expiresAt = new DateTime($otp['expires_at'], new DateTimeZone($timezone));
+            $now = new DateTime('now', new DateTimeZone($timezone));
+            
+            error_log("🔍 Verificando expiração - Agora: " . $now->format('Y-m-d H:i:s') . " (TZ: $timezone), Expira: " . $expiresAt->format('Y-m-d H:i:s') . " (TZ: $timezone)");
             
             if ($now > $expiresAt) {
+                error_log("⚠️ OTP expirado - Agora: " . $now->format('Y-m-d H:i:s') . ", Expira: " . $expiresAt->format('Y-m-d H:i:s'));
                 return [
                     'success' => false,
                     'error' => 'Código expirado'
                 ];
             }
+            
+            error_log("✅ OTP válido - Agora: " . $now->format('Y-m-d H:i:s') . ", Expira: " . $expiresAt->format('Y-m-d H:i:s'));
             
             // Marcar OTP como usado
             $updateStmt = $pdo->prepare("

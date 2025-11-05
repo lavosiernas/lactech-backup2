@@ -30,13 +30,31 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="assets/js/config_mysql.js"></script>
+    <!-- Preconnect para recursos externos (melhora velocidade) -->
+    <link rel="preconnect" href="https://i.postimg.cc">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Tailwind CSS otimizado - usar build local se disponível -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <!-- Fallback: CDN com configuração otimizada -->
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
+    
+    <!-- Scripts locais (defer para não bloquear renderização) -->
+    <script src="assets/js/config_mysql.js" defer></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
-    <script src="assets/js/modal-system.js"></script>
-    <script src="assets/js/offline-manager.js"></script>
+    <script src="assets/js/modal-system.js" defer></script>
+    <script src="assets/js/offline-manager.js" defer></script>
     <!-- <script src="assets/js/offline-loading.js"></script> --> <!-- Desabilitado - reconexão silenciosa -->
-    <script src="assets/js/ecosystem-manager.js"></script>
+    <script src="assets/js/ecosystem-manager.js" defer></script>
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->

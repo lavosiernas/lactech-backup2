@@ -8,58 +8,128 @@ try {
     $db = Database::getInstance();
     $pdo = $db->getConnection();
     
-    // 1. Volume de hoje
+    // 1. Volume de hoje - usar volume_records
     $stmt = $pdo->prepare("
         SELECT 
-            COALESCE(SUM(volume), 0) as total_volume,
-            COUNT(DISTINCT animal_id) as milking_animals,
-            COALESCE(AVG(volume), 0) as avg_per_animal
-        FROM milk_production 
-        WHERE production_date = CURDATE() AND farm_id = 1
+            COALESCE(SUM(total_volume), 0) as total_volume,
+            COUNT(*) as total_records,
+            COALESCE(AVG(average_per_animal), 0) as avg_per_animal
+        FROM volume_records 
+        WHERE DATE(record_date) = CURDATE() AND farm_id = 1
     ");
     $stmt->execute();
     $today = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // 2. Volume da semana
+    // Fallback para milk_production se não houver dados
+    if (empty($today['total_volume']) || $today['total_volume'] == 0) {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COALESCE(SUM(volume), 0) as total_volume,
+                COUNT(DISTINCT animal_id) as milking_animals,
+                COALESCE(AVG(volume), 0) as avg_per_animal
+            FROM milk_production 
+            WHERE production_date = CURDATE() AND farm_id = 1
+        ");
+        $stmt->execute();
+        $fallback = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($fallback && $fallback['total_volume'] > 0) {
+            $today = $fallback;
+        }
+    }
+    
+    // 2. Volume da semana - usar volume_records
     $stmt = $pdo->prepare("
         SELECT 
-            COALESCE(SUM(volume), 0) as total_volume,
-            COALESCE(AVG(volume), 0) as avg_daily_volume
-        FROM milk_production 
-        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-        AND production_date <= CURDATE() 
+            COALESCE(SUM(total_volume), 0) as total_volume,
+            COALESCE(SUM(total_volume) / GREATEST(COUNT(DISTINCT DATE(record_date)), 1), 0) as avg_daily_volume
+        FROM volume_records 
+        WHERE DATE(record_date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+        AND DATE(record_date) <= CURDATE() 
         AND farm_id = 1
     ");
     $stmt->execute();
     $week = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // 3. Volume do mês
+    // Fallback
+    if (empty($week['total_volume']) || $week['total_volume'] == 0) {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COALESCE(SUM(volume), 0) as total_volume,
+                COALESCE(SUM(volume) / GREATEST(COUNT(DISTINCT production_date), 1), 0) as avg_daily_volume
+            FROM milk_production 
+            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+            AND production_date <= CURDATE() 
+            AND farm_id = 1
+        ");
+        $stmt->execute();
+        $fallback = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($fallback && $fallback['total_volume'] > 0) {
+            $week = $fallback;
+        }
+    }
+    
+    // 3. Volume do mês - usar volume_records
     $stmt = $pdo->prepare("
         SELECT 
-            COALESCE(SUM(volume), 0) as total_volume,
-            COALESCE(AVG(volume), 0) as avg_daily_volume
-        FROM milk_production 
-        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
-        AND production_date <= CURDATE() 
+            COALESCE(SUM(total_volume), 0) as total_volume,
+            COALESCE(SUM(total_volume) / GREATEST(COUNT(DISTINCT DATE(record_date)), 1), 0) as avg_daily_volume
+        FROM volume_records 
+        WHERE DATE(record_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND DATE(record_date) <= CURDATE() 
         AND farm_id = 1
     ");
     $stmt->execute();
     $month = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // 4. Gráfico de volume dos últimos 30 dias
+    // Fallback
+    if (empty($month['total_volume']) || $month['total_volume'] == 0) {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COALESCE(SUM(volume), 0) as total_volume,
+                COALESCE(SUM(volume) / GREATEST(COUNT(DISTINCT production_date), 1), 0) as avg_daily_volume
+            FROM milk_production 
+            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+            AND production_date <= CURDATE() 
+            AND farm_id = 1
+        ");
+        $stmt->execute();
+        $fallback = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($fallback && $fallback['total_volume'] > 0) {
+            $month = $fallback;
+        }
+    }
+    
+    // 4. Gráfico de volume dos últimos 30 dias - usar volume_records
     $stmt = $pdo->prepare("
         SELECT 
-            production_date,
-            SUM(volume) as daily_volume
-        FROM milk_production 
-        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
-        AND production_date <= CURDATE() 
+            DATE(record_date) as production_date,
+            SUM(total_volume) as daily_volume
+        FROM volume_records 
+        WHERE DATE(record_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND DATE(record_date) <= CURDATE() 
         AND farm_id = 1
-        GROUP BY production_date
+        GROUP BY DATE(record_date)
         ORDER BY production_date ASC
     ");
     $stmt->execute();
     $chart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Fallback
+    if (empty($chart)) {
+        $stmt = $pdo->prepare("
+            SELECT 
+                production_date,
+                SUM(volume) as daily_volume
+            FROM milk_production 
+            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+            AND production_date <= CURDATE() 
+            AND farm_id = 1
+            GROUP BY production_date
+            ORDER BY production_date ASC
+        ");
+        $stmt->execute();
+        $chart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
     // 5. Top produtores
     $stmt = $pdo->prepare("
