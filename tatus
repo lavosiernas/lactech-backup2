@@ -1,0 +1,77 @@
+[33mcommit bb0d39f6512a218daad75f8cdb964d15ffe6645a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: DevLavosier <160407017+lavosiernas@users.noreply.github.com>
+Date:   Wed Nov 5 23:58:13 2025 -0300
+
+    melhoras
+
+backup/lactech_lgmato (11).sql
+backup/lactech_lgmato (9).sql
+lactech/.env.production
+lactech/.gitignore
+lactech/ANALISE-BANCO-TOUROS.md
+lactech/ANALISE-MODAIS-COMPARATIVA.md
+lactech/CORRECAO-ERROS-CRITICOS.md
+lactech/CORRECAO-MODAL-MAIS.md
+lactech/GOOGLE_OAUTH_SETUP.md
+lactech/GOOGLE_OAUTH_SETUP_COMPLETO.md
+lactech/GUIA_BIMI.md
+lactech/GUIA_BIMI_HOSTINGER.md
+lactech/GUIA_LOGO_GOOGLE.md
+lactech/GUIA_MIGRACAO.md
+lactech/INSTRUCOES-CORRECAO-BANCO.md
+lactech/INSTRUCOES-CORRECAO-ERROS.md
+lactech/OTIMIZACOES_PERFORMANCE.md
+lactech/PrimeiroAcesso.php
+lactech/README_SECURITY.md
+lactech/RELATORIO_SEGURANCA.md
+lactech/RELATORIO_VERIFICACAO_BANCO.md
+lactech/SISTEMA-TOUROS-INSTRUCOES.md
+lactech/SISTEMA_SEGURANCA.md
+lactech/admin-pagamentos-pix.php
+lactech/alterar-senha.php
+lactech/api/actions.php
+lactech/api/endpoints/dashboard.php
+lactech/api/endpoints/volume.php
+lactech/api/fix-database.php
+lactech/api/notifications-api.php
+lactech/api/quality.php
+lactech/api/volume.php
+lactech/assets/css/dark-theme-fixes.css
+lactech/assets/js/console-protection.js
+lactech/assets/js/gerente-completo.js
+lactech/assets/js/offline-manager.js
+lactech/assets/video/cloudflare_icon_130969-removebg-preview.png
+lactech/funcionario.php
+lactech/gerente-completo.php
+lactech/google-login-callback.php
+lactech/home.php
+lactech/includes/.htaccess
+lactech/includes/Database.class.php
+lactech/includes/PixGenerator.class.php
+lactech/includes/SecurityService.class.php
+lactech/includes/config.php
+lactech/includes/config_google.example.php
+lactech/includes/config_login.example.php
+lactech/includes/config_mysql.example.php
+lactech/includes/config_mysql.php
+lactech/includes/csrf.php
+lactech/includes/env_loader.php
+lactech/includes/exemplos_sql/adicionar_animal_pedigree_completo.sql
+lactech/includes/functions.php
+lactech/includes/migrations/create_volume_records_table.sql
+lactech/includes/migrations/database_security_tables.sql
+lactech/includes/migrations/fix_missing_tables.php
+lactech/includes/migrations/sistema_touros_migration.sql
+lactech/includes/migrations/sistema_touros_migration_manual_rollback.sql
+lactech/index.php
+lactech/inicio-login.php
+lactech/manifest.json
+lactech/pagamento-pix.php
+lactech/proprietario.php
+lactech/reset-password.php
+lactech/solicitar-alteracao-senha.php
+lactech/sw-manager.js
+lactech/teste-seguranca.php
+lactech/update_junior_name.php
+lactech/update_junior_name.sql
+lactech/verify-email.php

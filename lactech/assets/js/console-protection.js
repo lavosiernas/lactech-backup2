@@ -107,3 +107,4 @@
     console.log('%cEste console é monitorado por segurança. Use apenas funcionalidades autorizadas.', 'color: #666; font-size: 12px;');
     
 })();
+
