@@ -10,6 +10,15 @@ const CONFIG = {
     animationDuration: 300
 };
 
+// Função auxiliar para obter data local no formato YYYY-MM-DD
+function getLocalDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 // ==================== ESTADO GLOBAL ====================
 let currentTab = 'dashboard';
 let isLoading = false;
@@ -288,6 +297,7 @@ async function loadDashboardData() {
             if (typeof Chart !== 'undefined') {
                 renderWeeklyVolumeCharts();
                 renderTemperatureChart();
+                renderQualityWeeklyChart();
             } else {
                 console.error('❌ Chart.js não está carregado!');
                 // Tentar carregar novamente após um delay
@@ -295,6 +305,7 @@ async function loadDashboardData() {
                     if (typeof Chart !== 'undefined') {
                         renderWeeklyVolumeCharts();
                         renderTemperatureChart();
+                        renderQualityWeeklyChart();
                     }
                 }, 1000);
             }
@@ -461,8 +472,14 @@ async function renderWeeklyVolumeCharts() {
         const json = await res.json();
         console.log('📊 Dados do gráfico semanal recebidos:', json);
         
+        // Buscar dados dos últimos 7 dias da semana
+        const weekChart = Array.isArray(json?.data?.week?.chart) ? json.data.week.chart : [];
         const series = Array.isArray(json?.data?.chart) ? json.data.chart : [];
-        console.log('📊 Séries encontradas:', series.length);
+        
+        // Usar dados da semana se disponível, senão usar do gráfico geral
+        const dataSource = weekChart.length > 0 ? weekChart : series;
+        
+        console.log('📊 Séries encontradas:', dataSource.length);
         
         // Construir faixa dos últimos 7 dias e preencher faltantes com 0
         const dateKey = (d) => d.toISOString().slice(0,10);
@@ -474,7 +491,7 @@ async function renderWeeklyVolumeCharts() {
         });
         
         const map = {};
-        series.forEach(i => { 
+        dataSource.forEach(i => { 
             const date = i.production_date || i.date || i.record_date;
             const volume = Number(i.daily_volume || i.total_volume || i.volume || 0);
             if (date) {
@@ -482,6 +499,7 @@ async function renderWeeklyVolumeCharts() {
             }
         });
         
+        // Filtrar apenas os últimos 7 dias
         const labels7 = last7Dates;
         const data7 = labels7.map(d => map[d] ?? 0);
         
@@ -509,6 +527,163 @@ async function renderWeeklyVolumeCharts() {
         const data7 = [0];
         createOrUpdateLineChart('volumeChart', labels7, data7, '#3B82F6');
         createOrUpdateLineChart('dashboardWeeklyChart', labels7, data7, '#6366F1');
+    }
+}
+
+async function renderQualityWeeklyChart() {
+    try {
+        console.log('📊 Carregando dados de qualidade dos últimos 7 dias...');
+        const res = await fetch('./api/quality.php?action=get_dashboard_data');
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const json = await res.json();
+        console.log('📊 Dados de qualidade recebidos:', json);
+        
+        if (!json.success || !json.data) {
+            throw new Error('Dados não disponíveis');
+        }
+        
+        const trendChart = Array.isArray(json.data.trend_chart) ? json.data.trend_chart : [];
+        
+        // Construir faixa dos últimos 7 dias
+        const dateKey = (d) => d.toISOString().slice(0,10);
+        const today = new Date();
+        const last7Dates = Array.from({length: 7}, (_, idx) => {
+            const d = new Date(today);
+            d.setDate(today.getDate() - (6 - idx));
+            return dateKey(d);
+        });
+        
+        // Criar mapas para cada métrica
+        const fatMap = {};
+        const proteinMap = {};
+        const ccsMap = {};
+        
+        trendChart.forEach(item => {
+            const date = item.date || item.test_date;
+            if (date) {
+                fatMap[date] = Number(item.fat || item.fat_content || 0);
+                proteinMap[date] = Number(item.protein || item.protein_content || 0);
+                ccsMap[date] = Number(item.ccs || item.somatic_cells || 0);
+            }
+        });
+        
+        const labels7 = last7Dates;
+        const fatData = labels7.map(d => fatMap[d] ?? 0);
+        const proteinData = labels7.map(d => proteinMap[d] ?? 0);
+        const ccsData = labels7.map(d => ccsMap[d] ?? 0);
+        
+        console.log('📊 Labels:', labels7);
+        console.log('📊 Gordura:', fatData);
+        console.log('📊 Proteína:', proteinData);
+        console.log('📊 CCS:', ccsData);
+        
+        // Criar gráfico com múltiplas séries
+        const ctx = document.getElementById('qualityWeeklyChart');
+        if (!ctx) {
+            console.error('❌ Canvas qualityWeeklyChart não encontrado');
+            return;
+        }
+        
+        // Destruir gráfico anterior se existir
+        if (window.qualityWeeklyChartInstance) {
+            window.qualityWeeklyChartInstance.destroy();
+        }
+        
+        window.qualityWeeklyChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels7,
+                datasets: [
+                    {
+                        label: 'Gordura (%)',
+                        data: fatData,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Proteína (%)',
+                        data: proteinData,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'CCS (mil)',
+                        data: ccsData.map(v => v / 1000), // Converter para milhares
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Gordura / Proteína (%)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'CCS (mil)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('✅ Gráfico de qualidade renderizado com sucesso');
+    } catch (e) {
+        console.error('❌ Erro ao renderizar gráfico de qualidade:', e);
+        // Criar gráfico vazio em caso de erro
+        const ctx = document.getElementById('qualityWeeklyChart');
+        if (ctx) {
+            if (window.qualityWeeklyChartInstance) {
+                window.qualityWeeklyChartInstance.destroy();
+            }
+            window.qualityWeeklyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sem dados'],
+                    datasets: [{
+                        label: 'Gordura (%)',
+                        data: [0],
+                        borderColor: '#10B981'
+                    }]
+                }
+            });
+        }
     }
 }
 
@@ -606,7 +781,15 @@ async function loadVolumeRecordsTable() {
     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Carregando registros...</td></tr>';
     
     try {
-        const res = await fetch('./api/volume.php?action=get_all');
+        // Adicionar timestamp para evitar cache
+        const timestamp = new Date().getTime();
+        const res = await fetch(`./api/volume.php?action=get_all&_t=${timestamp}`, {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            }
+        });
         
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
@@ -614,24 +797,55 @@ async function loadVolumeRecordsTable() {
         
         const json = await res.json();
         
-        // Verificar se há erro na resposta
-        if (!json.success) {
+        console.log('📦 Resposta da API volume get_all:', json);
+        
+        // Verificar se há erro na resposta (mas não bloquear se success for false mas data existir)
+        if (json.error && !json.data) {
             throw new Error(json.error || 'Erro ao buscar registros');
         }
         
         // O método query() retorna um array diretamente, mas a API pode retornar em json.data
         const rows = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         
+        console.log('📊 Registros processados:', rows.length, rows);
+        
         if (rows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum registro encontrado</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum registro encontrado</td></tr>';
             return;
         }
         
-        // Formatar data para exibição
+        // Função para formatar data corretamente (evitar problemas de timezone)
         const formatDate = (dateStr) => {
             if (!dateStr) return '-';
+            // Se a data está no formato YYYY-MM-DD, parsear como data local
+            if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const date = new Date(year, month - 1, day);
+                return date.toLocaleDateString('pt-BR', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                });
+            }
+            // Para outros formatos, usar o método padrão
             const date = new Date(dateStr);
-            return date.toLocaleDateString('pt-BR');
+            if (isNaN(date.getTime())) return '-';
+            return date.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+        };
+        
+        // Função para formatar apenas horário
+        const formatTime = (dateTimeStr) => {
+            if (!dateTimeStr) return '-';
+            const date = new Date(dateTimeStr);
+            if (isNaN(date.getTime())) return '-';
+            return date.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         };
         
         // Formatar período (shift)
@@ -644,49 +858,86 @@ async function loadVolumeRecordsTable() {
             return shifts[shift] || shift || '-';
         };
         
-        tbody.innerHTML = rows.map(r => {
+        const htmlRows = rows.map((r, index) => {
+            // Validar que o ID existe - tentar diferentes formatos
+            const recordId = r.id || r.ID || r.Id || 0;
+            
+            // Log para debug
+            if (!recordId || recordId <= 0) {
+                console.warn('⚠️ Registro sem ID válido (índice ' + index + '):', r);
+            } else {
+                console.log('✅ Registro com ID válido:', recordId, r);
+            }
+            
+            // Usar apenas o ID real do banco, não usar fallback de índice
+            const finalId = recordId && recordId > 0 ? recordId : null;
+            
             const formattedDate = formatDate(r.record_date);
+            const formattedTime = formatTime(r.created_at);
             const formattedShift = formatShift(r.shift);
             const formattedVolume = (Number(r.total_volume)||0).toFixed(2);
             const animalsCount = r.total_animals || 0;
             const animalsText = animalsCount == 1 ? 'animal' : 'animais';
             
+            // Indicar se é registro individual por vaca
+            const isIndividual = r.record_type === 'individual' || r.animal_id;
+            const animalInfo = isIndividual && r.animal_name ? 
+                `<span class="text-xs text-gray-500 block">Vaca: ${r.animal_name}</span>` : '';
+            
             return `
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 <td class="py-3 px-4">${formattedDate}</td>
+                <td class="py-3 px-4 text-gray-600">${formattedTime}</td>
                 <td class="py-3 px-4 capitalize">${formattedShift}</td>
                 <td class="py-3 px-4 font-semibold text-blue-600">${formattedVolume} L</td>
-                <td class="py-3 px-4 text-gray-600">${animalsCount} ${animalsText}</td>
+                <td class="py-3 px-4 text-gray-600">
+                    ${animalsCount} ${animalsText}
+                    ${animalInfo}
+                </td>
                 <td class="py-3 px-4">
                     <div class="flex items-center justify-end gap-3">
-                        <button onclick="viewVolumeDetails(${r.id})" 
+                        ${finalId ? `
+                        <button onclick="viewVolumeDetails(${finalId})" 
                             class="text-blue-600 hover:text-blue-800 hover:underline font-medium text-sm px-2 py-1 rounded transition-colors" 
-                            data-id="${r.id}"
+                            data-id="${finalId}"
+                            data-record-date="${r.record_date}"
+                            data-record-shift="${r.shift}"
                             title="Ver detalhes">
                             Detalhes
                         </button>
-                        <button onclick="confirmDeleteVolumeRecord(${r.id})" 
+                        <button onclick="confirmDeleteVolumeRecord(${finalId})" 
                             class="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1" 
                             title="Excluir registro"
                             data-date="${formattedDate}"
                             data-shift="${formattedShift}"
-                            data-volume="${formattedVolume}">
+                            data-volume="${formattedVolume}"
+                            data-record-type="${r.record_type || 'general'}"
+                            data-animal-name="${r.animal_name || ''}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                             Excluir
                         </button>
+                        ` : '<span class="text-xs text-gray-400">Sem ID válido</span>'}
                     </div>
                 </td>
             </tr>
         `;
         }).join('');
         
-        console.log(`✅ ${rows.length} registros de volume carregados`);
+        if (htmlRows === '' || !htmlRows.trim()) {
+            console.error('❌ Nenhum registro HTML gerado. Dados recebidos:', rows);
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro: Nenhum registro válido encontrado</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = htmlRows;
+        
+        console.log(`✅ ${rows.length} registros de volume carregados e exibidos`);
     } catch (e) {
         console.error('Erro ao carregar registros de volume:', e);
         if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro ao carregar registros: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
         }
     }
 }
@@ -694,15 +945,34 @@ async function loadVolumeRecordsTable() {
 // Função para visualizar detalhes de um registro
 async function viewVolumeDetails(id) {
     try {
-        const response = await fetch(`./api/volume.php?action=get_by_id&id=${id}`);
+        console.log('🔍 Buscando detalhes do registro ID:', id);
+        
+        // Validar e converter ID
+        const recordId = parseInt(id, 10);
+        if (!recordId || isNaN(recordId) || recordId <= 0) {
+            console.error('❌ ID inválido recebido:', id, typeof id);
+            showErrorModal('ID do registro inválido');
+            return;
+        }
+        
+        console.log('📡 Fazendo requisição para:', `./api/volume.php?action=get_by_id&id=${recordId}`);
+        const response = await fetch(`./api/volume.php?action=get_by_id&id=${recordId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const result = await response.json();
+        console.log('📦 Resposta da API get_by_id:', result);
         
         if (!result.success || !result.data) {
-            showErrorModal('Erro ao carregar detalhes do registro');
+            console.error('❌ Erro na resposta da API:', result);
+            showErrorModal(result.error || 'Erro ao carregar detalhes do registro');
             return;
         }
         
         const record = result.data;
+        console.log('✅ Registro encontrado:', record);
         
         // Formatar período
         const formatShift = (shift) => {
@@ -714,14 +984,40 @@ async function viewVolumeDetails(id) {
             return shifts[shift] || shift || '-';
         };
         
-        // Formatar data
+        // Função para formatar data corretamente (evitar problemas de timezone)
         const formatDate = (dateStr) => {
             if (!dateStr) return '-';
+            // Se a data está no formato YYYY-MM-DD, parsear como data local
+            if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const date = new Date(year, month - 1, day);
+                return date.toLocaleDateString('pt-BR', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                });
+            }
+            // Para outros formatos, usar o método padrão
             const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '-';
             return date.toLocaleDateString('pt-BR', { 
                 day: '2-digit', 
                 month: '2-digit', 
                 year: 'numeric' 
+            });
+        };
+        
+        // Função para formatar data e horário
+        const formatDateTime = (dateTimeStr) => {
+            if (!dateTimeStr) return '-';
+            const date = new Date(dateTimeStr);
+            if (isNaN(date.getTime())) return '-';
+            return date.toLocaleString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
         };
         
@@ -752,7 +1048,7 @@ async function viewVolumeDetails(id) {
                                 </svg>
                                 Informações Principais
                             </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-600 mb-1">Data da Coleta</label>
                                     <p class="text-base font-medium text-slate-900">${formatDate(record.date)}</p>
@@ -761,8 +1057,71 @@ async function viewVolumeDetails(id) {
                                     <label class="block text-sm font-semibold text-slate-600 mb-1">Período</label>
                                     <p class="text-base font-medium text-slate-900">${formatShift(record.shift)}</p>
                                 </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Horário de Registro</label>
+                                    <p class="text-base font-medium text-slate-900">${formatDateTime(record.created_at)}</p>
+                                </div>
                             </div>
                         </div>
+                        
+                        ${record.record_type === 'individual' && record.animal_id ? `
+                        <!-- Informações do Animal (Registro Individual) -->
+                        <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                                Informações do Animal
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${record.animal_name ? `
+                                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Nome</label>
+                                    <p class="text-lg font-bold text-indigo-600">${record.animal_name}</p>
+                                </div>
+                                ` : ''}
+                                ${record.animal_number ? `
+                                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Número/Identificação</label>
+                                    <p class="text-lg font-bold text-indigo-600">${record.animal_number}</p>
+                                </div>
+                                ` : ''}
+                                ${record.animal_breed ? `
+                                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Raça</label>
+                                    <p class="text-base font-medium text-slate-900">${record.animal_breed}</p>
+                                </div>
+                                ` : ''}
+                                ${record.animal_status ? `
+                                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Status</label>
+                                    <p class="text-base font-medium text-slate-900">${record.animal_status}</p>
+                                </div>
+                                ` : ''}
+                                ${record.animal_gender ? `
+                                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Gênero</label>
+                                    <p class="text-base font-medium text-slate-900">${record.animal_gender === 'Fêmea' ? 'Fêmea' : record.animal_gender === 'Macho' ? 'Macho' : record.animal_gender}</p>
+                                </div>
+                                ` : ''}
+                                ${record.animal_birth_date ? `
+                                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Data de Nascimento</label>
+                                    <p class="text-base font-medium text-slate-900">${formatDate(record.animal_birth_date)}</p>
+                                </div>
+                                ` : ''}
+                                ${record.animal_age_days !== null && record.animal_age_days !== undefined ? `
+                                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Idade</label>
+                                    <p class="text-base font-medium text-slate-900">
+                                        ${Math.floor(record.animal_age_days / 365)} ano(s) e ${Math.floor((record.animal_age_days % 365) / 30)} mês(es)
+                                        <span class="text-xs text-slate-500 block mt-1">(${record.animal_age_days} dias)</span>
+                                    </p>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
                         
                         <!-- Volume e Estatísticas -->
                         <div class="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-5">
@@ -772,19 +1131,27 @@ async function viewVolumeDetails(id) {
                                 </svg>
                                 Volume e Estatísticas
                             </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 ${record.record_type === 'individual' ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-4">
                                 <div class="bg-white rounded-lg p-4 border border-blue-200">
-                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Volume Total</label>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">${record.record_type === 'individual' ? 'Volume Produzido' : 'Volume Total'}</label>
                                     <p class="text-2xl font-bold text-blue-600">${(record.total_volume || 0).toFixed(2)} L</p>
                                 </div>
+                                ${record.record_type === 'general' ? `
                                 <div class="bg-white rounded-lg p-4 border border-blue-200">
                                     <label class="block text-sm font-semibold text-slate-600 mb-1">Total de Animais</label>
                                     <p class="text-2xl font-bold text-blue-600">${record.total_animals || 0}</p>
                                 </div>
+                                ` : ''}
                                 <div class="bg-white rounded-lg p-4 border border-blue-200">
-                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Média por Animal</label>
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">${record.record_type === 'individual' ? 'Volume Individual' : 'Média por Animal'}</label>
                                     <p class="text-2xl font-bold text-blue-600">${(record.average_per_animal || 0).toFixed(2)} L</p>
                                 </div>
+                                ${record.record_type === 'individual' && record.temperature ? `
+                                <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                    <label class="block text-sm font-semibold text-slate-600 mb-1">Temperatura</label>
+                                    <p class="text-2xl font-bold text-orange-600">${record.temperature.toFixed(1)} °C</p>
+                                </div>
+                                ` : ''}
                             </div>
                         </div>
                         
@@ -844,6 +1211,10 @@ function confirmDeleteVolumeRecord(id) {
     const date = button?.getAttribute('data-date') || '-';
     const shift = button?.getAttribute('data-shift') || '-';
     const volume = button?.getAttribute('data-volume') || '-';
+    const recordType = button?.getAttribute('data-record-type') || 'general';
+    const animalName = button?.getAttribute('data-animal-name') || '';
+    const isIndividual = recordType === 'individual';
+    
     // Criar modal de confirmação
     const modalHtml = `
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeDeleteVolumeModal()">
@@ -874,6 +1245,7 @@ function confirmDeleteVolumeRecord(id) {
                     <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                         <p class="text-sm font-semibold text-red-800 mb-2">Registro a ser excluído:</p>
                         <ul class="text-sm text-red-700 space-y-1">
+                            ${isIndividual && animalName ? `<li><strong>Vaca:</strong> ${animalName}</li>` : ''}
                             <li><strong>Data:</strong> ${date}</li>
                             <li><strong>Período:</strong> ${shift}</li>
                             <li><strong>Volume:</strong> ${volume} L</li>
@@ -2072,11 +2444,10 @@ function showSalesOverlay() {
         // Resetar formulário e mensagens
         if (form) {
             form.reset();
-            // Definir data padrão como hoje
+            // Definir data padrão como hoje (usando timezone local)
             const dateInput = form.querySelector('input[name="sale_date"]');
             if (dateInput && !dateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.value = today;
+                dateInput.value = getLocalDateString();
             }
         }
         if (messageDiv) {
@@ -2130,11 +2501,10 @@ function showQualityOverlay() {
         // Resetar formulário e mensagens
         if (form) {
             form.reset();
-            // Definir data padrão como hoje
+            // Definir data padrão como hoje (usando timezone local)
             const dateInput = form.querySelector('input[name="test_date"]');
             if (dateInput && !dateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.value = today;
+                dateInput.value = getLocalDateString();
             }
         }
         if (messageDiv) {
@@ -2232,7 +2602,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!result.offline) {
                         setTimeout(() => {
                             if (window.closeGeneralVolumeOverlay) window.closeGeneralVolumeOverlay();
-                            loadVolumeData();
+                            
+                            // Recarregar dados de volume
+                            if (typeof loadVolumeData === 'function') {
+                                loadVolumeData();
+                            }
+                            
+                            // Recarregar tabela de registros diretamente após um delay
+                            setTimeout(() => {
+                                if (typeof loadVolumeRecordsTable === 'function') {
+                                    loadVolumeRecordsTable();
+                                }
+                            }, 800);
                         }, 1500);
                     } else {
                         setTimeout(() => {
@@ -2535,14 +2916,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             formData.append('action', 'create_user');
             try {
-                const resp = await fetch('./api/actions.php', { method: 'POST', body: formData });
-                const result = await resp.json();
+                const result = await offlineFetch('./api/actions.php', formData, 'create_user');
                 if (result.success) {
-                    // Mostrar mensagem de sucesso
+                    // Mostrar mensagem de sucesso ou offline
                     if (messageDiv) {
-                        messageDiv.className = 'p-4 rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Usuário criado com sucesso!';
+                        if (result.offline) {
+                            messageDiv.className = 'p-4 rounded-xl border-2 border-yellow-200 bg-yellow-50 text-yellow-800 flex items-center gap-2';
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> ' + (result.message || 'Usuário salvo offline. Será sincronizado quando a conexão for restaurada.');
+                        } else {
+                            messageDiv.className = 'p-4 rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-800 flex items-center gap-2';
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Usuário criado com sucesso!';
+                        }
                         messageDiv.classList.remove('hidden');
+                    }
+                    
+                    // Se estiver offline, não fechar modal nem recarregar dados
+                    if (result.offline) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                        return;
                     }
 
                     // Resetar formulário
@@ -2587,11 +2979,10 @@ function showGeneralVolumeOverlay() {
         // Resetar formulário e mensagens
         if (form) {
             form.reset();
-            // Definir data padrão como hoje
+            // Definir data padrão como hoje (usando timezone local)
             const dateInput = form.querySelector('input[name="collection_date"]');
             if (dateInput && !dateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.value = today;
+                dateInput.value = getLocalDateString();
             }
         }
         if (messageDiv) {
@@ -2659,11 +3050,10 @@ function showVolumeOverlay() {
         // Resetar formulário e mensagens
         if (form) {
             form.reset();
-            // Definir data padrão como hoje
+            // Definir data padrão como hoje (usando timezone local)
             const dateInput = form.querySelector('input[name="collection_date"]');
             if (dateInput && !dateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.value = today;
+                dateInput.value = getLocalDateString();
             }
         }
         if (messageDiv) {
@@ -2678,6 +3068,417 @@ function showVolumeOverlay() {
 }
 window.showGeneralVolumeOverlay = showGeneralVolumeOverlay;
 window.showVolumeOverlay = showVolumeOverlay;
+
+// Variável global para armazenar a chave de backup
+let volumeBackupKey = null;
+
+// Função para mostrar modal de exclusão de todos os registros
+function showDeleteAllVolumeModal() {
+    const modal = document.getElementById('deleteAllVolumeModal');
+    if (!modal) return;
+    
+    // Resetar flag de exclusão
+    isDeletingVolume = false;
+    
+    // Resetar botão de confirmação
+    const confirmBtn = modal.querySelector('button[onclick*="confirmDeleteAllVolume"]');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Sim, Excluir Todos
+        `;
+    }
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Carregar quantidade de registros
+    loadVolumeRecordsCount();
+}
+
+// Função para fechar modal de exclusão
+function closeDeleteAllVolumeModal() {
+    const modal = document.getElementById('deleteAllVolumeModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Carregar quantidade de registros de volume
+async function loadVolumeRecordsCount() {
+    const countElement = document.getElementById('volumeRecordsCount');
+    if (!countElement) return;
+    
+    try {
+        const response = await fetch('./api/volume.php?action=get_stats');
+        const data = await response.json();
+        
+        if (data && data.total_records !== undefined) {
+            countElement.textContent = `Total de registros: ${data.total_records}`;
+        } else {
+            // Tentar contar através da tabela
+            const response2 = await fetch('./api/volume.php?action=get_all');
+            const records = await response2.json();
+            if (Array.isArray(records)) {
+                countElement.textContent = `Total de registros: ${records.length}`;
+            } else {
+                countElement.textContent = 'Não foi possível carregar a quantidade';
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar quantidade de registros:', error);
+        countElement.textContent = 'Erro ao carregar quantidade';
+    }
+}
+
+// Variável para controlar se já está processando exclusão
+let isDeletingVolume = false;
+
+// Confirmar exclusão de todos os registros
+async function confirmDeleteAllVolume(event) {
+    // Prevenir múltiplas execuções
+    if (isDeletingVolume) {
+        return;
+    }
+    
+    // Prevenir comportamento padrão se for evento
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    const modal = document.getElementById('deleteAllVolumeModal');
+    if (!modal) return;
+    
+    // Encontrar o botão de confirmação no modal
+    const confirmBtn = modal.querySelector('button[onclick*="confirmDeleteAllVolume"]') || event?.target?.closest('button');
+    if (!confirmBtn) return;
+    
+    // Verificar se já está desabilitado
+    if (confirmBtn.disabled) {
+        return;
+    }
+    
+    isDeletingVolume = true;
+    const originalText = confirmBtn.innerHTML;
+    
+    // Desabilitar botão e mostrar loading
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Excluindo...';
+    
+    try {
+        const formData = new FormData();
+        formData.append('action', 'delete_all_volume_records');
+        
+        // Verificar se está offline antes de fazer requisição
+        const forceOffline = localStorage.getItem('lactech_force_offline') === 'true';
+        if (forceOffline || !navigator.onLine) {
+            alert('Esta ação não pode ser executada no modo offline. Por favor, desative o modo offline primeiro.');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+            return;
+        }
+        
+        const response = await fetch('./api/actions.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Salvar chave de backup para poder desfazer
+            volumeBackupKey = result.backup_key;
+            
+            // Fechar modal
+            closeDeleteAllVolumeModal();
+            
+            // Mostrar notificação de sucesso com botão de desfazer
+            showVolumeDeleteNotification(result.message, result.total_deleted, volumeBackupKey);
+            
+            // Recarregar dados de volume
+            if (typeof loadVolumeData === 'function') {
+                loadVolumeData();
+            }
+            
+            // Atualizar dashboard
+            if (typeof loadDashboardData === 'function') {
+                loadDashboardData();
+            }
+        } else {
+            // Mostrar erro
+            alert('Erro ao excluir registros: ' + (result.error || 'Erro desconhecido'));
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Erro ao excluir todos os registros:', error);
+        alert('Erro ao excluir registros: ' + error.message);
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+    } finally {
+        // Resetar flag após um pequeno delay para garantir que tudo terminou
+        setTimeout(() => {
+            isDeletingVolume = false;
+        }, 1000);
+    }
+}
+
+// Variável para armazenar o timer de auto-fechamento
+let volumeDeleteNotificationTimer = null;
+let volumeDeleteNotificationCountdown = 0;
+
+// Mostrar notificação de exclusão com botão de desfazer
+function showVolumeDeleteNotification(message, totalDeleted, backupKey) {
+    // Remover notificação anterior se existir
+    const existingNotification = document.getElementById('volumeDeleteNotification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Limpar timer anterior se existir
+    if (volumeDeleteNotificationTimer) {
+        clearInterval(volumeDeleteNotificationTimer);
+        volumeDeleteNotificationTimer = null;
+    }
+    
+    // Resetar contador
+    volumeDeleteNotificationCountdown = 5;
+    
+    // Criar elemento de notificação
+    const notification = document.createElement('div');
+    notification.id = 'volumeDeleteNotification';
+    notification.className = 'fixed top-4 right-4 z-50 bg-white rounded-xl shadow-2xl border-2 border-green-200 p-4 max-w-md animate-slideDown';
+    notification.innerHTML = `
+        <div class="flex items-start gap-3">
+            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center justify-between mb-1">
+                    <h4 class="font-bold text-gray-900">Registros Excluídos</h4>
+                    <span id="volumeDeleteCountdown" class="text-sm font-semibold text-green-600">5s</span>
+                </div>
+                <p class="text-sm text-gray-700 mb-2">${message}</p>
+                <div class="mb-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div id="volumeDeleteProgressBar" class="bg-green-600 h-2 rounded-full transition-all duration-1000" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="restoreVolumeRecords('${backupKey}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                        </svg>
+                        Desfazer
+                    </button>
+                    <button onclick="closeVolumeDeleteNotification()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all font-semibold text-sm">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+            <button onclick="closeVolumeDeleteNotification()" class="text-gray-400 hover:text-gray-600 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Iniciar contador regressivo
+    const countdownElement = document.getElementById('volumeDeleteCountdown');
+    const progressBar = document.getElementById('volumeDeleteProgressBar');
+    
+    volumeDeleteNotificationTimer = setInterval(() => {
+        volumeDeleteNotificationCountdown--;
+        
+        if (countdownElement) {
+            countdownElement.textContent = `${volumeDeleteNotificationCountdown}s`;
+        }
+        
+        if (progressBar) {
+            const percentage = (volumeDeleteNotificationCountdown / 5) * 100;
+            progressBar.style.width = percentage + '%';
+        }
+        
+        if (volumeDeleteNotificationCountdown <= 0) {
+            clearInterval(volumeDeleteNotificationTimer);
+            volumeDeleteNotificationTimer = null;
+            closeVolumeDeleteNotification();
+        }
+    }, 1000);
+}
+
+// Fechar notificação de exclusão
+function closeVolumeDeleteNotification() {
+    // Limpar timer
+    if (volumeDeleteNotificationTimer) {
+        clearInterval(volumeDeleteNotificationTimer);
+        volumeDeleteNotificationTimer = null;
+    }
+    
+    const notification = document.getElementById('volumeDeleteNotification');
+    if (notification) {
+        notification.remove();
+    }
+    
+    // Limpar chave de backup quando fechar notificação
+    volumeBackupKey = null;
+    volumeDeleteNotificationCountdown = 0;
+}
+
+// Restaurar registros de volume
+async function restoreVolumeRecords(backupKey) {
+    if (!backupKey) {
+        alert('Chave de backup não encontrada');
+        return;
+    }
+    
+    const restoreBtn = event.target.closest('button');
+    if (!restoreBtn) return;
+    
+    const originalText = restoreBtn.innerHTML;
+    
+    // Desabilitar botão e mostrar loading
+    restoreBtn.disabled = true;
+    restoreBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Restaurando...';
+    
+    try {
+        const formData = new FormData();
+        formData.append('action', 'restore_volume_records');
+        formData.append('backup_key', backupKey);
+        
+        // Verificar se está offline antes de fazer requisição
+        const forceOffline = localStorage.getItem('lactech_force_offline') === 'true';
+        if (forceOffline || !navigator.onLine) {
+            alert('Esta ação não pode ser executada no modo offline. Por favor, desative o modo offline primeiro.');
+            restoreBtn.disabled = false;
+            restoreBtn.innerHTML = originalText;
+            return;
+        }
+        
+        const response = await fetch('./api/actions.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Fechar notificação
+            closeVolumeDeleteNotification();
+            
+            // Limpar chave de backup
+            volumeBackupKey = null;
+            
+            // Mostrar modal de sucesso
+            showRestoreVolumeSuccessModal(result.message, result.total_restored);
+            
+            // Recarregar dados de volume
+            if (typeof loadVolumeData === 'function') {
+                loadVolumeData();
+            }
+            
+            // Atualizar dashboard
+            if (typeof loadDashboardData === 'function') {
+                loadDashboardData();
+            }
+        } else {
+            // Mostrar modal de erro
+            showRestoreVolumeErrorModal(result.error || 'Erro desconhecido');
+            restoreBtn.disabled = false;
+            restoreBtn.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Erro ao restaurar registros:', error);
+        // Mostrar modal de erro
+        showRestoreVolumeErrorModal(error.message || 'Erro ao restaurar registros');
+        restoreBtn.disabled = false;
+        restoreBtn.innerHTML = originalText;
+    }
+}
+
+// Mostrar modal de sucesso após restauração
+function showRestoreVolumeSuccessModal(message, totalRestored) {
+    const modal = document.getElementById('restoreVolumeSuccessModal');
+    if (!modal) return;
+    
+    // Atualizar mensagem
+    const messageElement = document.getElementById('restoreSuccessMessage');
+    if (messageElement) {
+        messageElement.textContent = message || 'Todos os registros de volume foram restaurados com sucesso.';
+    }
+    
+    // Atualizar contagem
+    const countElement = document.getElementById('restoreSuccessCount');
+    if (countElement && totalRestored) {
+        countElement.textContent = `${totalRestored} registro(s) restaurado(s) com sucesso.`;
+    } else if (countElement) {
+        countElement.textContent = 'Registros restaurados com sucesso.';
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Auto-fechar após 5 segundos
+    setTimeout(() => {
+        closeRestoreVolumeSuccessModal();
+    }, 5000);
+}
+
+// Fechar modal de sucesso de restauração
+function closeRestoreVolumeSuccessModal() {
+    const modal = document.getElementById('restoreVolumeSuccessModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Mostrar modal de erro de restauração
+function showRestoreVolumeErrorModal(errorMessage) {
+    const modal = document.getElementById('restoreVolumeErrorModal');
+    if (!modal) return;
+    
+    // Atualizar mensagem de erro
+    const messageElement = document.getElementById('restoreErrorMessage');
+    if (messageElement) {
+        messageElement.textContent = errorMessage || 'Ocorreu um erro ao tentar restaurar os registros.';
+    }
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+// Fechar modal de erro de restauração
+function closeRestoreVolumeErrorModal() {
+    const modal = document.getElementById('restoreVolumeErrorModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Tornar funções globais
+window.showDeleteAllVolumeModal = showDeleteAllVolumeModal;
+window.closeDeleteAllVolumeModal = closeDeleteAllVolumeModal;
+window.confirmDeleteAllVolume = confirmDeleteAllVolume;
+window.restoreVolumeRecords = restoreVolumeRecords;
+window.closeVolumeDeleteNotification = closeVolumeDeleteNotification;
+window.showRestoreVolumeSuccessModal = showRestoreVolumeSuccessModal;
+window.closeRestoreVolumeSuccessModal = closeRestoreVolumeSuccessModal;
+window.showRestoreVolumeErrorModal = showRestoreVolumeErrorModal;
+window.closeRestoreVolumeErrorModal = closeRestoreVolumeErrorModal;
 
 // Helpers para fechar modais (garantir que os onClick funcionem)
 function closeGeneralVolumeOverlay() {
@@ -2801,7 +3602,7 @@ window.openAddAnimalModal = function() {
         const dateInput = form.querySelector('input[type="date"][name="birth_date"]');
         if (dateInput) {
             dateInput.value = '';
-            dateInput.max = new Date().toISOString().split('T')[0];
+            dateInput.max = getLocalDateString();
         }
         
         // Limpar mensagem de erro/sucesso
@@ -8284,10 +9085,10 @@ window.openHeiferDailyConsumptionForm = function() {
         const form = document.getElementById('heiferConsumptionForm');
         if (form) {
             form.reset();
-            // Resetar data para hoje
+            // Resetar data para hoje (usando timezone local)
             const dateInput = form.querySelector('input[type="date"][name="consumption_date"]');
             if (dateInput) {
-                dateInput.value = new Date().toISOString().split('T')[0];
+                dateInput.value = getLocalDateString();
             }
         }
     }

@@ -259,15 +259,30 @@ class OfflineManager {
         // Parar timer de notificações offline
         this.stopOfflineNotificationTimer();
         
-        // Se não estiver forçado offline, tentar sincronizar
-        if (!this.forceOffline) {
-            this.updateUI();
-            this.sync();
-        } else {
-            // Mesmo online, se estiver forçado offline, manter modo offline e iniciar timer
-            this.updateUI();
-            this.startOfflineNotificationTimer();
-        }
+        // Aguardar um pouco para garantir que a conexão está estável
+        setTimeout(() => {
+            // Verificar novamente se ainda está online
+            if (!navigator.onLine) {
+                this.isOnline = false;
+                this.updateUI();
+                return;
+            }
+            
+            // Se não estiver forçado offline, tentar sincronizar
+            if (!this.forceOffline) {
+                this.updateUI();
+                // Aguardar mais um pouco antes de sincronizar para garantir estabilidade
+                setTimeout(() => {
+                    if (this.queue.length > 0 && navigator.onLine && !this.forceOffline) {
+                        this.sync();
+                    }
+                }, 2000);
+            } else {
+                // Mesmo online, se estiver forçado offline, manter modo offline e iniciar timer
+                this.updateUI();
+                this.startOfflineNotificationTimer();
+            }
+        }, 1000);
     }
     
     handleOffline() {
@@ -302,9 +317,9 @@ class OfflineManager {
         
         const record = {
             id: this.generateId(),
-            type: type, // 'volume_general', 'volume_animal', 'quality', 'financial'
+            type: type, // 'volume_general', 'volume_animal', 'quality', 'financial', 'delete_all_volume', 'restore_volume', 'create_user'
             data: dataObj,
-            endpoint: endpoint,
+            endpoint: endpoint || './api/actions.php',
             timestamp: new Date().toISOString(),
             retries: 0,
             hasFiles: hasFiles
@@ -318,7 +333,7 @@ class OfflineManager {
         }
         
         // Se estiver online, tentar sincronizar imediatamente
-        if (this.isOnline) {
+        if (this.isOnline && !this.forceOffline) {
             await this.sync();
         }
         
@@ -337,6 +352,7 @@ class OfflineManager {
         
         const recordsToSync = [...this.queue];
         const failedRecords = [];
+        let successCount = 0;
         
         for (const record of recordsToSync) {
             try {
@@ -352,16 +368,36 @@ class OfflineManager {
                 
                 // Adicionar action se não estiver presente
                 if (!record.data.action) {
-                    formData.append('action', record.type === 'volume_general' ? 'add_volume_general' : 
-                                                   record.type === 'volume_animal' ? 'add_volume_by_animal' :
-                                                   record.type === 'quality' ? 'add_quality_test' :
-                                                   record.type === 'financial' ? 'add_financial_record' : record.type);
+                    const actionMap = {
+                        'volume_general': 'add_volume_general',
+                        'volume_animal': 'add_volume_by_animal',
+                        'quality': 'add_quality_test',
+                        'financial': 'add_financial_record',
+                        'delete_all_volume': 'delete_all_volume_records',
+                        'restore_volume': 'restore_volume_records',
+                        'create_user': 'create_user',
+                        'update_user': 'update_user',
+                        'delete_user': 'delete_user'
+                    };
+                    formData.append('action', actionMap[record.type] || record.type);
                 }
+                
+                // Verificar se ainda está online antes de tentar sincronizar
+                if (!navigator.onLine) {
+                    throw new Error('Sem conexão');
+                }
+                
+                // Criar timeout para requisição
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout de 15 segundos
                 
                 const response = await fetch(record.endpoint, {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
@@ -372,6 +408,7 @@ class OfflineManager {
                 if (result.success) {
                     // Remover da fila
                     this.queue = this.queue.filter(r => r.id !== record.id);
+                    successCount++;
                     console.log(`Registro ${record.id} sincronizado com sucesso`);
                 } else {
                     throw new Error(result.error || 'Erro desconhecido');
@@ -388,6 +425,17 @@ class OfflineManager {
                     // Manter na fila para tentar novamente
                     failedRecords.push(record);
                 }
+                
+                // Se perder conexão durante sincronização, parar
+                if (!navigator.onLine) {
+                    console.log('Conexão perdida durante sincronização. Parando...');
+                    this.queue = [...this.queue.filter(r => r.id !== record.id), ...failedRecords];
+                    this.saveQueue();
+                    this.syncInProgress = false;
+                    this.updateUI();
+                    this.showNotification('Conexão perdida. Sincronização será retomada quando a conexão for restaurada.', 'warning');
+                    return;
+                }
             }
         }
         
@@ -396,16 +444,22 @@ class OfflineManager {
         this.syncInProgress = false;
         this.updateUI();
         
-        if (recordsToSync.length - failedRecords.length > 0) {
-            console.log(`${recordsToSync.length - failedRecords.length} registro(s) sincronizado(s) com sucesso`);
-            this.showNotification(`${recordsToSync.length - failedRecords.length} registro(s) sincronizado(s)`, 'success');
+        if (successCount > 0) {
+            console.log(`${successCount} registro(s) sincronizado(s) com sucesso`);
+            this.showNotification(`${successCount} registro(s) sincronizado(s)`, 'success');
+            
+            // Recarregar dados após sincronização bem-sucedida
+            setTimeout(() => {
+                if (typeof loadVolumeData === 'function') loadVolumeData();
+                if (typeof loadQualityData === 'function') loadQualityData();
+                if (typeof loadFinancialData === 'function') loadFinancialData();
+                if (typeof loadUsersData === 'function') loadUsersData();
+                if (typeof loadDashboardData === 'function') loadDashboardData();
+            }, 500);
         }
         
-        // Recarregar dados se houver sincronizações bem-sucedidas
-        if (recordsToSync.length - failedRecords.length > 0) {
-            if (typeof loadVolumeData === 'function') loadVolumeData();
-            if (typeof loadQualityData === 'function') loadQualityData();
-            if (typeof loadFinancialData === 'function') loadFinancialData();
+        if (failedRecords.length > 0) {
+            console.warn(`${failedRecords.length} registro(s) falharam e serão tentados novamente`);
         }
     }
     
@@ -576,9 +630,12 @@ async function offlineFetch(endpoint, formData, type) {
     // Verificar se está em modo offline forçado
     const forceOffline = localStorage.getItem('lactech_force_offline') === 'true';
     
-    if (forceOffline) {
-        // Modo offline forçado - adicionar diretamente à fila
-        console.log('Modo offline forçado - Adicionando à fila...');
+    // Verificar se realmente está offline
+    const isOffline = !navigator.onLine || forceOffline;
+    
+    if (isOffline) {
+        // Modo offline - adicionar diretamente à fila
+        console.log('Modo offline - Adicionando à fila...', type);
         
         // Converter FormData para objeto
         const data = {};
@@ -591,15 +648,22 @@ async function offlineFetch(endpoint, formData, type) {
         return {
             success: true,
             offline: true,
-            message: 'Registro salvo localmente. Será sincronizado quando o modo offline for desativado.'
+            message: 'Registro salvo localmente. Será sincronizado quando a conexão for restaurada.'
         };
     }
     
     try {
+        // Tentar fazer requisição real
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10 segundos
+        
         const response = await fetch(endpoint, {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -607,9 +671,15 @@ async function offlineFetch(endpoint, formData, type) {
         
         return await response.json();
     } catch (error) {
-        // Se falhar e não estiver online, adicionar à fila
-        if (!navigator.onLine || error.message.includes('Failed to fetch')) {
-            console.log('Adicionando à fila offline...');
+        // Se falhar, verificar se é erro de conexão
+        const isConnectionError = !navigator.onLine || 
+                                  error.name === 'AbortError' || 
+                                  error.message.includes('Failed to fetch') ||
+                                  error.message.includes('network') ||
+                                  error.message.includes('timeout');
+        
+        if (isConnectionError) {
+            console.log('Erro de conexão - Adicionando à fila offline...', error);
             
             // Converter FormData para objeto
             const data = {};
@@ -626,7 +696,11 @@ async function offlineFetch(endpoint, formData, type) {
             };
         }
         
+        // Re-throw erros que não são de conexão
         throw error;
     }
 }
+
+// Tornar offlineFetch disponível globalmente
+window.offlineFetch = offlineFetch;
 

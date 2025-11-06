@@ -16,13 +16,61 @@ if (!defined('DB_HOST')) {
         require_once $configMysqlPath;
     }
     
-    // Se ainda não foram definidas, usar valores padrão de produção
+    // Se ainda não foram definidas após carregar config_mysql.php,
+    // significa que as variáveis de ambiente não foram configuradas
     if (!defined('DB_HOST')) {
-        define('DB_HOST', 'localhost');
-        define('DB_NAME', 'u311882628_lactech_lgmato');
-        define('DB_USER', 'u311882628_xandriaAgro');
-        define('DB_PASS', 'Lavosier0012!');
-        define('DB_CHARSET', 'utf8mb4');
+        // Tentar carregar variáveis de ambiente diretamente
+        require_once __DIR__ . '/env_loader.php';
+        
+        // Carregar do .env se disponível
+        $envPath = __DIR__ . '/../.env';
+        if (file_exists($envPath)) {
+            // env_loader já foi carregado acima
+        }
+        
+        // Se ainda não definidas, usar valores do ambiente (sem fallback hardcoded)
+        if (!defined('DB_HOST')) {
+            // Já foi tratado no config_mysql.php, mas se chegou aqui, mostrar erro
+            // (O erro já deve ter sido exibido pelo config_mysql.php, mas garantir)
+            if (headers_sent() === false) {
+                http_response_code(500);
+                header('Content-Type: text/html; charset=utf-8');
+            }
+            echo '<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro de Configuração - LacTech</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .error-container { background: white; border-radius: 8px; padding: 40px; max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #dc2626; margin-top: 0; }
+        .error-code { background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; }
+        .instructions { background: #f0f9ff; border-left: 4px solid #0284c7; padding: 15px; margin: 20px 0; }
+        code { background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        .env-example { background: #1f2937; color: #f9fafb; padding: 15px; border-radius: 5px; margin: 15px 0; overflow-x: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>⚠️ Erro de Configuração</h1>
+        <div class="error-code"><strong>Configuração do banco de dados não encontrada.</strong></div>
+        <div class="instructions">
+            <h2>Como resolver:</h2>
+            <p>Por favor, crie um arquivo .env na raiz do projeto com as credenciais do banco de dados.</p>
+            <ol>
+                <li>Acesse o painel de controle da sua hospedagem (cPanel, FTP, etc.)</li>
+                <li>Navegue até a pasta raiz do projeto (onde está o arquivo index.php)</li>
+                <li>Crie um arquivo chamado .env (com o ponto no início)</li>
+                <li>Adicione o conteúdo conforme instruções na página de erro principal.</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>';
+            exit;
+        }
     }
 }
 

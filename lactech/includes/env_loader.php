@@ -44,10 +44,33 @@ function loadEnvFile($envPath) {
     return true;
 }
 
-// Tentar carregar arquivo .env na raiz do projeto
-$envPath = __DIR__ . '/../.env';
-if (file_exists($envPath)) {
-    loadEnvFile($envPath);
+// Detectar ambiente
+$isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']) ||
+           strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+           strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'xampp') !== false ||
+           strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'htdocs') !== false;
+
+// Carregar arquivos .env na ordem de prioridade:
+// 1. .env (geral)
+// 2. .env.production ou .env.local (específico do ambiente)
+$envPaths = [];
+$basePath = __DIR__ . '/..';
+
+// Sempre tentar carregar .env primeiro
+$envPaths[] = $basePath . '/.env';
+
+// Depois carregar arquivo específico do ambiente
+if ($isLocal) {
+    $envPaths[] = $basePath . '/.env.local';
+} else {
+    $envPaths[] = $basePath . '/.env.production';
+}
+
+// Carregar todos os arquivos encontrados (os últimos sobrescrevem os anteriores)
+foreach ($envPaths as $envPath) {
+    if (file_exists($envPath)) {
+        loadEnvFile($envPath);
+    }
 }
 
 // Função auxiliar para obter variável de ambiente com fallback
@@ -60,5 +83,9 @@ function env($key, $default = null) {
     
     return $value !== null ? $value : $default;
 }
+
+
+
+
 
 

@@ -20,8 +20,8 @@
     <meta name="twitter:title" content="LacTech - Sistema Completo de Gestão para Fazendas Leiteiras">
     <meta name="twitter:description" content="LacTech é o sistema mais completo para gestão de fazendas leiteiras. Controle de rebanho, produção de leite e saúde animal em tempo real.">
     <meta name="twitter:image" content="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
     <meta name="apple-mobile-web-app-title" content="LacTech">
     <meta name="application-name" content="LacTech">
     <!-- Preconnect para recursos externos (melhora velocidade) -->
@@ -1477,11 +1477,17 @@
         <div class="bg-black border-t border-gray-800 py-6">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center space-x-2">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Flag_of_Brazil.svg/960px-Flag_of_Brazil.svg.png" alt="Bandeira do Brasil" class="w-6 h-4 object-contain">
-                        <p class="text-gray-400 text-sm">
-                            © 2025 LacTech. Todos os direitos reservados.
-                        </p>
+                    <div class="flex items-center space-x-4 flex-wrap">
+                        <div class="flex items-center space-x-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Flag_of_Brazil.svg/960px-Flag_of_Brazil.svg.png" alt="Bandeira do Brasil" class="w-6 h-4 object-contain">
+                            <p class="text-gray-400 text-sm">
+                                © 2025 LacTech. Todos os direitos reservados.
+                            </p>
+                        </div>
+                        <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
+                            <img src="./assets/video/cloudflare_icon_130969-removebg-preview.png" alt="Cloudflare" class="w-5 h-5 object-contain">
+                            <span class="text-xs">Protegido por Cloudflare</span>
+                        </a>
                     </div>
                     <div class="flex items-center space-x-4 text-sm">
                         <a href="politica-privacidade.php" class="text-gray-400 hover:text-white transition-colors">Política de Privacidade</a>

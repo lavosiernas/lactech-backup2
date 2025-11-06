@@ -16,16 +16,16 @@
     <meta name="msapplication-config" content="/browserconfig.xml">
     
     <!-- PWA Icons -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="128x128" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="384x384" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./assets/img/lactech-logo.png">
     
     <!-- PWA Manifest -->
     

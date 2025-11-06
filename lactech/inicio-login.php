@@ -53,7 +53,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
     <link rel="dns-prefetch" href="https://nutrimosaic.com.br">
     
     <!-- Favicon -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
     
     <!-- Tailwind CSS otimizado - usar build local se disponível -->
     <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>

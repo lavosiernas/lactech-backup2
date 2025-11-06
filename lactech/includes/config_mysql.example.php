@@ -26,13 +26,26 @@ if ($isLocal) {
     if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'LOCAL');
 } else {
     // AMBIENTE DE PRODUÇÃO (HOSPEDAGEM)
-    // Usar variáveis de ambiente ou valores padrão
-    if (!defined('DB_HOST')) define('DB_HOST', env('DB_HOST_PROD', 'localhost'));
-    if (!defined('DB_NAME')) define('DB_NAME', env('DB_NAME_PROD', 'u311882628_lactech_lgmato'));
-    if (!defined('DB_USER')) define('DB_USER', env('DB_USER_PROD', 'u311882628_xandriaAgro'));
-    if (!defined('DB_PASS')) define('DB_PASS', env('DB_PASS_PROD', ''));
-    if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
-    if (!defined('BASE_URL')) define('BASE_URL', env('BASE_URL_PROD', 'https://lactechsys.com/'));
+    // Usar APENAS variáveis de ambiente - SEM fallback com credenciais hardcoded
+    $dbHost = env('DB_HOST_PROD');
+    $dbName = env('DB_NAME_PROD');
+    $dbUser = env('DB_USER_PROD');
+    $dbPass = env('DB_PASS_PROD');
+    $baseUrl = env('BASE_URL_PROD');
+    
+    // Validar que todas as variáveis necessárias estão definidas
+    if (empty($dbHost) || empty($dbName) || empty($dbUser)) {
+        throw new Exception(
+            'Configuração do banco de dados de produção não encontrada. ' .
+            'Por favor, configure as variáveis de ambiente DB_HOST_PROD, DB_NAME_PROD, DB_USER_PROD e DB_PASS_PROD no arquivo .env'
+        );
+    }
+    
+    if (!defined('DB_HOST')) define('DB_HOST', $dbHost);
+    if (!defined('DB_NAME')) define('DB_NAME', $dbName);
+    if (!defined('DB_USER')) define('DB_USER', $dbUser);
+    if (!defined('DB_PASS')) define('DB_PASS', $dbPass ?: '');
+    if (!defined('BASE_URL')) define('BASE_URL', $baseUrl ?: 'https://seu-dominio.com/');
     if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'PRODUCTION');
 }
 
@@ -47,5 +60,9 @@ if (!function_exists('getBaseUrl')) {
 }
 
 // ... resto do código ...
+
+
+
+
 
 

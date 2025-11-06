@@ -45,7 +45,7 @@ $planValue = $selectedPlan['value'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pagamento - LacPay | LacTech</title>
     <meta name="description" content="Realize o pagamento do seu plano LacTech de forma segura via PIX">
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/png">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

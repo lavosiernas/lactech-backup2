@@ -3,17 +3,15 @@
  * Gerencia cache e funcionalidade offline
  */
 
-const CACHE_NAME = 'lactech-manager-v1';
-const RUNTIME_CACHE = 'lactech-runtime-v1';
+const CACHE_NAME = 'lactech-manager-v2';
+const RUNTIME_CACHE = 'lactech-runtime-v2';
 const OFFLINE_PAGE = '/gerente-completo.php';
 
-// Arquivos estáticos para cache
+// Arquivos estáticos para cache (apenas arquivos locais, sem CDN externo)
 const STATIC_CACHE_FILES = [
     '/gerente-completo.php',
     '/assets/js/gerente-completo.js',
-    '/assets/js/offline-manager.js',
-    '/assets/css/styles.css',
-    'https://cdn.tailwindcss.com'
+    '/assets/js/offline-manager.js'
 ];
 
 // Instalar Service Worker
@@ -23,7 +21,14 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[Service Worker] Armazenando arquivos em cache');
-                return cache.addAll(STATIC_CACHE_FILES);
+                // Adicionar arquivos um por um para evitar falhas
+                return Promise.allSettled(
+                    STATIC_CACHE_FILES.map(url => {
+                        return cache.add(url).catch(err => {
+                            console.warn(`[Service Worker] Não foi possível cachear ${url}:`, err);
+                        });
+                    })
+                );
             })
             .catch((err) => {
                 console.error('[Service Worker] Erro ao armazenar cache:', err);
@@ -57,13 +62,35 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Ignorar requisições para APIs
+    // Tratar requisições para APIs
     if (url.pathname.startsWith('/api/')) {
         // Verificar se é requisição de registro (POST)
         if (request.method === 'POST') {
+            // Verificar se está em modo offline forçado
+            const forceOffline = self.forceOffline || false;
+            
+            if (forceOffline) {
+                // Modo offline forçado - retornar sucesso imediatamente
+                // O offline-manager.js vai gerenciar a fila
+                return event.respondWith(
+                    new Response(
+                        JSON.stringify({
+                            success: true,
+                            offline: true,
+                            message: 'Registro salvo localmente. Será sincronizado quando a conexão for restaurada.'
+                        }),
+                        {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: { 'Content-Type': 'application/json' }
+                        }
+                    )
+                );
+            }
+            
             // Tentar fazer requisição real primeiro
             event.respondWith(
-                fetch(request)
+                fetch(request.clone())
                     .then((response) => {
                         // Se sucesso, retornar resposta normal
                         if (response.ok) {
@@ -90,9 +117,9 @@ self.addEventListener('fetch', (event) => {
                     })
             );
         } else {
-            // Para GET, tentar cache primeiro
+            // Para GET, usar estratégia Network First com fallback para cache
             event.respondWith(
-                fetch(request)
+                fetch(request.clone())
                     .then((response) => {
                         // Armazenar resposta no cache para uso offline
                         if (response.ok) {

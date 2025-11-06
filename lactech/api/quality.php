@@ -110,7 +110,7 @@ try {
                 WHERE test_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND farm_id = 1
             ");
             
-            // Gráfico de tendência
+            // Gráfico de tendência (últimos 7 dias)
             $trendChart = $db->query("
                 SELECT 
                     DATE(test_date) as date,
@@ -118,10 +118,27 @@ try {
                     AVG(protein_content) as protein,
                     AVG(somatic_cells) as ccs
                 FROM quality_tests 
-                WHERE test_date >= DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND farm_id = 1
+                WHERE test_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND farm_id = 1
                 GROUP BY DATE(test_date)
                 ORDER BY test_date ASC
             ");
+            
+            // Se não houver dados em quality_tests, buscar de milk_production
+            if (empty($trendChart)) {
+                $trendChart = $db->query("
+                    SELECT 
+                        DATE(production_date) as date,
+                        AVG(fat_content) as fat,
+                        AVG(protein_content) as protein,
+                        AVG(somatic_cells) as ccs
+                    FROM milk_production 
+                    WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+                    AND farm_id = 1
+                    AND (fat_content IS NOT NULL OR protein_content IS NOT NULL OR somatic_cells IS NOT NULL)
+                    GROUP BY DATE(production_date)
+                    ORDER BY production_date ASC
+                ");
+            }
             
             $data = [
                 'summary' => [

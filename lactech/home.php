@@ -37,8 +37,8 @@
     <meta name="language" content="Portuguese">
     
     <!-- Favicon -->
-    <link rel="icon" href="https://i.postimg.cc/W17q41wM/lactechpreta.png" type="image/png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
     
     <!-- Structured Data - JSON-LD -->
     <script type="application/ld+json">
@@ -1685,9 +1685,13 @@
                          <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Flag_of_Brazil.svg" alt="Bandeira do Brasil" class="w-6 h-4 mr-2 rounded-sm">
                          <span class="text-xs text-gray-500">Feito no Brasil</span>
                      </div>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-xs text-gray-500 mb-2">
                         © 2024 Xandria. Todos os direitos reservados.
                     </p>
+                    <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                        <img src="./assets/video/cloudflare_icon_130969-removebg-preview.png" alt="Cloudflare" class="w-4 h-4 object-contain">
+                        <span>Protegido por Cloudflare</span>
+                    </a>
                 </div>
                 
                 <div>

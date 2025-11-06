@@ -49,6 +49,7 @@ function formatVolume($volume) {
 
 /**
  * Sanitiza entrada de dados
+ * Usa htmlspecialchars para prevenir XSS
  */
 function sanitize($input) {
     if (is_array($input)) {
@@ -56,6 +57,16 @@ function sanitize($input) {
     }
     
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Função helper para escape seguro (alias de sanitize)
+ * Útil para uso direto em templates: <?= h($var) ?>
+ */
+if (!function_exists('h')) {
+    function h($string) {
+        return htmlspecialchars($string ?? '', ENT_QUOTES, 'UTF-8');
+    }
 }
 
 /**
@@ -251,8 +262,18 @@ function jsonResponse($data, $status = 200) {
 
 /**
  * Obtém IP do cliente
+ * Suporta Cloudflare (HTTP_CF_CONNECTING_IP) e outros proxies
  */
 function getClientIP() {
+    // Cloudflare passa o IP real neste header (prioridade)
+    if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        $ip = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
+        if (filter_var($ip, FILTER_VALIDATE_IP) !== false) {
+            return $ip;
+        }
+    }
+    
+    // Outros proxies
     $ipKeys = ['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'];
     
     foreach ($ipKeys as $key) {

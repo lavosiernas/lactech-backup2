@@ -5,6 +5,11 @@
  * Versão: 2.0.0
  */
 
+// Configurar timezone para horário local (Brasil)
+if (!ini_get('date.timezone')) {
+    date_default_timezone_set('America/Sao_Paulo');
+}
+
 require_once __DIR__ . '/config_mysql.php';
 
 class Database {
@@ -45,6 +50,17 @@ class Database {
             ];
 
             $this->pdo = new PDO($dsn, $user, $pass, $options);
+            
+            // Configurar timezone do MySQL para o mesmo timezone do PHP
+            // Converter timezone do PHP para formato do MySQL (+HH:MM ou -HH:MM)
+            $timezone = new DateTimeZone(date_default_timezone_get());
+            $now = new DateTime('now', $timezone);
+            $offset = $timezone->getOffset($now);
+            $hours = floor(abs($offset) / 3600);
+            $minutes = floor((abs($offset) % 3600) / 60);
+            $sign = $offset >= 0 ? '+' : '-';
+            $mysqlTimezone = sprintf('%s%02d:%02d', $sign, $hours, $minutes);
+            $this->pdo->exec("SET time_zone = '" . $mysqlTimezone . "'");
         } catch (Throwable $e) {
             $this->lastError = "Erro de conexão: " . $e->getMessage();
             throw new Exception($this->lastError);
@@ -1020,10 +1036,16 @@ class Database {
             
             // Se tem producer_id (animal_id), inserir na tabela milk_production (individual por vaca)
             if (isset($data['producer_id']) && $data['producer_id']) {
-                $stmt = $this->query("
-                    INSERT INTO milk_production (animal_id, production_date, shift, volume, temperature, notes, recorded_by, farm_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ", [
+                $pdo = $this->getConnection();
+                
+                // Obter timestamp antes de inserir para buscar depois
+                $insertTimestamp = date('Y-m-d H:i:s');
+                
+                $stmt = $pdo->prepare("
+                    INSERT INTO milk_production (animal_id, production_date, shift, volume, temperature, notes, recorded_by, farm_id, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
                     $data['producer_id'],
                     $data['collection_date'] ?? date('Y-m-d'),
                     $data['period'] ?? 'manha',
@@ -1031,8 +1053,62 @@ class Database {
                     $data['temperature'] ?? null,
                     $data['notes'] ?? null,
                     $data['recorded_by'] ?? 1,
-                    self::FARM_ID
+                    self::FARM_ID,
+                    $insertTimestamp
                 ]);
+                
+                // Tentar obter ID imediatamente
+                $recordId = $pdo->lastInsertId();
+                
+                // Log para debug
+                error_log("DEBUG addVolumeRecord (milk_production) - ID inserido (lastInsertId): " . $recordId);
+                
+                // Se lastInsertId não funcionou ou retornou 0, buscar o ID do registro recém-criado
+                if (!$recordId || $recordId <= 0) {
+                    error_log("ERRO: lastInsertId retornou 0 ou inválido para milk_production. Buscando ID alternativamente...");
+                    
+                    // Buscar o ID do registro recém-criado usando timestamp e dados inseridos
+                    $findRecord = $pdo->prepare("
+                        SELECT id FROM milk_production 
+                        WHERE animal_id = ? 
+                        AND production_date = ? 
+                        AND shift = ? 
+                        AND volume = ? 
+                        AND farm_id = ?
+                        AND created_at = ?
+                        ORDER BY id DESC
+                        LIMIT 1
+                    ");
+                    $findRecord->execute([
+                        $data['producer_id'],
+                        $data['collection_date'] ?? date('Y-m-d'),
+                        $data['period'] ?? 'manha',
+                        $data['volume'],
+                        self::FARM_ID,
+                        $insertTimestamp
+                    ]);
+                    $foundRecord = $findRecord->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($foundRecord && isset($foundRecord['id']) && $foundRecord['id'] > 0) {
+                        $recordId = (int)$foundRecord['id'];
+                        error_log("DEBUG addVolumeRecord (milk_production) - ID encontrado alternativamente: " . $recordId);
+                    } else {
+                        // Última tentativa: buscar o último ID inserido na tabela
+                        $lastRecord = $pdo->query("
+                            SELECT id FROM milk_production 
+                            WHERE farm_id = " . self::FARM_ID . " 
+                            ORDER BY id DESC 
+                            LIMIT 1
+                        ");
+                        $lastRecordData = $lastRecord->fetch(PDO::FETCH_ASSOC);
+                        if ($lastRecordData && isset($lastRecordData['id']) && $lastRecordData['id'] > 0) {
+                            $recordId = (int)$lastRecordData['id'];
+                            error_log("DEBUG addVolumeRecord (milk_production) - ID encontrado como último registro: " . $recordId);
+                        } else {
+                            error_log("ERRO CRÍTICO: Não foi possível obter o ID do registro inserido em milk_production!");
+                        }
+                    }
+                }
             } else {
                 // Se não tem producer_id, inserir na tabela volume_records (geral da fazenda)
                 $total_volume = (float)($data['volume'] ?? 0);
@@ -1041,10 +1117,17 @@ class Database {
                 // Calcular média por animal
                 $average_per_animal = $total_animals > 0 ? ($total_volume / $total_animals) : 0;
                 
-                $stmt = $this->query("
-                    INSERT INTO volume_records (record_date, shift, total_volume, total_animals, average_per_animal, notes, recorded_by, farm_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ", [
+                // Usar prepare/execute diretamente para obter lastInsertId corretamente
+                $pdo = $this->getConnection();
+                
+                // Obter timestamp antes de inserir para buscar depois
+                $insertTimestamp = date('Y-m-d H:i:s');
+                
+                $stmt = $pdo->prepare("
+                    INSERT INTO volume_records (record_date, shift, total_volume, total_animals, average_per_animal, notes, recorded_by, farm_id, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
                     $data['collection_date'] ?? date('Y-m-d'),
                     $data['period'] ?? 'manha',
                     $total_volume,
@@ -1052,14 +1135,66 @@ class Database {
                     $average_per_animal,
                     $data['notes'] ?? null,
                     $data['recorded_by'] ?? 1,
-                    self::FARM_ID
+                    self::FARM_ID,
+                    $insertTimestamp
                 ]);
                 
-                $recordId = $this->getConnection()->lastInsertId();
+                // Tentar obter ID imediatamente
+                $recordId = $pdo->lastInsertId();
+                
+                // Log para debug
+                error_log("DEBUG addVolumeRecord - ID inserido (lastInsertId): " . $recordId);
+                
+                // Se lastInsertId não funcionou ou retornou 0, buscar o ID do registro recém-criado
+                if (!$recordId || $recordId <= 0) {
+                    error_log("ERRO: lastInsertId retornou 0 ou inválido. Buscando ID alternativamente...");
+                    
+                    // Buscar o ID do registro recém-criado usando timestamp e dados inseridos
+                    $findRecord = $pdo->prepare("
+                        SELECT id FROM volume_records 
+                        WHERE record_date = ? 
+                        AND shift = ? 
+                        AND total_volume = ? 
+                        AND total_animals = ?
+                        AND farm_id = ?
+                        AND created_at = ?
+                        ORDER BY id DESC
+                        LIMIT 1
+                    ");
+                    $findRecord->execute([
+                        $data['collection_date'] ?? date('Y-m-d'),
+                        $data['period'] ?? 'manha',
+                        $total_volume,
+                        $total_animals,
+                        self::FARM_ID,
+                        $insertTimestamp
+                    ]);
+                    $foundRecord = $findRecord->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($foundRecord && isset($foundRecord['id']) && $foundRecord['id'] > 0) {
+                        $recordId = (int)$foundRecord['id'];
+                        error_log("DEBUG addVolumeRecord - ID encontrado alternativamente: " . $recordId);
+                    } else {
+                        // Última tentativa: buscar o último ID inserido na tabela
+                        $lastRecord = $pdo->query("
+                            SELECT id FROM volume_records 
+                            WHERE farm_id = " . self::FARM_ID . " 
+                            ORDER BY id DESC 
+                            LIMIT 1
+                        ");
+                        $lastRecordData = $lastRecord->fetch(PDO::FETCH_ASSOC);
+                        if ($lastRecordData && isset($lastRecordData['id']) && $lastRecordData['id'] > 0) {
+                            $recordId = (int)$lastRecordData['id'];
+                            error_log("DEBUG addVolumeRecord - ID encontrado como último registro: " . $recordId);
+                        } else {
+                            error_log("ERRO CRÍTICO: Não foi possível obter o ID do registro inserido!");
+                        }
+                    }
+                }
                 
                 // Notificar gerentes sobre o novo registro de volume
                 // Apenas se for cadastro de volume geral (não individual por vaca)
-                if ($recordId && isset($data['recorded_by'])) {
+                if ($recordId && $recordId > 0 && isset($data['recorded_by'])) {
                     $this->notifyManagersAboutVolumeRecord(
                         $data['recorded_by'],
                         $total_volume,
@@ -1069,9 +1204,51 @@ class Database {
                 }
             }
             
+            // Verificar se o ID foi obtido corretamente
+            if (!$recordId || $recordId <= 0) {
+                error_log("ERRO CRÍTICO: Não foi possível obter o ID do registro inserido após todas as tentativas");
+                
+                // Se ainda não tem ID, buscar o último registro inserido na tabela correta
+                $pdo = $this->getConnection();
+                
+                // Se foi registro por vaca, buscar em milk_production
+                if (isset($data['producer_id']) && $data['producer_id']) {
+                    $lastQuery = $pdo->query("
+                        SELECT id FROM milk_production 
+                        WHERE farm_id = " . self::FARM_ID . " 
+                        ORDER BY created_at DESC, id DESC 
+                        LIMIT 1
+                    ");
+                } else {
+                    // Se foi registro geral, buscar em volume_records
+                    $lastQuery = $pdo->query("
+                        SELECT id FROM volume_records 
+                        WHERE farm_id = " . self::FARM_ID . " 
+                        ORDER BY created_at DESC, id DESC 
+                        LIMIT 1
+                    ");
+                }
+                
+                $lastRow = $lastQuery->fetch(PDO::FETCH_ASSOC);
+                
+                if ($lastRow && isset($lastRow['id']) && $lastRow['id'] > 0) {
+                    $recordId = (int)$lastRow['id'];
+                    error_log("DEBUG: ID obtido do último registro: " . $recordId);
+                } else {
+                    error_log("ERRO: Não foi possível obter ID de nenhuma forma!");
+                }
+            }
+            
+            // Se ainda não tem ID válido, lançar exceção
+            if (!$recordId || $recordId <= 0) {
+                $tableName = (isset($data['producer_id']) && $data['producer_id']) ? 'milk_production' : 'volume_records';
+                error_log("ERRO CRÍTICO: Registro inserido mas não foi possível obter ID na tabela " . $tableName);
+                throw new Exception("Não foi possível obter o ID do registro inserido. Verifique se a tabela {$tableName} tem AUTO_INCREMENT configurado.");
+            }
+            
             return [
                 'success' => true,
-                'id' => $recordId ?? $this->getConnection()->lastInsertId()
+                'id' => (int)$recordId
             ];
         } catch (PDOException $e) {
             return [
@@ -1091,6 +1268,191 @@ class Database {
             return [
                 'success' => true,
                 'message' => 'Registro de volume excluído com sucesso'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Excluir todos os registros de volume com backup (gerais + individuais por vaca)
+     */
+    public function deleteAllVolumeRecords() {
+        try {
+            // Iniciar sessão se não estiver iniciada
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            $pdo = $this->getConnection();
+            
+            // Fazer backup de todos os registros gerais antes de excluir
+            $backupRecords = $this->query("
+                SELECT * FROM volume_records WHERE farm_id = ?
+            ", [self::FARM_ID]);
+            
+            // Fazer backup de todos os registros individuais por vaca
+            $backupMilkProduction = $this->query("
+                SELECT * FROM milk_production WHERE farm_id = ?
+            ", [self::FARM_ID]);
+            
+            // Salvar backup em sessão ou arquivo temporário
+            $backupKey = 'volume_records_backup_' . time();
+            $_SESSION[$backupKey] = [
+                'volume_records' => $backupRecords,
+                'milk_production' => $backupMilkProduction
+            ];
+            $_SESSION[$backupKey . '_timestamp'] = date('Y-m-d H:i:s');
+            
+            // Contar quantos registros serão excluídos
+            $countGeneral = $this->query("SELECT COUNT(*) as total FROM volume_records WHERE farm_id = ?", [self::FARM_ID]);
+            $countIndividual = $this->query("SELECT COUNT(*) as total FROM milk_production WHERE farm_id = ?", [self::FARM_ID]);
+            
+            $totalGeneral = $countGeneral[0]['total'] ?? 0;
+            $totalIndividual = $countIndividual[0]['total'] ?? 0;
+            $totalRecords = $totalGeneral + $totalIndividual;
+            
+            // Excluir todos os registros gerais
+            $this->query("DELETE FROM volume_records WHERE farm_id = ?", [self::FARM_ID]);
+            
+            // Excluir todos os registros individuais por vaca
+            $this->query("DELETE FROM milk_production WHERE farm_id = ?", [self::FARM_ID]);
+            
+            return [
+                'success' => true,
+                'message' => "Todos os {$totalRecords} registros de volume foram excluídos com sucesso ({$totalGeneral} gerais + {$totalIndividual} individuais)",
+                'backup_key' => $backupKey,
+                'total_deleted' => $totalRecords
+            ];
+        } catch (PDOException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Restaurar registros de volume do backup (gerais + individuais por vaca)
+     */
+    public function restoreVolumeRecords($backupKey) {
+        try {
+            // Iniciar sessão se não estiver iniciada
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            if (!isset($_SESSION[$backupKey]) || empty($_SESSION[$backupKey])) {
+                return [
+                    'success' => false,
+                    'error' => 'Backup não encontrado ou expirado'
+                ];
+            }
+            
+            $backupData = $_SESSION[$backupKey];
+            $pdo = $this->getConnection();
+            
+            $restored = 0;
+            $restoredGeneral = 0;
+            $restoredIndividual = 0;
+            
+            // Verificar se é o formato antigo (array simples) ou novo (array com chaves)
+            if (isset($backupData['volume_records']) || isset($backupData['milk_production'])) {
+                // Formato novo: backup com chaves separadas
+                
+                // Restaurar registros gerais
+                if (isset($backupData['volume_records']) && is_array($backupData['volume_records'])) {
+                    foreach ($backupData['volume_records'] as $record) {
+                        $stmt = $pdo->prepare("
+                            INSERT INTO volume_records (
+                                record_date, shift, total_volume, total_animals, 
+                                average_per_animal, notes, recorded_by, farm_id, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+                        
+                        $stmt->execute([
+                            $record['record_date'],
+                            $record['shift'],
+                            $record['total_volume'],
+                            $record['total_animals'],
+                            $record['average_per_animal'],
+                            $record['notes'] ?? null,
+                            $record['recorded_by'],
+                            $record['farm_id'],
+                            $record['created_at'] ?? date('Y-m-d H:i:s')
+                        ]);
+                        $restored++;
+                        $restoredGeneral++;
+                    }
+                }
+                
+                // Restaurar registros individuais por vaca
+                if (isset($backupData['milk_production']) && is_array($backupData['milk_production'])) {
+                    foreach ($backupData['milk_production'] as $record) {
+                        $stmt = $pdo->prepare("
+                            INSERT INTO milk_production (
+                                animal_id, production_date, shift, volume, temperature, 
+                                notes, recorded_by, farm_id, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+                        
+                        $stmt->execute([
+                            $record['animal_id'],
+                            $record['production_date'],
+                            $record['shift'],
+                            $record['volume'],
+                            $record['temperature'] ?? null,
+                            $record['notes'] ?? null,
+                            $record['recorded_by'],
+                            $record['farm_id'],
+                            $record['created_at'] ?? date('Y-m-d H:i:s')
+                        ]);
+                        $restored++;
+                        $restoredIndividual++;
+                    }
+                }
+            } else {
+                // Formato antigo: array simples (compatibilidade com backups antigos)
+                foreach ($backupData as $record) {
+                    $stmt = $pdo->prepare("
+                        INSERT INTO volume_records (
+                            record_date, shift, total_volume, total_animals, 
+                            average_per_animal, notes, recorded_by, farm_id, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    
+                    $stmt->execute([
+                        $record['record_date'],
+                        $record['shift'],
+                        $record['total_volume'],
+                        $record['total_animals'],
+                        $record['average_per_animal'],
+                        $record['notes'] ?? null,
+                        $record['recorded_by'],
+                        $record['farm_id'],
+                        $record['created_at'] ?? date('Y-m-d H:i:s')
+                    ]);
+                    $restored++;
+                    $restoredGeneral++;
+                }
+            }
+            
+            // Limpar backup da sessão
+            unset($_SESSION[$backupKey]);
+            unset($_SESSION[$backupKey . '_timestamp']);
+            
+            $message = "{$restored} registros de volume foram restaurados com sucesso";
+            if ($restoredGeneral > 0 && $restoredIndividual > 0) {
+                $message .= " ({$restoredGeneral} gerais + {$restoredIndividual} individuais)";
+            }
+            
+            return [
+                'success' => true,
+                'message' => $message,
+                'total_restored' => $restored
             ];
         } catch (PDOException $e) {
             return [

@@ -4,6 +4,11 @@
  * Endpoint para ações específicas do sistema
  */
 
+// Configurar timezone para horário local (Brasil)
+if (!ini_get('date.timezone')) {
+    date_default_timezone_set('America/Sao_Paulo');
+}
+
 // Configurações de segurança
 error_reporting(0);
 ini_set('display_errors', 0);
@@ -165,18 +170,47 @@ try {
                 echo json_encode($result);
             }
             break;
+            
+        case 'delete_all_volume_records':
+            // Excluir todos os registros de volume com backup
+            $result = $db->deleteAllVolumeRecords();
+            echo json_encode($result);
+            break;
+            
+        case 'restore_volume_records':
+            // Restaurar registros de volume do backup
+            $backupKey = $_POST['backup_key'] ?? $_GET['backup_key'] ?? null;
+            if (!$backupKey) {
+                echo json_encode(['success' => false, 'error' => 'Chave de backup não fornecida']);
+                exit;
+            }
+            $result = $db->restoreVolumeRecords($backupKey);
+            echo json_encode($result);
+            break;
 
         case 'add_volume_by_animal':
             // Registrar volume por animal (milk_production)
+            // Validações
+            if (empty($_POST['animal_id'])) {
+                echo json_encode(['success' => false, 'error' => 'Por favor, selecione uma vaca']);
+                exit;
+            }
+            
+            if (empty($_POST['volume']) || (float)$_POST['volume'] <= 0) {
+                echo json_encode(['success' => false, 'error' => 'Volume deve ser maior que zero']);
+                exit;
+            }
+            
             $data = [
-                'producer_id' => isset($_POST['animal_id']) ? (int)$_POST['animal_id'] : null,
+                'producer_id' => (int)$_POST['animal_id'],
                 'collection_date' => $_POST['collection_date'] ?? date('Y-m-d'),
                 'period' => $_POST['period'] ?? 'manha',
-                'volume' => isset($_POST['volume']) ? (float)$_POST['volume'] : 0,
-                'temperature' => isset($_POST['temperature']) ? (float)$_POST['temperature'] : null,
-                'notes' => $_POST['notes'] ?? null,
+                'volume' => (float)$_POST['volume'],
+                'temperature' => !empty($_POST['temperature']) ? (float)$_POST['temperature'] : null,
+                'notes' => !empty($_POST['notes']) ? trim($_POST['notes']) : null,
                 'recorded_by' => $_SESSION['user_id'] ?? 1,
             ];
+            
             $result = $db->addVolumeRecord($data);
             echo json_encode($result);
             break;

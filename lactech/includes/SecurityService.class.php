@@ -93,8 +93,8 @@ class SecurityService {
             
             error_log("📧 OTP gerado - Código: '$code' (tamanho: " . strlen($code) . "), Expira em: $expiresAt (Timezone: $timezone)");
             
-            // Obter IP e User Agent
-            $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
+            // Obter IP e User Agent (suporta Cloudflare)
+            $ipAddress = function_exists('getClientIP') ? getClientIP() : ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? null);
             $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
             
             // Salvar OTP no banco
@@ -500,8 +500,8 @@ class SecurityService {
             $userEmail = $user[0]['email'] ?? '';
             $userName = $user[0]['name'] ?? '';
             
-            // Enviar notificação de segurança
-            $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
+            // Enviar notificação de segurança (suporta Cloudflare)
+            $ipAddress = function_exists('getClientIP') ? getClientIP() : ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? null);
             $this->emailService->sendSecurityNotification(
                 $userEmail,
                 'password_changed',
@@ -575,7 +575,7 @@ class SecurityService {
                 ':user_id' => $userId,
                 ':action' => $action,
                 ':description' => $description,
-                ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
+                ':ip_address' => function_exists('getClientIP') ? getClientIP() : ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? null),
                 ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
                 ':success' => $success ? 1 : 0,
                 ':error_message' => $success ? null : $description,

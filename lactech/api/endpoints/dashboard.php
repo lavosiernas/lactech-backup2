@@ -25,7 +25,7 @@ try {
     $stmt->execute();
     $animals = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // 2. Produção de leite hoje - usar volume_records (tabela principal)
+    // 2. Produção de leite hoje - usar volume_records + milk_production
     $stmt = $pdo->prepare("
         SELECT 
             COALESCE(SUM(total_volume), 0) as today_volume,
@@ -34,85 +34,95 @@ try {
         WHERE DATE(record_date) = CURDATE() AND farm_id = 1
     ");
     $stmt->execute();
-    $todayProduction = $stmt->fetch(PDO::FETCH_ASSOC);
+    $todayRecords = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Se não houver dados em volume_records, usar milk_production como fallback
-    if (empty($todayProduction['today_volume']) || $todayProduction['today_volume'] == 0) {
-        $stmt = $pdo->prepare("
-            SELECT 
-                COALESCE(SUM(volume), 0) as today_volume,
-                COUNT(DISTINCT animal_id) as milking_animals
-            FROM milk_production 
-            WHERE production_date = CURDATE() AND farm_id = 1
-        ");
-        $stmt->execute();
-        $fallback = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($fallback && $fallback['today_volume'] > 0) {
-            $todayProduction = $fallback;
-        }
-    }
+    // Buscar de milk_production também
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(SUM(volume), 0) as today_volume,
+            COUNT(DISTINCT animal_id) as milking_animals
+        FROM milk_production 
+        WHERE production_date = CURDATE() AND farm_id = 1
+    ");
+    $stmt->execute();
+    $todayMilk = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // 3. Produção de leite da semana - usar volume_records
+    // Combinar dados
+    $todayProduction = [
+        'today_volume' => (float)($todayRecords['today_volume'] ?? 0) + (float)($todayMilk['today_volume'] ?? 0),
+        'total_records' => (int)($todayRecords['total_records'] ?? 0),
+        'milking_animals' => (int)($todayMilk['milking_animals'] ?? 0)
+    ];
+    
+    // 3. Produção de leite da semana - usar volume_records + milk_production
     $stmt = $pdo->prepare("
         SELECT 
             COALESCE(SUM(total_volume), 0) as week_volume,
-            COALESCE(SUM(total_volume) / GREATEST(COUNT(DISTINCT DATE(record_date)), 1), 0) as avg_daily_volume
+            COUNT(DISTINCT DATE(record_date)) as days_with_data
         FROM volume_records 
         WHERE DATE(record_date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
         AND DATE(record_date) <= CURDATE() 
         AND farm_id = 1
     ");
     $stmt->execute();
-    $weekProduction = $stmt->fetch(PDO::FETCH_ASSOC);
+    $weekRecords = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Se não houver dados, usar milk_production como fallback
-    if (empty($weekProduction['week_volume']) || $weekProduction['week_volume'] == 0) {
-        $stmt = $pdo->prepare("
-            SELECT 
-                COALESCE(SUM(volume), 0) as week_volume,
-                COALESCE(SUM(volume) / GREATEST(COUNT(DISTINCT production_date), 1), 0) as avg_daily_volume
-            FROM milk_production 
-            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-            AND production_date <= CURDATE() 
-            AND farm_id = 1
-        ");
-        $stmt->execute();
-        $fallback = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($fallback && $fallback['week_volume'] > 0) {
-            $weekProduction = $fallback;
-        }
-    }
+    // Buscar de milk_production também
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(SUM(volume), 0) as week_volume,
+            COUNT(DISTINCT production_date) as days_with_data
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+    ");
+    $stmt->execute();
+    $weekMilk = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // 4. Produção de leite do mês - usar volume_records
+    // Combinar dados
+    $totalWeekVolume = (float)($weekRecords['week_volume'] ?? 0) + (float)($weekMilk['week_volume'] ?? 0);
+    $totalDays = max((int)($weekRecords['days_with_data'] ?? 0), (int)($weekMilk['days_with_data'] ?? 0), 1);
+    
+    $weekProduction = [
+        'week_volume' => $totalWeekVolume,
+        'avg_daily_volume' => $totalWeekVolume / $totalDays
+    ];
+    
+    // 4. Produção de leite do mês - usar volume_records + milk_production
     $stmt = $pdo->prepare("
         SELECT 
             COALESCE(SUM(total_volume), 0) as month_volume,
-            COALESCE(SUM(total_volume) / GREATEST(COUNT(DISTINCT DATE(record_date)), 1), 0) as avg_daily_volume
+            COUNT(DISTINCT DATE(record_date)) as days_with_data
         FROM volume_records 
         WHERE DATE(record_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
         AND DATE(record_date) <= CURDATE() 
         AND farm_id = 1
     ");
     $stmt->execute();
-    $monthProduction = $stmt->fetch(PDO::FETCH_ASSOC);
+    $monthRecords = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Se não houver dados, usar milk_production como fallback
-    if (empty($monthProduction['month_volume']) || $monthProduction['month_volume'] == 0) {
-        $stmt = $pdo->prepare("
-            SELECT 
-                COALESCE(SUM(volume), 0) as month_volume,
-                COALESCE(SUM(volume) / GREATEST(COUNT(DISTINCT production_date), 1), 0) as avg_daily_volume
-            FROM milk_production 
-            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
-            AND production_date <= CURDATE() 
-            AND farm_id = 1
-        ");
-        $stmt->execute();
-        $fallback = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($fallback && $fallback['month_volume'] > 0) {
-            $monthProduction = $fallback;
-        }
-    }
+    // Buscar de milk_production também
+    $stmt = $pdo->prepare("
+        SELECT 
+            COALESCE(SUM(volume), 0) as month_volume,
+            COUNT(DISTINCT production_date) as days_with_data
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+    ");
+    $stmt->execute();
+    $monthMilk = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Combinar dados
+    $totalMonthVolume = (float)($monthRecords['month_volume'] ?? 0) + (float)($monthMilk['month_volume'] ?? 0);
+    $totalMonthDays = max((int)($monthRecords['days_with_data'] ?? 0), (int)($monthMilk['days_with_data'] ?? 0), 1);
+    
+    $monthProduction = [
+        'month_volume' => $totalMonthVolume,
+        'avg_daily_volume' => $totalMonthVolume / $totalMonthDays
+    ];
     
     // 5. Qualidade do leite (último teste)
     $stmt = $pdo->prepare("
@@ -185,7 +195,7 @@ try {
         $recentActivities = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    // 9. Gráfico de produção dos últimos 30 dias - usar volume_records
+    // 9. Gráfico de produção dos últimos 30 dias - usar volume_records + milk_production
     $stmt = $pdo->prepare("
         SELECT 
             DATE(record_date) as production_date,
@@ -198,24 +208,51 @@ try {
         ORDER BY production_date ASC
     ");
     $stmt->execute();
-    $productionChart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $chartRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Se não houver dados, usar milk_production como fallback
-    if (empty($productionChart)) {
-        $stmt = $pdo->prepare("
-            SELECT 
-                production_date,
-                SUM(volume) as daily_volume
-            FROM milk_production 
-            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
-            AND production_date <= CURDATE() 
-            AND farm_id = 1
-            GROUP BY production_date
-            ORDER BY production_date ASC
-        ");
-        $stmt->execute();
-        $productionChart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Buscar de milk_production também
+    $stmt = $pdo->prepare("
+        SELECT 
+            production_date,
+            SUM(volume) as daily_volume
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+        GROUP BY production_date
+        ORDER BY production_date ASC
+    ");
+    $stmt->execute();
+    $chartMilk = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Combinar dados de ambas as tabelas
+    $chartMap = [];
+    
+    // Adicionar dados de volume_records
+    foreach ($chartRecords as $record) {
+        $date = $record['production_date'];
+        $chartMap[$date] = ($chartMap[$date] ?? 0) + (float)$record['daily_volume'];
     }
+    
+    // Adicionar dados de milk_production
+    foreach ($chartMilk as $record) {
+        $date = $record['production_date'];
+        $chartMap[$date] = ($chartMap[$date] ?? 0) + (float)$record['daily_volume'];
+    }
+    
+    // Converter para array ordenado
+    $productionChart = [];
+    foreach ($chartMap as $date => $volume) {
+        $productionChart[] = [
+            'production_date' => $date,
+            'daily_volume' => $volume
+        ];
+    }
+    
+    // Ordenar por data
+    usort($productionChart, function($a, $b) {
+        return strcmp($a['production_date'], $b['production_date']);
+    });
     
     // 10. Alertas importantes (se existir tabela de alertas)
     $stmt = $pdo->prepare("

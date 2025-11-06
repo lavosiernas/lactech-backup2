@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/js/config_mysql.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
         .error-message {

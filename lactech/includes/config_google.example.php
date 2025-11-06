@@ -3,31 +3,66 @@
  * Configurações Google OAuth - Exemplo
  * 
  * ⚠️ ATENÇÃO: Este é um arquivo de exemplo.
- * Copie para config_google.php e preencha com seus dados reais.
  * NUNCA commite o arquivo config_google.php com dados sensíveis.
  */
 
-// Carregar variáveis de ambiente
-require_once __DIR__ . '/env_loader.php';
+// Carregar variáveis de ambiente (se o loader existir)
+$envLoaderPath = __DIR__ . '/env_loader.php';
+if (file_exists($envLoaderPath)) {
+    require_once $envLoaderPath;
+}
+
+// Função auxiliar para obter variável de ambiente com fallback
+if (!function_exists('getEnvValue')) {
+    function getEnvValue($key, $default = null) {
+        if (function_exists('env')) {
+            return env($key, $default);
+        }
+        $value = getenv($key);
+        if ($value === false) {
+            $value = $_ENV[$key] ?? $_SERVER[$key] ?? null;
+        }
+        return $value !== null ? $value : $default;
+    }
+}
 
 // Client ID do Google OAuth
-// Obter de variável de ambiente ou usar valor padrão
-define('GOOGLE_CLIENT_ID', env('GOOGLE_CLIENT_ID', 'seu_client_id_aqui.apps.googleusercontent.com'));
+// Usar APENAS variável de ambiente - SEM fallback com credenciais hardcoded
+$googleClientId = getEnvValue('GOOGLE_CLIENT_ID');
+if (empty($googleClientId)) {
+    throw new Exception(
+        'GOOGLE_CLIENT_ID não configurado. ' .
+        'Por favor, configure a variável GOOGLE_CLIENT_ID no arquivo .env'
+    );
+}
+define('GOOGLE_CLIENT_ID', $googleClientId);
 
 // Client Secret do Google OAuth
 // ⚠️ MANTENHA ESTE VALOR SECRETO
-define('GOOGLE_CLIENT_SECRET', env('GOOGLE_CLIENT_SECRET', 'seu_client_secret_aqui'));
+// Usar APENAS variável de ambiente - SEM fallback com credenciais hardcoded
+$googleClientSecret = getEnvValue('GOOGLE_CLIENT_SECRET');
+if (empty($googleClientSecret)) {
+    throw new Exception(
+        'GOOGLE_CLIENT_SECRET não configurado. ' .
+        'Por favor, configure a variável GOOGLE_CLIENT_SECRET no arquivo .env'
+    );
+}
+define('GOOGLE_CLIENT_SECRET', $googleClientSecret);
 
 // URL de redirecionamento (deve ser exatamente igual ao configurado no Google Console)
 // Usar para vinculação de conta (quando já está logado)
-define('GOOGLE_REDIRECT_URI', env('GOOGLE_REDIRECT_URI', 'https://lactechsys.com/google-callback.php'));
+define('GOOGLE_REDIRECT_URI', getEnvValue('GOOGLE_REDIRECT_URI', 'https://seu-dominio.com/google-callback.php'));
 
 // URL de redirecionamento para login (quando não está logado)
-define('GOOGLE_LOGIN_REDIRECT_URI', env('GOOGLE_LOGIN_REDIRECT_URI', 'https://lactechsys.com/google-login-callback.php'));
+define('GOOGLE_LOGIN_REDIRECT_URI', getEnvValue('GOOGLE_LOGIN_REDIRECT_URI', 'https://seu-dominio.com/google-login-callback.php'));
 
 // Escopos necessários (email e profile para vincular conta)
-define('GOOGLE_SCOPES', env('GOOGLE_SCOPES', 'email profile'));
+define('GOOGLE_SCOPES', getEnvValue('GOOGLE_SCOPES', 'email profile'));
 
 ?>
+
+
+
+
 
 

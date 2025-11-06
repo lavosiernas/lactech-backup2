@@ -225,7 +225,7 @@ $v = time();
     <title>LacTech - Dashboard Gerente</title>
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
     <!-- Preconnect para recursos externos (melhora velocidade) -->
     <link rel="preconnect" href="https://i.postimg.cc">
@@ -238,10 +238,10 @@ $v = time();
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
     
     <!-- Favicon -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -654,10 +654,16 @@ $v = time();
             animation-delay: 0.4s;
         }
         
+        /* Garantir que os labels dos indicadores sejam pretos */
+        .metric-label {
+            color: #111827 !important; /* gray-900 */
+        }
+        
         /* ============================================
-           MODO ESCURO - CORES PROFISSIONAIS
-           Cor base: #121212 (cinza escuro profissional)
+           MODO ESCURO - DESABILITADO (EM DESENVOLVIMENTO)
+           Todos os estilos foram comentados
            ============================================ */
+        /* MODO ESCURO DESABILITADO
         .dark-mode {
             background-color: #121212 !important;
             color: #e0e0e0 !important;
@@ -1155,6 +1161,7 @@ $v = time();
         .dark-mode [id*="overlay"] ::-webkit-scrollbar-thumb:hover {
             background: #3a3a3a;
         }
+        */ /* FIM DO MODO ESCURO DESABILITADO */
     </style>
 </head>
 <body class="bg-gray-50 font-inter" id="mainBody">
@@ -1193,9 +1200,9 @@ $v = time();
             <div class="flex items-center justify-between h-16">
                 <!-- Logo e Título -->
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
-                        <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="LacTech Logo" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <img src="./assets/img/lactech-logo.png" alt="LacTech Logo" class="w-full h-full object-contain" style="display: none;" onerror="this.style.display='none';">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-2 shadow-lg">
+                        <img src="./assets/img/lactech-logo.png" alt="LacTech Logo" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <img src="./assets/video/lactechbranca.png" alt="LacTech Logo" class="w-full h-full object-contain" style="display: none;" onerror="this.style.display='none';">
                     </div>
                     <div>
                         <h1 class="text-xl font-bold">LacTech</h1>
@@ -1237,7 +1244,7 @@ $v = time();
                     
                     <!-- Perfil -->
                     <button onclick="openProfileOverlay()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all" id="profileButton">
-                        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden">
+                        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden border-2 border-white border-opacity-30">
                             <?php 
                             // Verificar e exibir foto de perfil no header
                             $headerPhotoSrc = '';
@@ -1319,8 +1326,8 @@ $v = time();
                         </svg>
                     </div>
                     <div class="metric-value font-bold text-slate-900 mb-1" id="todayVolume">-- L</div>
-                    <div class="metric-label text-slate-500 font-medium">Volume Hoje</div>
-                    <div class="metric-label text-slate-600 font-semibold mt-1">Litros</div>
+                    <div class="metric-label text-gray-900 font-medium">Volume Hoje</div>
+                    <div class="metric-label text-gray-900 font-semibold mt-1">Litros</div>
                 </div>
                 
                 <div class="metric-card rounded-2xl p-3 sm:p-4 text-center card-compact">
@@ -1330,8 +1337,8 @@ $v = time();
                         </svg>
                     </div>
                     <div class="metric-value font-bold text-slate-900 mb-1" id="qualityAverage">--%</div>
-                    <div class="metric-label text-slate-500 font-medium">Qualidade Média</div>
-                    <div class="metric-label text-slate-600 font-semibold mt-1">Hoje</div>
+                    <div class="metric-label text-gray-900 font-medium">Qualidade Média</div>
+                    <div class="metric-label text-gray-900 font-semibold mt-1">Hoje</div>
                 </div>
                 
                 <div class="metric-card rounded-2xl p-3 sm:p-4 text-center card-compact">
@@ -1341,8 +1348,8 @@ $v = time();
                         </svg>
                     </div>
                     <div class="metric-value font-bold text-slate-900 mb-1" id="pendingPayments">R$ --</div>
-                    <div class="metric-label text-slate-500 font-medium">Pagamentos Pendentes</div>
-                    <div class="metric-label text-slate-600 font-semibold mt-1">Este Mês</div>
+                    <div class="metric-label text-gray-900 font-medium">Pagamentos Pendentes</div>
+                    <div class="metric-label text-gray-900 font-semibold mt-1">Este Mês</div>
                 </div>
                 
                 <div class="metric-card rounded-2xl p-3 sm:p-4 text-center card-compact">
@@ -1352,8 +1359,8 @@ $v = time();
                         </svg>
                     </div>
                     <div class="metric-value font-bold text-slate-900 mb-1" id="activeUsers">--</div>
-                    <div class="metric-label text-slate-500 font-medium">Usuários Ativos</div>
-                    <div class="metric-label text-slate-600 font-semibold mt-1">Sistema</div>
+                    <div class="metric-label text-gray-900 font-medium">Usuários Ativos</div>
+                    <div class="metric-label text-gray-900 font-semibold mt-1">Sistema</div>
                 </div>
             </div>
 
@@ -1376,6 +1383,19 @@ $v = time();
                     </div>
                     <div class="chart-container">
                         <canvas id="dashboardWeeklyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Chart Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                <!-- Quality Chart -->
+                <div class="data-card rounded-2xl p-4 sm:p-6 card-compact">
+                    <div class="flex items-center justify-between mb-3 sm:mb-4">
+                        <h3 class="card-title font-bold text-slate-900">Qualidade do Leite (Últimos 7 dias)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="qualityWeeklyChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -1504,12 +1524,21 @@ $v = time();
 
                 <!-- Volume Records Table -->
                 <div class="data-card rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Registros de Volume</h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-900">Registros de Volume</h3>
+                        <button onclick="showDeleteAllVolumeModal()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-semibold text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Excluir Todos
+                        </button>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Horário</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Período</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Volume Total (L)</th>
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Animais</th>
@@ -1518,7 +1547,7 @@ $v = time();
                             </thead>
                             <tbody id="volumeRecordsTable">
                                 <tr>
-                                    <td colspan="5" class="text-center py-8 text-gray-500">Carregando registros...</td>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">Carregando registros...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2006,6 +2035,220 @@ $v = time();
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Exclusão de Todos os Registros de Volume -->
+    <div id="deleteAllVolumeModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeDeleteAllVolumeModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Confirmar Exclusão</h3>
+                            <p class="text-sm text-white/90">Atenção: Esta ação não pode ser desfeita facilmente</p>
+                        </div>
+                    </div>
+                    <button onclick="closeDeleteAllVolumeModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 space-y-4">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-bold text-red-900 mb-2">Tem certeza que deseja excluir TODOS os registros de volume?</h4>
+                                <p class="text-sm text-red-800 mb-2">
+                                    Esta ação irá <strong>excluir permanentemente</strong> todos os registros de volume do sistema.
+                                </p>
+                                <p class="text-sm text-red-800 mb-2">
+                                    Um backup será criado automaticamente, mas recomendamos que você tenha certeza antes de prosseguir.
+                                </p>
+                                <p id="volumeRecordsCount" class="text-sm font-semibold text-red-900 mt-3">
+                                    Carregando quantidade de registros...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-sm text-yellow-800">
+                                <strong>Importante:</strong> Você poderá desfazer esta ação através do botão "Desfazer" que aparecerá após a exclusão.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+                    <button type="button" onclick="closeDeleteAllVolumeModal()" class="px-6 py-3 text-sm font-semibold border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="confirmDeleteAllVolume(event)" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Sim, Excluir Todos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sucesso Restauração de Registros -->
+    <div id="restoreVolumeSuccessModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRestoreVolumeSuccessModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Sucesso!</h3>
+                            <p class="text-sm text-white/90">Registros restaurados</p>
+                        </div>
+                    </div>
+                    <button onclick="closeRestoreVolumeSuccessModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 space-y-4">
+                    <div class="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-green-900 mb-2">Registros Restaurados com Sucesso!</h4>
+                                <p id="restoreSuccessMessage" class="text-sm text-green-800 mb-2">
+                                    Todos os registros de volume foram restaurados com sucesso.
+                                </p>
+                                <p id="restoreSuccessCount" class="text-sm font-semibold text-green-900 mt-3">
+                                    Carregando informações...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-sm text-blue-800">
+                                Os dados foram restaurados e já estão disponíveis na tabela de registros.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+                    <button type="button" onclick="closeRestoreVolumeSuccessModal()" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Entendi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Erro Restauração de Registros -->
+    <div id="restoreVolumeErrorModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRestoreVolumeErrorModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Erro ao Restaurar</h3>
+                            <p class="text-sm text-white/90">Falha na restauração</p>
+                        </div>
+                    </div>
+                    <button onclick="closeRestoreVolumeErrorModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 space-y-4">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-red-900 mb-2">Não foi possível restaurar os registros</h4>
+                                <p id="restoreErrorMessage" class="text-sm text-red-800 mb-2">
+                                    Ocorreu um erro ao tentar restaurar os registros.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-sm text-amber-800">
+                                O backup pode ter expirado ou não foi encontrado. Os registros não foram restaurados.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+                    <button type="button" onclick="closeRestoreVolumeErrorModal()" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Entendi
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -2860,10 +3103,10 @@ $v = time();
                                             </svg>
                                             <div>
                                                 <span class="text-sm font-medium text-gray-900 block">Modo Escuro</span>
-                                                <span class="text-xs text-gray-600">Alternar entre tema claro e escuro</span>
+                                                <span class="text-xs text-gray-500">Em desenvolvimento</span>
                                             </div>
                                         </div>
-                                        <button id="darkModeToggle" class="dark-mode-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro">
+                                        <button id="darkModeToggle" class="dark-mode-toggle opacity-50 cursor-not-allowed" title="Em desenvolvimento" aria-label="Modo escuro em desenvolvimento" disabled>
                                             <div class="dark-mode-toggle-slider">
                                                 <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -3530,7 +3773,7 @@ $v = time();
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw-manager.js')
+                navigator.serviceWorker.register('./sw-manager.js')
                     .then((registration) => {
                         console.log('✅ Service Worker registrado com sucesso:', registration.scope);
                         
@@ -4862,69 +5105,27 @@ $v = time();
         });
     </script>
     
-    <!-- Modo Escuro -->
+    <!-- Modo Escuro - DESABILITADO -->
     <script>
-        // Função para inicializar modo escuro
-        function initDarkMode() {
-            const darkModeToggle = document.getElementById('darkModeToggle');
+        // Função para remover modo escuro (se estiver ativo)
+        function removeDarkMode() {
             const body = document.getElementById('mainBody');
-            const loadingScreen = document.getElementById('loadingScreen');
-            
-            if (!darkModeToggle || !body) return;
-            
-            // Verificar preferência salva
-            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-            
-            // Aplicar modo escuro se salvo (SEM aplicar na loadingScreen - sempre branca)
-            if (savedDarkMode) {
-                body.classList.add('dark-mode');
-                // NÃO aplicar dark-mode na loadingScreen - sempre branca
-                darkModeToggle.classList.add('active');
-                // Alternar ícones
-                const sunIcon = darkModeToggle.querySelector('.sun-icon');
-                const moonIcon = darkModeToggle.querySelector('.moon-icon');
-                if (sunIcon) sunIcon.classList.add('hidden');
-                if (moonIcon) moonIcon.classList.remove('hidden');
+            if (body) {
+                body.classList.remove('dark-mode');
             }
-            
-            // Event listener para toggle
-            darkModeToggle.addEventListener('click', function() {
-                const isDark = body.classList.contains('dark-mode');
-                
-                if (isDark) {
-                    // Desativar modo escuro
-                    body.classList.remove('dark-mode');
-                    // NÃO aplicar dark-mode na loadingScreen - sempre branca
-                    darkModeToggle.classList.remove('active');
-                    localStorage.setItem('darkMode', 'false');
-                    
-                    // Alternar ícones
-                    const sunIcon = darkModeToggle.querySelector('.sun-icon');
-                    const moonIcon = darkModeToggle.querySelector('.moon-icon');
-                    if (sunIcon) sunIcon.classList.remove('hidden');
-                    if (moonIcon) moonIcon.classList.add('hidden');
-                } else {
-                    // Ativar modo escuro
-                    body.classList.add('dark-mode');
-                    // NÃO aplicar dark-mode na loadingScreen - sempre branca
-                    darkModeToggle.classList.add('active');
-                    localStorage.setItem('darkMode', 'true');
-                    
-                    // Alternar ícones
-                    const sunIcon = darkModeToggle.querySelector('.sun-icon');
-                    const moonIcon = darkModeToggle.querySelector('.moon-icon');
-                    if (sunIcon) sunIcon.classList.add('hidden');
-                    if (moonIcon) moonIcon.classList.remove('hidden');
-                }
-            });
+            // Limpar preferência salva
+            localStorage.setItem('darkMode', 'false');
         }
         
-        // Inicializar quando DOM estiver pronto
+        // Remover modo escuro ao carregar
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initDarkMode);
+            document.addEventListener('DOMContentLoaded', removeDarkMode);
         } else {
-            initDarkMode();
+            removeDarkMode();
         }
     </script>
+
+    <!-- Proteção contra cópia de código no console -->
+    <script src="./assets/js/console-protection.js"></script>
 </body>
 </html>

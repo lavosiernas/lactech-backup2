@@ -37,36 +37,69 @@ try {
         }
     }
     
-    // 2. Volume da semana - usar volume_records
+    // 2. Volume da semana - usar volume_records + milk_production
     $stmt = $pdo->prepare("
         SELECT 
-            COALESCE(SUM(total_volume), 0) as total_volume,
-            COALESCE(SUM(total_volume) / GREATEST(COUNT(DISTINCT DATE(record_date)), 1), 0) as avg_daily_volume
+            DATE(record_date) as production_date,
+            SUM(total_volume) as daily_volume
         FROM volume_records 
         WHERE DATE(record_date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
         AND DATE(record_date) <= CURDATE() 
         AND farm_id = 1
+        GROUP BY DATE(record_date)
+        ORDER BY production_date ASC
     ");
     $stmt->execute();
-    $week = $stmt->fetch(PDO::FETCH_ASSOC);
+    $weekRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Fallback
-    if (empty($week['total_volume']) || $week['total_volume'] == 0) {
-        $stmt = $pdo->prepare("
-            SELECT 
-                COALESCE(SUM(volume), 0) as total_volume,
-                COALESCE(SUM(volume) / GREATEST(COUNT(DISTINCT production_date), 1), 0) as avg_daily_volume
-            FROM milk_production 
-            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-            AND production_date <= CURDATE() 
-            AND farm_id = 1
-        ");
-        $stmt->execute();
-        $fallback = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($fallback && $fallback['total_volume'] > 0) {
-            $week = $fallback;
-        }
+    // Buscar de milk_production também
+    $stmt = $pdo->prepare("
+        SELECT 
+            production_date,
+            SUM(volume) as daily_volume
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+        GROUP BY production_date
+        ORDER BY production_date ASC
+    ");
+    $stmt->execute();
+    $weekMilk = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Combinar dados de ambas as tabelas
+    $weekChart = [];
+    $weekMap = [];
+    
+    // Adicionar dados de volume_records
+    foreach ($weekRecords as $record) {
+        $date = $record['production_date'];
+        $weekMap[$date] = ($weekMap[$date] ?? 0) + (float)$record['daily_volume'];
     }
+    
+    // Adicionar dados de milk_production
+    foreach ($weekMilk as $record) {
+        $date = $record['production_date'];
+        $weekMap[$date] = ($weekMap[$date] ?? 0) + (float)$record['daily_volume'];
+    }
+    
+    // Converter para array
+    foreach ($weekMap as $date => $volume) {
+        $weekChart[] = [
+            'production_date' => $date,
+            'daily_volume' => $volume
+        ];
+    }
+    
+    // Calcular total e média
+    $totalWeek = array_sum(array_column($weekChart, 'daily_volume'));
+    $avgWeek = count($weekChart) > 0 ? $totalWeek / count($weekChart) : 0;
+    
+    $week = [
+        'total_volume' => $totalWeek,
+        'avg_daily_volume' => $avgWeek,
+        'chart' => $weekChart
+    ];
     
     // 3. Volume do mês - usar volume_records
     $stmt = $pdo->prepare("
@@ -99,7 +132,7 @@ try {
         }
     }
     
-    // 4. Gráfico de volume dos últimos 30 dias - usar volume_records
+    // 4. Gráfico de volume dos últimos 30 dias - usar volume_records + milk_production
     $stmt = $pdo->prepare("
         SELECT 
             DATE(record_date) as production_date,
@@ -112,24 +145,51 @@ try {
         ORDER BY production_date ASC
     ");
     $stmt->execute();
-    $chart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $chartRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Fallback
-    if (empty($chart)) {
-        $stmt = $pdo->prepare("
-            SELECT 
-                production_date,
-                SUM(volume) as daily_volume
-            FROM milk_production 
-            WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
-            AND production_date <= CURDATE() 
-            AND farm_id = 1
-            GROUP BY production_date
-            ORDER BY production_date ASC
-        ");
-        $stmt->execute();
-        $chart = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Buscar de milk_production também
+    $stmt = $pdo->prepare("
+        SELECT 
+            production_date,
+            SUM(volume) as daily_volume
+        FROM milk_production 
+        WHERE production_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
+        AND production_date <= CURDATE() 
+        AND farm_id = 1
+        GROUP BY production_date
+        ORDER BY production_date ASC
+    ");
+    $stmt->execute();
+    $chartMilk = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Combinar dados de ambas as tabelas
+    $chartMap = [];
+    
+    // Adicionar dados de volume_records
+    foreach ($chartRecords as $record) {
+        $date = $record['production_date'];
+        $chartMap[$date] = ($chartMap[$date] ?? 0) + (float)$record['daily_volume'];
     }
+    
+    // Adicionar dados de milk_production
+    foreach ($chartMilk as $record) {
+        $date = $record['production_date'];
+        $chartMap[$date] = ($chartMap[$date] ?? 0) + (float)$record['daily_volume'];
+    }
+    
+    // Converter para array ordenado
+    $chart = [];
+    foreach ($chartMap as $date => $volume) {
+        $chart[] = [
+            'production_date' => $date,
+            'daily_volume' => $volume
+        ];
+    }
+    
+    // Ordenar por data
+    usort($chart, function($a, $b) {
+        return strcmp($a['production_date'], $b['production_date']);
+    });
     
     // 5. Top produtores
     $stmt = $pdo->prepare("
@@ -157,6 +217,20 @@ try {
         'chart' => $chart,
         'top_producers' => $topProducers
     ];
+    
+    // Adicionar dados da semana no formato de chart para o gráfico semanal
+    if (isset($week['chart']) && is_array($week['chart'])) {
+        $volumeData['week_chart'] = $week['chart'];
+    } else {
+        // Se não tiver chart na semana, usar os últimos 7 dias do chart geral
+        $todayDate = new DateTime();
+        $last7Days = array_filter($chart, function($item) use ($todayDate) {
+            $date = new DateTime($item['production_date']);
+            $diff = $todayDate->diff($date)->days;
+            return $diff <= 6;
+        });
+        $volumeData['week_chart'] = array_values($last7Days);
+    }
     
     echo json_encode([
         'success' => true,

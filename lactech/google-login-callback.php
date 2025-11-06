@@ -360,8 +360,9 @@ try {
     }
     
     // Verificação adicional: garantir que o usuário ainda está ativo no banco
+    // IMPORTANTE: Buscar também profile_photo para preservar foto existente
     $stmt = $pdo->prepare("
-        SELECT id, name, email, role, farm_id, is_active 
+        SELECT id, name, email, role, farm_id, is_active, profile_photo 
         FROM users 
         WHERE id = :user_id 
         AND is_active = 1
@@ -419,7 +420,27 @@ try {
         'farm_id' => $userData['farm_id']
     ];
     
+    // IMPORTANTE: Preservar foto de perfil existente do usuário
+    // Se o usuário já tem uma foto de perfil, usar ela (não substituir pela foto do Google)
+    $existingProfilePhoto = $userData['profile_photo'] ?? null;
+    $profilePhotoToUse = null;
+    
+    if (!empty($existingProfilePhoto)) {
+        // Usuário já tem foto de perfil - preservar e usar ela
+        $profilePhotoToUse = $existingProfilePhoto;
+    } else {
+        // Usuário não tem foto de perfil - usar foto do Google (ou logo padrão)
+        $profilePhotoToUse = $googlePicture;
+        
+        // Salvar foto do Google no banco apenas se não houver foto existente
+        if ($googlePicture) {
+            $updatePhotoStmt = $pdo->prepare("UPDATE users SET profile_photo = ? WHERE id = ?");
+            $updatePhotoStmt->execute([$googlePicture, $userId]);
+        }
+    }
+    
     // Atualizar dados da conta Google vinculada (último login)
+    // Atualizar a tabela google_accounts com a foto do Google, mas não substituir a foto do usuário
     $stmt = $pdo->prepare("
         UPDATE google_accounts 
         SET google_id = :google_id, 
@@ -447,14 +468,8 @@ try {
     $_SESSION['login_time'] = time();
     $_SESSION['login_method'] = 'google'; // Marcar que foi login via Google
     
-    // Sempre usar a foto (pode ser do Google ou logo do sistema como fallback)
-    $_SESSION['profile_photo'] = $googlePicture;
-    
-    // Salvar foto de perfil no banco de dados também
-    if ($googlePicture) {
-        $updatePhotoStmt = $pdo->prepare("UPDATE users SET profile_photo = ? WHERE id = ?");
-        $updatePhotoStmt->execute([$googlePicture, $userId]);
-    }
+    // Usar a foto preservada (existente ou Google se não houver)
+    $_SESSION['profile_photo'] = $profilePhotoToUse;
     
     // Determinar redirect baseado no role
     $role = $existingUser['role'];

@@ -82,12 +82,162 @@ if (!defined('CONFIG_MYSQL_LOADED')) {
         if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'LOCAL');
     } else {
         // AMBIENTE DE PRODUÇÃO (HOSPEDAGEM)
-        // Usar variáveis de ambiente se disponíveis, senão usar valores padrão (fallback)
-        if (!defined('DB_HOST')) define('DB_HOST', getEnvValue('DB_HOST_PROD', 'localhost'));
-        if (!defined('DB_NAME')) define('DB_NAME', getEnvValue('DB_NAME_PROD', 'u311882628_lactech_lgmato'));
-        if (!defined('DB_USER')) define('DB_USER', getEnvValue('DB_USER_PROD', 'u311882628_xandriaAgro'));
-        if (!defined('DB_PASS')) define('DB_PASS', getEnvValue('DB_PASS_PROD', 'Lavosier0012!'));
-        if (!defined('BASE_URL')) define('BASE_URL', getEnvValue('BASE_URL_PROD', 'https://lactechsys.com/'));
+        // Usar APENAS variáveis de ambiente - SEM fallback com credenciais hardcoded
+        // Aceitar tanto DB_HOST_PROD quanto DB_HOST (sem sufixo)
+        $dbHost = getEnvValue('DB_HOST_PROD') ?: getEnvValue('DB_HOST');
+        $dbName = getEnvValue('DB_NAME_PROD') ?: getEnvValue('DB_NAME');
+        $dbUser = getEnvValue('DB_USER_PROD') ?: getEnvValue('DB_USER');
+        $dbPass = getEnvValue('DB_PASS_PROD') ?: getEnvValue('DB_PASS');
+        $baseUrl = getEnvValue('BASE_URL_PROD') ?: getEnvValue('BASE_URL');
+        
+        // Validar que todas as variáveis necessárias estão definidas
+        if (empty($dbHost) || empty($dbName) || empty($dbUser)) {
+            // Criar mensagem de erro amigável
+            $errorMessage = 'Configuração do banco de dados não encontrada.';
+            $instructions = 'Por favor, verifique o arquivo .env.production na raiz do projeto com as credenciais do banco de dados.';
+            
+            // Debug: Verificar quais variáveis estão disponíveis
+            $debugInfo = '';
+            $availableVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'DB_HOST_PROD', 'DB_NAME_PROD', 'DB_USER_PROD', 'DB_PASS_PROD'];
+            $foundVars = [];
+            foreach ($availableVars as $var) {
+                $val = getEnvValue($var);
+                if (!empty($val)) {
+                    $foundVars[] = $var . '=' . (strlen($val) > 20 ? substr($val, 0, 20) . '...' : $val);
+                }
+            }
+            if (!empty($foundVars)) {
+                $debugInfo = '<p><strong>Variáveis encontradas:</strong> ' . implode(', ', $foundVars) . '</p>';
+            }
+            
+            // Se não estiver em produção (mostrar detalhes), mostrar erro detalhado
+            // Em produção, mostrar página de erro amigável
+            if (headers_sent() === false) {
+                http_response_code(500);
+                header('Content-Type: text/html; charset=utf-8');
+            }
+            
+            // Exibir página de erro amigável
+            echo '<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro de Configuração - LacTech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .error-container {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #dc2626;
+            margin-top: 0;
+        }
+        .error-code {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .instructions {
+            background: #f0f9ff;
+            border-left: 4px solid #0284c7;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .env-example {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>⚠️ Erro de Configuração</h1>
+        <div class="error-code">
+            <strong>' . htmlspecialchars($errorMessage) . '</strong>
+        </div>
+        <div class="instructions">
+            <h2>Como resolver:</h2>
+            <p>' . htmlspecialchars($instructions) . '</p>
+            <ol>
+                <li>Acesse o painel de controle da sua hospedagem (cPanel, FTP, etc.)</li>
+                <li>Navegue até a pasta raiz do projeto (onde está o arquivo <code>index.php</code>)</li>
+                <li>Crie um arquivo chamado <code>.env</code> (com o ponto no início)</li>
+                <li>Adicione o seguinte conteúdo (substitua pelos seus dados reais):</li>
+            </ol>
+            <div class="env-example">
+# Opção 1: Com sufixo _PROD (recomendado)<br>
+DB_HOST_PROD=localhost<br>
+DB_NAME_PROD=seu_banco_producao<br>
+DB_USER_PROD=seu_usuario_producao<br>
+DB_PASS_PROD=sua_senha_producao<br>
+<br>
+# Opção 2: Sem sufixo (também aceito)<br>
+DB_HOST=localhost<br>
+DB_NAME=seu_banco_producao<br>
+DB_USER=seu_usuario_producao<br>
+DB_PASS=sua_senha_producao<br>
+<br>
+# Google OAuth<br>
+GOOGLE_CLIENT_ID=seu_google_client_id<br>
+GOOGLE_CLIENT_SECRET=seu_google_client_secret<br>
+GOOGLE_REDIRECT_URI=https://seu-dominio.com/google-callback.php<br>
+GOOGLE_LOGIN_REDIRECT_URI=https://seu-dominio.com/google-login-callback.php<br>
+<br>
+# URL Base<br>
+BASE_URL_PROD=https://seu-dominio.com/<br>
+# ou<br>
+BASE_URL=https://seu-dominio.com/
+            </div>
+            ' . $debugInfo . '
+            <p><strong>Importante:</strong> Certifique-se de que o arquivo <code>.env</code> tenha permissões de leitura corretas (geralmente 644).</p>
+        </div>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+            Se você já criou o arquivo .env e ainda está vendo este erro, verifique:
+            <ul>
+                <li>O arquivo está na raiz do projeto (mesma pasta que index.php)</li>
+                <li>O nome do arquivo está correto (começa com ponto: <code>.env</code>)</li>
+                <li>As variáveis estão preenchidas com os valores corretos</li>
+                <li>Não há espaços antes ou depois dos sinais de igual (=)</li>
+            </ul>
+        </p>
+    </div>
+</body>
+</html>';
+            exit;
+        }
+        
+        if (!defined('DB_HOST')) define('DB_HOST', $dbHost);
+        if (!defined('DB_NAME')) define('DB_NAME', $dbName);
+        if (!defined('DB_USER')) define('DB_USER', $dbUser);
+        if (!defined('DB_PASS')) define('DB_PASS', $dbPass ?: ''); // Senha pode ser vazia
+        if (!defined('BASE_URL')) define('BASE_URL', $baseUrl ?: 'https://lactechsys.com/');
         if (!defined('ENVIRONMENT')) define('ENVIRONMENT', 'PRODUCTION');
     }
     

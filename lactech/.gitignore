@@ -6,11 +6,18 @@
 .env.local
 .env.production
 .env.*.local
+**/.env
+**/.env.*
 
 # Arquivos de configuração com dados sensíveis
 includes/config_google.php
+includes/config_mysql.php
 includes/config_local.php
 includes/config_prod.php
+includes/config.php
+config_google.php
+config_mysql.php
+config.php
 api/client_secret*.json
 
 # Arquivos de log (podem conter informações sensíveis)
@@ -24,7 +31,6 @@ backup/*.gz
 backup/*.zip
 
 # Outros arquivos sensíveis
-config_google.php
 *.pem
 *.key
 *.crt

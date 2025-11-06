@@ -25,7 +25,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/js/config_mysql.js"></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
     <script>
