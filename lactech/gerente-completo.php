@@ -219,7 +219,7 @@ $v = time();
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="LacTech">
     <meta name="description" content="Sistema completo de gestão para fazendas leiteiras">
     <title>LacTech - Dashboard Gerente</title>
@@ -239,6 +239,17 @@ $v = time();
     
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
+    
+    <!-- Apple Touch Startup Images (Splash Screen) - Logo sem fundo preto -->
+    <!-- A splash screen do PWA usa o background_color do manifest (branco) e a logo centralizada -->
+    <style>
+        /* Estilo para splash screen do PWA - logo sem fundo preto */
+        @media all and (display-mode: standalone) {
+            body {
+                background-color: #ffffff !important;
+            }
+        }
+    </style>
     
     <!-- Favicon -->
     <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
