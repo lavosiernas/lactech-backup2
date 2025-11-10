@@ -81,6 +81,7 @@ if (!defined('APP_NAME')) define('APP_NAME', 'LacTech - Lagoa do Mato');
 if (!defined('APP_VERSION')) define('APP_VERSION', '2.0.0');
 if (!defined('FARM_NAME')) define('FARM_NAME', 'Lagoa do Mato');
 if (!defined('FARM_ID')) define('FARM_ID', 1);
+if (!defined('SESSION_COOKIE_LIFETIME')) define('SESSION_COOKIE_LIFETIME', 60 * 60 * 24 * 30); // 30 dias
 
 // URLs do sistema
 if (!defined('LOGIN_URL')) define('LOGIN_URL', 'inicio-login.php');
@@ -88,13 +89,29 @@ if (!defined('DASHBOARD_URL')) define('DASHBOARD_URL', 'gerente-completo.php');
 
 // Configurações de sessão (antes de iniciar a sessão)
 if (session_status() === PHP_SESSION_NONE) {
+    $isSecure = defined('ENVIRONMENT') && ENVIRONMENT !== 'LOCAL';
+
+    ini_set('session.cookie_lifetime', SESSION_COOKIE_LIFETIME);
+    ini_set('session.gc_maxlifetime', SESSION_COOKIE_LIFETIME);
+    ini_set('session.gc_probability', 1);
+    ini_set('session.gc_divisor', 100);
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
-    if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
-        ini_set('session.cookie_secure', 0); // HTTP local
+    ini_set('session.cookie_secure', $isSecure ? 1 : 0);
+    ini_set('session.cookie_samesite', 'Lax');
+
+    if (PHP_VERSION_ID >= 70300) {
+        session_set_cookie_params([
+            'lifetime' => SESSION_COOKIE_LIFETIME,
+            'path' => '/',
+            'secure' => $isSecure,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
     } else {
-        ini_set('session.cookie_secure', 1); // HTTPS em produção
+        session_set_cookie_params(SESSION_COOKIE_LIFETIME, '/', '', $isSecure, true);
     }
+
     session_start();
 }
 
@@ -177,9 +194,24 @@ function loginUser($email, $password) {
         $_SESSION['password_change_required'] = $user['password_change_required'];
         $_SESSION['logged_in'] = true;
         $_SESSION['login_time'] = time();
-        
-        // Renovar o cookie de sessão para durar 1 ano (permanente)
-        setcookie(session_name(), session_id(), time() + 31536000, '/');
+        $_SESSION['session_expires_at'] = time() + SESSION_COOKIE_LIFETIME;
+
+        session_regenerate_id(true);
+
+        $cookieExpires = time() + SESSION_COOKIE_LIFETIME;
+        $cookieSecure = defined('ENVIRONMENT') && ENVIRONMENT !== 'LOCAL';
+
+        if (PHP_VERSION_ID >= 70300) {
+            setcookie(session_name(), session_id(), [
+                'expires' => $cookieExpires,
+                'path' => '/',
+                'secure' => $cookieSecure,
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+        } else {
+            setcookie(session_name(), session_id(), $cookieExpires, '/', '', $cookieSecure, true);
+        }
         
         // Remover senha da resposta
         unset($user['password']);

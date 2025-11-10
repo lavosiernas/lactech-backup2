@@ -451,28 +451,70 @@ try {
             </div>
             <div class="text-gray-700">
                 <!-- Estatísticas de Produção -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center border border-blue-200">
-                        <div class="text-3xl font-bold text-blue-600 mb-1"><?php echo number_format($total_production, 0); ?>L</div>
-                        <div class="text-sm text-blue-700 font-medium">Produção 7 dias</div>
+                <div class="flex flex-col items-center justify-center py-16 px-6 text-center text-gray-600">
+                    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5V7.5m7.5-3v3M4.5 18.75V9a4.5 4.5 0 014.5-4.5h6a4.5 4.5 0 014.5 4.5v9.75M4.5 18.75h15" />
+                        </svg>
                     </div>
-                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center border border-green-200">
-                        <div class="text-3xl font-bold text-green-600 mb-1"><?php echo number_format($avg_daily_production, 1); ?>L</div>
-                        <div class="text-sm text-green-700 font-medium">Média Diária</div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Estamos em desenvolvimento</h3>
+                    <p class="text-sm text-gray-500 max-w-md">Função disponível em breve. Nossa equipe está finalizando os relatórios para entregar insights completos e confiáveis.</p>
+                </div>
+                <!--
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="p-5 bg-white border border-blue-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18v4a2 2 0 01-2 2H5a2 2 0 01-2-2V3zM3 13h18v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-500 uppercase tracking-wide">Total 7 dias</span>
+                        </div>
+                        <p class="text-2xl font-bold text-blue-600 mb-1"><?php echo number_format($total_production, 0); ?>L</p>
+                        <p class="text-xs text-gray-500">Volume produzido na última semana</p>
                     </div>
-                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 text-center border border-orange-200">
-                        <div class="text-3xl font-bold text-orange-600 mb-1"><?php echo $lactating_cows; ?></div>
-                        <div class="text-sm text-orange-700 font-medium">Animais Ativos</div>
+                    <div class="p-5 bg-white border border-green-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-green-500 uppercase tracking-wide">Média diária</span>
+                        </div>
+                        <p class="text-2xl font-bold text-green-600 mb-1"><?php echo number_format($avg_daily_production, 1); ?>L</p>
+                        <p class="text-xs text-gray-500">Produção média por dia</p>
                     </div>
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center border border-purple-200">
-                        <div class="text-3xl font-bold text-purple-600 mb-1"><?php echo $lactating_cows > 0 ? number_format($avg_daily_production / $lactating_cows, 1) : '0'; ?>L</div>
-                        <div class="text-sm text-purple-700 font-medium">Por Animal</div>
+                    <div class="p-5 bg-white border border-orange-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-orange-500 uppercase tracking-wide">Animais ativos</span>
+                        </div>
+                        <p class="text-2xl font-bold text-orange-600 mb-1"><?php echo $lactating_cows; ?></p>
+                        <p class="text-xs text-gray-500">Animais em lactação</p>
+                    </div>
+                    <div class="p-5 bg-white border border-purple-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-purple-500 uppercase tracking-wide">Por animal</span>
+                        </div>
+                        <p class="text-2xl font-bold text-purple-600 mb-1"><?php echo $lactating_cows > 0 ? number_format($avg_daily_production / max(1, $lactating_cows), 1) : '0'; ?>L</p>
+                        <p class="text-xs text-gray-500">Média diária por lactante</p>
                     </div>
                 </div>
 
                 <!-- Dados de Qualidade -->
                 <?php if(!empty($milk_data)): ?>
-                <div class="mb-8">
+                <div class="mb-8 hidden">
                     <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
                         <svg class="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
@@ -513,7 +555,7 @@ try {
 
                 <!-- Produção Recente -->
                 <?php if(!empty($milk_data)): ?>
-                <div class="mb-8">
+                <div class="mb-8 hidden">
                     <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
                         <svg class="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
@@ -540,7 +582,7 @@ try {
                 <?php endif; ?>
                 
                 <!-- Relatórios Disponíveis -->
-                <div class="bg-gray-50 rounded-xl p-6">
+                <div class="bg-gray-50 rounded-xl p-6 hidden">
                     <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                         <svg class="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clip-rule="evenodd"></path>
@@ -594,36 +636,85 @@ try {
                 </button>
             </div>
             <div class="space-y-4 px-6 pb-6 overflow-y-auto max-h-[calc(100vh-200px)]">
-                <!-- Indicadores do Rebanho - Mobile First -->
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
-                    <h3 class="text-base font-bold text-gray-900 mb-3">Resumo do Rebanho</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p class="text-xl font-bold text-blue-600"><?php echo $total_animals; ?></p>
-                            <p class="text-xs text-gray-600">Total</p>
+                <!-- Indicadores do Rebanho - Remodelado -->
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        Resumo do Rebanho
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-blue-500 uppercase tracking-wide">Total</span>
+                            </div>
+                            <p class="text-2xl font-bold text-blue-600 mb-1"><?php echo $total_animals; ?></p>
+                            <p class="text-xs text-gray-500">Animais cadastrados</p>
                         </div>
-                        <div class="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p class="text-xl font-bold text-green-600"><?php echo $lactating_cows; ?></p>
-                            <p class="text-xs text-gray-600">Lactantes</p>
+                        <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-green-500 uppercase tracking-wide">Lactantes</span>
+                            </div>
+                            <p class="text-2xl font-bold text-green-600 mb-1"><?php echo $lactating_cows; ?></p>
+                            <p class="text-xs text-gray-500">Animais em produção</p>
                         </div>
-                        <div class="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p class="text-xl font-bold text-pink-600"><?php echo $pregnant_cows; ?></p>
-                            <p class="text-xs text-gray-600">Prenhezes</p>
+                        <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-pink-500 uppercase tracking-wide">Prenhes</span>
+                            </div>
+                            <p class="text-2xl font-bold text-pink-600 mb-1"><?php echo $pregnant_cows; ?></p>
+                            <p class="text-xs text-gray-500">Gestação confirmada</p>
                         </div>
-                        <div class="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p class="text-xl font-bold text-orange-600"><?php echo number_format($avg_daily_production, 1); ?>L</p>
-                            <p class="text-xs text-gray-600">Produção/Dia</p>
+                        <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-xs font-semibold text-orange-500 uppercase tracking-wide">Média</span>
+                            </div>
+                            <p class="text-2xl font-bold text-orange-600 mb-1"><?php echo number_format($avg_daily_production, 1); ?>L</p>
+                            <p class="text-xs text-gray-500">Produção média/dia</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Busca Rápida - Mobile Optimized -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <h3 class="text-base font-bold text-gray-900 mb-3">Busca Rápida</h3>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        Busca Rápida
+                    </h3>
                     <div class="space-y-3">
-                        <input type="text" id="searchAnimal" placeholder="Nome ou número do animal..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                        <div class="grid grid-cols-2 gap-2">
-                            <select id="filterStatus" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </span>
+                            <input type="text" id="searchAnimal" placeholder="Nome ou número do animal..." class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm transition-all">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <select id="filterStatus" class="px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm bg-white transition-all">
                                 <option value="">Todos status</option>
                                 <option value="Lactante">Lactante</option>
                                 <option value="Seco">Seco</option>
@@ -631,7 +722,7 @@ try {
                                 <option value="Novilha">Novilha</option>
                                 <option value="Touro">Touro</option>
                             </select>
-                            <select id="filterBreed" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            <select id="filterBreed" class="px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm bg-white transition-all">
                                 <option value="">Todas raças</option>
                                 <option value="Holandesa">Holandesa</option>
                                 <option value="Gir">Gir</option>
@@ -641,7 +732,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Lista de Animais - Mobile Cards -->
+                <!-- Lista de Animais - Cards Remodelados -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-base font-bold text-gray-900">Lista de Animais</h3>
@@ -653,42 +744,52 @@ try {
                         </button>
                     </div>
                     <div id="animalsListContainer" class="space-y-3">
-                        <?php foreach($animals as $animal): ?>
-                        <div class="animal-card p-3 bg-gray-50 rounded-lg border border-gray-200" 
+                        <?php foreach($animals as $animal):
+                            $status_lower = strtolower($animal['status'] ?? '');
+                            $animal_image = './assets/video/vaca.png';
+                            if (strpos($status_lower, 'touro') !== false || strpos($status_lower, 'boi') !== false) {
+                                $animal_image = './assets/video/touro.png';
+                            } elseif (strpos($status_lower, 'bezerro') !== false || strpos($status_lower, 'bezerra') !== false || strpos($status_lower, 'bezzero') !== false || strpos($status_lower, 'bezzera') !== false) {
+                                $animal_image = './assets/video/bezzero.png';
+                            }
+                            $badge_class = 'bg-gray-100 text-gray-800';
+                            if (strpos($status_lower, 'lactante') !== false || strpos($status_lower, 'vaca') !== false) {
+                                $badge_class = 'bg-green-100 text-green-700';
+                            } elseif (strpos($status_lower, 'touro') !== false || strpos($status_lower, 'boi') !== false) {
+                                $badge_class = 'bg-red-100 text-red-700';
+                            }
+                        ?>
+                        <div class="animal-card p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-md transition-all cursor-pointer" 
                              data-name="<?php echo htmlspecialchars(strtolower($animal['name'] ?? '')); ?>"
                              data-number="<?php echo htmlspecialchars(strtolower($animal['animal_number'] ?? '')); ?>"
                              data-status="<?php echo htmlspecialchars($animal['status'] ?? ''); ?>"
                              data-breed="<?php echo htmlspecialchars(strtolower($animal['breed'] ?? '')); ?>"
                              data-id="<?php echo $animal['id'] ?? ''; ?>"
                              data-animal-number="<?php echo htmlspecialchars($animal['animal_number'] ?? ''); ?>">
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-<?php echo $animal['status'] === 'Lactante' ? 'green' : ($animal['status'] === 'Touro' ? 'red' : 'blue'); ?>-500 to-<?php echo $animal['status'] === 'Lactante' ? 'green' : ($animal['status'] === 'Touro' ? 'red' : 'blue'); ?>-600 rounded-lg flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
-                                        </svg>
+                                    <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center shadow-sm">
+                                        <img src="<?php echo $animal_image; ?>" alt="<?php echo htmlspecialchars($animal['status'] ?? 'Animal'); ?>" class="w-full h-full object-contain p-1">
                                     </div>
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-900 text-sm"><?php echo htmlspecialchars($animal['name'] ?? 'Sem nome'); ?></p>
-                                        <p class="text-xs text-gray-600"><?php echo htmlspecialchars($animal['animal_number']); ?> - <?php echo htmlspecialchars($animal['breed']); ?></p>
-                                        <p class="text-xs text-gray-500"><?php echo $animal['age_months']; ?> meses</p>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-sm"><?php echo htmlspecialchars($animal['name'] ?? 'Sem nome'); ?></p>
+                                        <p class="text-xs text-gray-600 mt-0.5">#<?php echo htmlspecialchars($animal['animal_number']); ?> • <?php echo htmlspecialchars($animal['breed']); ?></p>
+                                        <p class="text-xs text-gray-500 mt-0.5"><?php echo $animal['age_months']; ?> meses</p>
                                     </div>
                                 </div>
-                                <div class="text-right">
-                                    <span class="px-2 py-1 bg-<?php echo $animal['status'] === 'Lactante' ? 'green' : ($animal['status'] === 'Touro' ? 'red' : 'blue'); ?>-100 text-<?php echo $animal['status'] === 'Lactante' ? 'green' : ($animal['status'] === 'Touro' ? 'red' : 'blue'); ?>-800 text-xs rounded-full">
-                                        <?php echo htmlspecialchars($animal['status']); ?>
-                                    </span>
-                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $badge_class; ?>">
+                                    <?php echo htmlspecialchars($animal['status'] ?? ''); ?>
+                                </span>
                             </div>
-                            <div class="mt-2 flex space-x-2">
-                                <button onclick="showPedigreeModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg hover:bg-blue-200 transition-colors">
-                                    Ver Pedigree
+                            <div class="flex space-x-2 pt-3 border-t border-gray-200">
+                                <button onclick="showPedigreeModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                                    Pedigree
                                 </button>
-                                <button onclick="editAnimalModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-lg hover:bg-gray-200 transition-colors">
+                                <button onclick="editAnimalModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors">
                                     Editar
                                 </button>
-                                <button onclick="viewAnimalModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-1 bg-green-100 text-green-700 text-xs rounded-lg hover:bg-green-200 transition-colors">
-                                    Ver
+                                <button onclick="viewAnimalModal(<?php echo $animal['id']; ?>)" class="flex-1 px-3 py-2 bg-green-100 text-green-700 text-xs font-medium rounded-lg hover:bg-green-200 transition-colors">
+                                    Ver Detalhes
                                 </button>
                             </div>
                         </div>
@@ -697,58 +798,64 @@ try {
                 </div>
 
                 <!-- Ações Rápidas -->
-                <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-200 mb-8">
                     <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                        <svg class="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+                        <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                         Ações Rápidas
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button onclick="openHealthForm()" class="flex items-center space-x-3 p-4 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all">
-                            <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div class="text-left">
-                                <p class="font-medium text-gray-900">Registrar Saúde</p>
-                                <p class="text-sm text-gray-600">Vacinas e medicamentos</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <button onclick="openHealthForm()" class="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-green-300 hover:shadow-md transition-all group">
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="text-left flex-1">
+                                <p class="font-semibold text-gray-900 text-sm">Registrar Saúde</p>
+                                <p class="text-xs text-gray-600">Vacinas e medicamentos</p>
                             </div>
                         </button>
-                        <button onclick="openReproductionForm()" class="flex items-center space-x-3 p-4 bg-white rounded-lg border border-gray-200 hover:bg-pink-50 hover:border-pink-300 transition-all">
-                            <svg class="w-6 h-6 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div class="text-left">
-                                <p class="font-medium text-gray-900">Registrar Reprodução</p>
-                                <p class="text-sm text-gray-600">Cios e inseminações</p>
+                        <button onclick="openReproductionForm()" class="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-pink-300 hover:shadow-md transition-all group">
+                            <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                                <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="text-left flex-1">
+                                <p class="font-semibold text-gray-900 text-sm">Registrar Reprodução</p>
+                                <p class="text-xs text-gray-600">Cios e inseminações</p>
                             </div>
                         </button>
-                        <button onclick="openRFIDForm()" class="flex items-center space-x-3 p-4 bg-white rounded-lg border border-gray-200 hover:bg-orange-50 hover:border-orange-300 transition-all">
-                            <svg class="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div class="text-left">
-                                <p class="font-medium text-gray-900">Cadastrar RFID</p>
-                                <p class="text-sm text-gray-600">Transponders</p>
+                        <button onclick="openRFIDForm()" class="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all group">
+                            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                                </svg>
+                            </div>
+                            <div class="text-left flex-1">
+                                <p class="font-semibold text-gray-900 text-sm">Cadastrar RFID</p>
+                                <p class="text-xs text-gray-600">Transponders</p>
                             </div>
                         </button>
                     </div>
                 </div>
 
                 <!-- Lista de Animais do Rebanho -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
                     <div class="p-6 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-gray-900 flex items-center">
-                            <svg class="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                            <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
                             Rebanho Completo (<?php echo count($animals); ?> animais)
                         </h3>
-                        <button onclick="openAddAnimalModal()" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all text-sm shadow-md">
+                        <button onclick="openAddAnimalModal()" class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all text-sm shadow-md hover:shadow-lg">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                             </svg>
-                            <span>Adicionar Animal</span>
+                            <span>Adicionar</span>
                         </button>
                     </div>
                     <div class="overflow-x-auto">
@@ -764,8 +871,24 @@ try {
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <?php foreach($animals as $animal): ?>
-                                <tr class="animal-table-row hover:bg-gray-50"
+                                <?php foreach($animals as $animal):
+                                    $status_lower = strtolower($animal['status'] ?? '');
+                                    $table_image = './assets/video/vaca.png';
+                                    if (strpos($status_lower, 'touro') !== false || strpos($status_lower, 'boi') !== false) {
+                                        $table_image = './assets/video/touro.png';
+                                    } elseif (strpos($status_lower, 'bezerro') !== false || strpos($status_lower, 'bezerra') !== false || strpos($status_lower, 'bezzero') !== false || strpos($status_lower, 'bezzera') !== false) {
+                                        $table_image = './assets/video/bezzero.png';
+                                    }
+                                    $row_badge = 'bg-gray-100 text-gray-800';
+                                    if (strpos($status_lower, 'lactante') !== false || strpos($status_lower, 'vaca') !== false) {
+                                        $row_badge = 'bg-green-100 text-green-700';
+                                    } elseif (strpos($status_lower, 'touro') !== false || strpos($status_lower, 'boi') !== false) {
+                                        $row_badge = 'bg-red-100 text-red-700';
+                                    } elseif (strpos($status_lower, 'novilha') !== false) {
+                                        $row_badge = 'bg-yellow-100 text-yellow-700';
+                                    }
+                                ?>
+                                <tr class="animal-table-row hover:bg-gray-50 transition-colors"
                                     data-name="<?php echo htmlspecialchars(strtolower($animal['name'] ?? '')); ?>"
                                     data-number="<?php echo htmlspecialchars(strtolower($animal['animal_number'] ?? '')); ?>"
                                     data-status="<?php echo htmlspecialchars($animal['status'] ?? ''); ?>"
@@ -773,30 +896,22 @@ try {
                                     data-id="<?php echo $animal['id'] ?? ''; ?>">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                <?php echo strtoupper(substr($animal['name'] ?? 'A', 0, 1)); ?>
+                                            <div class="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center mr-4">
+                                                <img src="<?php echo $table_image; ?>" alt="<?php echo htmlspecialchars($animal['status'] ?? 'Animal'); ?>" class="w-full h-full object-contain p-1">
                                             </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">
+                                            <div>
+                                                <div class="text-sm font-semibold text-gray-900">
                                                     <?php echo htmlspecialchars($animal['name'] ?? 'Sem nome'); ?>
                                                 </div>
-                                                <div class="text-sm text-gray-500">
+                                                <div class="text-xs text-gray-500 mt-0.5">
                                                     #<?php echo htmlspecialchars($animal['animal_number']); ?>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                            <?php 
-                                            $status = $animal['status'] ?? '';
-                                            if($status === 'Lactante') echo 'bg-green-100 text-green-800';
-                                            elseif($status === 'Vaca') echo 'bg-blue-100 text-blue-800';
-                                            elseif($status === 'Novilha') echo 'bg-yellow-100 text-yellow-800';
-                                            elseif($status === 'Bezerra' || $status === 'Bezerro') echo 'bg-purple-100 text-purple-800';
-                                            else echo 'bg-gray-100 text-gray-800';
-                                            ?>">
-                                            <?php echo htmlspecialchars($status); ?>
+                                        <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full <?php echo $row_badge; ?>">
+                                            <?php echo htmlspecialchars($animal['status'] ?? ''); ?>
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -815,11 +930,9 @@ try {
                                         ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <div class="flex items-center space-x-2">
-                                            <button onclick="showPedigreeModal(<?php echo $animal['id']; ?>)" class="text-green-600 hover:text-green-800 font-medium">
-                                                Ver Pedigree
-                                            </button>
-                                        </div>
+                                        <button onclick="showPedigreeModal(<?php echo $animal['id']; ?>)" class="text-green-600 hover:text-green-800 font-medium">
+                                            Ver Pedigree
+                                        </button>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
@@ -3378,7 +3491,7 @@ try {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Reprodução registrada com sucesso!');
+                    alert('Registros de reprodução registrados com sucesso!');
                     closeFormModal('reproductionFormModal');
                 } else {
                     alert('Erro ao registrar reprodução: ' + data.message);
@@ -3387,52 +3500,6 @@ try {
             .catch(error => {
                 console.error('Erro:', error);
                 alert('Erro ao registrar reprodução');
-            });
-        });
-
-        document.getElementById('rfidForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            fetch('api/transponders/create.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Transponder RFID cadastrado com sucesso!');
-                    closeFormModal('rfidFormModal');
-                } else {
-                    alert('Erro ao cadastrar RFID: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao cadastrar RFID');
-            });
-        });
-
-        document.getElementById('bcsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            fetch('api/body_condition/create.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Condição corporal registrada com sucesso!');
-                    closeFormModal('bcsFormModal');
-                } else {
-                    alert('Erro ao registrar BCS: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao registrar condição corporal');
             });
         });
     </script>

@@ -1412,6 +1412,10 @@
                         <button class="bg-white text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors whitespace-nowrap">
                             Saiba Mais
                         </button>
+                        <a href="NordPetro/index.php" class="ml-3 inline-flex items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-white transition hover:bg-white/10" target="_blank" rel="noopener noreferrer">
+                            <img src="NordPetro/assets/img/nordpetrol.png" alt="NordPetro" class="h-6 w-6 object-contain">
+                            <span class="text-sm font-semibold tracking-[0.18em] uppercase">NordPetro</span>
+                        </a>
                     </div>
                 </div>
             </div>
