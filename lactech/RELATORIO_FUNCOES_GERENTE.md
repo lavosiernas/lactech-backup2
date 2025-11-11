@@ -202,3 +202,5 @@
 4. Criar APIs para funções faltantes
 5. Integrar modais com APIs existentes
 
+
+

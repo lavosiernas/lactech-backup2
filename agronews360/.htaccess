@@ -46,3 +46,5 @@ RewriteRule ^noticia/([0-9]+)/?$ noticia.php?id=$1 [L,QSA]
     ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
 
+
+

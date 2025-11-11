@@ -77,3 +77,5 @@ O login usa as **mesmas credenciais do Lactech**:
 - Sessões seguras quando logado
 - Proteção CSRF no login
 
+
+

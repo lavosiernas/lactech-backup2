@@ -128,3 +128,5 @@ CREATE TABLE IF NOT EXISTS `agronews_newsletter` (
   KEY `is_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+

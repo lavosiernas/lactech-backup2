@@ -158,3 +158,5 @@ async function loadMastitisAlerts() {
 **Corrigidas**: 3
 **Pendentes**: 26
 
+
+

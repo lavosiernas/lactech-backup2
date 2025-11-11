@@ -379,3 +379,5 @@ i.pregnancy_result = 'pendente'    // ✅ Campo adicional para filtrar
 **Data da Análise**: 2025-01-27
 **Status**: ✅ Completo - Todas as correções aplicadas
 
+
+

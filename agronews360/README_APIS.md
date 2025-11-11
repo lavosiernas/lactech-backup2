@@ -124,3 +124,5 @@ checkAndSyncData();
 - Dados climáticos têm fallback para valores simulados
 - Todas as APIs têm tratamento de erro
 
+
+

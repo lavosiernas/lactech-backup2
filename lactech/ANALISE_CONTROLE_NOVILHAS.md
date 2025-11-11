@@ -239,3 +239,5 @@ Adicionar cálculos:
 4. Implementar projeção até 26 meses
 5. Criar relatórios e gráficos
 
+
+

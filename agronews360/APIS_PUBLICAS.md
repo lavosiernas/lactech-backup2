@@ -122,3 +122,5 @@ Para dados ainda mais precisos, você pode:
 
 Mas o sistema atual já funciona 100% com APIs públicas e gratuitas!
 
+
+

@@ -155,3 +155,5 @@ A **interface frontend está parcialmente implementada**:
 
 **Ação necessária**: Implementar as funcionalidades faltantes na interface para completar o sistema.
 
+
+

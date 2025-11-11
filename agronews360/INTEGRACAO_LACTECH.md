@@ -161,3 +161,5 @@ Se o arquivo existir, a integração é ativada automaticamente.
 - Dados são atualizados automaticamente
 - Erros são logados mas não interrompem o sistema
 
+
+
