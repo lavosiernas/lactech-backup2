@@ -1,5 +1,5 @@
 <!-- OVERLAY COMPLETO DE CONTROLE DE NOVILHAS -->
-<div id="heiferOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[99999] hidden items-center justify-center">
+<div id="heiferOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[99999] hidden" style="display: none;">
     <div class="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
         <!-- Header -->
         <div class="bg-white border-b border-gray-200 shadow-sm">
@@ -15,11 +15,26 @@
                         <p class="text-sm text-gray-500">Gestão completa do nascimento aos 26 meses</p>
                     </div>
                 </div>
-                <button onclick="closeHeiferOverlay()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+                <div class="flex items-center space-x-3">
+                    <button onclick="calculateAllHeiferCosts()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors" id="calculate-costs-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span id="calculate-costs-text">Calcular Custos Automáticos</span>
+                        <span id="calculate-costs-loading" class="hidden ml-2 inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    </button>
+                    <button onclick="openPriceUpdateModal()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Atualizar Preços</span>
+                    </button>
+                    <button onclick="closeHeiferOverlay()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -28,9 +43,9 @@
             <div class="max-w-7xl mx-auto space-y-6">
                 
                 <!-- Dashboard de Estatísticas -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                     <!-- Estatísticas Principais -->
-                    <div class="lg:col-span-8 space-y-6">
+                    <div class="lg:col-span-8 flex flex-col space-y-6">
                         <!-- Cards de Resumo -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <!-- Total de Novilhas -->
@@ -74,7 +89,7 @@
                         </div>
                         
                         <!-- Custos por Categoria -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex-1">
                             <h3 class="text-lg font-bold text-gray-900 mb-4">Custos por Categoria</h3>
                             <div id="costsByCategoryChart" class="space-y-3">
                                 <p class="text-center text-gray-500 py-4">Carregando...</p>
@@ -82,20 +97,12 @@
                         </div>
                     </div>
                     
-                    <!-- Sidebar: Fases e Top 10 -->
-                    <div class="lg:col-span-4 space-y-6">
-                        <!-- Novilhas por Fase -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">Novilhas por Fase</h3>
-                            <div id="heiferPhasesList" class="space-y-2">
-                                <p class="text-center text-gray-500 py-4 text-sm">Carregando...</p>
-                            </div>
-                        </div>
-                        
+                    <!-- Sidebar: Top 10 Mais Caras -->
+                    <div class="lg:col-span-4 flex flex-col">
                         <!-- Top 10 Mais Caras -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">Top 10 Mais Caras</h3>
-                            <div id="topExpensiveList" class="space-y-1">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4 flex-shrink-0">Top 10 Mais Caras</h3>
+                            <div id="topExpensiveList" class="space-y-1 flex-1 overflow-y-auto">
                                 <p class="text-center text-gray-500 py-4 text-sm">Carregando...</p>
                             </div>
                         </div>
@@ -124,15 +131,17 @@
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nome</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Idade</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fase Atual</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Custo Total</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Custo Total</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Média Diária</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Média Mensal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Projeção 26m</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Registros</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Último Custo</th>
                                     <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="heifersTableBody" class="bg-white divide-y divide-gray-200">
                                 <tr>
-                                    <td colspan="8" class="px-6 py-12 text-center">
+                                    <td colspan="9" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-12 h-12 text-gray-300 animate-spin mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -150,4 +159,1629 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Atualização de Preços Diários Full Screen -->
+<div id="priceUpdateModal" class="fixed inset-0 bg-gray-50 z-[100000] hidden overflow-y-auto">
+    <div class="w-full h-full flex flex-col">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold">Atualizar Preços Diários</h1>
+                            <p class="text-red-200 text-sm">Gerencie os preços dos insumos diariamente</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button onclick="closePriceUpdateModal()" class="text-white hover:text-red-200 p-2 flex items-center space-x-2" title="Fechar">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <!-- Data de Atualização -->
+            <div class="bg-white rounded-xl p-6 mb-6 shadow-sm border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Data dos Preços</label>
+                <input type="date" id="price-update-date" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium" value="">
+            </div>
+            
+            <!-- Lista de Categorias -->
+            <div id="price-categories-list" class="space-y-4">
+                <div class="text-center py-12">
+                    <div class="inline-block w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="mt-4 text-gray-600">Carregando categorias...</p>
+                </div>
+            </div>
+            
+            <!-- Botões de Ação -->
+            <div class="bg-white rounded-xl p-6 mt-6 shadow-sm border border-gray-200">
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closePriceUpdateModal()" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold transition-colors flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        <span>Cancelar</span>
+                    </button>
+                    <button onclick="saveAllPrices()" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors flex items-center space-x-2" id="save-all-prices-btn">
+                        <span id="save-all-prices-text">Salvar Todos os Preços</span>
+                        <span id="save-all-prices-loading" class="hidden ml-2 inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de Detalhes da Novilha Full Screen -->
+<div id="heiferDetailsModal" class="fixed inset-0 bg-gray-50 z-[100002] hidden overflow-y-auto">
+    <div class="w-full h-full flex flex-col">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold" id="heifer-details-name">Detalhes da Novilha</h1>
+                            <p class="text-green-200 text-sm" id="heifer-details-subtitle">Informações completas e projeção de custos</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button onclick="calculateHeiferCosts(document.getElementById('heiferDetailsModal').dataset.heiferId)" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors" id="calculate-single-costs-btn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span id="calculate-single-costs-text">Calcular Custos</span>
+                            <span id="calculate-single-costs-loading" class="hidden ml-2 inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        </button>
+                        <button onclick="closeHeiferDetailsModal()" class="text-white hover:text-green-200 p-2 flex items-center space-x-2" title="Fechar">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <!-- Cards de Resumo -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Custo Total -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium text-gray-600">Custo Total</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1" id="heifer-details-total-cost">R$ 0,00</p>
+                </div>
+                
+                <!-- Média Diária -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium text-gray-600">Média Diária</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1" id="heifer-details-avg-daily">R$ 0,00</p>
+                </div>
+                
+                <!-- Média Mensal -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium text-gray-600">Média Mensal</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1" id="heifer-details-avg-monthly">R$ 0,00</p>
+                </div>
+                
+                <!-- Projeção 26 Meses -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium text-gray-600">Projeção 26 Meses</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1" id="heifer-details-projection">R$ 0,00</p>
+                    <p class="text-xs text-gray-500 mt-1" id="heifer-details-remaining-days">0 dias restantes</p>
+                </div>
+            </div>
+            
+            <!-- Informações Básicas -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Informações Básicas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="heifer-details-basic-info">
+                    <p class="text-center text-gray-500 py-4">Carregando...</p>
+                </div>
+            </div>
+            
+            <!-- Abas -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                        <button onclick="switchHeiferDetailsTab('category')" class="heifer-tab-btn border-b-2 border-green-600 py-4 px-1 text-sm font-medium text-green-600" data-tab="category">
+                            Custos por Categoria
+                        </button>
+                        <button onclick="switchHeiferDetailsTab('phase')" class="heifer-tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="phase">
+                            Custos por Fase
+                        </button>
+                        <button onclick="switchHeiferDetailsTab('history')" class="heifer-tab-btn border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="history">
+                            Histórico
+                        </button>
+                    </nav>
+                </div>
+                
+                <div class="p-6">
+                    <div id="heifer-details-tab-content">
+                        <p class="text-center text-gray-500 py-8">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de Histórico de Preços -->
+<div id="priceHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100001] hidden p-4">
+    <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] shadow-2xl overflow-y-auto">
+        <!-- Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900" id="price-history-title">Histórico de Preços</h2>
+                <p class="text-sm text-gray-500 mt-1" id="price-history-subtitle">Histórico completo de preços</p>
+            </div>
+            <button onclick="closePriceHistoryModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Content -->
+        <div class="p-6">
+            <div id="price-history-content" class="space-y-3">
+                <div class="text-center py-8">
+                    <div class="inline-block w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="mt-4 text-gray-600">Carregando histórico...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Adicionar Custo -->
+<div id="addCostModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100004] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <!-- Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Adicionar Custo</h2>
+                <p class="text-sm text-gray-500 mt-1">Registre um novo custo para a novilha</p>
+            </div>
+            <button onclick="closeAddCostModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Content -->
+        <div class="p-6">
+            <form id="add-cost-form" onsubmit="saveCost(event)">
+                <!-- Novilha -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Novilha *</label>
+                    <select id="cost-animal-id" name="animal_id" required class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="">Selecione uma novilha...</option>
+                    </select>
+                </div>
+                
+                <!-- Data do Custo -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Data do Custo *</label>
+                    <input type="date" id="cost-date" name="cost_date" required class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" value="">
+                </div>
+                
+                <!-- Categoria -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Categoria *</label>
+                    <select id="cost-category" name="cost_category" required class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="">Selecione uma categoria...</option>
+                    </select>
+                </div>
+                
+                <!-- Valor do Custo -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Valor do Custo (R$) *</label>
+                    <input type="number" id="cost-amount" name="cost_amount" step="0.01" min="0.01" required class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="0.00">
+                </div>
+                
+                <!-- Descrição/Observações -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Descrição / Observações
+                        <span class="text-sm font-normal text-gray-500 italic">(OPCIONAL)</span>
+                    </label>
+                    <textarea id="cost-description" name="description" rows="3" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Adicione observações sobre este custo..."></textarea>
+                </div>
+                
+                <!-- Botões -->
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeAddCostModal()" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="save-cost-btn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors flex items-center space-x-2">
+                        <span id="save-cost-text">Salvar Custo</span>
+                        <span id="save-cost-loading" class="hidden ml-2 inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Sucesso - Cálculo de Custos -->
+<div id="costCalculationSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100003] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full shadow-2xl transform transition-all">
+        <!-- Content -->
+        <div class="p-6">
+            <!-- Ícone de Sucesso -->
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Título -->
+            <h3 class="text-xl font-bold text-gray-900 text-center mb-2">Custos Calculados com Sucesso!</h3>
+            <p class="text-sm text-gray-600 text-center mb-6">Os custos foram processados e atualizados no sistema.</p>
+            
+            <!-- Detalhes -->
+            <div id="cost-calculation-details" class="bg-gray-50 rounded-lg p-4 mb-6 space-y-2 max-h-48 overflow-y-auto">
+                <!-- Detalhes serão inseridos aqui via JavaScript -->
+            </div>
+            
+            <!-- Botão -->
+            <div class="flex justify-center">
+                <button onclick="closeCostCalculationSuccessModal()" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors flex items-center space-x-2 shadow-md hover:shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Entendi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// API Base
+const HEIFER_API_BASE = 'api/heifer_management.php';
+
+// Variáveis globais
+let priceCategories = [];
+let currentPriceDate = new Date().toISOString().split('T')[0];
+
+// Funções globais para abrir/fechar overlay
+function openHeiferOverlay() {
+    const overlay = document.getElementById('heiferOverlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        // Carregar dados do dashboard
+        loadHeiferDashboard();
+        loadHeifersTable();
+    } else {
+        console.error('Overlay heiferOverlay não encontrado!');
+    }
+}
+
+function closeHeiferOverlay() {
+    const overlay = document.getElementById('heiferOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    // Fechar modais de preços se estiverem abertos
+    const priceModal = document.getElementById('priceUpdateModal');
+    if (priceModal) {
+        priceModal.classList.add('hidden');
+        priceModal.style.display = 'none';
+    }
+    const historyModal = document.getElementById('priceHistoryModal');
+    if (historyModal) {
+        historyModal.classList.add('hidden');
+        historyModal.style.display = 'none';
+    }
+}
+
+// Funções do Modal de Preços
+function openPriceUpdateModal() {
+    const modal = document.getElementById('priceUpdateModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        const dateInput = document.getElementById('price-update-date');
+        if (dateInput) {
+            dateInput.value = currentPriceDate;
+        }
+        loadPriceCategories();
+    }
+}
+
+function closePriceUpdateModal() {
+    const modal = document.getElementById('priceUpdateModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
+function openPriceHistoryModal(categoryId, categoryName) {
+    const modal = document.getElementById('priceHistoryModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex', 'items-center', 'justify-center');
+        document.body.style.overflow = 'hidden';
+        const title = document.getElementById('price-history-title');
+        const subtitle = document.getElementById('price-history-subtitle');
+        if (title) title.textContent = `Histórico de Preços - ${categoryName}`;
+        if (subtitle) subtitle.textContent = 'Histórico completo de variação de preços';
+        loadPriceHistory(categoryId);
+    }
+}
+
+function closePriceHistoryModal() {
+    const modal = document.getElementById('priceHistoryModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex', 'items-center', 'justify-center');
+        document.body.style.overflow = '';
+    }
+}
+
+// ==========================================
+// MODAL DE SUCESSO - CÁLCULO DE CUSTOS
+// ==========================================
+
+// Função para escapar HTML (segurança)
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Abrir modal de sucesso
+function openCostCalculationSuccessModal(messages = []) {
+    const modal = document.getElementById('costCalculationSuccessModal');
+    const detailsContainer = document.getElementById('cost-calculation-details');
+    
+    if (!modal) return;
+    
+    // Renderizar detalhes
+    if (detailsContainer && messages.length > 0) {
+        detailsContainer.innerHTML = messages.map(msg => `
+            <div class="flex items-start space-x-2">
+                <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-sm text-gray-700">${escapeHtml(msg)}</p>
+            </div>
+        `).join('');
+    } else if (detailsContainer) {
+        detailsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center">Processamento concluído com sucesso.</p>';
+    }
+    
+    // Mostrar modal com animação
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // Fechar automaticamente após 5 segundos (opcional - pode ser removido se preferir apenas fechar manualmente)
+    const autoCloseTimeout = setTimeout(() => {
+        closeCostCalculationSuccessModal();
+    }, 5000);
+    
+    // Salvar timeout para poder cancelar se o usuário fechar manualmente
+    modal.dataset.autoCloseTimeout = autoCloseTimeout;
+}
+
+// Fechar modal de sucesso
+function closeCostCalculationSuccessModal() {
+    const modal = document.getElementById('costCalculationSuccessModal');
+    if (modal) {
+        // Cancelar auto-close se existir
+        if (modal.dataset.autoCloseTimeout) {
+            clearTimeout(parseInt(modal.dataset.autoCloseTimeout));
+            delete modal.dataset.autoCloseTimeout;
+        }
+        
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+// ==========================================
+// MODAL DE ADICIONAR CUSTO
+// ==========================================
+
+// Abrir modal de adicionar custo
+async function showAddHeiferCostForm() {
+    const modal = document.getElementById('addCostModal');
+    if (!modal) return;
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    
+    // Definir data padrão como hoje
+    const dateInput = document.getElementById('cost-date');
+    if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
+    
+    // Carregar novilhas e categorias
+    await loadHeifersForCostForm();
+    await loadCategoriesForCostForm();
+}
+
+// Fechar modal de adicionar custo
+function closeAddCostModal() {
+    const modal = document.getElementById('addCostModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+        
+        // Limpar formulário
+        const form = document.getElementById('add-cost-form');
+        if (form) {
+            form.reset();
+        }
+    }
+}
+
+// Carregar novilhas para o select
+async function loadHeifersForCostForm() {
+    const select = document.getElementById('cost-animal-id');
+    if (!select) return;
+    
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=get_heifers_list`);
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.heifers) {
+            select.innerHTML = '<option value="">Selecione uma novilha...</option>' +
+                result.data.heifers.map(heifer => `
+                    <option value="${heifer.id}">${heifer.ear_tag || heifer.name || 'Sem identificação'} - ${heifer.name || ''}</option>
+                `).join('');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar novilhas:', error);
+    }
+}
+
+// Carregar categorias para o select
+async function loadCategoriesForCostForm() {
+    const select = document.getElementById('cost-category');
+    if (!select) return;
+    
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=get_cost_categories`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            // Agrupar por tipo
+            const grouped = {};
+            result.data.forEach(cat => {
+                if (!grouped[cat.category_type]) {
+                    grouped[cat.category_type] = [];
+                }
+                grouped[cat.category_type].push(cat);
+            });
+            
+            select.innerHTML = '<option value="">Selecione uma categoria...</option>';
+            
+            Object.keys(grouped).sort().forEach(type => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = type;
+                grouped[type].forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.category_name;
+                    option.textContent = cat.category_name;
+                    optgroup.appendChild(option);
+                });
+                select.appendChild(optgroup);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+    }
+}
+
+// Salvar custo
+async function saveCost(event) {
+    event.preventDefault();
+    
+    const btn = document.getElementById('save-cost-btn');
+    const text = document.getElementById('save-cost-text');
+    const loading = document.getElementById('save-cost-loading');
+    
+    if (btn) btn.disabled = true;
+    if (text) text.textContent = 'Salvando...';
+    if (loading) loading.classList.remove('hidden');
+    
+    const formData = {
+        animal_id: document.getElementById('cost-animal-id').value,
+        cost_date: document.getElementById('cost-date').value,
+        cost_category: document.getElementById('cost-category').value,
+        cost_amount: parseFloat(document.getElementById('cost-amount').value),
+        description: document.getElementById('cost-description').value || null
+    };
+    
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=add_cost`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Mostrar modal de sucesso
+            openCostCalculationSuccessModal(['Custo adicionado com sucesso!']);
+            
+            // Fechar modal de adicionar custo
+            closeAddCostModal();
+            
+            // Recarregar dados
+            loadHeiferDashboard();
+            loadHeifersTable();
+        } else {
+            alert('Erro ao adicionar custo: ' + (result.error || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao salvar custo:', error);
+        alert('Erro ao salvar custo. Verifique o console para mais detalhes.');
+    } finally {
+        if (btn) btn.disabled = false;
+        if (text) text.textContent = 'Salvar Custo';
+        if (loading) loading.classList.add('hidden');
+    }
+}
+
+// Tornar funções globais
+window.openPriceUpdateModal = openPriceUpdateModal;
+window.closePriceUpdateModal = closePriceUpdateModal;
+window.openPriceHistoryModal = openPriceHistoryModal;
+window.closePriceHistoryModal = closePriceHistoryModal;
+window.openCostCalculationSuccessModal = openCostCalculationSuccessModal;
+window.closeCostCalculationSuccessModal = closeCostCalculationSuccessModal;
+window.showAddHeiferCostForm = showAddHeiferCostForm;
+window.closeAddCostModal = closeAddCostModal;
+window.saveCost = saveCost;
+
+// Carregar categorias de preços
+async function loadPriceCategories() {
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=get_cost_categories`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            priceCategories = result.data;
+            renderPriceCategories();
+        } else {
+            alert('Erro ao carregar categorias de preços');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+        alert('Erro ao carregar categorias de preços');
+    }
+}
+
+// Renderizar categorias de preços
+async function renderPriceCategories() {
+    const container = document.getElementById('price-categories-list');
+    const date = document.getElementById('price-update-date').value || currentPriceDate;
+    
+    if (!priceCategories || priceCategories.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">Nenhuma categoria encontrada</p>';
+        return;
+    }
+    
+    // Filtrar apenas categorias de Alimentação (que têm preços)
+    const alimentacaoCategories = priceCategories.filter(cat => 
+        cat.category_type === 'Alimentação' && 
+        [2, 3, 4, 5, 6].includes(cat.id) // Sucedâneo, Concentrado Inicial, Concentrado Crescimento, Silagem, Feno
+    );
+    
+    // Buscar preços atuais para a data selecionada
+    const categoriesWithPrices = await Promise.all(
+        alimentacaoCategories.map(async (category) => {
+            try {
+                const response = await fetch(`${HEIFER_API_BASE}?action=get_current_price&category_id=${category.id}&date=${date}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    return {
+                        ...category,
+                        current_price: parseFloat(result.data.unit_price) || 0,
+                        current_unit: result.data.unit || 'Unidade',
+                        price_date: result.data.price_date || 'Nunca'
+                    };
+                } else {
+                    return {
+                        ...category,
+                        current_price: category.current_price || 0,
+                        current_unit: category.current_unit || 'Unidade',
+                        price_date: category.price_date || 'Nunca'
+                    };
+                }
+            } catch (error) {
+                console.error(`Erro ao buscar preço de ${category.category_name}:`, error);
+                return {
+                    ...category,
+                    current_price: category.current_price || 0,
+                    current_unit: category.current_unit || 'Unidade',
+                    price_date: category.price_date || 'Nunca'
+                };
+            }
+        })
+    );
+    
+    container.innerHTML = categoriesWithPrices.map(category => {
+        const currentPrice = category.current_price || 0;
+        const currentUnit = category.current_unit || 'Unidade';
+        const priceDate = category.price_date || 'Nunca';
+        const isToday = date === currentPriceDate;
+        const dateFormatted = priceDate !== 'Nunca' ? new Date(priceDate).toLocaleDateString('pt-BR') : 'Nunca';
+        
+        return `
+            <div class="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-red-300 transition-colors shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <h3 class="font-bold text-gray-900 text-lg">${category.category_name}</h3>
+                            ${isToday && currentPrice > 0 ? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Atualizado Hoje</span>' : ''}
+                        </div>
+                        <p class="text-sm text-gray-600">${category.description || ''}</p>
+                    </div>
+                    <button onclick="openPriceHistoryModal(${category.id}, '${escapeHtml(category.category_name)}')" 
+                            class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-2 border border-gray-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span>Histórico</span>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preço Atual (R$)</label>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-lg font-semibold text-gray-700">R$</span>
+                            <input type="number" 
+                                   step="0.01" 
+                                   min="0"
+                                   id="price-${category.id}" 
+                                   value="${currentPrice > 0 ? currentPrice.toFixed(2) : ''}"
+                                   class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg font-semibold"
+                                   placeholder="0.00">
+                            <span class="text-sm text-gray-600 font-medium">/ ${currentUnit}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 flex items-center space-x-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Última atualização: ${dateFormatted}</span>
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Unidade</label>
+                        <select id="unit-${category.id}" 
+                                class="w-full px-3 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 font-medium">
+                            <option value="Litros" ${currentUnit === 'Litros' ? 'selected' : ''}>Litros</option>
+                            <option value="Kg" ${currentUnit === 'Kg' ? 'selected' : ''}>Kg</option>
+                            <option value="Unidade" ${currentUnit === 'Unidade' ? 'selected' : ''}>Unidade</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações (opcional)</label>
+                    <input type="text" 
+                           id="notes-${category.id}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                           placeholder="Ex: Preço atualizado do fornecedor X">
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <button onclick="saveSinglePrice(${category.id}, '${escapeHtml(category.category_name)}', event)" 
+                            class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2" 
+                            id="save-price-btn-${category.id}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>Atualizar Preço</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Função auxiliar para escapar HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Salvar preço individual
+async function saveSinglePrice(categoryId, categoryName, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    const date = document.getElementById('price-update-date').value;
+    
+    if (!date) {
+        alert('Selecione uma data');
+        return;
+    }
+    
+    const priceInput = document.getElementById(`price-${categoryId}`);
+    const unitSelect = document.getElementById(`unit-${categoryId}`);
+    const notesInput = document.getElementById(`notes-${categoryId}`);
+    
+    if (!priceInput || !unitSelect) {
+        alert('Erro: Campos não encontrados');
+        return;
+    }
+    
+    const price = parseFloat(priceInput.value);
+    
+    if (isNaN(price) || price <= 0) {
+        alert('Digite um preço válido (maior que zero)');
+        priceInput.focus();
+        return;
+    }
+    
+    const button = document.getElementById(`save-price-btn-${categoryId}`);
+    const originalText = button ? button.innerHTML : '';
+    
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg><span>Salvando...</span>';
+    }
+    
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=update_daily_price`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                category_id: categoryId,
+                price_date: date,
+                unit_price: price,
+                unit: unitSelect.value,
+                notes: notesInput ? notesInput.value || null : null
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Feedback visual
+            if (button) {
+                button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span>Salvo!</span>';
+                button.classList.remove('bg-red-600', 'hover:bg-red-700');
+                button.classList.add('bg-green-600', 'hover:bg-green-700');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    button.classList.add('bg-red-600', 'hover:bg-red-700');
+                    button.disabled = false;
+                }, 2000);
+            }
+            
+            // Recarregar preços
+            renderPriceCategories();
+        } else {
+            if (button) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+            alert('Erro ao salvar preço: ' + (result.error || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao salvar preço:', error);
+        if (button) {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+        alert('Erro ao salvar preço. Verifique o console para mais detalhes.');
+    }
+}
+
+// Tornar função global
+window.saveSinglePrice = saveSinglePrice;
+
+// Salvar todos os preços
+async function saveAllPrices() {
+    const date = document.getElementById('price-update-date').value;
+    
+    if (!date) {
+        alert('Selecione uma data');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('save-all-prices-btn');
+    const saveText = document.getElementById('save-all-prices-text');
+    const saveLoading = document.getElementById('save-all-prices-loading');
+    
+    if (!saveBtn || !saveText || !saveLoading) {
+        alert('Erro: Elementos do botão não encontrados');
+        return;
+    }
+    
+    saveBtn.disabled = true;
+    saveText.textContent = 'Salvando...';
+    saveLoading.classList.remove('hidden');
+    
+    const alimentacaoCategories = priceCategories.filter(cat => 
+        cat.category_type === 'Alimentação' && 
+        [2, 3, 4, 5, 6].includes(cat.id)
+    );
+    
+    let saved = 0;
+    let errors = 0;
+    const errorMessages = [];
+    
+    for (const category of alimentacaoCategories) {
+        const priceInput = document.getElementById(`price-${category.id}`);
+        const unitSelect = document.getElementById(`unit-${category.id}`);
+        const notesInput = document.getElementById(`notes-${category.id}`);
+        
+        if (!priceInput || !unitSelect) {
+            errors++;
+            errorMessages.push(`${category.category_name}: Campos não encontrados`);
+            continue;
+        }
+        
+        const price = parseFloat(priceInput.value);
+        
+        if (isNaN(price) || price <= 0) {
+            continue; // Pular se preço inválido (não é erro, apenas não atualiza)
+        }
+        
+        try {
+            const response = await fetch(`${HEIFER_API_BASE}?action=update_daily_price`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    category_id: category.id,
+                    price_date: date,
+                    unit_price: price,
+                    unit: unitSelect.value,
+                    notes: notesInput ? notesInput.value || null : null
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                saved++;
+            } else {
+                errors++;
+                errorMessages.push(`${category.category_name}: ${result.error || 'Erro desconhecido'}`);
+            }
+        } catch (error) {
+            console.error(`Erro ao salvar preço de ${category.category_name}:`, error);
+            errors++;
+            errorMessages.push(`${category.category_name}: Erro de conexão`);
+        }
+    }
+    
+    saveBtn.disabled = false;
+    saveText.textContent = 'Salvar Todos os Preços';
+    saveLoading.classList.add('hidden');
+    
+    if (saved > 0) {
+        const message = `${saved} preço(s) atualizado(s) com sucesso!${errors > 0 ? `\n\n${errors} erro(s) ocorreram:\n${errorMessages.join('\n')}` : ''}`;
+        alert(message);
+        loadPriceCategories(); // Recarregar para mostrar novos preços
+    } else if (errors > 0) {
+        alert(`Nenhum preço foi salvo. Erros:\n${errorMessages.join('\n')}`);
+    } else {
+        alert('Nenhum preço foi salvo. Verifique se os valores estão preenchidos.');
+    }
+}
+
+// Tornar função global
+window.saveAllPrices = saveAllPrices;
+
+// Carregar histórico de preços
+async function loadPriceHistory(categoryId) {
+    const container = document.getElementById('price-history-content');
+    
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=get_price_history&category_id=${categoryId}`);
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.length > 0) {
+            // Calcular variação de preços
+            const prices = result.data.map(p => parseFloat(p.unit_price));
+            const maxPrice = Math.max(...prices);
+            const minPrice = Math.min(...prices);
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            
+            container.innerHTML = `
+                <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <p class="text-xs text-blue-600 font-medium mb-1">Maior Preço</p>
+                        <p class="text-lg font-bold text-blue-900">R$ ${maxPrice.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                        <p class="text-xs text-green-600 font-medium mb-1">Menor Preço</p>
+                        <p class="text-lg font-bold text-green-900">R$ ${minPrice.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <p class="text-xs text-purple-600 font-medium mb-1">Preço Médio</p>
+                        <p class="text-lg font-bold text-purple-900">R$ ${avgPrice.toFixed(2)}</p>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Data</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Preço</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Unidade</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Variação</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            ${result.data.map((price, index) => {
+                                const currentPrice = parseFloat(price.unit_price);
+                                const previousPrice = index < result.data.length - 1 ? parseFloat(result.data[index + 1].unit_price) : null;
+                                const variation = previousPrice ? ((currentPrice - previousPrice) / previousPrice * 100).toFixed(2) : null;
+                                const isIncrease = variation && parseFloat(variation) > 0;
+                                const isDecrease = variation && parseFloat(variation) < 0;
+                                
+                                return `
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 py-3 text-sm text-gray-900 font-medium">${new Date(price.price_date).toLocaleDateString('pt-BR')}</td>
+                                        <td class="px-4 py-3 text-sm font-bold text-gray-900">R$ ${currentPrice.toFixed(2)}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">${price.unit}</td>
+                                        <td class="px-4 py-3 text-sm">
+                                            ${variation ? `
+                                                <span class="px-2 py-1 rounded-full text-xs font-semibold ${isIncrease ? 'bg-red-100 text-red-800' : isDecrease ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                                                    ${isIncrease ? '↑' : isDecrease ? '↓' : '='} ${Math.abs(parseFloat(variation)).toFixed(2)}%
+                                                </span>
+                                            ` : '<span class="text-gray-400">-</span>'}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-600">${price.notes || '-'}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">Nenhum histórico encontrado</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+        container.innerHTML = '<p class="text-center text-red-500 py-8">Erro ao carregar histórico</p>';
+    }
+}
+
+// Atualizar data quando mudar
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('price-update-date');
+    if (dateInput) {
+        // Definir data padrão como hoje
+        dateInput.value = currentPriceDate;
+        
+        dateInput.addEventListener('change', function() {
+            currentPriceDate = this.value;
+            // Recarregar preços para a nova data
+            if (priceCategories.length > 0) {
+                renderPriceCategories();
+            } else {
+                loadPriceCategories();
+            }
+        });
+    }
+    
+    // Fechar modais ao clicar fora
+    const priceModal = document.getElementById('priceUpdateModal');
+    if (priceModal) {
+        priceModal.addEventListener('click', function(e) {
+            if (e.target === priceModal) {
+                closePriceUpdateModal();
+            }
+        });
+    }
+    
+    const historyModal = document.getElementById('priceHistoryModal');
+    if (historyModal) {
+        historyModal.addEventListener('click', function(e) {
+            if (e.target === historyModal) {
+                closePriceHistoryModal();
+            }
+        });
+    }
+    
+    // Fechar modal de sucesso ao clicar fora
+    const successModal = document.getElementById('costCalculationSuccessModal');
+    if (successModal) {
+        successModal.addEventListener('click', function(e) {
+            if (e.target === successModal) {
+                closeCostCalculationSuccessModal();
+            }
+        });
+    }
+    
+    // Fechar modal de adicionar custo ao clicar fora
+    const addCostModal = document.getElementById('addCostModal');
+    if (addCostModal) {
+        addCostModal.addEventListener('click', function(e) {
+            if (e.target === addCostModal) {
+                closeAddCostModal();
+            }
+        });
+    }
+});
+
+// ==========================================
+// FUNÇÕES DO DASHBOARD E TABELA
+// ==========================================
+
+// Carregar dashboard
+async function loadHeiferDashboard() {
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=get_dashboard`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            const stats = result.data.statistics || {};
+            const costsByCategory = result.data.costs_by_category || [];
+            const topExpensive = result.data.top_expensive_heifers || [];
+            
+            // Atualizar cards de resumo
+            if (document.getElementById('heiferTotalCount')) {
+                document.getElementById('heiferTotalCount').textContent = stats.total_heifers || 0;
+            }
+            if (document.getElementById('heiferTotalInvestment')) {
+                document.getElementById('heiferTotalInvestment').textContent = `R$ ${(stats.total_invested || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+            if (document.getElementById('heiferAvgCost')) {
+                document.getElementById('heiferAvgCost').textContent = `R$ ${(stats.avg_cost_per_record || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+            
+            // Renderizar custos por categoria
+            renderCostsByCategory(costsByCategory);
+            
+            // Renderizar top 10
+            renderTopExpensive(topExpensive);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+    }
+}
+
+// Renderizar custos por categoria
+function renderCostsByCategory(costs) {
+    const container = document.getElementById('costsByCategoryChart');
+    if (!container) return;
+    
+    if (!costs || costs.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4">Nenhum custo registrado</p>';
+        return;
+    }
+    
+    container.innerHTML = costs.map(cost => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm font-medium text-gray-700">${cost.category_name || cost.category_type || 'Sem categoria'}</span>
+            <span class="text-sm font-bold text-gray-900">R$ ${(cost.total_cost || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        </div>
+    `).join('');
+}
+
+// Renderizar top 10
+function renderTopExpensive(heifers) {
+    const container = document.getElementById('topExpensiveList');
+    if (!container) return;
+    
+    if (!heifers || heifers.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4 text-sm">Nenhuma novilha encontrada</p>';
+        return;
+    }
+    
+    container.innerHTML = heifers.map((heifer, index) => `
+        <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-gray-500">${index + 1}º</span>
+                <span class="text-sm text-gray-700">${heifer.ear_tag || heifer.name || 'Sem identificação'}</span>
+            </div>
+            <span class="text-sm font-bold text-gray-900">R$ ${(heifer.total_cost || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        </div>
+    `).join('');
+}
+
+// Carregar tabela de novilhas
+async function loadHeifersTable() {
+    const tbody = document.getElementById('heifersTableBody');
+    if (!tbody) return;
+    
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=get_heifers_list`);
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.heifers) {
+            renderHeifersTable(result.data.heifers);
+        } else {
+            tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-12 text-center text-gray-500">Nenhuma novilha encontrada</td></tr>';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar tabela:', error);
+        tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-12 text-center text-red-500">Erro ao carregar novilhas</td></tr>';
+    }
+}
+
+// Renderizar tabela de novilhas
+function renderHeifersTable(heifers) {
+    const tbody = document.getElementById('heifersTableBody');
+    if (!tbody) return;
+    
+    if (!heifers || heifers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-12 text-center text-gray-500">Nenhuma novilha encontrada</td></tr>';
+        return;
+    }
+    
+    // Buscar detalhes de cada novilha para calcular médias e projeção
+    Promise.all(heifers.map(heifer => 
+        fetch(`${HEIFER_API_BASE}?action=get_heifer_details&animal_id=${heifer.id}`)
+            .then(r => r.json())
+            .then(r => r.success && r.data ? r.data : null)
+            .catch(() => null)
+    )).then(detailsArray => {
+        tbody.innerHTML = heifers.map((heifer, index) => {
+            const details = detailsArray[index];
+            const totalCost = details ? details.total_cost || 0 : 0;
+            const avgDaily = details ? details.avg_daily_cost || 0 : 0;
+            const avgMonthly = details ? details.avg_monthly_cost || 0 : 0;
+            const projection = details && details.projection ? details.projection.projected_total_26_months || 0 : 0;
+            const ageDays = heifer.age_days || 0;
+            const ageMonths = heifer.age_months || 0;
+            
+            return `
+                <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="openHeiferDetailsModal(${heifer.id})">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${heifer.ear_tag || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${heifer.name || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${ageMonths} meses (${ageDays} dias)</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${heifer.current_phase || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">R$ ${totalCost.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">R$ ${avgDaily.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">R$ ${avgMonthly.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">R$ ${projection.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${details ? details.total_records || 0 : 0}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                        <button onclick="event.stopPropagation(); openHeiferDetailsModal(${heifer.id})" class="text-green-600 hover:text-green-800 font-medium">Ver Detalhes</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    });
+}
+
+// ==========================================
+// FUNÇÕES DO MODAL DE DETALHES
+// ==========================================
+
+// Abrir modal de detalhes
+function openHeiferDetailsModal(heiferId) {
+    const modal = document.getElementById('heiferDetailsModal');
+    if (!modal) return;
+    
+    modal.classList.remove('hidden');
+    modal.dataset.heiferId = heiferId;
+    document.body.style.overflow = 'hidden';
+    
+    loadHeiferDetails(heiferId);
+}
+
+// Fechar modal de detalhes
+function closeHeiferDetailsModal() {
+    const modal = document.getElementById('heiferDetailsModal');
+    if (!modal) return;
+    
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Carregar detalhes da novilha
+async function loadHeiferDetails(heiferId) {
+    try {
+        const response = await fetch(`${HEIFER_API_BASE}?action=get_heifer_details&animal_id=${heiferId}`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            renderHeiferDetails(result.data);
+        } else {
+            alert('Erro ao carregar detalhes da novilha');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar detalhes:', error);
+        alert('Erro ao carregar detalhes da novilha');
+    }
+}
+
+// Renderizar detalhes da novilha
+function renderHeiferDetails(data) {
+    const animal = data.animal || {};
+    const totalCost = data.total_cost || 0;
+    const avgDaily = data.avg_daily_cost || 0;
+    const avgMonthly = data.avg_monthly_cost || 0;
+    const projection = data.projection || {};
+    
+    // Atualizar header
+    if (document.getElementById('heifer-details-name')) {
+        document.getElementById('heifer-details-name').textContent = `${animal.name || 'Sem nome'} - ${animal.ear_tag || 'Sem brinco'}`;
+    }
+    
+    // Atualizar cards de resumo
+    if (document.getElementById('heifer-details-total-cost')) {
+        document.getElementById('heifer-details-total-cost').textContent = `R$ ${totalCost.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+    if (document.getElementById('heifer-details-avg-daily')) {
+        document.getElementById('heifer-details-avg-daily').textContent = `R$ ${avgDaily.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+    if (document.getElementById('heifer-details-avg-monthly')) {
+        document.getElementById('heifer-details-avg-monthly').textContent = `R$ ${avgMonthly.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+    if (document.getElementById('heifer-details-projection')) {
+        document.getElementById('heifer-details-projection').textContent = `R$ ${(projection.projected_total_26_months || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+    if (document.getElementById('heifer-details-remaining-days')) {
+        document.getElementById('heifer-details-remaining-days').textContent = `${projection.remaining_days || 0} dias restantes`;
+    }
+    
+    // Renderizar informações básicas
+    renderHeiferBasicInfo(animal);
+    
+    // Renderizar abas
+    switchHeiferDetailsTab('category', data);
+}
+
+// Renderizar informações básicas
+function renderHeiferBasicInfo(animal) {
+    const container = document.getElementById('heifer-details-basic-info');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div>
+            <p class="text-xs text-gray-500 mb-1">Brinco</p>
+            <p class="text-sm font-medium text-gray-900">${animal.ear_tag || '-'}</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500 mb-1">Data de Nascimento</p>
+            <p class="text-sm font-medium text-gray-900">${animal.birth_date ? new Date(animal.birth_date).toLocaleDateString('pt-BR') : '-'}</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500 mb-1">Idade</p>
+            <p class="text-sm font-medium text-gray-900">${animal.age_months || 0} meses (${animal.age_days || 0} dias)</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500 mb-1">Fase Atual</p>
+            <p class="text-sm font-medium text-gray-900">${animal.current_phase || '-'}</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500 mb-1">Status</p>
+            <p class="text-sm font-medium text-gray-900">${animal.status || '-'}</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500 mb-1">Raça</p>
+            <p class="text-sm font-medium text-gray-900">${animal.breed || '-'}</p>
+        </div>
+    `;
+}
+
+// Trocar abas
+function switchHeiferDetailsTab(tab, data = null) {
+    // Atualizar botões das abas
+    document.querySelectorAll('.heifer-tab-btn').forEach(btn => {
+        btn.classList.remove('border-green-600', 'text-green-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    const activeBtn = document.querySelector(`.heifer-tab-btn[data-tab="${tab}"]`);
+    if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+        activeBtn.classList.add('border-green-600', 'text-green-600');
+    }
+    
+    // Carregar dados se não foram passados
+    if (!data) {
+        const heiferId = document.getElementById('heiferDetailsModal')?.dataset.heiferId;
+        if (heiferId) {
+            loadHeiferDetails(heiferId).then(() => {
+                const response = fetch(`${HEIFER_API_BASE}?action=get_heifer_details&animal_id=${heiferId}`)
+                    .then(r => r.json())
+                    .then(r => r.success && r.data ? r.data : null);
+                response.then(data => {
+                    if (data) renderHeiferDetailsTab(tab, data);
+                });
+            });
+        }
+        return;
+    }
+    
+    renderHeiferDetailsTab(tab, data);
+}
+
+// Renderizar conteúdo da aba
+function renderHeiferDetailsTab(tab, data) {
+    const container = document.getElementById('heifer-details-tab-content');
+    if (!container) return;
+    
+    if (tab === 'category') {
+        const costs = data.costs_by_category || [];
+        container.innerHTML = costs.length > 0 ? `
+            <div class="space-y-3">
+                ${costs.map(cost => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${cost.category_name || cost.category_type || 'Sem categoria'}</p>
+                            <p class="text-xs text-gray-500 mt-1">${cost.total_records || 0} registros</p>
+                        </div>
+                        <p class="text-lg font-bold text-gray-900">R$ ${(cost.total_cost || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '<p class="text-center text-gray-500 py-8">Nenhum custo registrado</p>';
+    } else if (tab === 'phase') {
+        const costs = data.costs_by_phase || [];
+        container.innerHTML = costs.length > 0 ? `
+            <div class="space-y-3">
+                ${costs.map(cost => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${cost.phase_name || 'Sem fase'}</p>
+                            <p class="text-xs text-gray-500 mt-1">${cost.phase_records || 0} registros</p>
+                        </div>
+                        <p class="text-lg font-bold text-gray-900">R$ ${(cost.phase_total_cost || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '<p class="text-center text-gray-500 py-8">Nenhum custo registrado</p>';
+    } else if (tab === 'history') {
+        const costs = data.recent_costs || [];
+        container.innerHTML = costs.length > 0 ? `
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Data</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Categoria</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Valor</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        ${costs.map(cost => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm text-gray-900">${cost.cost_date ? new Date(cost.cost_date).toLocaleDateString('pt-BR') : '-'}</td>
+                                <td class="px-4 py-3 text-sm text-gray-700">${cost.category_name || cost.cost_category || '-'}</td>
+                                <td class="px-4 py-3 text-sm font-bold text-gray-900">R$ ${(cost.cost_amount || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">${cost.notes || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        ` : '<p class="text-center text-gray-500 py-8">Nenhum histórico encontrado</p>';
+    }
+}
+
+// ==========================================
+// FUNÇÕES DE CÁLCULO DE CUSTOS
+// ==========================================
+
+// Calcular custos de todas as novilhas
+async function calculateAllHeiferCosts() {
+    const btn = document.getElementById('calculate-costs-btn');
+    const text = document.getElementById('calculate-costs-text');
+    const loading = document.getElementById('calculate-costs-loading');
+    
+    if (!btn || !text || !loading) return;
+    
+    btn.disabled = true;
+    text.textContent = 'Calculando...';
+    loading.classList.remove('hidden');
+    
+    try {
+        // Primeiro registrar consumo automático
+        const registerResponse = await fetch(`${HEIFER_API_BASE}?action=auto_register_consumption`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ all_heifers: true })
+        });
+        
+        const registerResult = await registerResponse.json();
+        
+        // Depois calcular custos
+        const calculateResponse = await fetch(`${HEIFER_API_BASE}?action=calculate_daily_costs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ all_heifers: true })
+        });
+        
+        const calculateResult = await calculateResponse.json();
+        
+        if (calculateResult.success) {
+            // Preparar mensagens
+            const messages = [];
+            if (registerResult.data?.message) {
+                messages.push(registerResult.data.message);
+            }
+            if (calculateResult.data?.message) {
+                messages.push(calculateResult.data.message);
+            }
+            if (registerResult.data?.processed_days) {
+                messages.push(`${registerResult.data.processed_days} dias de consumo registrados`);
+            }
+            if (calculateResult.data?.processed_days) {
+                messages.push(`${calculateResult.data.processed_days} dias de custos calculados`);
+            }
+            
+            // Mostrar modal de sucesso
+            openCostCalculationSuccessModal(messages);
+            
+            // Recarregar dados
+            loadHeiferDashboard();
+            loadHeifersTable();
+        } else {
+            alert('Erro ao calcular custos: ' + (calculateResult.error || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao calcular custos:', error);
+        alert('Erro ao calcular custos. Verifique o console para mais detalhes.');
+    } finally {
+        btn.disabled = false;
+        text.textContent = 'Calcular Custos Automáticos';
+        loading.classList.add('hidden');
+    }
+}
+
+// Calcular custos de uma novilha específica
+async function calculateHeiferCosts(heiferId) {
+    if (!heiferId) return;
+    
+    const btn = document.getElementById('calculate-single-costs-btn');
+    const text = document.getElementById('calculate-single-costs-text');
+    const loading = document.getElementById('calculate-single-costs-loading');
+    
+    if (btn) btn.disabled = true;
+    if (text) text.textContent = 'Calculando...';
+    if (loading) loading.classList.remove('hidden');
+    
+    try {
+        // Primeiro registrar consumo automático
+        const registerResponse = await fetch(`${HEIFER_API_BASE}?action=auto_register_consumption`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ animal_id: heiferId })
+        });
+        
+        const registerResult = await registerResponse.json();
+        
+        // Depois calcular custos
+        const calculateResponse = await fetch(`${HEIFER_API_BASE}?action=calculate_daily_costs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ animal_id: heiferId })
+        });
+        
+        const calculateResult = await calculateResponse.json();
+        
+        if (calculateResult.success) {
+            // Preparar mensagens
+            const messages = [];
+            if (registerResult.data?.message) {
+                messages.push(registerResult.data.message);
+            }
+            if (calculateResult.data?.message) {
+                messages.push(calculateResult.data.message);
+            }
+            if (registerResult.data?.processed_days) {
+                messages.push(`${registerResult.data.processed_days} dias de consumo registrados`);
+            }
+            if (calculateResult.data?.processed_days) {
+                messages.push(`${calculateResult.data.processed_days} dias de custos calculados`);
+            }
+            
+            // Mostrar modal de sucesso
+            openCostCalculationSuccessModal(messages);
+            
+            // Recarregar dados
+            loadHeiferDetails(heiferId);
+            loadHeifersTable();
+        } else {
+            alert('Erro ao calcular custos: ' + (calculateResult.error || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao calcular custos:', error);
+        alert('Erro ao calcular custos. Verifique o console para mais detalhes.');
+    } finally {
+        if (btn) btn.disabled = false;
+        if (text) text.textContent = 'Calcular Custos';
+        if (loading) loading.classList.add('hidden');
+    }
+}
+
+// Tornar funções globais (garantir que estejam disponíveis)
+window.loadHeiferDashboard = loadHeiferDashboard;
+window.loadHeifersTable = loadHeifersTable;
+window.openHeiferDetailsModal = openHeiferDetailsModal;
+window.closeHeiferDetailsModal = closeHeiferDetailsModal;
+window.switchHeiferDetailsTab = switchHeiferDetailsTab;
+window.calculateAllHeiferCosts = calculateAllHeiferCosts;
+window.calculateHeiferCosts = calculateHeiferCosts;
+
+// Garantir que openHeiferOverlay e closeHeiferOverlay sejam sempre globais
+window.openHeiferOverlay = openHeiferOverlay;
+window.closeHeiferOverlay = closeHeiferOverlay;
+
+</script>
 

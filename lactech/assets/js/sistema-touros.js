@@ -426,7 +426,12 @@ async function handleFormSubmit(e) {
 
 async function viewBullDetails(id) {
     // Redirecionar para página de detalhes
-    window.location.href = `sistema-touros-detalhes.php?id=${id}`;
+    // Redirecionar para gerente-completo.php (modal será aberto via JavaScript)
+    if (window.openBullDetailsModal) {
+        window.openBullDetailsModal(id);
+    } else {
+        window.location.href = 'gerente-completo.php';
+    }
 }
 
 async function deleteBull(id, name) {

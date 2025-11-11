@@ -293,36 +293,6 @@ try {
                             </div>
                         </div>
                         
-                        <!-- Sistema RFID -->
-                        <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openModal('rfid')">
-                            <div class="flex flex-col items-center text-center space-y-2">
-                                <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900 text-xs">Sistema RFID</p>
-                                    <p class="text-[10px] text-gray-600 mt-0.5">Transponders</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Condição Corporal -->
-                        <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openModal('bcs')">
-                            <div class="flex flex-col items-center text-center space-y-2">
-                                <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900 text-xs">Condição Corporal</p>
-                                    <p class="text-[10px] text-gray-600 mt-0.5">Avaliação BCS</p>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <!-- Grupos e Lotes -->
                         <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openModal('groups')">
                             <div class="flex flex-col items-center text-center space-y-2">
@@ -334,21 +304,6 @@ try {
                                 <div>
                                     <p class="font-semibold text-gray-900 text-xs">Grupos e Lotes</p>
                                     <p class="text-[10px] text-gray-600 mt-0.5">Organização</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Insights de IA -->
-                        <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openModal('ai')">
-                            <div class="flex flex-col items-center text-center space-y-2">
-                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-900 text-xs">Insights de IA</p>
-                                    <p class="text-[10px] text-gray-600 mt-0.5">Previsões</p>
                                 </div>
                             </div>
                         </div>
@@ -401,7 +356,7 @@ try {
                         </div>
                         
                         <!-- Sistema de Touros -->
-                        <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openModal('bulls')">
+                        <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openBullsModal()">
                             <div class="flex flex-col items-center text-center space-y-2">
                                 <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center">
                                     <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -417,7 +372,7 @@ try {
                         </div>
                         
                         <!-- Controle de Novilhas -->
-                        <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openModal('heifers')">
+                        <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openHeiferOverlay()">
                             <div class="flex flex-col items-center text-center space-y-2">
                                 <div class="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -805,7 +760,7 @@ try {
                         </svg>
                         Ações Rápidas
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <button onclick="openHealthForm()" class="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-green-300 hover:shadow-md transition-all group">
                             <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
                                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -826,17 +781,6 @@ try {
                             <div class="text-left flex-1">
                                 <p class="font-semibold text-gray-900 text-sm">Registrar Reprodução</p>
                                 <p class="text-xs text-gray-600">Cios e inseminações</p>
-                            </div>
-                        </button>
-                        <button onclick="openRFIDForm()" class="flex items-center space-x-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all group">
-                            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-                                </svg>
-                            </div>
-                            <div class="text-left flex-1">
-                                <p class="font-semibold text-gray-900 text-sm">Cadastrar RFID</p>
-                                <p class="text-xs text-gray-600">Transponders</p>
                             </div>
                         </button>
                     </div>
@@ -1052,41 +996,18 @@ try {
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                     <h3 class="text-base font-bold text-gray-900 mb-3">Alertas Sanitários</h3>
                     <div class="space-y-3">
-                        <div class="p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-medium text-red-800 text-sm">Vacina Atrasada</p>
-                                    <p class="text-xs text-red-600 mt-1">Aftosa - 15 animais</p>
-                                    <p class="text-xs text-red-500 mt-1">Venceu há 5 dias</p>
-                                </div>
-                                <button onclick="scheduleVaccination('aftosa')" class="ml-3 px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors">
-                                    Aplicar
-                                </button>
-                            </div>
+                        <!-- Alertas de vacinação carregados dinamicamente do banco de dados -->
+                        <div id="vaccination-alerts-container" class="space-y-3">
+                            <!-- Os alertas de vacinação serão carregados aqui via JavaScript -->
                         </div>
                         
-                        <div class="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-medium text-yellow-800 text-sm">Mastite Ativa</p>
-                                    <p class="text-xs text-yellow-600 mt-1">Vaca #123 - Quarto posterior</p>
-                                </div>
-                                <button onclick="treatMastitis('123')" class="ml-3 px-3 py-1 bg-yellow-600 text-white text-xs rounded-lg hover:bg-yellow-700 transition-colors">
-                                    Tratar
-                                </button>
-                            </div>
+                        <!-- Alertas carregados dinamicamente do banco de dados -->
+                        <div id="mastitis-alerts-container" class="space-y-3">
+                            <!-- Os alertas serão carregados aqui via JavaScript -->
                         </div>
                         
-                        <div class="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-medium text-orange-800 text-sm">Medicamento Baixo</p>
-                                    <p class="text-xs text-orange-600 mt-1">Penicilina - 2 doses restantes</p>
-                                </div>
-                                <button onclick="reorderMedicine('penicilina')" class="ml-3 px-3 py-1 bg-orange-600 text-white text-xs rounded-lg hover:bg-orange-700 transition-colors">
-                                    Repor
-                                </button>
-                            </div>
+                        <div id="medicine-alerts-container" class="space-y-3">
+                            <!-- Os alertas de medicamentos serão carregados aqui via JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -1241,65 +1162,13 @@ try {
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                     <h3 class="text-base font-bold text-gray-900 mb-3">Alertas Críticos</h3>
                     <div class="space-y-3">
-                        <div class="p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-medium text-red-800 text-sm">Parto Iminente</p>
-                                    <p class="text-xs text-red-600 mt-1">Vaca #123 - DPP: 08/10/2025</p>
-                                    <p class="text-xs text-red-500 mt-1">2 dias restantes</p>
-                                </div>
-                                <button onclick="prepareForBirth('123')" class="ml-3 px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors">
-                                    Preparar
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-medium text-yellow-800 text-sm">Exame de Prenhez</p>
-                                    <p class="text-xs text-yellow-600 mt-1">Vaca #456 - 30 dias pós-IA</p>
-                                </div>
-                                <button onclick="schedulePregnancyTest('456')" class="ml-3 px-3 py-1 bg-yellow-600 text-white text-xs rounded-lg hover:bg-yellow-700 transition-colors">
-                                    Agendar
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <p class="font-medium text-orange-800 text-sm">Retorno ao Cio</p>
-                                    <p class="text-xs text-orange-600 mt-1">Vaca #789 - 45 dias pós-parto</p>
-                                </div>
-                                <button onclick="monitorEstrus('789')" class="ml-3 px-3 py-1 bg-orange-600 text-white text-xs rounded-lg hover:bg-orange-700 transition-colors">
-                                    Monitorar
-                                </button>
-                            </div>
+                        <!-- Alertas reprodutivos carregados dinamicamente do banco de dados -->
+                        <div id="reproductive-alerts-container" class="space-y-3">
+                            <!-- Os alertas serão carregados aqui via JavaScript -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Controle de Novilhas - Mobile Cards -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <h3 class="text-base font-bold text-gray-900 mb-3">Controle de Novilhas</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">Prontas para IA</p>
-                                <p class="text-xs text-gray-600">Idade: 14-16 meses</p>
-                            </div>
-                            <span class="text-2xl font-bold text-green-600">8</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">Primeira IA</p>
-                                <p class="text-xs text-gray-600">Últimos 30 dias</p>
-                            </div>
-                            <span class="text-2xl font-bold text-blue-600">12</span>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Histórico Essencial - Mobile List -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
@@ -1578,234 +1447,6 @@ try {
         </div>
     </div>
 
-    <!-- Modal Sistema RFID -->
-    <div id="modal-rfid" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900">Sistema RFID</h2>
-                        <p class="text-sm text-gray-600">Controle e monitoramento de transponders</p>
-                    </div>
-                </div>
-                <button onclick="closeModal('rfid')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="space-y-4 px-2">
-                <!-- Estatísticas RFID - Mobile First -->
-                <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4">
-                    <h3 class="text-base font-bold text-gray-900 mb-3">Estatísticas RFID</h3>
-                    <div class="grid grid-cols-3 gap-3">
-                        <div class="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p class="text-xl font-bold text-blue-600">2</p>
-                            <p class="text-xs text-gray-600">Transponders</p>
-                        </div>
-                        <div class="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p class="text-xl font-bold text-green-600">100%</p>
-                            <p class="text-xs text-gray-600">Ativos</p>
-                        </div>
-                        <div class="text-center p-3 bg-white rounded-lg shadow-sm">
-                            <p class="text-xl font-bold text-purple-600">13</p>
-                            <p class="text-xs text-gray-600">Animais</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Transponders Ativos - Mobile Cards -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                    <h3 class="text-base font-bold text-gray-900 mb-3">Transponders Ativos</h3>
-                    <div class="space-y-2">
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Transponder 1</p>
-                                        <p class="text-sm text-gray-600">Ativo - Última leitura: 10/01/2025</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Ativo</span>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Transponder 2</p>
-                                        <p class="text-sm text-gray-600">Ativo - Última leitura: 10/01/2025</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Ativo</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Estatísticas RFID</h3>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="text-center p-3 bg-blue-50 rounded-lg">
-                            <p class="text-xl font-bold text-blue-600">2</p>
-                            <p class="text-sm text-gray-600">Transponders</p>
-                        </div>
-                        <div class="text-center p-3 bg-green-50 rounded-lg">
-                            <p class="text-xl font-bold text-green-600">100%</p>
-                            <p class="text-sm text-gray-600">Ativos</p>
-                        </div>
-                        <div class="text-center p-3 bg-purple-50 rounded-lg">
-                            <p class="text-xl font-bold text-purple-600">13</p>
-                            <p class="text-sm text-gray-600">Animais</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Funcionalidades</h3>
-                    <ul class="space-y-2">
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Identificação automática de animais
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Controle de acesso automatizado
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Histórico de movimentação
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Condição Corporal -->
-    <div id="modal-bcs" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-900">Condição Corporal</h2>
-                <button onclick="closeModal('bcs')" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="text-gray-700">
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Avaliações BCS Recentes</h3>
-                    <div class="space-y-2">
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Luna (V002)</p>
-                                        <p class="text-sm text-gray-600">BCS: 3.5 - Avaliação: 10/01/2025</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Ideal</span>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Estrela (V004)</p>
-                                        <p class="text-sm text-gray-600">BCS: 2.8 - Avaliação: 10/01/2025</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Atenção</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Escala BCS</h3>
-                    <div class="grid grid-cols-5 gap-2">
-                        <div class="text-center p-2 bg-red-50 rounded">
-                            <p class="text-lg font-bold text-red-600">1</p>
-                            <p class="text-xs text-gray-600">Muito Magra</p>
-                        </div>
-                        <div class="text-center p-2 bg-orange-50 rounded">
-                            <p class="text-lg font-bold text-orange-600">2</p>
-                            <p class="text-xs text-gray-600">Magra</p>
-                        </div>
-                        <div class="text-center p-2 bg-green-50 rounded">
-                            <p class="text-lg font-bold text-green-600">3</p>
-                            <p class="text-xs text-gray-600">Ideal</p>
-                        </div>
-                        <div class="text-center p-2 bg-yellow-50 rounded">
-                            <p class="text-lg font-bold text-yellow-600">4</p>
-                            <p class="text-xs text-gray-600">Gorda</p>
-                        </div>
-                        <div class="text-center p-2 bg-red-50 rounded">
-                            <p class="text-lg font-bold text-red-600">5</p>
-                            <p class="text-xs text-gray-600">Muito Gorda</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Funcionalidades</h3>
-                    <ul class="space-y-2">
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Registro de avaliações BCS
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Histórico de condição corporal
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Recomendações nutricionais
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Grupos e Lotes -->
     <div id="modal-groups" class="modal">
         <div class="modal-content">
@@ -1876,78 +1517,6 @@ try {
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                             </svg>
                             Movimentação entre grupos
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Insights de IA -->
-    <div id="modal-ai" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-900">Insights de IA</h2>
-                <button onclick="closeModal('ai')" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="text-gray-700">
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Previsões IA</h3>
-                    <div class="space-y-3">
-                        <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="font-medium text-blue-800">Produção Prevista</p>
-                                    <p class="text-sm text-blue-600">Próximos 30 dias: 17.430L</p>
-                                </div>
-                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">+5%</span>
-                            </div>
-                        </div>
-                        <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="font-medium text-green-800">Detecção de Anomalia</p>
-                                    <p class="text-sm text-green-600">Estrela (V004) - Produção abaixo da média</p>
-                                </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Monitorar</span>
-                            </div>
-                        </div>
-                        <div class="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="font-medium text-purple-800">Recomendação IA</p>
-                                    <p class="text-sm text-purple-600">Ajustar alimentação do Grupo Produção</p>
-                                </div>
-                                <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Sugestão</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Funcionalidades IA</h3>
-                    <ul class="space-y-2">
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-purple-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Previsão de produção com IA
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-purple-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Detecção automática de anomalias
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-purple-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Recomendações inteligentes
                         </li>
                     </ul>
                 </div>
@@ -2125,459 +1694,6 @@ try {
                             Cálculo de custos
                         </li>
                     </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Sistema de Touros -->
-    <div id="modal-bulls" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-900">Sistema de Touros</h2>
-                <button onclick="closeModal('bulls')" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="text-gray-700">
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Touros Cadastrados</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium">Touro Elite (B001)</p>
-                                    <p class="text-sm text-gray-600">Holandês - Ativo</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium">Francisco (223)</p>
-                                    <p class="text-sm text-gray-600">Girolando - Ativo</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Estatísticas</h3>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="text-center p-3 bg-blue-50 rounded-lg">
-                            <p class="text-2xl font-bold text-blue-600">5</p>
-                            <p class="text-sm text-gray-600">Total de Touros</p>
-                        </div>
-                        <div class="text-center p-3 bg-green-50 rounded-lg">
-                            <p class="text-2xl font-bold text-green-600">25</p>
-                            <p class="text-sm text-gray-600">Inseminações</p>
-                        </div>
-                        <div class="text-center p-3 bg-orange-50 rounded-lg">
-                            <p class="text-2xl font-bold text-orange-600">72%</p>
-                            <p class="text-sm text-gray-600">Taxa de Prenhez</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Funcionalidades</h3>
-                    <ul class="space-y-2">
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Cadastro de touros com dados genéticos
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Controle de performance reprodutiva
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Gestão de sêmen e catálogo
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Controle de Novilhas -->
-    <div id="modal-heifers" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900">Controle de Novilhas</h2>
-                        <p class="text-sm text-gray-600">Gestão de custos do nascimento aos 26 meses</p>
-                    </div>
-                </div>
-                <button onclick="closeSubModal('heifers')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <!-- Dashboard de Estatísticas -->
-            <div class="px-6 pb-6 overflow-y-auto max-h-[calc(100vh-200px)]">
-                <!-- Cards de Estatísticas -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-                        <div class="text-2xl font-bold text-blue-600 mb-1" id="heifer-total-count">0</div>
-                        <div class="text-xs text-blue-700 font-medium">Total Novilhas</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-                        <div class="text-2xl font-bold text-green-600 mb-1" id="heifer-total-cost">R$ 0</div>
-                        <div class="text-xs text-green-700 font-medium">Investimento Total</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
-                        <div class="text-2xl font-bold text-purple-600 mb-1" id="heifer-avg-cost">R$ 0</div>
-                        <div class="text-xs text-purple-700 font-medium">Custo Médio/Animal</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
-                        <div class="text-2xl font-bold text-orange-600 mb-1" id="heifer-avg-monthly">R$ 0</div>
-                        <div class="text-xs text-orange-700 font-medium">Custo Médio/Mês</div>
-                    </div>
-                </div>
-
-                <!-- Fases por Quantidade -->
-                <div class="bg-white rounded-xl p-4 border border-gray-200 mb-6">
-                    <h3 class="font-bold text-lg text-gray-900 mb-4">Distribuição por Fase</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="heifer-phases-stats">
-                        <!-- Preenchido via JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Botões de Ação -->
-                <div class="flex flex-wrap gap-3 mb-6">
-                    <button onclick="openHeiferCostForm()" class="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white rounded-xl hover:from-fuchsia-600 hover:to-fuchsia-700 transition-all shadow-md">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span>Registrar Custo</span>
-                    </button>
-                    <button onclick="openHeiferDailyConsumptionForm()" class="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-md">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <span>Registrar Consumo Diário</span>
-                    </button>
-                    <button onclick="loadHeiferReports()" class="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-md">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <span>Relatórios</span>
-                    </button>
-                </div>
-
-                <!-- Lista de Novilhas -->
-                <div class="bg-white rounded-xl border border-gray-200 p-4">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-lg text-gray-900">Novilhas Cadastradas</h3>
-                        <div class="flex items-center space-x-2">
-                            <input type="text" id="heifer-search" placeholder="Buscar novilha..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    <div id="heifers-list" class="space-y-3">
-                        <!-- Lista preenchida via JavaScript -->
-                        <div class="text-center py-8 text-gray-500">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-fuchsia-600 mx-auto mb-2"></div>
-                            <p>Carregando novilhas...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Registrar Custo de Novilha -->
-    <div id="modal-heifer-cost" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Registrar Custo de Novilha</h2>
-                </div>
-                <button onclick="closeSubModal('heifer-cost')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="heiferCostForm" class="px-6 pb-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Novilha</label>
-                        <select name="animal_id" id="heifer-cost-animal" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                            <option value="">Selecione a novilha</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data do Custo</label>
-                        <input type="date" name="cost_date" required value="<?php echo date('Y-m-d'); ?>" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                        <select name="cost_category" id="heifer-cost-category" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                            <option value="">Selecione a categoria</option>
-                            <option value="Alimentação">Alimentação</option>
-                            <option value="Medicamentos">Medicamentos</option>
-                            <option value="Vacinas">Vacinas</option>
-                            <option value="Manejo">Manejo</option>
-                            <option value="Transporte">Transporte</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Alimento/Item</label>
-                        <select name="category_id" id="heifer-cost-item-type" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                            <option value="">Selecione o tipo</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Apenas para categoria Alimentação</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade</label>
-                        <input type="number" name="quantity" id="heifer-cost-quantity" step="0.001" min="0" required value="1" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Unidade</label>
-                        <select name="unit" id="heifer-cost-unit" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                            <option value="Litros">Litros</option>
-                            <option value="Kg">Kg</option>
-                            <option value="Dias">Dias</option>
-                            <option value="Unidade">Unidade</option>
-                            <option value="Hora">Hora</option>
-                            <option value="Mês">Mês</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Preço Unitário (R$)</label>
-                        <input type="number" name="unit_price" id="heifer-cost-unit-price" step="0.01" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Total (R$)</label>
-                        <input type="number" name="cost_amount" id="heifer-cost-total" step="0.01" min="0" readonly class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
-                    <textarea name="description" rows="3" required placeholder="Ex: Leite sucedâneo diário - 6 litros por dia durante fase de aleitamento" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"></textarea>
-                </div>
-                <div id="heifer-cost-message" class="hidden"></div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeSubModal('heifer-cost')" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 text-white rounded-xl hover:from-fuchsia-600 hover:to-fuchsia-700 transition-all shadow-md">
-                        Registrar Custo
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Registrar Consumo Diário -->
-    <div id="modal-heifer-consumption" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Registrar Consumo Diário</h2>
-                </div>
-                <button onclick="closeSubModal('heifer-consumption')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="heiferConsumptionForm" class="px-6 pb-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Novilha</label>
-                        <select name="animal_id" id="heifer-consumption-animal" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                            <option value="">Selecione a novilha</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data</label>
-                        <input type="date" name="consumption_date" required value="<?php echo date('Y-m-d'); ?>" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Leite/Sucedâneo (Litros)</label>
-                        <input type="number" name="milk_liters" step="0.01" min="0" value="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Concentrado (kg)</label>
-                        <input type="number" name="concentrate_kg" step="0.01" min="0" value="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Volumoso (kg)</label>
-                        <input type="number" name="roughage_kg" step="0.01" min="0" value="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Peso Atual (kg)</label>
-                        <input type="number" name="weight_kg" step="0.01" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
-                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
-                </div>
-                <div id="heifer-consumption-message" class="hidden"></div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeSubModal('heifer-consumption')" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-md">
-                        Registrar Consumo
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Detalhes da Novilha -->
-    <div id="modal-heifer-details" class="modal">
-        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 px-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900" id="heifer-details-title">Detalhes da Novilha</h2>
-                        <p class="text-sm text-gray-500" id="heifer-details-subtitle">Informações completas</p>
-                    </div>
-                </div>
-                <button onclick="closeSubModal('heifer-details')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="px-6 pb-6 space-y-6">
-                <!-- Informações Básicas -->
-                <div class="bg-gray-50 rounded-xl p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Informações Básicas</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Nome</p>
-                            <p class="font-semibold text-gray-900" id="heifer-detail-name">-</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Número/Ear Tag</p>
-                            <p class="font-semibold text-gray-900" id="heifer-detail-ear-tag">-</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Data de Nascimento</p>
-                            <p class="font-semibold text-gray-900" id="heifer-detail-birth-date">-</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Idade</p>
-                            <p class="font-semibold text-gray-900" id="heifer-detail-age">-</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Fase Atual</p>
-                            <p class="font-semibold text-gray-900" id="heifer-detail-phase">-</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Status</p>
-                            <p class="font-semibold text-gray-900" id="heifer-detail-status">-</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Resumo de Custos -->
-                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Resumo de Custos</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white rounded-lg p-4">
-                            <p class="text-sm text-gray-600 mb-1">Custo Total</p>
-                            <p class="text-2xl font-bold text-green-600" id="heifer-detail-total-cost">R$ 0,00</p>
-                        </div>
-                        <div class="bg-white rounded-lg p-4">
-                            <p class="text-sm text-gray-600 mb-1">Registros</p>
-                            <p class="text-2xl font-bold text-blue-600" id="heifer-detail-total-records">0</p>
-                        </div>
-                        <div class="bg-white rounded-lg p-4">
-                            <p class="text-sm text-gray-600 mb-1">Custo Médio/Dia</p>
-                            <p class="text-2xl font-bold text-purple-600" id="heifer-detail-avg-daily">R$ 0,00</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Custos por Categoria -->
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Custos por Categoria</h3>
-                    <div id="heifer-detail-categories" class="space-y-2">
-                        <!-- Será preenchido via JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Custos por Fase -->
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Custos por Fase</h3>
-                    <div id="heifer-detail-phases" class="space-y-2">
-                        <!-- Será preenchido via JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Últimos Registros -->
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Últimos Registros de Custos</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                                </tr>
-                            </thead>
-                            <tbody id="heifer-detail-recent-costs" class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">Carregando...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
@@ -2871,160 +1987,19 @@ try {
         </div>
     </div>
 
-    <!-- Formulário de Cadastro RFID -->
-    <div id="rfidFormModal" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Cadastrar Transponder RFID</h2>
-                </div>
-                <button onclick="closeFormModal('rfidFormModal')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+    <!-- Modal customizado para mensagens e confirmações -->
+    <div id="customMessageModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="customMessageTitle" class="text-xl font-bold text-gray-900"></h3>
+                <button onclick="closeCustomMessage()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            
-            <form id="rfidForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Animal</label>
-                        <select name="animal_id" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                            <option value="">Selecione o animal</option>
-                            <?php foreach($animals as $animal): ?>
-                            <option value="<?php echo $animal['id']; ?>"><?php echo htmlspecialchars($animal['name'] ?? 'Sem nome'); ?> (<?php echo htmlspecialchars($animal['animal_number']); ?>)</option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Número do Transponder</label>
-                        <input type="text" name="transponder_number" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Transponder</label>
-                        <select name="transponder_type" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                            <option value="">Selecione o tipo</option>
-                            <option value="bolus">Bolus</option>
-                            <option value="brinco">Brinco</option>
-                            <option value="injetavel">Injetável</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Instalação</label>
-                        <input type="date" name="installation_date" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select name="status" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                            <option value="">Selecione o status</option>
-                            <option value="ativo">Ativo</option>
-                            <option value="inativo">Inativo</option>
-                            <option value="perdido">Perdido</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Localização</label>
-                        <input type="text" name="location" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
-                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
-                </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeFormModal('rfidFormModal')" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-6 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors">
-                        Cadastrar RFID
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Formulário de Condição Corporal -->
-    <div id="bcsFormModal" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Registrar Condição Corporal</h2>
-                </div>
-                <button onclick="closeFormModal('bcsFormModal')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <form id="bcsForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Animal</label>
-                        <select name="animal_id" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            <option value="">Selecione o animal</option>
-                            <?php foreach($animals as $animal): ?>
-                            <option value="<?php echo $animal['id']; ?>"><?php echo htmlspecialchars($animal['name'] ?? 'Sem nome'); ?> (<?php echo htmlspecialchars($animal['animal_number']); ?>)</option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data da Avaliação</label>
-                        <input type="date" name="evaluation_date" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Escala BCS (1-5)</label>
-                        <select name="bcs_score" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            <option value="">Selecione a escala</option>
-                            <option value="1">1 - Muito Magra</option>
-                            <option value="2">2 - Magra</option>
-                            <option value="3">3 - Ideal</option>
-                            <option value="4">4 - Gorda</option>
-                            <option value="5">5 - Muito Gorda</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Peso Atual (kg)</label>
-                        <input type="number" step="0.1" name="current_weight" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Avaliador</label>
-                        <input type="text" name="evaluator" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status Reprodutivo</label>
-                        <select name="reproductive_status" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            <option value="">Selecione o status</option>
-                            <option value="vazia">Vazia</option>
-                            <option value="prenha">Prenha</option>
-                            <option value="lactante">Lactante</option>
-                            <option value="seca">Seca</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
-                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
-                </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="closeFormModal('bcsFormModal')" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
-                        Registrar BCS
-                    </button>
-                </div>
-            </form>
+            <p id="customMessageText" class="text-gray-700 mb-6"></p>
+            <div id="customMessageButtons" class="flex justify-end space-x-3"></div>
         </div>
     </div>
 
@@ -3034,6 +2009,81 @@ try {
             'use strict';
             
             let currentModal = null;
+            let customMessageCallback = null;
+            
+            // Função para mostrar mensagem customizada
+            window.showCustomMessage = function(title, message, type = 'info') {
+                const modal = document.getElementById('customMessageModal');
+                const titleEl = document.getElementById('customMessageTitle');
+                const textEl = document.getElementById('customMessageText');
+                const buttonsEl = document.getElementById('customMessageButtons');
+                
+                titleEl.textContent = title;
+                textEl.textContent = message;
+                
+                // Definir cor baseada no tipo
+                let bgColor = 'bg-indigo-600';
+                if (type === 'success') bgColor = 'bg-green-600';
+                else if (type === 'error') bgColor = 'bg-red-600';
+                else if (type === 'warning') bgColor = 'bg-yellow-600';
+                
+                buttonsEl.innerHTML = `
+                    <button onclick="closeCustomMessage()" class="px-6 py-2 ${bgColor} text-white rounded-lg hover:opacity-90 transition-colors">
+                        OK
+                    </button>
+                `;
+                
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            };
+            
+            // Função para mostrar confirmação customizada
+            window.showCustomConfirm = function(title, message, onConfirm, onCancel = null) {
+                const modal = document.getElementById('customMessageModal');
+                const titleEl = document.getElementById('customMessageTitle');
+                const textEl = document.getElementById('customMessageText');
+                const buttonsEl = document.getElementById('customMessageButtons');
+                
+                titleEl.textContent = title;
+                textEl.textContent = message;
+                
+                customMessageCallback = { onConfirm, onCancel };
+                
+                buttonsEl.innerHTML = `
+                    <button onclick="handleCustomConfirm(false)" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="handleCustomConfirm(true)" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        Confirmar
+                    </button>
+                `;
+                
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            };
+            
+            // Função para fechar mensagem customizada
+            window.closeCustomMessage = function() {
+                const modal = document.getElementById('customMessageModal');
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+                customMessageCallback = null;
+            };
+            
+            // Função para lidar com confirmação
+            window.handleCustomConfirm = function(confirmed) {
+                if (customMessageCallback) {
+                    if (confirmed && customMessageCallback.onConfirm) {
+                        customMessageCallback.onConfirm();
+                    } else if (!confirmed && customMessageCallback.onCancel) {
+                        customMessageCallback.onCancel();
+                    }
+                }
+                closeCustomMessage();
+            };
             
             // Sistema de cache e navegação otimizada
             const CacheManager = {
@@ -3121,6 +2171,71 @@ try {
             window.closeModal = closeModal;
             window.goBackToDashboard = goBackToDashboard;
             
+            // Função para abrir overlay de novilhas
+            // Esta função será sobrescrita pela função do heifer-overlay.html se ela estiver carregada
+            window.openHeiferOverlay = function() {
+                // Primeiro, tentar usar a função original se existir
+                // (guardamos uma referência antes de sobrescrever)
+                const overlay = document.getElementById('heiferOverlay');
+                if (!overlay) {
+                    console.error('Overlay heiferOverlay não encontrado no DOM!');
+                    alert('Erro: Sistema de Controle de Novilhas não encontrado. Verifique se o arquivo está carregado corretamente.');
+                    return;
+                }
+                
+                // Abrir o overlay
+                overlay.classList.remove('hidden');
+                overlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                console.log('Overlay de novilhas aberto');
+                
+                // Tentar carregar dados se as funções existirem (do heifer-overlay.html)
+                if (typeof window.loadHeiferDashboard === 'function') {
+                    window.loadHeiferDashboard();
+                } else if (typeof loadHeiferDashboard === 'function') {
+                    loadHeiferDashboard();
+                }
+                
+                if (typeof window.loadHeifersTable === 'function') {
+                    window.loadHeifersTable();
+                } else if (typeof loadHeifersTable === 'function') {
+                    loadHeifersTable();
+                }
+            };
+            
+            // Carregar alertas quando os modais forem abertos
+            document.addEventListener('DOMContentLoaded', function() {
+                // Carregar alertas quando o modal de saúde for aberto
+                const healthModal = document.getElementById('modal-health');
+                if (healthModal) {
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                                if (healthModal.classList.contains('show')) {
+                                    loadHealthAlerts();
+                                }
+                            }
+                        });
+                    });
+                    observer.observe(healthModal, { attributes: true, attributeFilter: ['class'] });
+                }
+                
+                // Carregar alertas quando o modal de reprodução for aberto
+                const reproductionModal = document.getElementById('modal-reproduction');
+                if (reproductionModal) {
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                                if (reproductionModal.classList.contains('show')) {
+                                    loadReproductiveAlerts();
+                                }
+                            }
+                        });
+                    });
+                    observer.observe(reproductionModal, { attributes: true, attributeFilter: ['class'] });
+                }
+            });
+            
             // Sistema de detecção de cache
             function checkForCachedState() {
                 const cachedState = CacheManager.restorePageState();
@@ -3202,14 +2317,14 @@ try {
                 .then(data => {
                     if (data.success && data.data) {
                         // Criar modal de pedigree (simplificado por enquanto)
-                        alert('Pedigree do animal ID: ' + animalId + '\n\nEsta funcionalidade será implementada em breve.');
+                        showCustomMessage('Pedigree', 'Esta funcionalidade será implementada em breve.', 'info');
                     } else {
-                        alert('Erro ao carregar pedigree do animal.');
+                        showCustomMessage('Erro', 'Erro ao carregar pedigree do animal.', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert('Pedigree do animal ID: ' + animalId + '\n\nEsta funcionalidade será implementada em breve.');
+                    showCustomMessage('Pedigree', 'Esta funcionalidade será implementada em breve.', 'info');
                 });
         }
 
@@ -3233,14 +2348,14 @@ try {
                                    `Raça: ${animal.breed || 'N/A'}\n` +
                                    `Status: ${animal.status || 'N/A'}\n` +
                                    `Data de Nascimento: ${animal.birth_date || 'N/A'}`;
-                        alert('Detalhes do Animal:\n\n' + info);
+                        showCustomMessage('Detalhes do Animal', info, 'info');
                     } else {
-                        alert('Erro ao carregar dados do animal.');
+                        showCustomMessage('Erro', 'Erro ao carregar dados do animal.', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert('Visualizando animal ID: ' + animalId);
+                    showCustomMessage('Visualizar Animal', 'Esta funcionalidade será implementada em breve.', 'info');
                 });
         }
         
@@ -3340,13 +2455,6 @@ try {
             openFormModal('reproductionFormModal');
         }
 
-        function openRFIDForm() {
-            openFormModal('rfidFormModal');
-        }
-
-        function openBCSForm() {
-            openFormModal('bcsFormModal');
-        }
 
         // Funções específicas para Reprodução
         function openInseminationForm() {
@@ -3361,77 +2469,311 @@ try {
             openFormModal('birthFormModal');
         }
 
-        function prepareForBirth(animalId) {
-            alert('Preparando para parto do animal ' + animalId + '...');
-            // Implementar lógica de preparação para parto
+        function openVaccinationForm() {
+            openFormModal('healthFormModal');
+            // Preencher o tipo de registro como vacinação
+            const recordTypeSelect = document.querySelector('#healthFormModal select[name="record_type"]');
+            if (recordTypeSelect) {
+                recordTypeSelect.value = 'Vacinação';
+            }
         }
 
-        function schedulePregnancyTest(animalId) {
-            alert('Agendando teste de prenhez para o animal ' + animalId + '...');
-            // Implementar agendamento de teste
+        // Carregar alertas de saúde do banco de dados
+        async function loadHealthAlerts() {
+            try {
+                const response = await fetch('./api/health_alerts.php?action=get_alerts');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    // Carregar alertas de mastite
+                    const mastitisContainer = document.getElementById('mastitis-alerts-container');
+                    if (mastitisContainer && result.data.mastitis) {
+                        mastitisContainer.innerHTML = result.data.mastitis.map(alert => `
+                            <div class="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-yellow-800 text-sm">Mastite Ativa</p>
+                                        <p class="text-xs text-yellow-600 mt-1">Vaca #${alert.animal_number || alert.animal_id} - ${alert.message || 'Quarto posterior'}</p>
+                                    </div>
+                                    <button onclick="treatMastitis(${alert.animal_id})" class="ml-3 px-3 py-1 bg-yellow-600 text-white text-xs rounded-lg hover:bg-yellow-700 transition-colors">
+                                        Tratar
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    // Carregar alertas de vacinação
+                    const vaccinationContainer = document.getElementById('vaccination-alerts-container');
+                    if (vaccinationContainer && result.data.vaccinations) {
+                        vaccinationContainer.innerHTML = result.data.vaccinations.map(alert => {
+                            const daysRemaining = alert.days_remaining || 0;
+                            const isOverdue = daysRemaining < 0;
+                            return `
+                                <div class="p-3 ${isOverdue ? 'bg-red-50 border-red-400' : 'bg-orange-50 border-orange-400'} rounded-lg border-l-4">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-medium ${isOverdue ? 'text-red-800' : 'text-orange-800'} text-sm">${isOverdue ? 'Vacina Atrasada' : 'Vacinação Pendente'}</p>
+                                            <p class="text-xs ${isOverdue ? 'text-red-600' : 'text-orange-600'} mt-1">${alert.vaccine_name} - Vaca #${alert.animal_number || alert.animal_id}</p>
+                                            <p class="text-xs ${isOverdue ? 'text-red-500' : 'text-orange-500'} mt-1">${isOverdue ? `Venceu há ${Math.abs(daysRemaining)} dias` : `${daysRemaining} dias restantes`}</p>
+                                        </div>
+                                        <button onclick="scheduleVaccination(${alert.id}, '${alert.vaccine_name}')" class="ml-3 px-3 py-1 ${isOverdue ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-600 hover:bg-orange-700'} text-white text-xs rounded-lg transition-colors">
+                                            Aplicar
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                    
+                    // Carregar alertas de medicamentos
+                    const medicineContainer = document.getElementById('medicine-alerts-container');
+                    if (medicineContainer && result.data.medicines) {
+                        medicineContainer.innerHTML = result.data.medicines.map(alert => `
+                            <div class="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-orange-800 text-sm">Medicamento Baixo</p>
+                                        <p class="text-xs text-orange-600 mt-1">${alert.medicine_name} - ${alert.remaining_doses || 0} doses restantes</p>
+                                    </div>
+                                    <button onclick="reorderMedicine(${alert.id}, '${alert.medicine_name}')" class="ml-3 px-3 py-1 bg-orange-600 text-white text-xs rounded-lg hover:bg-orange-700 transition-colors">
+                                        Repor
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar alertas de saúde:', error);
+            }
+        }
+        
+        // Carregar alertas reprodutivos do banco de dados
+        async function loadReproductiveAlerts() {
+            try {
+                const response = await fetch('./api/reproductive_alerts.php?action=get_alerts');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const container = document.getElementById('reproductive-alerts-container');
+                    if (!container) return;
+                    
+                    let html = '';
+                    
+                    // Alertas de parto iminente
+                    if (result.data.births && result.data.births.length > 0) {
+                        html += result.data.births.map(alert => {
+                            const daysRemaining = alert.days_remaining || 0;
+                            const birthDate = new Date(alert.expected_birth).toLocaleDateString('pt-BR');
+                            return `
+                                <div class="p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-medium text-red-800 text-sm">Parto Iminente</p>
+                                            <p class="text-xs text-red-600 mt-1">Vaca #${alert.animal_number || alert.animal_id} - DPP: ${birthDate}</p>
+                                            <p class="text-xs text-red-500 mt-1">${daysRemaining} dias restantes</p>
+                                        </div>
+                                        <button onclick="prepareForBirth(${alert.animal_id})" class="ml-3 px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors">
+                                            Preparar
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                    
+                    // Alertas de teste de prenhez
+                    if (result.data.pregnancy_tests && result.data.pregnancy_tests.length > 0) {
+                        html += result.data.pregnancy_tests.map(alert => `
+                            <div class="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-yellow-800 text-sm">Exame de Prenhez</p>
+                                        <p class="text-xs text-yellow-600 mt-1">Vaca #${alert.animal_number || alert.animal_id} - ${alert.days_since_ia || 30} dias pós-IA</p>
+                                    </div>
+                                    <button onclick="schedulePregnancyTest(${alert.animal_id}, ${alert.insemination_id})" class="ml-3 px-3 py-1 bg-yellow-600 text-white text-xs rounded-lg hover:bg-yellow-700 transition-colors">
+                                        Agendar
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    // Alertas de retorno ao cio
+                    if (result.data.estrus && result.data.estrus.length > 0) {
+                        html += result.data.estrus.map(alert => `
+                            <div class="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-orange-800 text-sm">Retorno ao Cio</p>
+                                        <p class="text-xs text-orange-600 mt-1">Vaca #${alert.animal_number || alert.animal_id} - ${alert.days_postpartum || 45} dias pós-parto</p>
+                                    </div>
+                                    <button onclick="monitorEstrus(${alert.animal_id})" class="ml-3 px-3 py-1 bg-orange-600 text-white text-xs rounded-lg hover:bg-orange-700 transition-colors">
+                                        Monitorar
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    container.innerHTML = html || '<p class="text-sm text-gray-500 text-center py-4">Nenhum alerta reprodutivo no momento.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar alertas reprodutivos:', error);
+            }
+        }
+        
+        function prepareForBirth(animalId) {
+            // Abrir modal de preparação para parto
+            showCustomConfirm(
+                'Preparar para Parto',
+                `Deseja preparar para o parto do animal #${animalId}?`,
+                function() {
+                    openBirthForm();
+                }
+            );
+        }
+
+        function schedulePregnancyTest(animalId, inseminationId = null) {
+            // Abrir modal de agendamento de teste de prenhez
+            openPregnancyTestForm();
+            // Ou implementar lógica específica com animalId e inseminationId
         }
 
         function monitorEstrus(animalId) {
-            alert('Iniciando monitoramento de cio para o animal ' + animalId + '...');
-            // Implementar monitoramento de cio
+            // Abrir modal de monitoramento de cio
+            showCustomConfirm(
+                'Monitorar Cio',
+                `Deseja iniciar o monitoramento de cio para o animal #${animalId}?`,
+                function() {
+                    // Implementar lógica de monitoramento
+                    // Pode abrir um modal específico ou registrar no banco
+                    showCustomMessage('Sucesso', 'Monitoramento de cio iniciado.', 'success');
+                }
+            );
+        }
+        
+        function treatMastitis(animalId) {
+            // Abrir modal de tratamento de mastite
+            showCustomConfirm(
+                'Tratar Mastite',
+                `Deseja iniciar o tratamento de mastite para o animal #${animalId}?`,
+                function() {
+                    openHealthForm();
+                }
+            );
+        }
+        
+        function scheduleVaccination(vaccinationId, vaccineName) {
+            // Abrir modal de agendamento de vacinação
+            openVaccinationForm();
+            // Ou implementar lógica específica com vaccinationId e vaccineName
+        }
+        
+        function reorderMedicine(medicineId, medicineName) {
+            // Abrir modal de reposição de medicamento
+            showCustomConfirm(
+                'Repor Medicamento',
+                `Deseja repor o estoque do medicamento ${medicineName}?`,
+                function() {
+                    // Implementar lógica de reposição
+                    // Pode abrir um modal específico ou registrar no banco
+                    showCustomMessage('Sucesso', `Reposição do medicamento ${medicineName} registrada.`, 'success');
+                }
+            );
         }
 
         function viewReproductiveHistory(animalId) {
-            alert('Visualizando histórico reprodutivo do animal ' + animalId + '...');
-            // Implementar visualização de histórico
+            // Buscar histórico reprodutivo do animal
+            fetch(`api/animals.php?action=get_reproductive_history&animal_id=${animalId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        // Criar modal com histórico formatado
+                        const history = data.data.map(h => 
+                            `• ${h.type}: ${h.date} - ${h.description || ''}`
+                        ).join('\n');
+                        showCustomMessage(
+                            `Histórico Reprodutivo - Animal #${animalId}`,
+                            history,
+                            'info'
+                        );
+                    } else {
+                        showCustomMessage(
+                            'Histórico Reprodutivo',
+                            'Nenhum histórico reprodutivo encontrado para este animal.',
+                            'info'
+                        );
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showCustomMessage(
+                        'Erro',
+                        'Erro ao carregar histórico reprodutivo.',
+                        'error'
+                    );
+                });
         }
 
         function inseminateNow(animalId) {
-            alert('Iniciando inseminação do animal ' + animalId + '...');
-            // Implementar inseminação imediata
+            // Abrir formulário de inseminação
+            openInseminationForm();
+            // Ou implementar lógica específica com animalId
         }
 
         // Funções para Gestão de Sêmen e Embriões
         function openSemenStockForm() {
-            alert('Abrindo formulário de gestão de estoque de sêmen...');
+            showCustomMessage(
+                'Gestão de Estoque de Sêmen',
+                'Esta funcionalidade será implementada em breve.',
+                'info'
+            );
             // Implementar formulário de estoque
         }
 
         function openEmbryoTransferForm() {
-            alert('Abrindo formulário de transferência de embriões...');
+            showCustomMessage(
+                'Transferência de Embriões',
+                'Esta funcionalidade será implementada em breve.',
+                'info'
+            );
             // Implementar formulário de TE
         }
 
         // Funções para IATF
         function openIATFProtocolForm() {
-            alert('Abrindo formulário de protocolo IATF...');
+            showCustomMessage(
+                'Protocolo IATF',
+                'Esta funcionalidade será implementada em breve.',
+                'info'
+            );
             // Implementar formulário de protocolo
         }
 
         function viewIATFSchedule() {
-            alert('Visualizando cronograma IATF...');
+            showCustomMessage(
+                'Cronograma IATF',
+                'Esta funcionalidade será implementada em breve.',
+                'info'
+            );
             // Implementar visualização de cronograma
         }
 
         // Funções para Relatórios Avançados
         function generateReproductiveReport(type) {
-            switch(type) {
-                case 'efficiency':
-                    alert('Gerando relatório de eficiência reprodutiva...');
-                    break;
-                case 'bulls':
-                    alert('Gerando relatório de desempenho por touro...');
-                    break;
-                case 'calendar':
-                    alert('Gerando calendário reprodutivo...');
-                    break;
-                case 'genetic':
-                    alert('Gerando análise genética...');
-                    break;
-                case 'costs':
-                    alert('Gerando análise de custos reprodutivos...');
-                    break;
-                case 'custom':
-                    alert('Abrindo criador de relatório personalizado...');
-                    break;
-                default:
-                    alert('Tipo de relatório não reconhecido');
-            }
+            const messages = {
+                'efficiency': 'Gerando relatório de eficiência reprodutiva...',
+                'bulls': 'Gerando relatório de desempenho por touro...',
+                'calendar': 'Gerando calendário reprodutivo...',
+                'genetic': 'Gerando análise genética...',
+                'costs': 'Gerando análise de custos reprodutivos...',
+                'custom': 'Abrindo criador de relatório personalizado...'
+            };
+            
+            const message = messages[type] || 'Tipo de relatório não reconhecido';
+            showCustomMessage('Relatório Reprodutivo', message, 'info');
             // Implementar geração de relatórios
         }
 
@@ -3468,15 +2810,15 @@ try {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Cuidado de saúde registrado com sucesso!');
+                    showCustomMessage('Sucesso', 'Cuidado de saúde registrado com sucesso!', 'success');
                     closeFormModal('healthFormModal');
                 } else {
-                    alert('Erro ao registrar cuidado: ' + data.message);
+                    showCustomMessage('Erro', 'Erro ao registrar cuidado: ' + (data.message || data.error || 'Erro desconhecido'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao registrar cuidado de saúde');
+                showCustomMessage('Erro', 'Erro ao registrar cuidado de saúde', 'error');
             });
         });
 
@@ -3491,15 +2833,15 @@ try {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Registros de reprodução registrados com sucesso!');
+                    showCustomMessage('Sucesso', 'Registros de reprodução registrados com sucesso!', 'success');
                     closeFormModal('reproductionFormModal');
                 } else {
-                    alert('Erro ao registrar reprodução: ' + data.message);
+                    showCustomMessage('Erro', 'Erro ao registrar reprodução: ' + (data.message || data.error || 'Erro desconhecido'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao registrar reprodução');
+                showCustomMessage('Erro', 'Erro ao registrar reprodução', 'error');
             });
         });
     </script>

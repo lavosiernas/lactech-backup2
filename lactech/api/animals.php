@@ -102,6 +102,76 @@ try {
                 sendResponse($animals);
                 break;
                 
+            case 'get_reproductive_history':
+                $animalId = $_GET['animal_id'] ?? null;
+                if (!$animalId) {
+                    sendResponse(null, 'ID do animal não fornecido');
+                }
+                
+                try {
+                    $pdo = $db->getConnection();
+                    $history = [];
+                    
+                    // Buscar inseminações
+                    $stmt = $pdo->prepare("
+                        SELECT 
+                            'insemination' as type,
+                            insemination_date as date,
+                            CONCAT('Inseminação - ', insemination_method) as description,
+                            pregnancy_result as result,
+                            notes
+                        FROM inseminations
+                        WHERE animal_id = ? AND farm_id = 1
+                        ORDER BY insemination_date DESC
+                    ");
+                    $stmt->execute([$animalId]);
+                    $inseminations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $history = array_merge($history, $inseminations);
+                    
+                    // Buscar controles de prenhez
+                    $stmt = $pdo->prepare("
+                        SELECT 
+                            'pregnancy' as type,
+                            pregnancy_date as date,
+                            CONCAT('Controle de Prenhez - ', pregnancy_stage) as description,
+                            ultrasound_result as result,
+                            notes
+                        FROM pregnancy_controls
+                        WHERE animal_id = ? AND farm_id = 1
+                        ORDER BY pregnancy_date DESC
+                    ");
+                    $stmt->execute([$animalId]);
+                    $pregnancies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $history = array_merge($history, $pregnancies);
+                    
+                    // Buscar partos
+                    $stmt = $pdo->prepare("
+                        SELECT 
+                            'birth' as type,
+                            birth_date as date,
+                            CONCAT('Parto - ', IFNULL(calf_sex, 'N/A')) as description,
+                            'concluido' as result,
+                            notes
+                        FROM births
+                        WHERE animal_id = ? AND farm_id = 1
+                        ORDER BY birth_date DESC
+                    ");
+                    $stmt->execute([$animalId]);
+                    $births = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $history = array_merge($history, $births);
+                    
+                    // Ordenar por data (mais recente primeiro)
+                    usort($history, function($a, $b) {
+                        return strtotime($b['date']) - strtotime($a['date']);
+                    });
+                    
+                    sendResponse($history);
+                } catch (PDOException $e) {
+                    error_log("Erro ao buscar histórico reprodutivo: " . $e->getMessage());
+                    sendResponse(null, 'Erro ao buscar histórico reprodutivo');
+                }
+                break;
+                
             default:
                 sendResponse(null, 'Ação não especificada');
         }

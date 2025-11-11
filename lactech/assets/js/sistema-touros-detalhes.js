@@ -1702,11 +1702,11 @@ function escapeHtml(text) {
 
 // Função global para voltar
 window.goBack = function() {
-    window.location.href = 'sistema-touros.php';
+    window.location.href = 'gerente-completo.php';
 };
 
 // Função global para editar touro
 window.editBull = function() {
-    window.location.href = `sistema-touros.php?edit=${BULL_ID}`;
+    window.location.href = 'gerente-completo.php';
 };
 

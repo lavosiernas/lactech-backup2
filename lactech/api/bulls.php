@@ -156,7 +156,7 @@ try {
         $total = $totalResult[0]['total'] ?? 0;
         
         sendJSONResponse([
-            'bulls' => $bulls,
+            'data' => $bulls,
             'pagination' => [
                 'total' => (int)$total,
                 'limit' => $limit,
@@ -288,11 +288,11 @@ try {
         });
         
         $columns = implode(',', array_keys($insertData));
-        $placeholders = ':' . implode(', :', array_keys($insertData));
+        $placeholders = str_repeat('?,', count($insertData) - 1) . '?';
         
         $sql = "INSERT INTO bulls ({$columns}) VALUES ({$placeholders})";
         $stmt = $db->getConnection()->prepare($sql);
-        $stmt->execute($insertData);
+        $stmt->execute(array_values($insertData));
         
         $bull_id = $db->getConnection()->lastInsertId();
         
@@ -306,7 +306,11 @@ try {
                 'recorded_by' => $user_id,
                 'farm_id' => $farm_id
             ];
-            $db->insert('bull_body_condition', $bodyData);
+            
+            $bodyColumns = implode(',', array_keys($bodyData));
+            $bodyPlaceholders = str_repeat('?,', count($bodyData) - 1) . '?';
+            $bodySql = "INSERT INTO bull_body_condition ({$bodyColumns}) VALUES ({$bodyPlaceholders})";
+            $db->query($bodySql, array_values($bodyData));
         }
         
         sendJSONResponse(['id' => $bull_id, 'message' => 'Touro cadastrado com sucesso']);
@@ -448,11 +452,11 @@ try {
         });
         
         $columns = implode(',', array_keys($insertData));
-        $placeholders = ':' . implode(', :', array_keys($insertData));
+        $placeholders = str_repeat('?,', count($insertData) - 1) . '?';
         
         $sql = "INSERT INTO bull_coatings ({$columns}) VALUES ({$placeholders})";
         $stmt = $db->getConnection()->prepare($sql);
-        $stmt->execute($insertData);
+        $stmt->execute(array_values($insertData));
         
         $coating_id = $db->getConnection()->lastInsertId();
         
@@ -572,11 +576,11 @@ try {
         });
         
         $columns = implode(',', array_keys($insertData));
-        $placeholders = ':' . implode(', :', array_keys($insertData));
+        $placeholders = str_repeat('?,', count($insertData) - 1) . '?';
         
         $sql = "INSERT INTO semen_catalog ({$columns}) VALUES ({$placeholders})";
         $stmt = $db->getConnection()->prepare($sql);
-        $stmt->execute($insertData);
+        $stmt->execute(array_values($insertData));
         
         $semen_id = $db->getConnection()->lastInsertId();
         
@@ -591,7 +595,10 @@ try {
             'recorded_by' => $user_id,
             'farm_id' => $farm_id
         ];
-        $db->insert('semen_movements', $movementData);
+        $movementColumns = implode(',', array_keys($movementData));
+        $movementPlaceholders = str_repeat('?,', count($movementData) - 1) . '?';
+        $movementSql = "INSERT INTO semen_movements ({$movementColumns}) VALUES ({$movementPlaceholders})";
+        $db->query($movementSql, array_values($movementData));
         
         sendJSONResponse(['id' => $semen_id, 'message' => 'Sêmen cadastrado com sucesso']);
     }
@@ -674,11 +681,11 @@ try {
         });
         
         $columns = implode(',', array_keys($insertData));
-        $placeholders = ':' . implode(', :', array_keys($insertData));
+        $placeholders = str_repeat('?,', count($insertData) - 1) . '?';
         
         $sql = "INSERT INTO bull_health_records ({$columns}) VALUES ({$placeholders})";
         $stmt = $db->getConnection()->prepare($sql);
-        $stmt->execute($insertData);
+        $stmt->execute(array_values($insertData));
         
         $record_id = $db->getConnection()->lastInsertId();
         
@@ -705,7 +712,10 @@ try {
             'farm_id' => $farm_id
         ];
         
-        $db->insert('bull_body_condition', $insertData);
+        $bodyColumns = implode(',', array_keys($insertData));
+        $bodyPlaceholders = str_repeat('?,', count($insertData) - 1) . '?';
+        $bodySql = "INSERT INTO bull_body_condition ({$bodyColumns}) VALUES ({$bodyPlaceholders})";
+        $db->query($bodySql, array_values($insertData));
         
         sendJSONResponse(['message' => 'Registro de peso/escore criado com sucesso']);
     }
@@ -795,11 +805,11 @@ try {
         });
         
         $columns = implode(',', array_keys($insertData));
-        $placeholders = ':' . implode(', :', array_keys($insertData));
+        $placeholders = str_repeat('?,', count($insertData) - 1) . '?';
         
         $sql = "INSERT INTO bull_documents ({$columns}) VALUES ({$placeholders})";
         $stmt = $db->getConnection()->prepare($sql);
-        $stmt->execute($insertData);
+        $stmt->execute(array_values($insertData));
         
         $document_id = $db->getConnection()->lastInsertId();
         
@@ -978,6 +988,57 @@ try {
             'semen_expiry' => $semenAlerts,
             'low_efficiency' => $lowEfficiency
         ]);
+    }
+    
+    // Buscar touros/animais por nome para autocomplete
+    if ($action === 'search_names' && $method === 'GET') {
+        $query = $_GET['q'] ?? '';
+        $limit = (int)($_GET['limit'] ?? 10);
+        
+        if (empty($query)) {
+            sendJSONResponse([]);
+        }
+        
+        $searchTerm = '%' . $query . '%';
+        
+        // Buscar touros
+        $bulls = $db->query("
+            SELECT 
+                id,
+                COALESCE(name, bull_number) as display_name,
+                bull_number,
+                breed,
+                'touro' as type
+            FROM bulls
+            WHERE farm_id = ? 
+            AND (name LIKE ? OR bull_number LIKE ?)
+            AND is_active = 1
+            ORDER BY name, bull_number
+            LIMIT ?
+        ", [$farm_id, $searchTerm, $searchTerm, $limit]);
+        
+        // Buscar animais (vacas)
+        $animals = $db->query("
+            SELECT 
+                id,
+                COALESCE(name, animal_number) as display_name,
+                animal_number as bull_number,
+                breed,
+                'animal' as type
+            FROM animals
+            WHERE farm_id = ? 
+            AND (name LIKE ? OR animal_number LIKE ?)
+            AND is_active = 1
+            ORDER BY name, animal_number
+            LIMIT ?
+        ", [$farm_id, $searchTerm, $searchTerm, $limit]);
+        
+        $results = array_merge($bulls, $animals);
+        
+        // Limitar resultados finais
+        $results = array_slice($results, 0, $limit);
+        
+        sendJSONResponse($results);
     }
     
     // Ação não encontrada

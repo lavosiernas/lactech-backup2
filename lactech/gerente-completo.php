@@ -116,13 +116,15 @@ try {
                 error_log("DEBUG - Nenhum caminho encontrado!");
             }
         }
-        $current_user_phone = $userData[0]['phone'] ?? '(11) 99999-9999';
+        // Telefone do usuário - usar do banco ou deixar vazio (não usar valor hardcode)
+        $current_user_phone = $userData[0]['phone'] ?? '';
     } else {
         // Se não encontrar no banco, usar sessão ou padrão
         $current_user_name = $_SESSION['user_name'] ?? 'Gerente';
         $current_user_email = $_SESSION['user_email'] ?? '';
         $current_user_photo = null;
-        $current_user_phone = '(11) 99999-9999';
+        // Não usar telefone hardcode - deixar vazio se não houver no banco
+        $current_user_phone = '';
     }
     
     // Buscar dados da fazenda usando prepared statement
@@ -130,26 +132,29 @@ try {
     
     // Verificar se os dados foram retornados antes de acessar
     if (!empty($farmData) && isset($farmData[0])) {
+        // Nome da fazenda - usar do banco ou valor padrão apenas se necessário
         $farm_name = $farmData[0]['name'] ?? 'Lagoa Do Mato';
+        // Telefone e CNPJ - usar do banco ou deixar vazio (não usar valores hardcode)
         $farm_phone = $farmData[0]['phone'] ?? '';
         $farm_cnpj = $farmData[0]['cnpj'] ?? '';
-        // Endereço padrão se não estiver no banco
-        $default_address = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
-        $farm_address = $farmData[0]['address'] ?? $default_address;
+        // Endereço - usar do banco ou deixar vazio (não usar endereço hardcode)
+        $farm_address = $farmData[0]['address'] ?? '';
     } else {
-        $farm_name = 'Lagoa Do Mato';
-        $farm_phone = '';
-        $farm_cnpj = '';
-        $farm_address = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
+        // Se não encontrar dados da fazenda no banco, usar valores padrão mínimos
+        $farm_name = 'Lagoa Do Mato'; // Nome padrão apenas se necessário para exibição
+        $farm_phone = ''; // Não usar telefone hardcode
+        $farm_cnpj = ''; // Não usar CNPJ hardcode
+        $farm_address = ''; // Não usar endereço hardcode - deve ser cadastrado no banco
     }
 } catch (Exception $e) {
     error_log("Erro ao buscar dados do usuário/fazenda: " . $e->getMessage());
     $current_user_photo = null;
-    $current_user_phone = '(11) 99999-9999';
-    $farm_name = 'Lagoa Do Mato';
-    $farm_phone = '';
-    $farm_cnpj = ''; // Não usar valor padrão falso, deixar vazio se não houver no banco
-    $farm_address = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
+    // Não usar telefone hardcode em caso de erro - deixar vazio
+    $current_user_phone = '';
+    $farm_name = 'Lagoa Do Mato'; // Nome padrão apenas se necessário
+    $farm_phone = ''; // Não usar telefone hardcode
+    $farm_cnpj = ''; // Não usar CNPJ hardcode
+    $farm_address = ''; // Não usar endereço hardcode - deve ser cadastrado no banco
 }
 
        // Buscar dados para o modal Mais Opções
@@ -4069,36 +4074,6 @@ $v = time();
                                 </div>
                             </div>
                             
-                            <!-- Sistema RFID -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('rfid')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Sistema RFID</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Transponders</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Condição Corporal -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('bcs')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Condição Corporal</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Avaliação BCS</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <!-- Grupos e Lotes -->
                             <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('groups')">
                                 <div class="flex flex-col items-center text-center space-y-2">
@@ -4110,21 +4085,6 @@ $v = time();
                                     <div>
                                         <p class="font-semibold text-gray-900 text-xs">Grupos e Lotes</p>
                                         <p class="text-[10px] text-gray-600 mt-0.5">Organização</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Insights de IA -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('ai')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Insights de IA</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Previsões</p>
                                     </div>
                                 </div>
                             </div>
@@ -4173,7 +4133,7 @@ $v = time();
                             </div>
                             
                             <!-- Sistema de Touros -->
-                            <a href="sistema-touros.php" class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm hover:shadow-md transition-shadow" onclick="openBullsModal()">
                                 <div class="flex flex-col items-center text-center space-y-2">
                                     <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center">
                                         <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -4186,10 +4146,10 @@ $v = time();
                                         <p class="text-[10px] text-gray-600 mt-0.5">Touros e inseminações</p>
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                             
                             <!-- Controle de Novilhas -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('heifers')">
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openHeiferOverlay()">
                                 <div class="flex flex-col items-center text-center space-y-2">
                                     <div class="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center">
                                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -4270,6 +4230,22 @@ $v = time();
         
         function openSubModal(modalName) {
             console.log('🔓 Abrindo submodal:', modalName);
+            
+            // Se for o modal de novilhas, abrir overlay diretamente
+            if (modalName === 'heifers') {
+                if (typeof window.openHeiferOverlay === 'function') {
+                    window.openHeiferOverlay();
+                } else if (document.getElementById('heiferOverlay')) {
+                    const overlay = document.getElementById('heiferOverlay');
+                    overlay.classList.remove('hidden');
+                    overlay.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    console.error('❌ Overlay de novilhas não encontrado!');
+                }
+                return; // Não procurar pelo modal, já que foi removido
+            }
+            
             if (currentSubModal) {
                 currentSubModal.classList.remove('show');
             }
@@ -4301,6 +4277,20 @@ $v = time();
         
         function closeSubModal(modalName) {
             console.log('🔒 Fechando submodal:', modalName || 'atual');
+            
+            // Se for o overlay de novilhas, fechar usando a função específica
+            if (modalName === 'heifers') {
+                if (typeof window.closeHeiferOverlay === 'function') {
+                    window.closeHeiferOverlay();
+                } else if (document.getElementById('heiferOverlay')) {
+                    const overlay = document.getElementById('heiferOverlay');
+                    overlay.classList.add('hidden');
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+                return;
+            }
+            
             const modal = modalName ? document.getElementById('modal-' + modalName) : currentSubModal;
             if (modal) {
                 modal.classList.remove('show');
@@ -5138,5 +5128,1194 @@ $v = time();
 
     <!-- Proteção contra cópia de código no console -->
     <script src="./assets/js/console-protection.js"></script>
+
+    <!-- Modal Sistema de Touros Full Screen -->
+    <div id="bulls-modal-fullscreen" class="fixed inset-0 bg-gray-50 z-[9999] hidden overflow-y-auto">
+        <div class="w-full h-full flex flex-col">
+            <!-- Header -->
+            <header class="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg sticky top-0 z-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-16">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold">Sistema de Touros</h1>
+                                <p class="text-red-200 text-sm"><?php echo htmlspecialchars($farm_name ?? 'Lagoa Do Mato'); ?></p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <button onclick="openCreateBullModal()" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg font-semibold transition-colors">
+                                Novo Touro
+                            </button>
+                            
+                            <button onclick="closeBullsModal()" class="text-white hover:text-red-200 p-2 flex items-center space-x-2" title="Fechar">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                <!-- Estatísticas Gerais -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm mb-1">Total de Touros</p>
+                                <p class="text-2xl font-bold text-gray-900" id="bulls-stat-total">-</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm mb-1">Em Reprodução</p>
+                                <p class="text-2xl font-bold text-gray-900" id="bulls-stat-breeding">-</p>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm mb-1">Taxa de Eficiência</p>
+                                <p class="text-2xl font-bold text-gray-900" id="bulls-stat-efficiency">-</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm mb-1">Sêmen Disponível</p>
+                                <p class="text-2xl font-bold text-gray-900" id="bulls-stat-semen">-</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="bg-white rounded-xl p-6 mb-8 shadow-sm border border-gray-200">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex-1 min-w-[200px]">
+                            <input type="text" 
+                                   id="bulls-search-input" 
+                                   placeholder="Buscar por nome, código, brinco ou RFID..." 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+                        
+                        <select id="bulls-filter-breed" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+                            <option value="">Todas as raças</option>
+                        </select>
+                        
+                        <select id="bulls-filter-status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+                            <option value="">Todos os status</option>
+                            <option value="ativo">Ativo</option>
+                            <option value="em_reproducao">Em Reprodução</option>
+                            <option value="reserva">Reserva</option>
+                            <option value="descartado">Descartado</option>
+                            <option value="falecido">Falecido</option>
+                        </select>
+                        
+                        <button onclick="bullsLoadBulls()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors">
+                            Filtrar
+                        </button>
+                        
+                        <button onclick="bullsResetFilters()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold transition-colors">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lista de Touros -->
+                <div id="bulls-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards serão carregados via JavaScript -->
+                </div>
+                
+                <!-- Loading -->
+                <div id="bulls-loading" class="text-center py-12 hidden">
+                    <div class="inline-block w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="mt-4 text-gray-600">Carregando touros...</p>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="bulls-empty-state" class="text-center py-12 hidden">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum touro encontrado</h3>
+                    <p class="mt-1 text-sm text-gray-500">Comece criando um novo touro.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de Cadastro/Edição de Touro Full Screen -->
+    <div id="bull-modal" class="fixed inset-0 bg-gray-50 z-[10000] hidden overflow-y-auto">
+        <div class="w-full h-full flex flex-col">
+            <!-- Header -->
+            <header class="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg sticky top-0 z-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-16">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold" id="bull-modal-title">Novo Touro</h1>
+                                <p class="text-red-200 text-sm"><?php echo htmlspecialchars($farm_name ?? 'Lagoa Do Mato'); ?></p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <button onclick="closeBullModal()" class="text-white hover:text-red-200 p-2 flex items-center space-x-2" title="Fechar">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                <form id="bull-form" class="space-y-6">
+                    <input type="hidden" id="bull-id" name="id">
+                    
+                    <!-- Seção: Dados Básicos -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span>Dados Básicos</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Número/Código *</label>
+                            <input type="text" id="bull-number" name="bull_number" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                            <input type="text" id="bull-name" name="name" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Raça *</label>
+                            <input type="text" id="bull-breed" name="breed" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento *</label>
+                            <input type="date" id="bull-birth-date" name="birth_date" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">RFID</label>
+                            <input type="text" id="bull-rfid" name="rfid_code" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nº Brinco</label>
+                            <input type="text" id="bull-earring" name="earring_number" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select id="bull-status" name="status" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <option value="ativo">Ativo</option>
+                                <option value="em_reproducao">Em Reprodução</option>
+                                <option value="reserva">Reserva</option>
+                                <option value="descartado">Descartado</option>
+                                <option value="falecido">Falecido</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Origem</label>
+                            <select id="bull-source" name="source" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <option value="proprio">Próprio</option>
+                                <option value="comprado">Comprado</option>
+                                <option value="arrendado">Arrendado</option>
+                                <option value="doador_genetico">Doador Genético</option>
+                                <option value="inseminacao">Inseminação</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Localização</label>
+                            <input type="text" id="bull-location" name="location" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ativo em Reprodução</label>
+                            <select id="bull-breeding-active" name="is_breeding_active" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <option value="1">Sim</option>
+                                <option value="0">Não</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Peso Inicial (kg)</label>
+                            <input type="number" step="0.01" id="bull-weight" name="weight" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Escore Corporal Inicial (1-5)</label>
+                            <input type="number" step="0.1" min="1" max="5" id="bull-body-score" name="body_score" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção: Genealogia -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                            <span>Genealogia</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pai (Sire)</label>
+                            <input type="text" id="bull-sire" name="sire" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <div id="bull-sire-autocomplete" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mãe (Dam)</label>
+                            <input type="text" id="bull-dam" name="dam" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <div id="bull-dam-autocomplete" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Avô Paterno (Grandsire Father)</label>
+                            <input type="text" id="bull-grandsire-father" name="grandsire_father" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <div id="bull-grandsire-father-autocomplete" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Avó Paterna (Granddam Father)</label>
+                            <input type="text" id="bull-granddam-father" name="granddam_father" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <div id="bull-granddam-father-autocomplete" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Avô Materno (Grandsire Mother)</label>
+                            <input type="text" id="bull-grandsire-mother" name="grandsire_mother" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <div id="bull-grandsire-mother-autocomplete" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Avó Materna (Granddam Mother)</label>
+                            <input type="text" id="bull-granddam-mother" name="granddam_mother" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <div id="bull-granddam-mother-autocomplete" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção: Avaliação Genética -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span>Avaliação Genética</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Código Genético</label>
+                            <input type="text" id="bull-genetic-code" name="genetic_code" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mérito Genético</label>
+                            <input type="number" step="0.01" id="bull-genetic-merit" name="genetic_merit" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Índice de Produção de Leite</label>
+                            <input type="number" step="0.01" id="bull-milk-index" name="milk_production_index" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Índice de Produção de Gordura</label>
+                            <input type="number" step="0.01" id="bull-fat-index" name="fat_production_index" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Índice de Produção de Proteína</label>
+                            <input type="number" step="0.01" id="bull-protein-index" name="protein_production_index" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Índice de Fertilidade</label>
+                            <input type="number" step="0.01" id="bull-fertility-index" name="fertility_index" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Índice de Saúde</label>
+                            <input type="number" step="0.01" id="bull-health-index" name="health_index" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        </div>
+                        
+                        <div class="mt-4 md:col-span-2 lg:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Avaliação Genética (Texto)</label>
+                            <textarea id="bull-genetic-evaluation" name="genetic_evaluation" rows="3" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                      placeholder="Avaliação genética detalhada..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção: Observações -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            <span>Observações</span>
+                            <span class="text-sm font-normal text-gray-500 italic">(OPCIONAL)</span>
+                        </h3>
+                        <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Observações sobre Comportamento</label>
+                            <textarea id="bull-behavior-notes" name="behavior_notes" rows="2" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500" 
+                                      placeholder="Observações sobre o comportamento do touro..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Observações sobre Aptidão</label>
+                            <textarea id="bull-aptitude-notes" name="aptitude_notes" rows="2" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500" 
+                                      placeholder="Observações sobre aptidão do touro..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Observações Gerais</label>
+                            <textarea id="bull-notes" name="notes" rows="3" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500" 
+                                      placeholder="Observações gerais..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões de Ação -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeBullModal()" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold transition-colors flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <span>Cancelar</span>
+                            </button>
+                            <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors flex items-center space-x-2" id="bull-submit-btn">
+                                <span id="bull-submit-text">Salvar Touro</span>
+                                <span id="bull-submit-loading" class="hidden ml-2 inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- Script Sistema de Touros -->
+    <script>
+        // Funções para abrir/fechar modal
+        function openBullsModal() {
+            document.getElementById('bulls-modal-fullscreen').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            bullsLoadStatistics();
+            bullsLoadBulls();
+        }
+
+        function closeBullsModal() {
+            const modal = document.getElementById('bulls-modal-fullscreen');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            // Fechar modal de detalhes se estiver aberto
+            const detailsModal = document.getElementById('bull-details-modal-fullscreen');
+            if (detailsModal && !detailsModal.classList.contains('hidden')) {
+                detailsModal.classList.add('hidden');
+            }
+            // Restaurar overflow apenas se não houver outros modais abertos
+            if (!document.getElementById('bull-modal') || document.getElementById('bull-modal').classList.contains('hidden')) {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function openCreateBullModal() {
+            document.getElementById('bull-modal').classList.remove('hidden');
+            document.getElementById('bull-modal-title').textContent = 'Novo Touro';
+            document.getElementById('bull-form').reset();
+            document.getElementById('bull-id').value = '';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBullModal() {
+            const modal = document.getElementById('bull-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            // Restaurar overflow apenas se não houver outros modais abertos
+            if ((!document.getElementById('bulls-modal-fullscreen') || document.getElementById('bulls-modal-fullscreen').classList.contains('hidden')) &&
+                (!document.getElementById('bull-details-modal-fullscreen') || document.getElementById('bull-details-modal-fullscreen').classList.contains('hidden'))) {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Variáveis globais
+        const BULLS_API_BASE = 'api/bulls.php';
+        let bullsCurrentBullId = null;
+        let bullsData = [];
+        let bullsFilters = {
+            search: '',
+            breed: '',
+            status: ''
+        };
+
+        // Carregar estatísticas
+        async function bullsLoadStatistics() {
+            try {
+                const response = await fetch(`${BULLS_API_BASE}?action=statistics`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const stats = result.data;
+                    
+                    document.getElementById('bulls-stat-total').textContent = stats.total_bulls || 0;
+                    document.getElementById('bulls-stat-breeding').textContent = stats.breeding_bulls || 0;
+                    document.getElementById('bulls-stat-efficiency').textContent = 
+                        stats.avg_efficiency ? stats.avg_efficiency.toFixed(1) + '%' : '-';
+                    document.getElementById('bulls-stat-semen').textContent = 
+                        (stats.semen && stats.semen.total_available) ? stats.semen.total_available : 0;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+            }
+        }
+
+        // Carregar touros
+        async function bullsLoadBulls() {
+            const container = document.getElementById('bulls-container');
+            const loading = document.getElementById('bulls-loading');
+            const emptyState = document.getElementById('bulls-empty-state');
+            
+            if (container) container.innerHTML = '';
+            if (loading) loading.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'list',
+                    search: bullsFilters.search || '',
+                    breed: bullsFilters.breed || '',
+                    status: bullsFilters.status || ''
+                });
+                
+                const response = await fetch(`${BULLS_API_BASE}?${params.toString()}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    // A API retorna { data: [...], pagination: {...} }
+                    bullsData = Array.isArray(result.data) ? result.data : (result.data.data || result.data.bulls || []);
+                    renderBullsCards(bullsData);
+                } else {
+                    showBullsEmptyState();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar touros:', error);
+                showBullsEmptyState();
+            } finally {
+                if (loading) loading.classList.add('hidden');
+            }
+        }
+
+        function renderBullsCards(bulls) {
+            const container = document.getElementById('bulls-container');
+            const emptyState = document.getElementById('bulls-empty-state');
+            
+            if (!container) return;
+            
+            if (bulls.length === 0) {
+                showBullsEmptyState();
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            container.innerHTML = bulls.map(bull => createBullCard(bull)).join('');
+        }
+
+        function createBullCard(bull) {
+            const statusColors = {
+                'ativo': 'border-green-500',
+                'em_reproducao': 'border-amber-500',
+                'reserva': 'border-gray-500',
+                'descartado': 'border-red-500',
+                'falecido': 'border-red-500'
+            };
+            
+            const statusColor = statusColors[bull.status] || 'border-gray-500';
+            
+            return `
+                <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 ${statusColor} cursor-pointer hover:shadow-md transition-shadow" onclick="viewBullDetails(${bull.id})">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${bull.name || bull.bull_number}</h3>
+                            <p class="text-sm text-gray-600">${bull.bull_number}</p>
+                        </div>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">${bull.status || 'ativo'}</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-600"><span class="font-semibold">Raça:</span> ${bull.breed || '-'}</p>
+                        ${bull.birth_date ? `<p class="text-sm text-gray-600"><span class="font-semibold">Nascimento:</span> ${new Date(bull.birth_date).toLocaleDateString('pt-BR')}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function showBullsEmptyState() {
+            const container = document.getElementById('bulls-container');
+            const emptyState = document.getElementById('bulls-empty-state');
+            
+            if (container) container.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+        }
+
+        function bullsResetFilters() {
+            bullsFilters = { search: '', breed: '', status: '' };
+            document.getElementById('bulls-search-input').value = '';
+            document.getElementById('bulls-filter-breed').value = '';
+            document.getElementById('bulls-filter-status').value = '';
+            bullsLoadBulls();
+        }
+
+        function viewBullDetails(id) {
+            openBullDetailsModal(id);
+        }
+
+        function openBullDetailsModal(bullId) {
+            document.getElementById('bull-details-modal-fullscreen').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            loadBullDetailsData(bullId);
+        }
+
+        function closeBullDetailsModal() {
+            const modal = document.getElementById('bull-details-modal-fullscreen');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            // Restaurar overflow apenas se não houver outros modais abertos
+            if (!document.getElementById('bulls-modal-fullscreen') || document.getElementById('bulls-modal-fullscreen').classList.contains('hidden')) {
+                document.body.style.overflow = '';
+            }
+        }
+
+        async function loadBullDetailsData(bullId) {
+            // Armazenar ID no modal para uso posterior
+            document.getElementById('bull-details-modal-fullscreen').dataset.bullId = bullId;
+            
+            try {
+                const response = await fetch(`${BULLS_API_BASE}?action=get&id=${bullId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const bull = result.data;
+                    renderBullDetailsInfo(bull);
+                } else {
+                    alert('Erro ao carregar dados do touro');
+                    closeBullDetailsModal();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados do touro:', error);
+                alert('Erro ao carregar dados do touro');
+                closeBullDetailsModal();
+            }
+        }
+
+        function renderBullDetailsInfo(data) {
+            // Header
+            const headerName = document.getElementById('bull-details-name-header');
+            if (headerName) {
+                headerName.textContent = data.name || data.bull_number || 'Sem nome';
+            }
+            
+            // Informações básicas
+            setBullDetailsText('bull-details-number', data.bull_number || '-');
+            setBullDetailsText('bull-details-breed', data.breed || '-');
+            setBullDetailsText('bull-details-age', data.age ? data.age + ' anos' : '-');
+            setBullDetailsText('bull-details-weight', data.current_weight ? data.current_weight + ' kg' : data.weight ? data.weight + ' kg' : '-');
+            
+            // Status
+            const statusBadge = document.getElementById('bull-details-status-badge');
+            if (statusBadge) {
+                statusBadge.textContent = getBullStatusLabel(data.status || 'ativo');
+                statusBadge.className = 'px-2 py-1 rounded-full text-xs font-semibold ' + getBullStatusClass(data.status || 'ativo');
+            }
+            
+            // Eficiência
+            const totalServices = (parseInt(data.total_inseminations) || 0) + (parseInt(data.total_coatings) || 0);
+            const totalSuccessful = (parseInt(data.successful_inseminations) || 0) + (parseInt(data.successful_coatings) || 0);
+            const efficiency = totalServices > 0 ? ((totalSuccessful / totalServices) * 100).toFixed(1) : 0;
+            setBullDetailsText('bull-details-efficiency', efficiency + '%');
+            
+            // Aba Informações
+            setBullDetailsText('bull-details-info-name', data.name || '-');
+            setBullDetailsText('bull-details-info-rfid', data.rfid_code || '-');
+            setBullDetailsText('bull-details-info-earring', data.earring_number || '-');
+            setBullDetailsText('bull-details-info-birth-date', data.birth_date ? new Date(data.birth_date).toLocaleDateString('pt-BR') : '-');
+            setBullDetailsText('bull-details-info-source', getBullSourceLabel(data.source));
+            setBullDetailsText('bull-details-info-location', data.location || '-');
+            
+            // Genealogia
+            setBullDetailsText('bull-details-info-sire', data.sire || '-');
+            setBullDetailsText('bull-details-info-dam', data.dam || '-');
+            setBullDetailsText('bull-details-info-grandsire-father', data.grandsire_father || '-');
+            setBullDetailsText('bull-details-info-granddam-father', data.granddam_father || '-');
+            
+            // Avaliação Genética
+            setBullDetailsText('bull-details-info-genetic-merit', data.genetic_merit || '-');
+            setBullDetailsText('bull-details-info-milk-index', data.milk_production_index || '-');
+            setBullDetailsText('bull-details-info-fat-index', data.fat_production_index || '-');
+            setBullDetailsText('bull-details-info-protein-index', data.protein_production_index || '-');
+        }
+
+        function setBullDetailsText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
+        function getBullStatusLabel(status) {
+            const labels = {
+                'ativo': 'Ativo',
+                'em_reproducao': 'Em Reprodução',
+                'reserva': 'Reserva',
+                'descartado': 'Descartado',
+                'falecido': 'Falecido'
+            };
+            return labels[status] || status;
+        }
+
+        function getBullStatusClass(status) {
+            const classes = {
+                'ativo': 'bg-green-100 text-green-800',
+                'em_reproducao': 'bg-amber-100 text-amber-800',
+                'reserva': 'bg-gray-100 text-gray-800',
+                'descartado': 'bg-red-100 text-red-800',
+                'falecido': 'bg-red-100 text-red-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getBullSourceLabel(source) {
+            const labels = {
+                'proprio': 'Próprio',
+                'comprado': 'Comprado',
+                'arrendado': 'Arrendado',
+                'doador_genetico': 'Doador Genético',
+                'inseminacao': 'Inseminação'
+            };
+            return labels[source] || source;
+        }
+
+        async function editBullFromDetails() {
+            const bullId = document.getElementById('bull-details-modal-fullscreen').dataset.bullId;
+            if (!bullId) return;
+            
+            try {
+                const response = await fetch(`${BULLS_API_BASE}?action=get&id=${bullId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const bull = result.data;
+                    
+                    // Preencher formulário
+                    document.getElementById('bull-id').value = bull.id;
+                    document.getElementById('bull-number').value = bull.bull_number || '';
+                    document.getElementById('bull-name').value = bull.name || '';
+                    document.getElementById('bull-breed').value = bull.breed || '';
+                    document.getElementById('bull-birth-date').value = bull.birth_date || '';
+                    document.getElementById('bull-rfid').value = bull.rfid_code || '';
+                    document.getElementById('bull-earring').value = bull.earring_number || '';
+                    document.getElementById('bull-status').value = bull.status || 'ativo';
+                    document.getElementById('bull-source').value = bull.source || 'proprio';
+                    document.getElementById('bull-location').value = bull.location || '';
+                    document.getElementById('bull-breeding-active').value = bull.is_breeding_active ? '1' : '0';
+                    document.getElementById('bull-weight').value = bull.weight || '';
+                    document.getElementById('bull-body-score').value = bull.body_score || '';
+                    document.getElementById('bull-sire').value = bull.sire || '';
+                    document.getElementById('bull-dam').value = bull.dam || '';
+                    document.getElementById('bull-grandsire-father').value = bull.grandsire_father || '';
+                    document.getElementById('bull-granddam-father').value = bull.granddam_father || '';
+                    document.getElementById('bull-grandsire-mother').value = bull.grandsire_mother || '';
+                    document.getElementById('bull-granddam-mother').value = bull.granddam_mother || '';
+                    document.getElementById('bull-genetic-code').value = bull.genetic_code || '';
+                    document.getElementById('bull-genetic-merit').value = bull.genetic_merit || '';
+                    document.getElementById('bull-milk-index').value = bull.milk_production_index || '';
+                    document.getElementById('bull-fat-index').value = bull.fat_production_index || '';
+                    document.getElementById('bull-protein-index').value = bull.protein_production_index || '';
+                    document.getElementById('bull-fertility-index').value = bull.fertility_index || '';
+                    document.getElementById('bull-health-index').value = bull.health_index || '';
+                    document.getElementById('bull-genetic-evaluation').value = bull.genetic_evaluation || '';
+                    document.getElementById('bull-behavior-notes').value = bull.behavior_notes || '';
+                    document.getElementById('bull-aptitude-notes').value = bull.aptitude_notes || '';
+                    document.getElementById('bull-notes').value = bull.notes || '';
+                    
+                    // Atualizar título
+                    document.getElementById('bull-modal-title').textContent = 'Editar Touro';
+                    
+                    // Fechar modal de detalhes e abrir modal de edição
+                    closeBullDetailsModal();
+                    document.getElementById('bull-modal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    alert('Erro ao carregar dados do touro para edição');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados do touro:', error);
+                alert('Erro ao carregar dados do touro para edição');
+            }
+        }
+
+        // Autocomplete para campos de genealogia
+        function initGenealogyAutocomplete(inputId, autocompleteId) {
+            const input = document.getElementById(inputId);
+            const autocomplete = document.getElementById(autocompleteId);
+            let searchTimeout;
+            let selectedIndex = -1;
+            
+            if (!input || !autocomplete) return;
+            
+            input.addEventListener('input', function(e) {
+                const query = e.target.value.trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length < 2) {
+                    autocomplete.classList.add('hidden');
+                    return;
+                }
+                
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`${BULLS_API_BASE}?action=search_names&q=${encodeURIComponent(query)}&limit=10`);
+                        const result = await response.json();
+                        
+                        if (result.success && result.data && result.data.length > 0) {
+                            autocomplete.innerHTML = result.data.map((item, index) => `
+                                <div class="autocomplete-item px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200 last:border-b-0 ${index === 0 ? 'bg-gray-50' : ''}" 
+                                     data-index="${index}" 
+                                     data-name="${item.display_name || item.bull_number || ''}">
+                                    <div class="font-medium text-gray-900">${item.display_name || item.bull_number || '-'}</div>
+                                    <div class="text-xs text-gray-500">${item.bull_number || ''} - ${item.breed || ''} (${item.type === 'touro' ? 'Touro' : 'Animal'})</div>
+                                </div>
+                            `).join('');
+                            
+                            autocomplete.classList.remove('hidden');
+                            selectedIndex = -1;
+                            
+                            // Adicionar eventos de clique
+                            autocomplete.querySelectorAll('.autocomplete-item').forEach((item, index) => {
+                                item.addEventListener('click', function() {
+                                    const name = this.getAttribute('data-name');
+                                    input.value = name;
+                                    autocomplete.classList.add('hidden');
+                                });
+                                
+                                item.addEventListener('mouseenter', function() {
+                                    autocomplete.querySelectorAll('.autocomplete-item').forEach(i => i.classList.remove('bg-gray-50'));
+                                    this.classList.add('bg-gray-50');
+                                    selectedIndex = index;
+                                });
+                            });
+                        } else {
+                            autocomplete.classList.add('hidden');
+                        }
+                    } catch (error) {
+                        console.error('Erro ao buscar nomes:', error);
+                        autocomplete.classList.add('hidden');
+                    }
+                }, 300);
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                const items = autocomplete.querySelectorAll('.autocomplete-item');
+                
+                if (items.length === 0) return;
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    items.forEach((item, index) => {
+                        item.classList.remove('bg-gray-50');
+                        if (index === selectedIndex) {
+                            item.classList.add('bg-gray-50');
+                            item.scrollIntoView({ block: 'nearest' });
+                        }
+                    });
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    items.forEach((item, index) => {
+                        item.classList.remove('bg-gray-50');
+                        if (index === selectedIndex) {
+                            item.classList.add('bg-gray-50');
+                            item.scrollIntoView({ block: 'nearest' });
+                        }
+                    });
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    const selectedItem = items[selectedIndex];
+                    const name = selectedItem.getAttribute('data-name');
+                    input.value = name;
+                    autocomplete.classList.add('hidden');
+                } else if (e.key === 'Escape') {
+                    autocomplete.classList.add('hidden');
+                }
+            });
+            
+            // Fechar autocomplete ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !autocomplete.contains(e.target)) {
+                    autocomplete.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar autocomplete para campos de genealogia
+            initGenealogyAutocomplete('bull-sire', 'bull-sire-autocomplete');
+            initGenealogyAutocomplete('bull-dam', 'bull-dam-autocomplete');
+            initGenealogyAutocomplete('bull-grandsire-father', 'bull-grandsire-father-autocomplete');
+            initGenealogyAutocomplete('bull-granddam-father', 'bull-granddam-father-autocomplete');
+            initGenealogyAutocomplete('bull-grandsire-mother', 'bull-grandsire-mother-autocomplete');
+            initGenealogyAutocomplete('bull-granddam-mother', 'bull-granddam-mother-autocomplete');
+            
+            const searchInput = document.getElementById('bulls-search-input');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function(e) {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        bullsFilters.search = e.target.value;
+                        bullsLoadBulls();
+                    }, 500);
+                });
+            }
+            
+            const filterBreed = document.getElementById('bulls-filter-breed');
+            const filterStatus = document.getElementById('bulls-filter-status');
+            
+            if (filterBreed) {
+                filterBreed.addEventListener('change', function(e) {
+                    bullsFilters.breed = e.target.value;
+                    bullsLoadBulls();
+                });
+            }
+            
+            if (filterStatus) {
+                filterStatus.addEventListener('change', function(e) {
+                    bullsFilters.status = e.target.value;
+                    bullsLoadBulls();
+                });
+            }
+            
+            const form = document.getElementById('bull-form');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = document.getElementById('bull-submit-btn');
+                    const submitText = document.getElementById('bull-submit-text');
+                    const submitLoading = document.getElementById('bull-submit-loading');
+                    
+                    // Desabilitar botão e mostrar loading
+                    submitBtn.disabled = true;
+                    submitText.textContent = 'Salvando...';
+                    submitLoading.classList.remove('hidden');
+                    
+                    try {
+                        const formData = new FormData(form);
+                        const data = {};
+                        
+                        // Coletar todos os campos do formulário
+                        for (let [key, value] of formData.entries()) {
+                            if (value !== '') {
+                                data[key] = value;
+                            }
+                        }
+                        
+                        // Converter is_breeding_active para int
+                        if (data.is_breeding_active !== undefined) {
+                            data.is_breeding_active = data.is_breeding_active === '1' ? 1 : 0;
+                        }
+                        
+                        // Converter campos numéricos
+                        if (data.weight) data.weight = parseFloat(data.weight);
+                        if (data.body_score) data.body_score = parseFloat(data.body_score);
+                        if (data.genetic_merit) data.genetic_merit = parseFloat(data.genetic_merit);
+                        if (data.milk_production_index) data.milk_production_index = parseFloat(data.milk_production_index);
+                        if (data.fat_production_index) data.fat_production_index = parseFloat(data.fat_production_index);
+                        if (data.protein_production_index) data.protein_production_index = parseFloat(data.protein_production_index);
+                        if (data.fertility_index) data.fertility_index = parseFloat(data.fertility_index);
+                        if (data.health_index) data.health_index = parseFloat(data.health_index);
+                        
+                        const bullId = data.id;
+                        const action = bullId ? 'update' : 'create';
+                        const method = bullId ? 'PUT' : 'POST';
+                        
+                        const response = await fetch(`${BULLS_API_BASE}?action=${action}`, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // Fechar modal e recarregar lista
+                            closeBullModal();
+                            bullsLoadBulls();
+                            bullsLoadStatistics();
+                            
+                            // Mostrar mensagem de sucesso
+                            alert(bullId ? 'Touro atualizado com sucesso!' : 'Touro cadastrado com sucesso!');
+                        } else {
+                            alert('Erro: ' + (result.error || 'Erro ao salvar touro'));
+                        }
+                    } catch (error) {
+                        console.error('Erro ao salvar touro:', error);
+                        alert('Erro ao salvar touro. Verifique o console para mais detalhes.');
+                    } finally {
+                        // Reabilitar botão e esconder loading
+                        submitBtn.disabled = false;
+                        submitText.textContent = 'Salvar Touro';
+                        submitLoading.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Modal Detalhes do Touro Full Screen -->
+    <div id="bull-details-modal-fullscreen" class="fixed inset-0 bg-gray-50 z-[10000] hidden overflow-y-auto">
+        <div class="w-full h-full flex flex-col">
+            <!-- Header -->
+            <header class="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg sticky top-0 z-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-16">
+                        <div class="flex items-center space-x-4">
+                            <button onclick="closeBullDetailsModal()" class="flex items-center space-x-4 text-white hover:opacity-80 transition-opacity">
+                                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center p-2">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 class="text-xl font-bold">Detalhes do Touro</h1>
+                                    <p class="text-red-200 text-sm" id="bull-details-name-header">Carregando...</p>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <button onclick="editBullFromDetails()" class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg font-semibold transition-colors flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                <span>Editar</span>
+                            </button>
+                            
+                            <button onclick="closeBullDetailsModal()" class="text-white hover:text-red-200 p-2 flex items-center space-x-2" title="Fechar">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                <!-- Informações Básicas -->
+                <div class="bg-white rounded-xl p-6 mb-6 shadow-sm border border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">Número/Código</p>
+                            <p class="text-lg font-bold text-gray-900" id="bull-details-number">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">Raça</p>
+                            <p class="text-lg font-bold text-gray-900" id="bull-details-breed">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">Status</p>
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold" id="bull-details-status-badge">-</span>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">Idade</p>
+                            <p class="text-lg font-bold text-gray-900" id="bull-details-age">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">Peso Atual</p>
+                            <p class="text-lg font-bold text-gray-900" id="bull-details-weight">-</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm mb-1">Eficiência Reprodutiva</p>
+                            <p class="text-lg font-bold text-gray-900" id="bull-details-efficiency">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informações Detalhadas -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <h3 class="text-lg font-bold mb-4 text-gray-900">Informações Completas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-base font-semibold mb-3 text-gray-800">Dados Básicos</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-sm text-gray-600">Nome</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-name">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">RFID</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-rfid">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Nº Brinco</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-earring">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Data de Nascimento</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-birth-date">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Origem</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-source">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Localização</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-location">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-base font-semibold mb-3 text-gray-800">Genealogia</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-sm text-gray-600">Pai (Sire)</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-sire">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Mãe (Dam)</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-dam">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Avô Paterno (Grandsire)</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-grandsire-father">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Avó Paterna (Granddam)</p>
+                                    <p class="text-base font-medium text-gray-900" id="bull-details-info-granddam-father">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="text-base font-semibold mb-3 text-gray-800">Avaliação Genética</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Mérito Genético</p>
+                                <p class="text-xl font-bold text-gray-900" id="bull-details-info-genetic-merit">-</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Índice Leite</p>
+                                <p class="text-xl font-bold text-gray-900" id="bull-details-info-milk-index">-</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Índice Gordura</p>
+                                <p class="text-xl font-bold text-gray-900" id="bull-details-info-fat-index">-</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Índice Proteína</p>
+                                <p class="text-xl font-bold text-gray-900" id="bull-details-info-protein-index">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Incluir Overlay de Novilhas -->
+    <?php include __DIR__ . '/includes/heifer-overlay.html'; ?>
+
 </body>
 </html>

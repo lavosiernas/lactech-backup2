@@ -8831,22 +8831,24 @@ window.revokeDevice = revokeDevice;
 
 // Carregar dashboard de novilhas quando o modal abrir
 document.addEventListener('DOMContentLoaded', function() {
-    // Observar quando o modal de novilhas for aberto
-    const heifersModal = document.getElementById('modal-heifers');
-    if (heifersModal) {
+    // Observar quando o overlay de novilhas for aberto (substituiu o modal-heifers)
+    const heiferOverlay = document.getElementById('heiferOverlay');
+    if (heiferOverlay) {
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    const isVisible = heifersModal.classList.contains('show');
-                    if (isVisible) {
-                        loadHeiferDashboard();
-                        loadHeifersList();
+                    const isVisible = !heiferOverlay.classList.contains('hidden');
+                    if (isVisible && typeof window.loadHeiferDashboard === 'function') {
+                        window.loadHeiferDashboard();
+                    }
+                    if (isVisible && typeof window.loadHeifersTable === 'function') {
+                        window.loadHeifersTable();
                     }
                 }
             });
         });
         
-        observer.observe(heifersModal, {
+        observer.observe(heiferOverlay, {
             attributes: true,
             attributeFilter: ['class']
         });

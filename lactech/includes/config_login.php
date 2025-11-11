@@ -246,7 +246,6 @@ function fixRedirectUrl($url) {
         'index',
         'google-callback',
         'sistema-touros',
-        'sistema-touros-detalhes',
         'acesso-bloqueado'
     ];
     
