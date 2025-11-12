@@ -48,3 +48,6 @@ RewriteRule ^noticia/([0-9]+)/?$ noticia.php?id=$1 [L,QSA]
 
 
 
+
+
+
