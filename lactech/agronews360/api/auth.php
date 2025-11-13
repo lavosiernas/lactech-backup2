@@ -46,6 +46,10 @@ try {
             handleGoogleCallback();
             break;
             
+        case 'google_callback_lactech':
+            handleGoogleCallbackLactech();
+            break;
+            
         default:
             echo json_encode(['success' => false, 'error' => 'Ação não encontrada']);
             break;
@@ -117,12 +121,13 @@ function handleLogin() {
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
             
-            $role = mapLactechRole($user['role']);
+            // Todos os usuários são tratados igualmente (sem distinção de admin)
+            $defaultRole = 'viewer';
             $stmt->execute([
                 $user['name'],
                 $user['email'],
                 $user['password'], // Manter mesma senha (hash)
-                $role,
+                $defaultRole,
                 $user['is_active'],
                 $user['id']
             ]);
@@ -137,11 +142,12 @@ function handleLogin() {
                 WHERE id = ?
             ");
             
-            $role = mapLactechRole($user['role']);
+            // Todos os usuários são tratados igualmente (sem distinção de admin)
+            $defaultRole = 'viewer';
             $stmt->execute([
                 $user['name'],
                 $user['email'],
-                $role,
+                $defaultRole,
                 $user['is_active'],
                 $user['id'],
                 $agronewsUserId
@@ -152,7 +158,7 @@ function handleLogin() {
         $_SESSION['agronews_user_id'] = $agronewsUserId;
         $_SESSION['agronews_user_email'] = $user['email'];
         $_SESSION['agronews_user_name'] = $user['name'];
-        $_SESSION['agronews_user_role'] = mapLactechRole($user['role']);
+        $_SESSION['agronews_user_role'] = 'viewer'; // Role padrão para todos
         $_SESSION['agronews_lactech_user_id'] = $user['id'];
         $_SESSION['agronews_farm_id'] = $user['farm_id'] ?? null;
         $_SESSION['agronews_farm_name'] = $user['farm_name'] ?? null;
@@ -164,7 +170,7 @@ function handleLogin() {
                 'id' => $agronewsUserId,
                 'name' => $user['name'],
                 'email' => $user['email'],
-                'role' => mapLactechRole($user['role']),
+                'role' => 'viewer', // Role padrão para todos
                 'farm_name' => $user['farm_name'] ?? null
             ],
             'redirect' => 'index.php'
@@ -212,7 +218,7 @@ function handleGoogleCallback() {
     // URL de redirecionamento (usar a definida no config)
     $redirectUri = defined('GOOGLE_REDIRECT_URI') ? GOOGLE_REDIRECT_URI : 
                    ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'https') . 
-                   '://' . ($_SERVER['HTTP_HOST'] ?? 'agronews360.online') . 
+                   '://' . ($_SERVER['HTTP_HOST'] ?? 'lactechsys.com') . 
                    '/agronews360/api/auth.php?action=google_callback';
     
     // Trocar código por token
@@ -236,16 +242,21 @@ function handleGoogleCallback() {
     curl_close($ch);
     
     if ($httpCode !== 200) {
-        echo json_encode(['success' => false, 'error' => 'Erro ao obter token do Google']);
-        return;
+        $errorData = json_decode($tokenResponse, true);
+        $errorMsg = $errorData['error_description'] ?? $errorData['error'] ?? 'Erro ao obter token do Google';
+        error_log("Erro ao obter token: HTTP $httpCode - " . $tokenResponse);
+        header('Location: ../login.php?error_message=' . urlencode($errorMsg));
+        exit;
     }
     
     $tokenData = json_decode($tokenResponse, true);
     $accessToken = $tokenData['access_token'] ?? null;
     
     if (!$accessToken) {
-        echo json_encode(['success' => false, 'error' => 'Token de acesso não recebido']);
-        return;
+        $errorMsg = isset($tokenData['error_description']) ? $tokenData['error_description'] : 'Token de acesso não recebido';
+        error_log("Token não recebido: " . json_encode($tokenData));
+        header('Location: ../login.php?error_message=' . urlencode($errorMsg));
+        exit;
     }
     
     // Buscar informações do usuário no Google
@@ -363,7 +374,7 @@ function handleGoogleCallback() {
         $_SESSION['agronews_user_id'] = $agronewsUserId;
         $_SESSION['agronews_user_email'] = $user['email'];
         $_SESSION['agronews_user_name'] = $user['name'];
-        $_SESSION['agronews_user_role'] = $user['role'];
+        $_SESSION['agronews_user_role'] = 'viewer'; // Role padrão para todos
         $_SESSION['agronews_google_id'] = $googleId;
         $_SESSION['agronews_google_picture'] = $googlePicture;
         if ($lactechUserId) {
@@ -386,8 +397,24 @@ function handleGoogleCallback() {
  * Logout
  */
 function handleLogout() {
+    // Limpar todas as variáveis de sessão do AgroNews
+    unset($_SESSION['agronews_user_id']);
+    unset($_SESSION['agronews_user_email']);
+    unset($_SESSION['agronews_user_name']);
+    unset($_SESSION['agronews_user_role']);
+    unset($_SESSION['agronews_lactech_user_id']);
+    unset($_SESSION['agronews_farm_id']);
+    unset($_SESSION['agronews_farm_name']);
+    unset($_SESSION['agronews_logged_in']);
+    unset($_SESSION['agronews_google_id']);
+    unset($_SESSION['agronews_google_picture']);
+    
+    // Destruir sessão
     session_destroy();
-    echo json_encode(['success' => true, 'message' => 'Logout realizado com sucesso']);
+    
+    // Redirecionar para a página inicial com mensagem de sucesso
+    header('Location: ../index.php?logout_success=1');
+    exit;
 }
 
 /**
@@ -414,8 +441,20 @@ function checkSession() {
  * Obter URL de autenticação do Google
  */
 function getGoogleAuthUrl() {
-    // Carregar configuração do Google do Lactech
-    $googleConfigPath = __DIR__ . '/../../lactech/includes/config_google.php';
+    // Determinar tipo de login (agronews ou lactech)
+    $type = $_GET['type'] ?? 'agronews';
+    
+    // Carregar configuração do Google baseado no tipo
+    if ($type === 'lactech') {
+        // Usar configuração do Lactech
+        $googleConfigPath = __DIR__ . '/../../includes/config_google.php';
+        $redirectAction = 'google_callback_lactech';
+    } else {
+        // Usar configuração do AgroNews
+        $googleConfigPath = __DIR__ . '/../includes/config_google.php';
+        $redirectAction = 'google_callback';
+    }
+    
     if (!file_exists($googleConfigPath)) {
         echo json_encode(['success' => false, 'error' => 'Configuração do Google não encontrada']);
         return;
@@ -423,7 +462,7 @@ function getGoogleAuthUrl() {
     
     require_once $googleConfigPath;
     
-    if (!defined('GOOGLE_CLIENT_ID')) {
+    if (!defined('GOOGLE_CLIENT_ID') || !defined('GOOGLE_CLIENT_SECRET')) {
         echo json_encode(['success' => false, 'error' => 'Credenciais do Google não configuradas']);
         return;
     }
@@ -443,14 +482,25 @@ function getGoogleAuthUrl() {
     
     // URL de redirecionamento
     $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'https';
-    $host = $_SERVER['HTTP_HOST'] ?? 'agronews360.online';
-    $redirectUri = $protocol . '://' . $host . '/agronews360/api/auth.php?action=google_callback';
+    $host = $_SERVER['HTTP_HOST'] ?? 'lactechsys.com';
     
-    $scope = defined('GOOGLE_SCOPES') ? GOOGLE_SCOPES : 'email profile';
+    if ($type === 'lactech') {
+        // Para login do Lactech, redirecionar para callback do Lactech
+        $redirectUri = $protocol . '://' . $host . '/google-login-callback.php';
+        // Marcar na sessão que veio do AgroNews
+        $_SESSION['google_login_from_agronews'] = true;
+    } else {
+        // Para login do AgroNews, usar callback do AgroNews
+        $redirectUri = defined('GOOGLE_REDIRECT_URI') ? GOOGLE_REDIRECT_URI : 
+                       $protocol . '://' . $host . '/agronews360/api/auth.php?action=google_callback';
+    }
+    
+    $scope = defined('GOOGLE_SCOPES') ? GOOGLE_SCOPES : 'email profile openid';
     $state = bin2hex(random_bytes(16));
     
-    // Salvar state na sessão
+    // Salvar state e tipo na sessão
     $_SESSION['google_login_state'] = $state;
+    $_SESSION['google_login_type'] = $type;
     
     // URL de autorização
     $authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
@@ -470,17 +520,37 @@ function getGoogleAuthUrl() {
 }
 
 /**
- * Mapear role do Lactech para AgroNews
+ * Callback do Google Login para Lactech
+ * Redireciona para o sistema do Lactech após login bem-sucedido
  */
-function mapLactechRole($lactechRole) {
-    $roleMap = [
-        'admin' => 'admin',
-        'gerente' => 'admin',
-        'proprietario' => 'admin',
-        'funcionario' => 'editor',
-        'viewer' => 'viewer'
-    ];
+function handleGoogleCallbackLactech() {
+    // Verificar se veio do callback do Google
+    $code = $_GET['code'] ?? '';
+    $state = $_GET['state'] ?? '';
     
-    return $roleMap[$lactechRole] ?? 'viewer';
+    if (empty($code)) {
+        header('Location: ../login.php?error_message=' . urlencode('Código de autorização não recebido'));
+        exit;
+    }
+    
+    // Verificar state (CSRF protection)
+    if (!isset($_SESSION['google_login_state']) || $_SESSION['google_login_state'] !== $state) {
+        header('Location: ../login.php?error_message=' . urlencode('Estado de segurança inválido'));
+        exit;
+    }
+    
+    // Marcar na sessão que veio do AgroNews
+    $_SESSION['google_login_from_agronews'] = true;
+    
+    // Redirecionar para o callback do Lactech com o código
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'https';
+    $host = $_SERVER['HTTP_HOST'] ?? 'lactechsys.com';
+    $redirectUrl = $protocol . '://' . $host . '/google-login-callback.php?code=' . urlencode($code) . '&state=' . urlencode($state);
+    
+    header('Location: ' . $redirectUrl);
+    exit;
 }
+
+// Função removida - todos os usuários são tratados igualmente no AgroNews
+// O sistema é alimentado pela web, então não precisa de roles diferentes
 

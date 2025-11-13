@@ -1,0 +1,54 @@
+{
+  "name": "AgroNews360 - Notícias do Agronegócio",
+  "short_name": "AgroNews360",
+  "description": "Portal de notícias do agronegócio com atualizações sobre pecuária, agricultura, cotações de mercado e previsões climáticas",
+  "start_url": "./index.php",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#22c55e",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "./assets/img/agro360.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/img/agro360.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news", "business", "agriculture"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Notícias",
+      "short_name": "Notícias",
+      "description": "Ver últimas notícias",
+      "url": "./index.php#noticias",
+      "icons": [
+        {
+          "src": "./assets/img/agro360.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Meu Perfil",
+      "short_name": "Perfil",
+      "description": "Acessar meu perfil",
+      "url": "./perfil.php",
+      "icons": [
+        {
+          "src": "./assets/img/agro360.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
+

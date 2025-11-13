@@ -1,0 +1,32 @@
+# Arquivos de configuração sensíveis - AgroNews360
+# ⚠️ NUNCA commite arquivos com dados sensíveis
+
+# Arquivo de variáveis de ambiente
+.env
+.env.local
+.env.production
+**/.env
+**/.env.*
+
+# Arquivos de configuração com dados sensíveis
+includes/config_google.php
+includes/config_mysql.php
+includes/config_lactech_db.php
+includes/env_loader.php
+
+# Arquivos de log
+*.log
+logs/
+*.log.*
+
+# Arquivos de backup
+backup/*.sql
+backup/*.gz
+backup/*.zip
+
+# Arquivos temporários
+*.tmp
+*.cache
+.DS_Store
+Thumbs.db
+

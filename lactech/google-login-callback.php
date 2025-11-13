@@ -20,6 +20,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Verificar se veio do AgroNews (via parâmetro na sessão ou referer)
+$fromAgronews = isset($_SESSION['google_login_from_agronews']) || 
+                (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'agronews360') !== false);
+
 // Incluir dependências
 require_once __DIR__ . '/includes/config_mysql.php';
 require_once __DIR__ . '/includes/config_login.php';
@@ -471,22 +475,87 @@ try {
     // Usar a foto preservada (existente ou Google se não houver)
     $_SESSION['profile_photo'] = $profilePhotoToUse;
     
-    // Determinar redirect baseado no role
-    $role = $existingUser['role'];
-    switch ($role) {
-        case 'proprietario':
-        case 'owner':
-            $redirectUrl = '/proprietario.php';
-            break;
-        case 'gerente':
-        case 'manager':
-            $redirectUrl = '/gerente-completo.php';
-            break;
-        case 'funcionario':
-        case 'employee':
-        default:
-            $redirectUrl = '/funcionario.php';
-            break;
+    // Determinar redirect baseado no role e origem
+    // Se veio do AgroNews, redirecionar de volta para lá após criar sessão
+    if ($fromAgronews) {
+        // Criar sessão no AgroNews também
+        require_once __DIR__ . '/agronews360/includes/Database.class.php';
+        require_once __DIR__ . '/agronews360/includes/LactechIntegration.class.php';
+        
+        try {
+            // Carregar Database do AgroNews
+            require_once __DIR__ . '/agronews360/includes/config_mysql.php';
+            require_once __DIR__ . '/agronews360/includes/Database.class.php';
+            
+            $agronewsDb = Database::getInstance();
+            $pdo = $agronewsDb->getConnection();
+            
+            // Todos os usuários são tratados igualmente no AgroNews (sem distinção de admin)
+            $defaultRole = 'viewer';
+            
+            // Verificar se já existe usuário no AgroNews
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE lactech_user_id = ? OR email = ?");
+            $stmt->execute([$existingUser['id'], $existingUser['email']]);
+            $agronewsUser = $stmt->fetch();
+            
+            if (!$agronewsUser) {
+                // Criar usuário no AgroNews se não existir
+                $stmt = $pdo->prepare("
+                    INSERT INTO users (name, email, password, role, is_active, lactech_user_id) 
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $existingUser['name'],
+                    $existingUser['email'],
+                    $existingUser['password'] ?? null,
+                    $defaultRole,
+                    $existingUser['is_active'] ?? 1,
+                    $existingUser['id']
+                ]);
+                $agronewsUserId = $pdo->lastInsertId();
+            } else {
+                $agronewsUserId = $agronewsUser['id'];
+                // Atualizar role para garantir que está como 'viewer'
+                $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
+                $stmt->execute([$defaultRole, $agronewsUserId]);
+            }
+            
+            // Criar sessão do AgroNews
+            $_SESSION['agronews_user_id'] = $agronewsUserId;
+            $_SESSION['agronews_user_email'] = $existingUser['email'];
+            $_SESSION['agronews_user_name'] = $existingUser['name'];
+            $_SESSION['agronews_user_role'] = $defaultRole;
+            $_SESSION['agronews_lactech_user_id'] = $existingUser['id'];
+            $_SESSION['agronews_farm_id'] = $existingUser['farm_id'] ?? null;
+            $_SESSION['agronews_farm_name'] = $existingUser['farm_name'] ?? null;
+            $_SESSION['agronews_logged_in'] = true;
+            
+        } catch (Exception $e) {
+            error_log("Erro ao criar sessão no AgroNews: " . $e->getMessage());
+        }
+        
+        // Redirecionar de volta para o AgroNews
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'lactechsys.com';
+        $redirectUrl = $protocol . '://' . $host . '/agronews360/index.php?login_success=1';
+    } else {
+        // Redirecionamento normal do Lactech
+        $role = $existingUser['role'];
+        switch ($role) {
+            case 'proprietario':
+            case 'owner':
+                $redirectUrl = '/proprietario.php';
+                break;
+            case 'gerente':
+            case 'manager':
+                $redirectUrl = '/gerente-completo.php';
+                break;
+            case 'funcionario':
+            case 'employee':
+            default:
+                $redirectUrl = '/funcionario.php';
+                break;
+        }
     }
     
     // Limpar state da sessão

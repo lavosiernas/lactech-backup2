@@ -21,66 +21,40 @@ class LactechIntegration {
     /**
      * Carregar configuração do Lactech
      * IMPORTANTE: Não sobrescreve as constantes do AgroNews
+     * Usa arquivo de configuração específico para acesso ao banco do Lactech
      */
     private function loadLactechConfig() {
-        // Tentar carregar configuração do Lactech
-        $lactechConfigPath = __DIR__ . '/../../lactech/includes/config_mysql.php';
+        // Tentar carregar configuração específica do AgroNews para acessar o Lactech
+        $lactechConfigPath = __DIR__ . '/config_lactech_db.php';
         
         if (file_exists($lactechConfigPath)) {
-            // Salvar constantes atuais do AgroNews (se existirem)
-            $agronewsHost = defined('DB_HOST') ? DB_HOST : null;
-            $agronewsName = defined('DB_NAME') ? DB_NAME : null;
-            $agronewsUser = defined('DB_USER') ? DB_USER : null;
-            $agronewsPass = defined('DB_PASS') ? DB_PASS : null;
-            $agronewsCharset = defined('DB_CHARSET') ? DB_CHARSET : null;
+            // Carregar config específica do AgroNews para Lactech
+            require_once $lactechConfigPath;
             
-            // Ler arquivo de config do Lactech e extrair valores sem executar
-            $configContent = file_get_contents($lactechConfigPath);
-            
-            // Tentar detectar valores do config do Lactech através de regex
-            // Ou usar valores padrão se não conseguir detectar
-            $lactechHost = 'localhost';
-            $lactechName = 'lactech_lgmato';
-            $lactechUser = 'root';
-            $lactechPass = '';
-            $lactechCharset = 'utf8mb4';
-            
-            // Tentar detectar se está em localhost
-            $isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']) ||
-                       strpos($_SERVER['SERVER_NAME'] ?? '', '192.168.') === 0 ||
-                       strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
-                       strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'xampp') !== false ||
-                       strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'htdocs') !== false;
-            
-            if ($isLocal) {
-                // Em localhost, usar valores padrão do XAMPP
-                $lactechHost = 'localhost';
-                $lactechName = 'lactech_lgmato';
-                $lactechUser = 'root';
-                $lactechPass = '';
-            } else {
-                // Em produção, tentar carregar do arquivo .env ou usar valores padrão
-                // Por segurança, não vamos carregar o config do Lactech diretamente
-                // para evitar sobrescrever as constantes do AgroNews
-            }
-            
+            // Usar constantes específicas do Lactech (não conflitam com AgroNews)
             $this->lactechConfig = [
-                'host' => $lactechHost,
-                'name' => $lactechName,
-                'user' => $lactechUser,
-                'pass' => $lactechPass,
-                'charset' => $lactechCharset
+                'host' => defined('LACTECH_DB_HOST') ? LACTECH_DB_HOST : 'localhost',
+                'name' => defined('LACTECH_DB_NAME') ? LACTECH_DB_NAME : 'lactech_lgmato',
+                'user' => defined('LACTECH_DB_USER') ? LACTECH_DB_USER : 'root',
+                'pass' => defined('LACTECH_DB_PASS') ? LACTECH_DB_PASS : '',
+                'charset' => defined('LACTECH_DB_CHARSET') ? LACTECH_DB_CHARSET : 'utf8mb4'
             ];
             
-            // Restaurar constantes do AgroNews (se foram sobrescritas)
-            if ($agronewsHost !== null && !defined('AGRONEWS_DB_HOST')) {
-                define('AGRONEWS_DB_HOST', $agronewsHost);
-            }
-            if ($agronewsName !== null && !defined('AGRONEWS_DB_NAME')) {
-                define('AGRONEWS_DB_NAME', $agronewsName);
-            }
-            
             // Conectar ao banco do Lactech
+            $this->connectToLactech();
+        } else {
+            // Fallback: usar valores padrão baseados no ambiente
+            $isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']) ||
+                       strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+            
+            $this->lactechConfig = [
+                'host' => 'localhost',
+                'name' => $isLocal ? 'lactech_lgmato' : 'u311882628_lactech_lgmato',
+                'user' => $isLocal ? 'root' : 'u311882628_xandriaAgro',
+                'pass' => $isLocal ? '' : 'Lavosier0012!',
+                'charset' => 'utf8mb4'
+            ];
+            
             $this->connectToLactech();
         }
     }
@@ -90,6 +64,15 @@ class LactechIntegration {
      */
     private function connectToLactech() {
         try {
+            // Se não tiver config, tentar carregar
+            if (!$this->lactechConfig) {
+                $this->loadLactechConfig();
+            }
+            
+            if (!$this->lactechConfig) {
+                return false;
+            }
+            
             $dsn = "mysql:host={$this->lactechConfig['host']};dbname={$this->lactechConfig['name']};charset={$this->lactechConfig['charset']}";
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -105,11 +88,35 @@ class LactechIntegration {
     }
     
     /**
+     * Verificar se a conexão com Lactech está ativa
+     */
+    public function isLactechConnected() {
+        // Tentar conectar se não estiver conectado
+        if ($this->lactechDb === null) {
+            $this->loadLactechConfig();
+        }
+        
+        // Verificar se a conexão está ativa
+        if ($this->lactechDb !== null) {
+            try {
+                $this->lactechDb->query('SELECT 1');
+                return true;
+            } catch (PDOException $e) {
+                // Reconectar se necessário
+                $this->connectToLactech();
+                return $this->lactechDb !== null;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
      * Obter conexão PDO do Lactech
      */
     public function getLactechConnection() {
-        if ($this->lactechDb === null) {
-            $this->connectToLactech();
+        if (!$this->isLactechConnected()) {
+            return null;
         }
         
         // Verificar se a conexão ainda está ativa
@@ -121,13 +128,6 @@ class LactechIntegration {
         }
         
         return $this->lactechDb;
-    }
-    
-    /**
-     * Verificar se a conexão com Lactech está ativa
-     */
-    public function isLactechConnected() {
-        return $this->lactechDb !== null;
     }
     
     /**
@@ -168,11 +168,13 @@ class LactechIntegration {
                     // Gerar senha temporária (usuário deve redefinir)
                     $tempPassword = password_hash('temp_' . time(), PASSWORD_DEFAULT);
                     
+                    // Todos os usuários são tratados igualmente (sem distinção de admin)
+                    $defaultRole = 'viewer';
                     $stmt->execute([
                         $user['name'],
                         $user['email'],
                         $tempPassword,
-                        $this->mapRole($user['role']),
+                        $defaultRole,
                         $user['is_active'],
                         $user['id']
                     ]);
@@ -186,10 +188,12 @@ class LactechIntegration {
                         WHERE lactech_user_id = ?
                     ");
                     
+                    // Todos os usuários são tratados igualmente (sem distinção de admin)
+                    $defaultRole = 'viewer';
                     $stmt->execute([
                         $user['name'],
                         $user['email'],
-                        $this->mapRole($user['role']),
+                        $defaultRole,
                         $user['is_active'],
                         $user['id']
                     ]);
@@ -337,19 +341,8 @@ class LactechIntegration {
         }
     }
     
-    /**
-     * Mapear roles do Lactech para AgroNews
-     */
-    private function mapRole($lactechRole) {
-        $roleMap = [
-            'admin' => 'admin',
-            'gerente' => 'admin',
-            'funcionario' => 'editor',
-            'viewer' => 'viewer'
-        ];
-        
-        return $roleMap[$lactechRole] ?? 'viewer';
-    }
+    // Função removida - todos os usuários são tratados igualmente no AgroNews
+    // O sistema é alimentado pela web, então não precisa de roles diferentes
     
     /**
      * Registrar sincronização

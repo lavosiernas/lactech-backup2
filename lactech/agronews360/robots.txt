@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://lactechsys.com/agronews360/sitemap.xml
+
+# Permitir indexação de páginas principais
+Allow: /index.php
+Allow: /perfil.php
+Allow: /login.php
+
+# Bloquear páginas de sistema
+Disallow: /api/
+Disallow: /includes/
+Disallow: /auto-login.php
+
+# Permitir acesso a recursos
+Allow: /assets/
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Otimizações para crawlers
+Crawl-delay: 0
+

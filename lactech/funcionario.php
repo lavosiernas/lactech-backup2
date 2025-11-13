@@ -809,6 +809,48 @@
                     </form>
                 </div>
                 
+                <!-- Ecossistema - Apps Interligados -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                        </svg>
+                        Ecossistema
+                    </h4>
+                    <p class="text-sm text-gray-600 mb-4">Apps interligados ao sistema Lactech</p>
+                    
+                    <!-- AgroNews360 -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition-all">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+                                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold text-gray-900 text-sm">AgroNews360</h5>
+                                    <p class="text-xs text-gray-600">Portal de notícias do agronegócio</p>
+                                </div>
+                            </div>
+                            <a href="agronews360/auto-login.php" target="_blank" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-2">
+                                <span>Acessar</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-green-200">
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span>Conectado ao sistema Lactech</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Minhas Solicitações de Senha -->
                 <div class="bg-white rounded-2xl p-6 border border-gray-200">
                     <h4 class="text-lg font-semibold text-black mb-4">Minhas Solicitações de Senha</h4>
