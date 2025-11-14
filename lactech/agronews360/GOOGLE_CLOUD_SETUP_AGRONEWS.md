@@ -217,3 +217,5 @@ AGRONEWS_GOOGLE_CLIENT_SECRET=GOCSPX-seu_client_secret_aqui
 - [ ] Testar login com Google
 - [ ] Verificar redirecionamento após login
 
+
+

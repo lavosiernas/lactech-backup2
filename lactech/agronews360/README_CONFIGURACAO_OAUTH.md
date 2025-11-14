@@ -142,3 +142,5 @@ if ($type === 'lactech') {
 - [GOOGLE_CLOUD_SETUP_LACTECH.md](./GOOGLE_CLOUD_SETUP_LACTECH.md) - Guia detalhado de configuração do Google Cloud
 - [README_GOOGLE_OAUTH.md](./README_GOOGLE_OAUTH.md) - Documentação geral do OAuth
 
+
+

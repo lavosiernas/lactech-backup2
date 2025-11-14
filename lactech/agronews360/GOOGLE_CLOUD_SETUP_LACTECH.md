@@ -200,3 +200,5 @@ LACTECH_GOOGLE_CLIENT_SECRET=GOCSPX-seu_client_secret_aqui
 - [Google Cloud Console](https://console.cloud.google.com/)
 - [Troubleshooting OAuth](https://developers.google.com/identity/protocols/oauth2/policies#troubleshooting)
 
+
+

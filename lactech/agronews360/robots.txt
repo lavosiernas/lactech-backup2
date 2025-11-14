@@ -26,3 +26,5 @@ Allow: /*.webp$
 # Otimizações para crawlers
 Crawl-delay: 0
 
+
+

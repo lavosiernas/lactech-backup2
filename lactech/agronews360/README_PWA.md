@@ -49,3 +49,5 @@ Se o botão de instalação não aparecer:
 - Limpe o cache do navegador
 - Verifique o console para erros do Service Worker
 
+
+

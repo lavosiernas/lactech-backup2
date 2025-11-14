@@ -151,6 +151,16 @@ try {
             position: relative;
         }
         
+        /* Modal de Alimentação Full Screen */
+        #modal-feeding .modal-content {
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+        
         /* Otimizações para mobile */
         @media (max-width: 768px) {
             .modal-content {
@@ -1610,92 +1620,217 @@ try {
 
     <!-- Modal Alimentação -->
     <div id="modal-feeding" class="modal">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-900">Alimentação</h2>
-                <button onclick="closeModal('feeding')" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
+        <div class="modal-content" style="max-width: 100vw !important; max-height: 100vh !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; border-radius: 0 !important; overflow-y: auto; padding: 1.5rem;">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-lime-500 to-lime-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Controle de Alimentação</h2>
+                        <p class="text-sm text-gray-500">Gerencie os registros de alimentação do rebanho</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('feeding')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Resumo Diário -->
+            <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4" id="feeding-daily-summary">
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-green-700">Concentrado</span>
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-green-900" id="summary-concentrate">0 kg</p>
+                    <p class="text-xs text-green-600 mt-1">Hoje</p>
+                </div>
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-blue-700">Volumoso</span>
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-blue-900" id="summary-roughage">0 kg</p>
+                    <p class="text-xs text-blue-600 mt-1">Hoje</p>
+                </div>
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border border-yellow-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-yellow-700">Silagem</span>
+                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-yellow-900" id="summary-silage">0 kg</p>
+                    <p class="text-xs text-yellow-600 mt-1">Hoje</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-purple-700">Animais</span>
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-purple-900" id="summary-animals">0</p>
+                    <p class="text-xs text-purple-600 mt-1">Alimentados hoje</p>
+                </div>
+            </div>
+
+            <!-- Filtros e Ações -->
+            <div class="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                <div class="flex flex-wrap gap-3">
+                    <input type="date" id="feeding-filter-date-from" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" value="<?php echo date('Y-m-d', strtotime('-7 days')); ?>">
+                    <input type="date" id="feeding-filter-date-to" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" value="<?php echo date('Y-m-d'); ?>">
+                    <select id="feeding-filter-animal" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                        <option value="">Todos os animais</option>
+                    </select>
+                    <button onclick="loadFeedingRecords()" class="px-4 py-2 bg-lime-600 text-white rounded-lg hover:bg-lime-700 transition-colors font-medium">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Atualizar
+                    </button>
+                </div>
+                <button onclick="openFeedingForm()" class="px-5 py-2 bg-gradient-to-r from-lime-600 to-lime-700 text-white rounded-lg hover:from-lime-700 hover:to-lime-800 transition-all font-medium shadow-md">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Novo Registro
+                </button>
+            </div>
+
+            <!-- Lista de Registros -->
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Data</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Animal</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Turno</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Concentrado (kg)</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Volumoso (kg)</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Silagem (kg)</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Feno (kg)</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Custo</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feeding-records-list" class="divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                        </svg>
+                                        <p>Carregando registros...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Formulário de Alimentação -->
+    <div id="modal-feeding-form" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900" id="feeding-form-title">Novo Registro de Alimentação</h2>
+                <button onclick="closeFeedingForm()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
                     <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div class="text-gray-700">
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Controle de Alimentação</h3>
-                    <div class="space-y-2">
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Concentrado</p>
-                                        <p class="text-sm text-gray-600">Estoque: 2.500kg - Custo: R$ 1.250</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Estoque OK</span>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">Ração</p>
-                                        <p class="text-sm text-gray-600">Estoque: 1.200kg - Custo: R$ 600</p>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Baixo</span>
-                            </div>
-                        </div>
+
+            <form id="feeding-form" class="space-y-4">
+                <input type="hidden" id="feeding-form-id" name="id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Animal *</label>
+                        <select id="feeding-form-animal" name="animal_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                            <option value="">Selecione o animal</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data *</label>
+                        <input type="date" id="feeding-form-date" name="feed_date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Turno *</label>
+                        <select id="feeding-form-shift" name="shift" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent">
+                            <option value="unico">Único</option>
+                            <option value="manha">Manhã</option>
+                            <option value="tarde">Tarde</option>
+                            <option value="noite">Noite</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Ração</label>
+                        <input type="text" id="feeding-form-type" name="feed_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="Ex: Concentrado, Ração">
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Consumo Diário</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center p-3 bg-green-50 rounded-lg">
-                            <p class="text-xl font-bold text-green-600">50kg</p>
-                            <p class="text-sm text-gray-600">Concentrado</p>
-                        </div>
-                        <div class="text-center p-3 bg-blue-50 rounded-lg">
-                            <p class="text-xl font-bold text-blue-600">30kg</p>
-                            <p class="text-sm text-gray-600">Ração</p>
-                        </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Concentrado (kg)</label>
+                        <input type="number" id="feeding-form-concentrate" name="concentrate_kg" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Volumoso (kg)</label>
+                        <input type="number" id="feeding-form-roughage" name="roughage_kg" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Silagem (kg)</label>
+                        <input type="number" id="feeding-form-silage" name="silage_kg" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Feno (kg)</label>
+                        <input type="number" id="feeding-form-hay" name="hay_kg" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="0.00">
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <h3 class="font-semibold text-lg mb-2">Funcionalidades</h3>
-                    <ul class="space-y-2">
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Registro de alimentação diária
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Controle de estoque
-                        </li>
-                        <li class="p-2 bg-gray-50 rounded flex items-center">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Cálculo de custos
-                        </li>
-                    </ul>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Marca</label>
+                        <input type="text" id="feeding-form-brand" name="feed_brand" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="Marca da ração">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">% Proteína</label>
+                        <input type="number" id="feeding-form-protein" name="protein_percentage" step="0.01" min="0" max="100" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Custo por kg (R$)</label>
+                        <input type="number" id="feeding-form-cost" name="cost_per_kg" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="0.00">
+                    </div>
                 </div>
-            </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                    <textarea id="feeding-form-notes" name="notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent" placeholder="Observações adicionais..."></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeFeedingForm()" class="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-gradient-to-r from-lime-600 to-lime-700 text-white rounded-lg hover:from-lime-700 hover:to-lime-800 transition-all font-medium shadow-md">
+                        Salvar Registro
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -2843,6 +2978,526 @@ try {
                 console.error('Erro:', error);
                 showCustomMessage('Erro', 'Erro ao registrar reprodução', 'error');
             });
+        });
+
+        // ============================================
+        // FUNCIONALIDADE DE ALIMENTAÇÃO
+        // ============================================
+
+        let feedingAnimals = [];
+        let currentFeedingEditId = null;
+
+        // Inicializar quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM carregado, inicializando sistema de alimentação...');
+            
+            const feedingModal = document.getElementById('modal-feeding');
+            if (feedingModal) {
+                console.log('Modal de alimentação encontrado');
+                
+                // Observar quando o modal é aberto
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.target.classList.contains('show') || mutation.target.style.display !== 'none') {
+                            console.log('Modal de alimentação aberto, inicializando...');
+                            setTimeout(function() {
+                                initFeedingModal();
+                            }, 200);
+                        }
+                    });
+                });
+                
+                observer.observe(feedingModal, {
+                    attributes: true,
+                    attributeFilter: ['class', 'style']
+                });
+                
+                // Também verificar quando o modal é aberto via openSubModal
+                const originalOpenSubModal = window.openSubModal;
+                if (originalOpenSubModal) {
+                    window.openSubModal = function(modalName) {
+                        originalOpenSubModal(modalName);
+                        if (modalName === 'feeding') {
+                            setTimeout(function() {
+                                initFeedingModal();
+                            }, 300);
+                        }
+                    };
+                }
+            } else {
+                console.error('Modal de alimentação NÃO encontrado!');
+            }
+            
+            // Garantir que o formulário está pronto
+            const feedingForm = document.getElementById('feeding-form');
+            if (feedingForm) {
+                console.log('Formulário de alimentação encontrado');
+            } else {
+                console.error('Formulário de alimentação NÃO encontrado!');
+            }
+        });
+
+        // ============================================
+        // DECLARAÇÕES DE FUNÇÕES DE ALIMENTAÇÃO
+        // ============================================
+
+        // Carregar lista de animais
+        function loadFeedingAnimals() {
+            return fetch('api/feed.php?action=animals')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        feedingAnimals = data.data;
+                        const selectForm = document.getElementById('feeding-form-animal');
+                        const selectFilter = document.getElementById('feeding-filter-animal');
+                        
+                        // Limpar e preencher select do formulário
+                        if (selectForm) {
+                            selectForm.innerHTML = '<option value="">Selecione o animal</option>';
+                            feedingAnimals.forEach(animal => {
+                                const option = document.createElement('option');
+                                option.value = animal.id;
+                                option.textContent = `${animal.animal_number || ''} ${animal.name || ''}`.trim();
+                                selectForm.appendChild(option);
+                            });
+                        }
+                        
+                        // Limpar e preencher select do filtro
+                        if (selectFilter) {
+                            const currentValue = selectFilter.value;
+                            selectFilter.innerHTML = '<option value="">Todos os animais</option>';
+                            feedingAnimals.forEach(animal => {
+                                const option = document.createElement('option');
+                                option.value = animal.id;
+                                option.textContent = `${animal.animal_number || ''} ${animal.name || ''}`.trim();
+                                selectFilter.appendChild(option);
+                            });
+                            selectFilter.value = currentValue;
+                        }
+                    }
+                    return data;
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar animais:', error);
+                    showCustomMessage('Erro', 'Erro ao carregar lista de animais', 'error');
+                    return null;
+                });
+        }
+
+        // Carregar registros de alimentação
+        function loadFeedingRecords() {
+            const dateFrom = document.getElementById('feeding-filter-date-from')?.value || '';
+            const dateTo = document.getElementById('feeding-filter-date-to')?.value || '';
+            const animalId = document.getElementById('feeding-filter-animal')?.value || '';
+            
+            let url = `api/feed.php?action=list&date_from=${dateFrom}&date_to=${dateTo}`;
+            if (animalId) {
+                url += `&animal_id=${animalId}`;
+            }
+            
+            const tbody = document.getElementById('feeding-records-list');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Carregando...</td></tr>';
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        displayFeedingRecords(data.data);
+                    } else {
+                        if (tbody) {
+                            tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Nenhum registro encontrado</td></tr>';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar registros:', error);
+                    if (tbody) {
+                        tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-red-500">Erro ao carregar registros</td></tr>';
+                    }
+                });
+        }
+
+        // Exibir registros na tabela
+        function displayFeedingRecords(records) {
+            const tbody = document.getElementById('feeding-records-list');
+            if (!tbody) return;
+            
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Nenhum registro encontrado</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = records.map(record => {
+                const date = new Date(record.feed_date).toLocaleDateString('pt-BR');
+                const animalName = record.animal_name || record.animal_number || `Animal #${record.animal_id}`;
+                const shiftNames = {
+                    'manha': 'Manhã',
+                    'tarde': 'Tarde',
+                    'noite': 'Noite',
+                    'unico': 'Único'
+                };
+                const shift = shiftNames[record.shift] || record.shift;
+                const cost = record.total_cost ? `R$ ${parseFloat(record.total_cost).toFixed(2).replace('.', ',')}` : '-';
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">${date}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">${animalName}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${shift}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">${parseFloat(record.concentrate_kg || 0).toFixed(2).replace('.', ',')}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">${parseFloat(record.roughage_kg || 0).toFixed(2).replace('.', ',')}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">${parseFloat(record.silage_kg || 0).toFixed(2).replace('.', ',')}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">${parseFloat(record.hay_kg || 0).toFixed(2).replace('.', ',')}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900 font-medium">${cost}</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="editFeedingRecord(${record.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="deleteFeedingRecord(${record.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Excluir">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Carregar resumo diário
+        function loadFeedingDailySummary() {
+            const today = new Date().toISOString().split('T')[0];
+            fetch(`api/feed.php?action=daily_summary&date=${today}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        const summary = data.data;
+                        document.getElementById('summary-concentrate').textContent = `${parseFloat(summary.total_concentrate || 0).toFixed(1).replace('.', ',')} kg`;
+                        document.getElementById('summary-roughage').textContent = `${parseFloat(summary.total_roughage || 0).toFixed(1).replace('.', ',')} kg`;
+                        document.getElementById('summary-silage').textContent = `${parseFloat(summary.total_silage || 0).toFixed(1).replace('.', ',')} kg`;
+                        document.getElementById('summary-animals').textContent = summary.total_animals_fed || 0;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar resumo:', error);
+                });
+        }
+
+        // Abrir formulário de alimentação
+        function openFeedingForm(recordId = null) {
+            console.log('Abrindo formulário de alimentação, recordId:', recordId);
+            currentFeedingEditId = recordId;
+            const form = document.getElementById('modal-feeding-form');
+            const title = document.getElementById('feeding-form-title');
+            
+            if (!form) {
+                console.error('Modal de formulário não encontrado!');
+                showCustomMessage('Erro', 'Modal de formulário não encontrado', 'error');
+                return;
+            }
+            
+            // Garantir que os animais estão carregados antes de abrir
+            if (feedingAnimals.length === 0) {
+                console.log('Carregando animais antes de abrir formulário...');
+                loadFeedingAnimals().then(() => {
+                    openForm();
+                }).catch(() => {
+                    showCustomMessage('Erro', 'Erro ao carregar animais. Tente novamente.', 'error');
+                });
+            } else {
+                openForm();
+            }
+            
+            function openForm() {
+                if (recordId) {
+                    if (title) title.textContent = 'Editar Registro de Alimentação';
+                    loadFeedingRecord(recordId);
+                } else {
+                    if (title) title.textContent = 'Novo Registro de Alimentação';
+                    resetFeedingForm();
+                }
+                form.style.display = 'block';
+                form.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                console.log('Formulário aberto com sucesso');
+            }
+        }
+
+        // Fechar formulário
+        function closeFeedingForm() {
+            const form = document.getElementById('modal-feeding-form');
+            if (form) {
+                form.style.display = 'none';
+                form.classList.remove('show');
+                document.body.style.overflow = '';
+                resetFeedingForm();
+                currentFeedingEditId = null;
+            }
+        }
+
+        // Resetar formulário
+        function resetFeedingForm() {
+            document.getElementById('feeding-form').reset();
+            document.getElementById('feeding-form-id').value = '';
+            document.getElementById('feeding-form-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        // Carregar registro para edição
+        function loadFeedingRecord(id) {
+            fetch(`api/feed.php?action=get&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        const record = data.data;
+                        document.getElementById('feeding-form-id').value = record.id;
+                        document.getElementById('feeding-form-animal').value = record.animal_id;
+                        document.getElementById('feeding-form-date').value = record.feed_date;
+                        document.getElementById('feeding-form-shift').value = record.shift;
+                        document.getElementById('feeding-form-type').value = record.feed_type || '';
+                        document.getElementById('feeding-form-concentrate').value = record.concentrate_kg || '';
+                        document.getElementById('feeding-form-roughage').value = record.roughage_kg || '';
+                        document.getElementById('feeding-form-silage').value = record.silage_kg || '';
+                        document.getElementById('feeding-form-hay').value = record.hay_kg || '';
+                        document.getElementById('feeding-form-brand').value = record.feed_brand || '';
+                        document.getElementById('feeding-form-protein').value = record.protein_percentage || '';
+                        document.getElementById('feeding-form-cost').value = record.cost_per_kg || '';
+                        document.getElementById('feeding-form-notes').value = record.notes || '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar registro:', error);
+                    showCustomMessage('Erro', 'Erro ao carregar registro', 'error');
+                });
+        }
+
+        // Editar registro
+        function editFeedingRecord(id) {
+            openFeedingForm(id);
+        }
+
+        // Deletar registro
+        function deleteFeedingRecord(id) {
+            showCustomConfirm(
+                'Confirmar Exclusão',
+                'Tem certeza que deseja excluir este registro de alimentação?',
+                function() {
+                    fetch('api/feed.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id: id
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showCustomMessage('Sucesso', 'Registro excluído com sucesso!', 'success');
+                            loadFeedingRecords();
+                            loadFeedingDailySummary();
+                        } else {
+                            showCustomMessage('Erro', data.error || 'Erro ao excluir registro', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        showCustomMessage('Erro', 'Erro ao excluir registro', 'error');
+                    });
+                }
+            );
+        }
+
+        // Submeter formulário
+        const feedingFormElement = document.getElementById('feeding-form');
+        if (feedingFormElement) {
+            feedingFormElement.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                console.log('Submetendo formulário de alimentação...');
+                
+                const animalId = document.getElementById('feeding-form-animal')?.value;
+                if (!animalId) {
+                    showCustomMessage('Erro', 'Por favor, selecione um animal', 'error');
+                    return;
+                }
+                
+                const formData = {
+                    action: currentFeedingEditId ? 'update' : 'create',
+                    animal_id: animalId,
+                    feed_date: document.getElementById('feeding-form-date')?.value || new Date().toISOString().split('T')[0],
+                    shift: document.getElementById('feeding-form-shift')?.value || 'unico',
+                    feed_type: document.getElementById('feeding-form-type')?.value || null,
+                    concentrate_kg: document.getElementById('feeding-form-concentrate')?.value || 0,
+                    roughage_kg: document.getElementById('feeding-form-roughage')?.value || 0,
+                    silage_kg: document.getElementById('feeding-form-silage')?.value || 0,
+                    hay_kg: document.getElementById('feeding-form-hay')?.value || 0,
+                    feed_brand: document.getElementById('feeding-form-brand')?.value || null,
+                    protein_percentage: document.getElementById('feeding-form-protein')?.value || null,
+                    cost_per_kg: document.getElementById('feeding-form-cost')?.value || null,
+                    notes: document.getElementById('feeding-form-notes')?.value || null
+                };
+                
+                if (currentFeedingEditId) {
+                    formData.id = currentFeedingEditId;
+                }
+                
+                console.log('Dados do formulário:', formData);
+                
+                fetch('api/feed.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    console.log('Resposta recebida:', response);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dados recebidos:', data);
+                    if (data.success) {
+                        showCustomMessage('Sucesso', currentFeedingEditId ? 'Registro atualizado com sucesso!' : 'Registro criado com sucesso!', 'success');
+                        closeFeedingForm();
+                        loadFeedingRecords();
+                        loadFeedingDailySummary();
+                    } else {
+                        showCustomMessage('Erro', data.error || 'Erro ao salvar registro', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showCustomMessage('Erro', 'Erro ao salvar registro: ' + error.message, 'error');
+                });
+            });
+        }
+
+        // Fechar modal de formulário ao clicar fora
+        document.getElementById('modal-feeding-form')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFeedingForm();
+            }
+        });
+
+        // Inicializar modal quando carregar
+        function initFeedingModal() {
+            console.log('Inicializando modal de alimentação...');
+            loadFeedingAnimals();
+            loadFeedingRecords();
+            loadFeedingDailySummary();
+        }
+
+        // Tornar todas as funções globais - executar após todas as declarações
+        (function() {
+            // Aguardar um pouco para garantir que todas as funções foram declaradas
+            setTimeout(function() {
+                try {
+                    if (typeof openFeedingForm === 'function') {
+                        window.openFeedingForm = openFeedingForm;
+                    }
+                    if (typeof closeFeedingForm === 'function') {
+                        window.closeFeedingForm = closeFeedingForm;
+                    }
+                    if (typeof loadFeedingRecords === 'function') {
+                        window.loadFeedingRecords = loadFeedingRecords;
+                    }
+                    if (typeof editFeedingRecord === 'function') {
+                        window.editFeedingRecord = editFeedingRecord;
+                    }
+                    if (typeof deleteFeedingRecord === 'function') {
+                        window.deleteFeedingRecord = deleteFeedingRecord;
+                    }
+                    if (typeof initFeedingModal === 'function') {
+                        window.initFeedingModal = initFeedingModal;
+                    }
+                    console.log('✅ Funções de alimentação expostas globalmente');
+                } catch(e) {
+                    console.error('Erro ao expor funções:', e);
+                }
+            }, 500);
+        })();
+    </script>
+    
+    <!-- Script adicional para garantir que as funções estejam disponíveis -->
+    <script>
+        // Garantir que openFeedingForm está disponível globalmente - versão de fallback
+        window.openFeedingForm = window.openFeedingForm || function(recordId) {
+            console.log('🔵 openFeedingForm chamado (fallback), recordId:', recordId);
+            
+            // Tentar encontrar a função no escopo
+            if (typeof openFeedingForm === 'function') {
+                return openFeedingForm(recordId);
+            }
+            
+            // Se não encontrar, tentar abrir o modal diretamente
+            const formModal = document.getElementById('modal-feeding-form');
+            if (formModal) {
+                console.log('Abrindo modal diretamente...');
+                formModal.style.display = 'block';
+                formModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // Carregar animais se necessário
+                if (typeof loadFeedingAnimals === 'function') {
+                    loadFeedingAnimals();
+                } else if (typeof window.loadFeedingAnimals === 'function') {
+                    window.loadFeedingAnimals();
+                } else {
+                    // Fazer fetch direto
+                    fetch('api/feed.php?action=animals')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success && data.data) {
+                                const select = document.getElementById('feeding-form-animal');
+                                if (select) {
+                                    select.innerHTML = '<option value="">Selecione o animal</option>';
+                                    data.data.forEach(animal => {
+                                        const opt = document.createElement('option');
+                                        opt.value = animal.id;
+                                        opt.textContent = `${animal.animal_number || ''} ${animal.name || ''}`.trim();
+                                        select.appendChild(opt);
+                                    });
+                                }
+                            }
+                        });
+                }
+            } else {
+                alert('Erro: Modal de formulário não encontrado!');
+            }
+        };
+        
+        // Testar se o modal existe
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 Verificando elementos de alimentação...');
+            const modal = document.getElementById('modal-feeding');
+            const formModal = document.getElementById('modal-feeding-form');
+            const form = document.getElementById('feeding-form');
+            
+            console.log('Modal principal:', modal ? '✅ Encontrado' : '❌ Não encontrado');
+            console.log('Modal formulário:', formModal ? '✅ Encontrado' : '❌ Não encontrado');
+            console.log('Formulário:', form ? '✅ Encontrado' : '❌ Não encontrado');
+            
+            if (!modal) {
+                console.error('❌ CRÍTICO: Modal de alimentação não encontrado no DOM!');
+            }
+            if (!formModal) {
+                console.error('❌ CRÍTICO: Modal de formulário não encontrado no DOM!');
+            }
+            if (!form) {
+                console.error('❌ CRÍTICO: Formulário não encontrado no DOM!');
+            }
+            
+            // Verificar se as funções estão disponíveis
+            console.log('openFeedingForm disponível:', typeof window.openFeedingForm);
+            console.log('loadFeedingRecords disponível:', typeof window.loadFeedingRecords);
         });
     </script>
 </body>
