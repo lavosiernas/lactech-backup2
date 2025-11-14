@@ -16,23 +16,44 @@
     <meta name="msapplication-config" content="/browserconfig.xml">
     
     <!-- PWA Icons -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="128x128" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="384x384" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./assets/img/lactech-logo.png">
     
     <!-- PWA Manifest -->
-
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Preconnect para recursos externos (melhora velocidade) -->
+    <link rel="preconnect" href="https://i.postimg.cc">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Tailwind CSS otimizado - usar build local se disponível -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <!-- Fallback: CDN com configuração otimizada -->
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
+    
+    <!-- Chart.js (defer para não bloquear renderização) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    
+    <!-- jsPDF (defer para não bloquear renderização) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="assets/js/pdf-generator.js"></script>
     <script src="assets/js/config_mysql.js"></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
@@ -616,7 +637,6 @@
                                 <option value="all">Todos os funcionários</option>
                                 <option value="gerente">Gerentes</option>
                                 <option value="funcionario">Funcionários</option>
-                                <option value="veterinario">Veterinários</option>
                             </select>
                             <!-- Proprietário apenas visualiza - sem botões de adicionar -->
                         </div>
@@ -655,17 +675,6 @@
                         </div>
                         <div class="text-xl font-bold text-slate-900 mb-1" id="employeesCount">--</div>
                         <div class="text-xs text-slate-500 font-medium">Funcionários</div>
-                        <div class="text-xs text-slate-600 font-semibold mt-1">Ativos</div>
-                    </div>
-                    
-                    <div class="data-card rounded-2xl p-4 text-center">
-                        <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="text-xl font-bold text-slate-900 mb-1" id="veterinariansCount">--</div>
-                        <div class="text-xs text-slate-500 font-medium">Veterinários</div>
                         <div class="text-xs text-slate-600 font-semibold mt-1">Ativos</div>
                     </div>
                 </div>
@@ -937,6 +946,48 @@
                             Alterar Senha
                         </button>
                     </form>
+                </div>
+                
+                <!-- Ecossistema - Apps Interligados -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                        </svg>
+                        Ecossistema
+                    </h4>
+                    <p class="text-sm text-gray-600 mb-4">Apps interligados ao sistema Lactech</p>
+                    
+                    <!-- AgroNews360 -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition-all">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+                                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold text-gray-900 text-sm">AgroNews360</h5>
+                                    <p class="text-xs text-gray-600">Portal de notícias do agronegócio</p>
+                                </div>
+                            </div>
+                            <a href="agronews360/auto-login.php" target="_blank" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-2">
+                                <span>Acessar</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-green-200">
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span>Conectado ao sistema Lactech</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Sair do Sistema -->
@@ -1633,12 +1684,10 @@
                 const totalUsers = users.length;
                 const managersCount = users.filter(u => u.role === 'gerente').length;
                 const employeesCount = users.filter(u => u.role === 'funcionario').length;
-                const veterinariansCount = users.filter(u => u.role === 'veterinario').length;
 
                 document.getElementById('totalUsers').textContent = totalUsers;
                 document.getElementById('managersCount').textContent = managersCount;
                 document.getElementById('employeesCount').textContent = employeesCount;
-                document.getElementById('veterinariansCount').textContent = veterinariansCount;
 
                 // Update team list
                 displayTeamList(users);
@@ -1677,15 +1726,13 @@
                 const roleColors = {
                     'proprietario': 'bg-purple-100 text-purple-800',
                     'gerente': 'bg-blue-100 text-blue-800',
-                    'funcionario': 'bg-green-100 text-green-800',
-                    'veterinario': 'bg-orange-100 text-orange-800'
+                    'funcionario': 'bg-green-100 text-green-800'
                 };
 
                 const roleIcons = {
                     'proprietario': 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
                     'gerente': 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-                    'funcionario': 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-                    'veterinario': 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
+                    'funcionario': 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
                 };
 
                 return `

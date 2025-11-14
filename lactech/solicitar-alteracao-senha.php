@@ -15,8 +15,8 @@
     <meta name="msapplication-TileColor" content="#166534">
     
     <!-- PWA Icons -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -385,7 +385,7 @@
                 if (error || !user) {
                     showNotification('Usuário não autenticado. Redirecionando para login...', 'error');
                     setTimeout(() => {
-                        window.location.href = 'login.php';
+                        window.location.href = 'inicio-login.php';
                     }, 2000);
                     return;
                 }

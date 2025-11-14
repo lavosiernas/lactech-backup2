@@ -4,7 +4,7 @@ session_start();
 
 // Se o usuário não estiver bloqueado, redirecionar para login
 if (!isset($_SESSION['user_blocked']) || $_SESSION['user_blocked'] !== true) {
-    header('Location: login.php');
+    header('Location: inicio-login.php');
     exit;
 }
 
@@ -351,7 +351,7 @@ if (isset($_GET['logout'])) {
             sessionStorage.removeItem('userSession');
             
             // Redirecionar para login
-            window.location.href = 'login.php';
+            window.location.href = 'inicio-login.php';
         }
         
         // Executar diagnóstico ao carregar a página

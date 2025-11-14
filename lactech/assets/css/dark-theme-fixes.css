@@ -1,3 +1,8 @@
+/* =====================================================
+   MODO ESCURO - DESABILITADO (EM DESENVOLVIMENTO)
+   Todos os estilos foram comentados
+   ===================================================== */
+/* MODO ESCURO DESABILITADO - INÍCIO DO COMENTÁRIO
 /* Correções para o tema escuro */
 
 /* Corrigir hover branco no tema escuro */
@@ -1350,5 +1355,128 @@
 }
 
 /* ===================================================== */
+/* CORREÇÕES ESPECÍFICAS PARA LOGO NO HEADER - MODO ESCURO */
+/* ===================================================== */
+
+/* Garantir que a logo apareça no modo escuro */
+.dark .w-12.h-12.bg-white,
+.dark header .w-12.h-12.bg-white,
+.dark .w-12.h-12.bg-white.rounded-xl {
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .w-12.h-12.bg-white img,
+.dark header .w-12.h-12.bg-white img,
+.dark .w-12.h-12.bg-white.rounded-xl img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    filter: none !important;
+}
+
+/* ===================================================== */
+/* CORREÇÕES ESPECÍFICAS PARA FOTO DE PERFIL - MODO ESCURO */
+/* ===================================================== */
+
+/* Garantir que a foto de perfil apareça no modo escuro */
+.dark #headerProfilePhoto,
+.dark header #headerProfilePhoto,
+.dark .w-8.h-8.bg-white.bg-opacity-20 #headerProfilePhoto {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    filter: none !important;
+    background: transparent !important;
+}
+
+.dark .w-8.h-8.bg-white.bg-opacity-20,
+.dark header .w-8.h-8.bg-white.bg-opacity-20 {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark .w-8.h-8.bg-white.bg-opacity-20 img,
+.dark header .w-8.h-8.bg-white.bg-opacity-20 img,
+.dark #headerProfilePhoto {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* Ocultar ícone quando há foto */
+.dark #headerProfilePhoto:not([style*="display: none"]) ~ #headerProfilePhotoIcon,
+.dark #headerProfilePhoto[src]:not([src=""]) ~ #headerProfilePhotoIcon {
+    display: none !important;
+}
+
+/* Mostrar ícone apenas quando não há foto */
+.dark #headerProfilePhoto[style*="display: none"] ~ #headerProfilePhotoIcon,
+.dark #headerProfilePhoto[src=""] ~ #headerProfilePhotoIcon,
+.dark:not(:has(#headerProfilePhoto[src])) #headerProfilePhotoIcon {
+    display: flex !important;
+}
+
+/* ===================================================== */
+/* CORREÇÕES ESPECÍFICAS PARA INDICADORES - MODO ESCURO */
+/* ===================================================== */
+
+/* Garantir que os textos dos indicadores sejam legíveis no modo escuro */
+.dark .metric-value {
+    color: #ffffff !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.dark .metric-label {
+    color: #d1d5db !important; /* gray-300 */
+    background: transparent !important;
+    background-color: transparent !important;
+    -webkit-text-fill-color: #d1d5db !important;
+}
+
+.dark .metric-label.text-slate-500 {
+    color: #d1d5db !important; /* gray-300 */
+    background: transparent !important;
+    background-color: transparent !important;
+    -webkit-text-fill-color: #d1d5db !important;
+}
+
+.dark .metric-label.text-slate-600 {
+    color: #e5e7eb !important; /* gray-200 */
+    background: transparent !important;
+    background-color: transparent !important;
+    -webkit-text-fill-color: #e5e7eb !important;
+}
+
+/* Garantir que os cards dos indicadores tenham fundo escuro */
+.dark .metric-card {
+    background-color: #1f2937 !important; /* gray-800 */
+    border-color: #374151 !important; /* gray-700 */
+}
+
+/* Garantir que textos não tenham fundo escondendo */
+.dark .metric-value.text-slate-900 {
+    color: #ffffff !important;
+    background: transparent !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.dark .text-slate-900 {
+    color: #ffffff !important;
+    background: transparent !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* ===================================================== */
 /* CORREÇÕES ESPECÍFICAS PARA BACKGROUNDS NO MODO ESCURO */
 /* ===================================================== */
+*/ /* FIM DO MODO ESCURO DESABILITADO */

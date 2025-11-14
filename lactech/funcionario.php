@@ -16,28 +16,45 @@
     <meta name="msapplication-config" content="/browserconfig.xml">
     
     <!-- PWA Icons -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="128x128" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="384x384" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="https://i.postimg.cc/vmrkgDcB/lactech.png">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="./assets/img/lactech-logo.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./assets/img/lactech-logo.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="assets/js/config_mysql.js"></script>
+    <!-- Preconnect para recursos externos (melhora velocidade) -->
+    <link rel="preconnect" href="https://i.postimg.cc">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://i.postimg.cc">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Tailwind CSS otimizado - usar build local se disponível -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <!-- Fallback: CDN com configuração otimizada -->
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
+    
+    <!-- Scripts locais (defer para não bloquear renderização) -->
+    <script src="assets/js/config_mysql.js" defer></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
-    <script src="assets/js/api.js"></script>
-    <script src="assets/js/modal-system.js"></script>
-    <script src="assets/js/offline-manager.js"></script>
+    <script src="assets/js/modal-system.js" defer></script>
+    <script src="assets/js/offline-manager.js" defer></script>
     <!-- <script src="assets/js/offline-loading.js"></script> --> <!-- Desabilitado - reconexão silenciosa -->
-    <script src="assets/js/ecosystem-manager.js"></script>
+    <script src="assets/js/ecosystem-manager.js" defer></script>
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
@@ -666,22 +683,46 @@
                     </div>
                     
                     <!-- Modo Visualização -->
-                    <div id="profileViewMode" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">Nome Completo</label>
-                            <p class="text-gray-900 font-semibold text-base" id="profileFullName">Carregando...</p>
+                    <div id="profileViewMode">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">Nome Completo</label>
+                                <p class="text-gray-900 font-semibold text-base" id="profileFullName">Carregando...</p>
+                                    </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">Email</label>
+                                <p class="text-gray-900 font-semibold text-base" id="profileEmail2">Carregando...</p>
                                 </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">Email</label>
-                            <p class="text-gray-900 font-semibold text-base" id="profileEmail2">Carregando...</p>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">WhatsApp</label>
+                                <p class="text-gray-900 font-semibold text-base" id="profileWhatsApp">Não informado</p>
                             </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">WhatsApp</label>
-                            <p class="text-gray-900 font-semibold text-base" id="profileWhatsApp">Não informado</p>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">Cargo</label>
+                                <p class="text-gray-900 font-semibold text-base">Funcionário</p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">Cargo</label>
-                            <p class="text-gray-900 font-semibold text-base">Funcionário</p>
+                        
+                        <div class="border-t border-gray-200 pt-4 mt-4">
+                            <h5 class="text-md font-semibold text-gray-900 mb-4">Informações da Fazenda</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Nome da Fazenda</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmNameDisplay">Carregando...</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Telefone da Fazenda</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmPhone">Não informado</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">CNPJ</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmCNPJ">Não informado</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Endereço da Fazenda</label>
+                                    <p class="text-gray-900 font-semibold text-base" id="profileFarmAddress">Não informado</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -704,6 +745,28 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-2">Cargo</label>
                                     <input type="text" value="Funcionário" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-gray-100 text-gray-500" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-4 mt-4">
+                                <h5 class="text-md font-semibold text-gray-900 mb-4">Informações da Fazenda</h5>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">Nome da Fazenda</label>
+                                        <input type="text" id="editFarmName" name="farm_name" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="Nome da fazenda">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">Telefone da Fazenda</label>
+                                        <input type="tel" id="editFarmPhone" name="farm_phone" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="(00) 0000-0000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">CNPJ</label>
+                                        <input type="text" id="editFarmCNPJ" name="farm_cnpj" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white" placeholder="00.000.000/0000-00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-2">Endereço da Fazenda</label>
+                                        <textarea id="editFarmAddress" name="farm_address" rows="3" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none bg-white resize-none" placeholder="Endereço completo da fazenda"></textarea>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -744,6 +807,48 @@
                             Alterar Senha
                         </button>
                     </form>
+                </div>
+                
+                <!-- Ecossistema - Apps Interligados -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                        </svg>
+                        Ecossistema
+                    </h4>
+                    <p class="text-sm text-gray-600 mb-4">Apps interligados ao sistema Lactech</p>
+                    
+                    <!-- AgroNews360 -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition-all">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+                                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold text-gray-900 text-sm">AgroNews360</h5>
+                                    <p class="text-xs text-gray-600">Portal de notícias do agronegócio</p>
+                                </div>
+                            </div>
+                            <a href="agronews360/auto-login.php" target="_blank" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-2">
+                                <span>Acessar</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-green-200">
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span>Conectado ao sistema Lactech</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Minhas Solicitações de Senha -->
@@ -3832,7 +3937,7 @@
             document.getElementById('profileModal').classList.remove('show');
         }
 
-        function toggleProfileEdit() {
+        async function toggleProfileEdit() {
             const viewMode = document.getElementById('profileViewMode');
             const editMode = document.getElementById('profileEditMode');
             const editBtn = document.getElementById('editProfileBtn');
@@ -3849,17 +3954,53 @@
                 `;
                 editBtn.onclick = cancelProfileEdit;
                 
-                // Preencher campos de edição
+                // Preencher campos de edição do usuário
                 document.getElementById('editProfileName').value = currentUser.name || '';
                 document.getElementById('editProfileEmail').value = currentUser.email || '';
                 document.getElementById('editProfileWhatsApp').value = currentUser.whatsapp || '';
+                
+                // Carregar e preencher dados da fazenda
+                try {
+                    const supabase = createSupabaseClient();
+                    
+                    // Buscar farm_id do usuário
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('farm_id')
+                        .eq('id', currentUser.id)
+                        .single();
+                    
+                    if (userData && userData.farm_id) {
+                        // Buscar dados da fazenda
+                        const { data: farmData } = await supabase
+                            .from('farms')
+                            .select('name, phone, cnpj, address')
+                            .eq('id', userData.farm_id)
+                            .single();
+                        
+                        if (farmData) {
+                            document.getElementById('editFarmName').value = farmData.name || '';
+                            document.getElementById('editFarmPhone').value = farmData.phone || '';
+                            document.getElementById('editFarmCNPJ').value = farmData.cnpj || '';
+                            
+                            // Se não houver endereço, usar o padrão especificado pelo usuário
+                            const defaultAddress = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
+                            document.getElementById('editFarmAddress').value = farmData.address || defaultAddress;
+                        }
+                    }
+                } catch (error) {
+                    log('Erro ao carregar dados da fazenda: ' + error.message);
+                }
             }
         }
 
-        function cancelProfileEdit() {
+        async function cancelProfileEdit() {
             const viewMode = document.getElementById('profileViewMode');
             const editMode = document.getElementById('profileEditMode');
             const editBtn = document.getElementById('editProfileBtn');
+            
+            // Recarregar dados originais antes de voltar para modo visualização
+            await loadProfileData();
             
             viewMode.classList.remove('hidden');
             editMode.classList.add('hidden');
@@ -3874,7 +4015,7 @@
 
         async function loadProfileData() {
             if (currentUser) {
-                // Atualizar todos os elementos do modal
+                // Atualizar todos os elementos do modal do usuário
                 document.getElementById('profileName').textContent = currentUser.name || 'Nome não informado';
                 document.getElementById('profileFarmName').textContent = currentFarmName || 'Fazenda não informada';
                 document.getElementById('profileFullName').textContent = currentUser.name || 'Nome não informado';
@@ -3885,16 +4026,35 @@
                     const supabase = createSupabaseClient();
                     const { data: userData } = await supabase
                     .from('users')
-                        .select('whatsapp')
+                        .select('whatsapp, farm_id')
                         .eq('id', currentUser.id)
                     .single();
                 
                     if (userData && userData.whatsapp) {
                         document.getElementById('profileWhatsApp').textContent = userData.whatsapp;
                         currentUser.whatsapp = userData.whatsapp;
-                }
-            } catch (error) {
-                    log('Erro ao carregar WhatsApp: ' + error.message);
+                    }
+                    
+                    // Carregar dados da fazenda
+                    if (userData && userData.farm_id) {
+                        const { data: farmData } = await supabase
+                            .from('farms')
+                            .select('name, phone, cnpj, address')
+                            .eq('id', userData.farm_id)
+                            .single();
+                        
+                        if (farmData) {
+                            document.getElementById('profileFarmNameDisplay').textContent = farmData.name || 'Não informado';
+                            document.getElementById('profileFarmPhone').textContent = farmData.phone || 'Não informado';
+                            document.getElementById('profileFarmCNPJ').textContent = farmData.cnpj || 'Não informado';
+                            
+                            // Se não houver endereço, usar o padrão
+                            const defaultAddress = 'Justiniano de Serpa, Aquiraz - State of Ceará, 61700-000, Brazil, CEP 61700-000, Brasil';
+                            document.getElementById('profileFarmAddress').textContent = farmData.address || defaultAddress;
+                        }
+                    }
+                } catch (error) {
+                    log('Erro ao carregar dados: ' + error.message);
                 }
                 
                 // Load profile photo
@@ -4090,7 +4250,7 @@
                 const whatsapp = formData.get('whatsapp');
                 
                 // Atualizar dados do usuário
-                const { error } = await supabase
+                const { error: userError } = await supabase
                     .from('users')
                     .update({
                         name: name,
@@ -4098,8 +4258,46 @@
                     })
                     .eq('id', currentUser.id);
                 
-                if (error) {
-                    throw error;
+                if (userError) {
+                    throw userError;
+                }
+                
+                // Buscar farm_id do usuário para atualizar dados da fazenda
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('farm_id')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (userData && userData.farm_id) {
+                    // Atualizar dados da fazenda
+                    const farmName = formData.get('farm_name');
+                    const farmPhone = formData.get('farm_phone');
+                    const farmCNPJ = formData.get('farm_cnpj');
+                    const farmAddress = formData.get('farm_address');
+                    
+                    const updateData = {};
+                    if (farmName) updateData.name = farmName;
+                    if (farmPhone !== null) updateData.phone = farmPhone || null;
+                    if (farmCNPJ !== null) updateData.cnpj = farmCNPJ || null;
+                    if (farmAddress !== null) updateData.address = farmAddress || null;
+                    
+                    if (Object.keys(updateData).length > 0) {
+                        const { error: farmError } = await supabase
+                            .from('farms')
+                            .update(updateData)
+                            .eq('id', userData.farm_id);
+                        
+                        if (farmError) {
+                            log('Erro ao atualizar fazenda: ' + farmError.message);
+                            // Não falhar completamente se houver erro na fazenda
+                        } else {
+                            // Atualizar nome da fazenda local se foi alterado
+                            if (farmName) {
+                                currentFarmName = farmName;
+                            }
+                        }
+                    }
                 }
                 
                 // Atualizar variáveis locais
@@ -4111,18 +4309,15 @@
                 document.getElementById('employeeName').textContent = firstName;
                 document.getElementById('employeeWelcome').textContent = firstName;
                 
-                // Recarregar dados do modal
-                await loadProfileData();
+                // Voltar para modo de visualização (já recarrega os dados)
+                await cancelProfileEdit();
                 
-                // Voltar para modo de visualização
-                cancelProfileEdit();
-                
+                showNotification('Perfil atualizado com sucesso!', 'success');
                 log('Perfil atualizado com sucesso!');
-                window.showAlert('Perfil atualizado com sucesso!', { type: 'success', title: 'Sucesso!' });
 
             } catch (error) {
                 log('ERRO ao atualizar perfil: ' + error.message);
-                window.showAlert('Erro ao atualizar perfil: ' + error.message, { type: 'error', title: 'Erro!' });
+                showNotification('Erro ao atualizar perfil: ' + error.message, 'error');
             }
         }
 
@@ -4519,13 +4714,13 @@
                 await supabase.auth.signOut();
                 
                 log('✅ Logout realizado com sucesso');
-                safeRedirect('login.php');
+                safeRedirect('inicio-login.php');
                 
             } catch (error) {
                 log('❌ Erro no logout: ' + error.message);
                 cleanupRealtimeUpdates();
                 clearUserSession();
-                safeRedirect('login.php');
+                safeRedirect('inicio-login.php');
             }
         }
 
@@ -4547,7 +4742,7 @@
                     
                     showNotification('Sessão expirada. Redirecionando para login...', 'error');
                     setTimeout(() => {
-                        safeRedirect('login.php');
+                        safeRedirect('inicio-login.php');
                     }, 2000);
                     return;
                 }
@@ -4622,7 +4817,7 @@
                 clearUserSession();
                 
                 setTimeout(() => {
-                    safeRedirect('login.php');
+                    safeRedirect('inicio-login.php');
                 }, 2000);
             }
         }
@@ -5608,7 +5803,7 @@
                 log('❌ Muitas tentativas de redirecionamento, limpando sessão');
                 clearUserSession();
                 sessionStorage.removeItem('redirectCount');
-                safeRedirect('login.php');
+                safeRedirect('inicio-login.php');
             return;
         }
         
@@ -6434,7 +6629,7 @@
                 sessionStorage.removeItem('currentSecondaryAccount');
                 
                 // Redirecionar para o painel do gerente
-                window.location.replace('gerente.php');
+                window.location.replace('gerente-completo.php');
             }
         }
         
@@ -7144,7 +7339,7 @@
                     // Fazer logout após 5 segundos
                     setTimeout(async () => {
                         await supabase.auth.signOut();
-                        window.location.href = 'login.php';
+                        window.location.href = 'inicio-login.php';
                     }, 5000);
                 }
                 

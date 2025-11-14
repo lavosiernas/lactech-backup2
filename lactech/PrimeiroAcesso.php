@@ -9,11 +9,10 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
     $role = $_SESSION['user_role'] ?? 'gerente';
     $redirectMap = [
         'proprietario' => 'proprietario.php',
-        'gerente' => 'gerente.php',
-        'funcionario' => 'funcionario.php',
-        'veterinario' => 'veterinario.php'
+        'gerente' => 'gerente-completo.php',
+        'funcionario' => 'funcionario.php'
     ];
-    header('Location: ' . ($redirectMap[$role] ?? 'gerente.php'));
+    header('Location: ' . ($redirectMap[$role] ?? 'gerente-completo.php'));
     exit;
 }
 ?>
@@ -26,7 +25,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/js/config_mysql.js"></script>
     <!-- <script src="assets/js/loading-screen.js"></script> DESABILITADO - usando apenas modal de carregamento -->
-    <link rel="icon" href="https://i.postimg.cc/vmrkgDcB/lactech.png" type="image/x-icon">
+    <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- <link href="assets/css/loading-screen.css" rel="stylesheet"> DESABILITADO - usando apenas modal de carregamento -->
     <script>
@@ -966,11 +965,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                 window.location.href = 'proprietario.php';
             } else if (adminData.role === 'gerente') {
                 console.log('👤 Redirecionando para gerente');
-                window.location.href = 'gerente.php';
+                window.location.href = 'gerente-completo.php';
             } else {
                 console.log('⚠️ Role não definido, redirecionando para login');
                 // Fallback to login page
-                window.location.href = 'login.php';
+                window.location.href = 'inicio-login.php';
             }
         }
 

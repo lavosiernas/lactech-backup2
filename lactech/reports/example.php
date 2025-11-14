@@ -8,7 +8,7 @@ session_start();
 
 // Verificar autenticação básica
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
-    header('Location: ../login.php');
+    header('Location: ../inicio-login.php');
     exit;
 }
 
@@ -19,7 +19,7 @@ $user = [
 ];
 
 // Verificar permissões
-$allowedRoles = ['gerente', 'funcionario', 'veterinario', 'proprietario'];
+$allowedRoles = ['gerente', 'funcionario', 'proprietario'];
 if (!in_array($user['role'], $allowedRoles)) {
     die('Você não tem permissão para acessar relatórios');
 }

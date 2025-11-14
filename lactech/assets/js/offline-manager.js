@@ -1,423 +1,706 @@
 /**
- * OFFLINE MANAGER - LacTech
- * Sistema completo de cache offline e sincronização
- * Versão: 2.0.1
+ * Offline Manager - Sistema de Modo Offline
+ * Gerencia registros offline e sincronização automática
  */
 
 class OfflineManager {
     constructor() {
+        this.queue = [];
         this.isOnline = navigator.onLine;
-        this.syncQueue = [];
-        this.cachePrefix = 'lactech_offline_';
-        this.syncPrefix = 'lactech_sync_';
-        this.userData = null;
-        this.farmData = null;
+        this.forceOffline = false; // Modo offline forçado manualmente
+        this.syncInProgress = false;
+        this.storageKey = 'lactech_offline_queue';
+        this.syncInterval = null;
+        this.connectionQuality = 'unknown'; // 'good', 'poor', 'unknown'
+        this.connectionCheckInterval = null;
+        this.offlineNotificationInterval = null; // Timer para notificações offline
         
-        // Inicializar
         this.init();
     }
-
-    /**
-     * Inicializar o Offline Manager
-     */
-    async init() {
-        console.log('🔄 Offline Manager inicializando...');
+    
+    init() {
+        // Carregar fila do localStorage
+        this.loadQueue();
         
-        // Event listeners para conexão
+        // Só carregar estado de modo offline forçado se realmente estiver offline
+        // Se estiver online, resetar para modo online (exceto se houver registros pendentes)
+        if (!navigator.onLine) {
+            // Se realmente está offline, manter modo offline
+            const savedForceOffline = localStorage.getItem('lactech_force_offline');
+            if (savedForceOffline === 'true') {
+                this.forceOffline = true;
+            } else {
+                // Offline real, ativar automaticamente
+                this.forceOffline = true;
+                localStorage.setItem('lactech_force_offline', 'true');
+            }
+        } else {
+            // Está online - verificar se deve manter modo offline
+            // Só manter modo offline forçado se houver registros pendentes
+            const savedForceOffline = localStorage.getItem('lactech_force_offline');
+            if (savedForceOffline === 'true' && this.queue.length === 0) {
+                // Está online, não há registros pendentes, desativar modo offline
+                this.forceOffline = false;
+                localStorage.setItem('lactech_force_offline', 'false');
+            } else if (savedForceOffline === 'true' && this.queue.length > 0) {
+                // Há registros pendentes, manter modo offline para sincronizar
+                this.forceOffline = true;
+            } else {
+                // Começar em modo online
+                this.forceOffline = false;
+            }
+        }
+        
+        // Event listeners para mudanças de conexão
         window.addEventListener('online', () => this.handleOnline());
         window.addEventListener('offline', () => this.handleOffline());
         
-        // Carregar dados do cache
-        await this.loadCachedData();
+        // Verificar qualidade de conexão periodicamente (após um pequeno delay)
+        // Não verificar imediatamente para não ativar modo offline na primeira carga
+        setTimeout(() => {
+            this.checkConnectionQuality();
+            this.connectionCheckInterval = setInterval(() => {
+                this.checkConnectionQuality();
+            }, 10000); // A cada 10 segundos
+        }, 2000); // Aguardar 2 segundos antes da primeira verificação
         
-        // Se estiver online, tentar sincronizar
-        if (this.isOnline) {
-            await this.syncPendingData();
+        // Mostrar status inicial
+        this.updateUI();
+        
+        // Tentar sincronizar ao carregar (se estiver online e não forçado offline)
+        if (this.isOnline && !this.forceOffline) {
+            this.sync();
         }
         
-        console.log('✅ Offline Manager inicializado');
-        this.showConnectionStatus();
-    }
-
-    /**
-     * Carregar dados do cache local
-     */
-    async loadCachedData() {
-        try {
-            // Carregar dados do usuário
-            const cachedUser = localStorage.getItem(this.cachePrefix + 'user');
-            if (cachedUser) {
-                this.userData = JSON.parse(cachedUser);
-                console.log('👤 Dados do usuário carregados do cache');
+        // Verificar conexão periodicamente
+        this.syncInterval = setInterval(() => {
+            if (this.isOnline && !this.forceOffline && this.queue.length > 0) {
+                this.sync();
             }
-
-            // Carregar dados da fazenda
-            const cachedFarm = localStorage.getItem(this.cachePrefix + 'farm');
-            if (cachedFarm) {
-                this.farmData = JSON.parse(cachedFarm);
-                console.log('🏡 Dados da fazenda carregados do cache');
+        }, 30000); // A cada 30 segundos
+        
+        // Iniciar timer de notificações offline (a cada 5 minutos)
+        this.startOfflineNotificationTimer();
+    }
+    
+    startOfflineNotificationTimer() {
+        // Limpar timer anterior se existir
+        if (this.offlineNotificationInterval) {
+            clearInterval(this.offlineNotificationInterval);
+        }
+        
+        // Verificar se está offline e iniciar timer
+        if (!this.isOnline || this.forceOffline) {
+            // Mostrar primeira notificação imediatamente se estiver offline
+            this.showOfflineNotification();
+            
+            // Configurar timer para mostrar a cada 5 minutos (300000ms)
+            this.offlineNotificationInterval = setInterval(() => {
+                if (!this.isOnline || this.forceOffline) {
+                    this.showOfflineNotification();
+                } else {
+                    // Se voltar a ficar online, parar o timer
+                    this.stopOfflineNotificationTimer();
+                }
+            }, 300000); // 5 minutos
+        }
+    }
+    
+    stopOfflineNotificationTimer() {
+        if (this.offlineNotificationInterval) {
+            clearInterval(this.offlineNotificationInterval);
+            this.offlineNotificationInterval = null;
+        }
+    }
+    
+    showOfflineNotification() {
+        const statusText = this.queue.length > 0 
+            ? `Você está offline. ${this.queue.length} registro(s) aguardando sincronização.`
+            : 'Você está offline. Os registros serão salvos localmente e sincronizados quando a conexão for restaurada.';
+        
+        this.showNotification(statusText, 'warning');
+    }
+    
+    async checkConnectionQuality() {
+        if (this.forceOffline || !navigator.onLine) {
+            this.connectionQuality = 'poor';
+            if (!this.forceOffline && navigator.onLine === false) {
+                // Se a conexão estiver realmente offline, ativar modo offline automaticamente
+                this.forceOffline = true;
+                localStorage.setItem('lactech_force_offline', 'true');
+                this.updateUI();
             }
-
-            // Carregar dados de produção
-            const cachedProduction = localStorage.getItem(this.cachePrefix + 'production');
-            if (cachedProduction) {
-                console.log('📊 Dados de produção carregados do cache');
-                return JSON.parse(cachedProduction);
-            }
-
-            // Carregar dados de consultas (veterinário)
-            const cachedConsultations = localStorage.getItem(this.cachePrefix + 'consultations');
-            if (cachedConsultations) {
-                console.log('🩺 Dados de consultas carregados do cache');
-                return JSON.parse(cachedConsultations);
-            }
-
-            return null;
-        } catch (error) {
-            console.error('❌ Erro ao carregar dados do cache:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Salvar dados no cache local
-     */
-    saveToCache(key, data) {
-        try {
-            const cacheKey = this.cachePrefix + key;
-            localStorage.setItem(cacheKey, JSON.stringify(data));
-            console.log(`💾 Dados salvos no cache: ${key}`);
-            return true;
-        } catch (error) {
-            console.error('❌ Erro ao salvar no cache:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Obter dados do cache local
-     */
-    getFromCache(key) {
-        try {
-            const cacheKey = this.cachePrefix + key;
-            const data = localStorage.getItem(cacheKey);
-            return data ? JSON.parse(data) : null;
-        } catch (error) {
-            console.error('❌ Erro ao obter do cache:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Adicionar dados à fila de sincronização
-     */
-    addToSyncQueue(operation, data) {
-        const syncItem = {
-            id: Date.now() + Math.random(),
-            operation,
-            data,
-            timestamp: Date.now(),
-            retries: 0
-        };
-
-        this.syncQueue.push(syncItem);
-        this.saveSyncQueue();
-        console.log('📝 Item adicionado à fila de sincronização:', operation);
-    }
-
-    /**
-     * Salvar fila de sincronização
-     */
-    saveSyncQueue() {
-        try {
-            localStorage.setItem(this.syncPrefix + 'queue', JSON.stringify(this.syncQueue));
-        } catch (error) {
-            console.error('❌ Erro ao salvar fila de sincronização:', error);
-        }
-    }
-
-    /**
-     * Carregar fila de sincronização
-     */
-    loadSyncQueue() {
-        try {
-            const queue = localStorage.getItem(this.syncPrefix + 'queue');
-            this.syncQueue = queue ? JSON.parse(queue) : [];
-        } catch (error) {
-            console.error('❌ Erro ao carregar fila de sincronização:', error);
-            this.syncQueue = [];
-        }
-    }
-
-    /**
-     * Sincronizar dados pendentes
-     */
-    async syncPendingData() {
-        if (!this.isOnline || this.syncQueue.length === 0) {
             return;
         }
-
-        console.log('🔄 Iniciando sincronização de dados pendentes...');
-        this.loadSyncQueue();
-
-        const itemsToSync = [...this.syncQueue];
-        const successfulSyncs = [];
-
-        for (const item of itemsToSync) {
-            try {
-                const success = await this.syncItem(item);
-                if (success) {
-                    successfulSyncs.push(item.id);
+        
+        try {
+            const startTime = performance.now();
+            // Usar um endpoint simples para verificar conexão
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // Timeout de 3 segundos
+            
+            const response = await fetch('/api/actions.php', {
+                method: 'HEAD',
+                cache: 'no-cache',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            const endTime = performance.now();
+            const latency = endTime - startTime;
+            
+            if (response.ok) {
+                // Se a latência for maior que 3 segundos (aumentado o threshold), considerar conexão ruim
+                if (latency > 3000) {
+                    this.connectionQuality = 'poor';
+                    // Ativar modo offline automaticamente se conexão estiver muito lenta
+                    // Mas só se realmente estiver lenta repetidamente (não na primeira verificação)
+                    if (!this.forceOffline && this.connectionCheckInterval) {
+                        // Só ativar se já estiver verificando há um tempo (não na primeira carga)
+                        this.forceOffline = true;
+                        localStorage.setItem('lactech_force_offline', 'true');
+                        this.showNotification('Conexão lenta detectada. Modo offline ativado automaticamente.', 'warning');
+                        this.updateUI();
+                    }
                 } else {
-                    item.retries++;
-                    if (item.retries < 3) {
-                        console.log(`⚠️ Tentativa ${item.retries} falhou para item:`, item.operation);
-                    } else {
-                        console.error('❌ Item falhou após 3 tentativas:', item.operation);
-                        successfulSyncs.push(item.id); // Remove da fila mesmo falhando
+                    this.connectionQuality = 'good';
+                    // Se estava forçado offline mas agora a conexão melhorou, desativar modo offline
+                    // Mas só se não houver registros pendentes (para não interromper sincronização)
+                    if (this.forceOffline && latency < 1000 && this.queue.length === 0) {
+                        this.toggleOfflineMode(false);
                     }
                 }
-            } catch (error) {
-                console.error('❌ Erro na sincronização:', error);
-                item.retries++;
-            }
-        }
-
-        // Remover itens sincronizados com sucesso
-        this.syncQueue = this.syncQueue.filter(item => !successfulSyncs.includes(item.id));
-        this.saveSyncQueue();
-
-        if (successfulSyncs.length > 0) {
-            console.log(`✅ ${successfulSyncs.length} itens sincronizados com sucesso`);
-            this.showNotification('Dados sincronizados com sucesso!', 'success');
-        }
-    }
-
-    /**
-     * Sincronizar item individual
-     */
-    async syncItem(item) {
-        try {
-            // Aqui você implementaria a lógica específica para cada tipo de operação
-            switch (item.operation) {
-                case 'volume_record':
-                    return await this.syncVolumeRecord(item.data);
-                case 'consultation':
-                    return await this.syncConsultation(item.data);
-                case 'user_update':
-                    return await this.syncUserUpdate(item.data);
-                default:
-                    console.log('Operação não reconhecida:', item.operation);
-                    return true; // Remove da fila
-            }
-        } catch (error) {
-            console.error('❌ Erro ao sincronizar item:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Sincronizar registro de volume
-     */
-    async syncVolumeRecord(data) {
-        try {
-            // Implementar chamada para Supabase
-            const supabase = createSupabaseClient();
-            const { error } = await supabase
-                .from('volume_records')
-                .insert(data);
-
-            if (error) throw error;
-            return true;
-        } catch (error) {
-            console.error('❌ Erro ao sincronizar volume record:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Sincronizar consulta
-     */
-    async syncConsultation(data) {
-        try {
-            // Implementar chamada para Supabase
-            const supabase = createSupabaseClient();
-            const { error } = await supabase
-                .from('consultations')
-                .insert(data);
-
-            if (error) throw error;
-            return true;
-        } catch (error) {
-            console.error('❌ Erro ao sincronizar consulta:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Sincronizar atualização de usuário
-     */
-    async syncUserUpdate(data) {
-        try {
-            // Implementar chamada para Supabase
-            const supabase = createSupabaseClient();
-            const { error } = await supabase
-                .from('users')
-                .update(data)
-                .eq('id', data.id);
-
-            if (error) throw error;
-            return true;
-        } catch (error) {
-            console.error('❌ Erro ao sincronizar usuário:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Obter dados com fallback offline
-     */
-    async getData(key, fetchFunction) {
-        if (this.isOnline) {
-            try {
-                // Tentar buscar dados online
-                const data = await fetchFunction();
-                this.saveToCache(key, data);
-                return data;
-            } catch (error) {
-                console.log('⚠️ Erro ao buscar dados online, usando cache:', error);
-                return this.getFromCache(key);
-            }
-        } else {
-            // Usar dados do cache
-            console.log('📱 Modo offline - usando dados do cache');
-            return this.getFromCache(key);
-        }
-    }
-
-    /**
-     * Salvar dados com sincronização
-     */
-    async saveData(operation, data, immediateSave = false) {
-        if (this.isOnline && immediateSave) {
-            try {
-                // Tentar salvar imediatamente
-                const success = await this.syncItem({ operation, data });
-                if (success) {
-                    console.log('✅ Dados salvos online imediatamente');
-                    return true;
-                }
-            } catch (error) {
-                console.log('⚠️ Erro ao salvar online, adicionando à fila:', error);
-            }
-        }
-
-        // Adicionar à fila de sincronização
-        this.addToSyncQueue(operation, data);
-        
-        // Salvar no cache local também
-        this.saveToCache(operation, data);
-        
-        return true;
-    }
-
-    /**
-     * Limpar cache local
-     */
-    clearCache() {
-        try {
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith(this.cachePrefix)) {
-                    localStorage.removeItem(key);
-                }
-            });
-            console.log('🗑️ Cache local limpo');
-        } catch (error) {
-            console.error('❌ Erro ao limpar cache:', error);
-        }
-    }
-
-    /**
-     * Limpar fila de sincronização
-     */
-    clearSyncQueue() {
-        this.syncQueue = [];
-        this.saveSyncQueue();
-        console.log('🗑️ Fila de sincronização limpa');
-    }
-
-    /**
-     * Manipular conexão online
-     */
-    async handleOnline() {
-        console.log('🌐 Conexão restaurada!');
-        this.isOnline = true;
-        this.showConnectionStatus();
-        
-        // Sincronizar dados pendentes sem loading visual
-        await this.syncPendingData();
-        
-        // Não mostrar notificação - reconexão silenciosa
-    }
-
-    /**
-     * Manipular conexão offline
-     */
-    handleOffline() {
-        console.log('📱 Modo offline ativado');
-        this.isOnline = false;
-        this.showConnectionStatus();
-        this.showNotification('Modo offline ativado. Dados serão sincronizados quando a conexão for restaurada.', 'info');
-    }
-
-    /**
-     * Mostrar status da conexão
-     */
-    showConnectionStatus() {
-        // Status agora é gerenciado pelo OfflineLoadingSystem
-        if (window.offlineLoadingSystem) {
-            if (this.isOnline) {
-                window.offlineLoadingSystem.updateConnectionStatus('online', 'Online');
             } else {
-                window.offlineLoadingSystem.updateConnectionStatus('offline', 'Offline');
+                this.connectionQuality = 'poor';
+            }
+        } catch (error) {
+            // Erro na verificação = conexão ruim ou offline (incluindo timeout)
+            if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                // Timeout = conexão muito lenta
+                // Mas não ativar automaticamente na primeira verificação
+                this.connectionQuality = 'poor';
+                // Só ativar se já estiver verificando há um tempo (não na primeira carga)
+                if (!this.forceOffline && this.connectionCheckInterval && !navigator.onLine) {
+                    this.forceOffline = true;
+                    localStorage.setItem('lactech_force_offline', 'true');
+                    this.showNotification('Conexão lenta detectada. Modo offline ativado automaticamente.', 'warning');
+                    this.updateUI();
+                }
+            } else {
+                // Outros erros = conexão ruim ou offline
+                this.connectionQuality = 'poor';
+                // Só ativar se realmente estiver offline
+                if (!this.forceOffline && !navigator.onLine) {
+                    this.forceOffline = true;
+                    localStorage.setItem('lactech_force_offline', 'true');
+                    this.updateUI();
+                }
             }
         }
     }
-
-    /**
-     * Mostrar notificação
-     */
-    showNotification(message, type = 'info') {
-        // Usar o sistema de notificação existente se disponível
-        if (typeof showNotification === 'function') {
-            showNotification(message, type);
+    
+    toggleOfflineMode(force = null) {
+        if (force === null) {
+            this.forceOffline = !this.forceOffline;
         } else {
-            console.log(`📢 ${type.toUpperCase()}: ${message}`);
+            this.forceOffline = force;
+        }
+        
+        localStorage.setItem('lactech_force_offline', this.forceOffline ? 'true' : 'false');
+        
+        // Informar Service Worker
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: this.forceOffline ? 'FORCE_OFFLINE' : 'FORCE_ONLINE'
+            });
+        }
+        
+        this.updateUI();
+        
+        if (this.forceOffline) {
+            this.showNotification('Modo offline ativado manualmente', 'info');
+            // Iniciar timer de notificações offline
+            this.startOfflineNotificationTimer();
+        } else {
+            this.showNotification('Modo online restaurado', 'success');
+            // Parar timer de notificações offline
+            this.stopOfflineNotificationTimer();
+            // Tentar sincronizar imediatamente
+            if (this.queue.length > 0) {
+                this.sync();
+            }
         }
     }
+    
+    loadQueue() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                this.queue = JSON.parse(stored);
+            }
+        } catch (e) {
+            console.error('Erro ao carregar fila offline:', e);
+            this.queue = [];
+        }
+    }
+    
+    saveQueue() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.queue));
+            this.updateUI();
+        } catch (e) {
+            console.error('Erro ao salvar fila offline:', e);
+        }
+    }
+    
+    handleOnline() {
+        console.log('Conexão restaurada - Iniciando sincronização...');
+        this.isOnline = true;
+        // Parar timer de notificações offline
+        this.stopOfflineNotificationTimer();
+        
+        // Aguardar um pouco para garantir que a conexão está estável
+        setTimeout(() => {
+            // Verificar novamente se ainda está online
+            if (!navigator.onLine) {
+                this.isOnline = false;
+                this.updateUI();
+                return;
+            }
+            
+            // Se não estiver forçado offline, tentar sincronizar
+            if (!this.forceOffline) {
+                this.updateUI();
+                // Aguardar mais um pouco antes de sincronizar para garantir estabilidade
+                setTimeout(() => {
+                    if (this.queue.length > 0 && navigator.onLine && !this.forceOffline) {
+                        this.sync();
+                    }
+                }, 2000);
+            } else {
+                // Mesmo online, se estiver forçado offline, manter modo offline e iniciar timer
+                this.updateUI();
+                this.startOfflineNotificationTimer();
+            }
+        }, 1000);
+    }
+    
+    handleOffline() {
+        console.log('Modo offline ativado automaticamente');
+        this.isOnline = false;
+        this.forceOffline = true; // Ativar modo offline automaticamente
+        localStorage.setItem('lactech_force_offline', 'true');
+        this.updateUI();
+        // Iniciar timer de notificações offline
+        this.startOfflineNotificationTimer();
+    }
+    
+    async addToQueue(type, data, endpoint) {
+        // Converter FormData para objeto simples (sem arquivos)
+        const dataObj = {};
+        let hasFiles = false;
+        
+        if (data instanceof FormData) {
+            for (const [key, value] of data.entries()) {
+                if (value instanceof File) {
+                    // Arquivos não podem ser armazenados offline facilmente
+                    // Ignorar e alertar o usuário
+                    hasFiles = true;
+                    console.warn(`Arquivo ignorado no modo offline: ${key} - ${value.name}`);
+                } else {
+                    dataObj[key] = value;
+                }
+            }
+        } else {
+            Object.assign(dataObj, data);
+        }
+        
+        const record = {
+            id: this.generateId(),
+            type: type, // 'volume_general', 'volume_animal', 'quality', 'financial', 'delete_all_volume', 'restore_volume', 'create_user'
+            data: dataObj,
+            endpoint: endpoint || './api/actions.php',
+            timestamp: new Date().toISOString(),
+            retries: 0,
+            hasFiles: hasFiles
+        };
+        
+        this.queue.push(record);
+        this.saveQueue();
+        
+        if (hasFiles) {
+            this.showNotification('Nota: Arquivos não podem ser salvos offline. O registro será salvo sem arquivos.', 'warning');
+        }
+        
+        // Se estiver online, tentar sincronizar imediatamente
+        if (this.isOnline && !this.forceOffline) {
+            await this.sync();
+        }
+        
+        return record;
+    }
+    
+    async sync() {
+        if (this.syncInProgress || this.queue.length === 0 || !this.isOnline || this.forceOffline) {
+            return;
+        }
+        
+        this.syncInProgress = true;
+        this.updateUI();
+        
+        console.log(`Iniciando sincronização de ${this.queue.length} registro(s)...`);
+        
+        const recordsToSync = [...this.queue];
+        const failedRecords = [];
+        let successCount = 0;
+        
+        for (const record of recordsToSync) {
+            try {
+                const formData = new FormData();
+                
+                // Converter dados para FormData
+                Object.keys(record.data).forEach(key => {
+                    const value = record.data[key];
+                    if (value !== null && value !== undefined && value !== '') {
+                        formData.append(key, String(value));
+                    }
+                });
+                
+                // Adicionar action se não estiver presente
+                if (!record.data.action) {
+                    const actionMap = {
+                        'volume_general': 'add_volume_general',
+                        'volume_animal': 'add_volume_by_animal',
+                        'quality': 'add_quality_test',
+                        'financial': 'add_financial_record',
+                        'delete_all_volume': 'delete_all_volume_records',
+                        'restore_volume': 'restore_volume_records',
+                        'create_user': 'create_user',
+                        'update_user': 'update_user',
+                        'delete_user': 'delete_user'
+                    };
+                    formData.append('action', actionMap[record.type] || record.type);
+                }
+                
+                // Verificar se ainda está online antes de tentar sincronizar
+                if (!navigator.onLine) {
+                    throw new Error('Sem conexão');
+                }
+                
+                // Criar timeout para requisição
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout de 15 segundos
+                
+                const response = await fetch(record.endpoint, {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Remover da fila
+                    this.queue = this.queue.filter(r => r.id !== record.id);
+                    successCount++;
+                    console.log(`Registro ${record.id} sincronizado com sucesso`);
+                } else {
+                    throw new Error(result.error || 'Erro desconhecido');
+                }
+            } catch (error) {
+                console.error(`Erro ao sincronizar registro ${record.id}:`, error);
+                record.retries++;
+                
+                // Se já tentou 3 vezes, marcar como falha permanente
+                if (record.retries >= 3) {
+                    console.warn(`Registro ${record.id} falhou após ${record.retries} tentativas`);
+                    failedRecords.push(record);
+                } else {
+                    // Manter na fila para tentar novamente
+                    failedRecords.push(record);
+                }
+                
+                // Se perder conexão durante sincronização, parar
+                if (!navigator.onLine) {
+                    console.log('Conexão perdida durante sincronização. Parando...');
+                    this.queue = [...this.queue.filter(r => r.id !== record.id), ...failedRecords];
+                    this.saveQueue();
+                    this.syncInProgress = false;
+                    this.updateUI();
+                    this.showNotification('Conexão perdida. Sincronização será retomada quando a conexão for restaurada.', 'warning');
+                    return;
+                }
+            }
+        }
+        
+        this.queue = failedRecords;
+        this.saveQueue();
+        this.syncInProgress = false;
+        this.updateUI();
+        
+        if (successCount > 0) {
+            console.log(`${successCount} registro(s) sincronizado(s) com sucesso`);
+            this.showNotification(`${successCount} registro(s) sincronizado(s)`, 'success');
+            
+            // Recarregar dados após sincronização bem-sucedida
+            setTimeout(() => {
+                if (typeof loadVolumeData === 'function') loadVolumeData();
+                if (typeof loadQualityData === 'function') loadQualityData();
+                if (typeof loadFinancialData === 'function') loadFinancialData();
+                if (typeof loadUsersData === 'function') loadUsersData();
+                if (typeof loadDashboardData === 'function') loadDashboardData();
+            }, 500);
+        }
+        
+        if (failedRecords.length > 0) {
+            console.warn(`${failedRecords.length} registro(s) falharam e serão tentados novamente`);
+        }
+    }
+    
+    updateUI() {
+        const indicator = document.getElementById('offline-indicator');
+        const badge = document.getElementById('offline-badge');
+        const offlineToggleBtn = document.getElementById('offline-toggle-btn');
+        
+        if (!indicator) {
+            // Criar indicador se não existir
+            this.createIndicator();
+            return;
+        }
+        
+        // Atualizar botão de toggle (switch)
+        if (offlineToggleBtn) {
+            const thumb = document.getElementById('offline-toggle-thumb');
+            const iconOnline = document.getElementById('offline-icon-online');
+            const iconOffline = document.getElementById('offline-icon-offline');
+            const statusText = document.getElementById('offline-status-text');
+            const pendingBadge = document.getElementById('offline-pending-badge');
+            
+            if (this.forceOffline) {
+                // Modo offline ativo
+                offlineToggleBtn.classList.remove('bg-gray-300');
+                offlineToggleBtn.classList.add('bg-yellow-500');
+                if (thumb) {
+                    thumb.classList.remove('translate-x-1');
+                    thumb.classList.add('translate-x-7');
+                }
+                offlineToggleBtn.setAttribute('aria-checked', 'true');
+                
+                if (iconOnline) iconOnline.classList.add('hidden');
+                if (iconOffline) iconOffline.classList.remove('hidden');
+                if (statusText) {
+                    statusText.textContent = this.queue.length > 0 
+                        ? `${this.queue.length} registro(s) aguardando sincronização`
+                        : 'Modo offline ativo';
+                    statusText.classList.remove('text-gray-600');
+                    statusText.classList.add('text-yellow-600');
+                }
+                
+                if (pendingBadge) {
+                    if (this.queue.length > 0) {
+                        pendingBadge.textContent = this.queue.length;
+                        pendingBadge.classList.remove('hidden');
+                    } else {
+                        pendingBadge.classList.add('hidden');
+                    }
+                }
+            } else {
+                // Modo online
+                offlineToggleBtn.classList.remove('bg-yellow-500');
+                offlineToggleBtn.classList.add('bg-gray-300');
+                if (thumb) {
+                    thumb.classList.remove('translate-x-7');
+                    thumb.classList.add('translate-x-1');
+                }
+                offlineToggleBtn.setAttribute('aria-checked', 'false');
+                
+                if (iconOnline) iconOnline.classList.remove('hidden');
+                if (iconOffline) iconOffline.classList.add('hidden');
+                if (statusText) {
+                    statusText.textContent = this.queue.length > 0 
+                        ? `${this.queue.length} registro(s) na fila`
+                        : 'Sincronização automática ativada';
+                    statusText.classList.remove('text-yellow-600');
+                    statusText.classList.add('text-gray-600');
+                }
+                
+                if (pendingBadge) {
+                    if (this.queue.length > 0) {
+                        pendingBadge.textContent = this.queue.length;
+                        pendingBadge.classList.remove('hidden');
+                    } else {
+                        pendingBadge.classList.add('hidden');
+                    }
+                }
+            }
+        }
+        
+        // Atualizar indicador no topo (apenas quando há registros pendentes ou sincronizando)
+        if (this.syncInProgress && this.queue.length > 0) {
+            // Sincronizando - mostrar apenas se houver registros
+            indicator.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2';
+            indicator.innerHTML = `
+                <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>Sincronizando ${this.queue.length} registro(s)...</span>
+            `;
+            indicator.classList.remove('hidden');
+        } else if (this.queue.length > 0) {
+            // Há registros pendentes - mostrar indicador
+            const modeInfo = this.forceOffline || !this.isOnline ? 'Offline' : 'Pendente';
+            indicator.className = this.forceOffline || !this.isOnline 
+                ? 'fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2'
+                : 'fixed top-4 right-4 z-50 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2';
+            indicator.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>${modeInfo} - ${this.queue.length} registro(s) na fila</span>
+            `;
+            indicator.classList.remove('hidden');
+        } else {
+            // Sem registros pendentes - esconder indicador
+            indicator.classList.add('hidden');
+        }
+        
+        // Atualizar badge (não usado mais, mas mantido para compatibilidade)
+        if (badge) {
+            if (this.queue.length > 0) {
+                badge.classList.remove('hidden');
+                badge.textContent = `${this.queue.length}`;
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    }
+    
+    createIndicator() {
+        const indicator = document.createElement('div');
+        indicator.id = 'offline-indicator';
+        document.body.appendChild(indicator);
+        this.updateUI();
+    }
+    
+    generateId() {
+        return 'offline_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : 
+                         type === 'error' ? 'bg-red-500' : 
+                         type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+        notification.className = `fixed top-20 right-4 z-50 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2`;
+        notification.innerHTML = `
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    getQueueCount() {
+        return this.queue.length;
+    }
+    
+    clearQueue() {
+        this.queue = [];
+        this.saveQueue();
+        this.updateUI();
+    }
+}
 
-    /**
-     * Obter estatísticas do cache
-     */
-    getCacheStats() {
-        const keys = Object.keys(localStorage);
-        const cacheKeys = keys.filter(key => key.startsWith(this.cachePrefix));
-        const syncKeys = keys.filter(key => key.startsWith(this.syncPrefix));
+// Criar instância global
+const offlineManager = new OfflineManager();
+
+// Função auxiliar para fazer requisições com suporte offline
+async function offlineFetch(endpoint, formData, type) {
+    // Verificar se está em modo offline forçado
+    const forceOffline = localStorage.getItem('lactech_force_offline') === 'true';
+    
+    // Verificar se realmente está offline
+    const isOffline = !navigator.onLine || forceOffline;
+    
+    if (isOffline) {
+        // Modo offline - adicionar diretamente à fila
+        console.log('Modo offline - Adicionando à fila...', type);
+        
+        // Converter FormData para objeto
+        const data = {};
+        for (const [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        await offlineManager.addToQueue(type, data, endpoint);
         
         return {
-            cacheItems: cacheKeys.length,
-            syncQueueItems: this.syncQueue.length,
-            isOnline: this.isOnline,
-            lastSync: localStorage.getItem(this.syncPrefix + 'lastSync')
+            success: true,
+            offline: true,
+            message: 'Registro salvo localmente. Será sincronizado quando a conexão for restaurada.'
         };
+    }
+    
+    try {
+        // Tentar fazer requisição real
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10 segundos
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        // Se falhar, verificar se é erro de conexão
+        const isConnectionError = !navigator.onLine || 
+                                  error.name === 'AbortError' || 
+                                  error.message.includes('Failed to fetch') ||
+                                  error.message.includes('network') ||
+                                  error.message.includes('timeout');
+        
+        if (isConnectionError) {
+            console.log('Erro de conexão - Adicionando à fila offline...', error);
+            
+            // Converter FormData para objeto
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            await offlineManager.addToQueue(type, data, endpoint);
+            
+            return {
+                success: true,
+                offline: true,
+                message: 'Registro salvo localmente. Será sincronizado quando a conexão for restaurada.'
+            };
+        }
+        
+        // Re-throw erros que não são de conexão
+        throw error;
     }
 }
 
-// Instância global do Offline Manager
-window.offlineManager = new OfflineManager();
+// Tornar offlineFetch disponível globalmente
+window.offlineFetch = offlineFetch;
 
-// Exportar para uso em outros arquivos
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = OfflineManager;
-}

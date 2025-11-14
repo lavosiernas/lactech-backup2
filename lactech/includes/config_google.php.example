@@ -1,0 +1,28 @@
+<?php
+/**
+ * Configurações Google OAuth - LACTECH
+ * 
+ * INSTRUÇÕES:
+ * 1. Copie este arquivo para config_google.php (sem o .example)
+ * 2. Preencha os valores abaixo com suas credenciais do Google Cloud Console
+ * 3. NUNCA commite o arquivo config_google.php no repositório (adicione ao .gitignore)
+ */
+
+// Client ID do Google OAuth
+// Encontre em: https://console.cloud.google.com/apis/credentials
+define('GOOGLE_CLIENT_ID', 'SEU_CLIENT_ID_AQUI.apps.googleusercontent.com');
+
+// Client Secret do Google OAuth
+// ⚠️ MANTENHA ESTE VALOR SECRETO
+define('GOOGLE_CLIENT_SECRET', 'SEU_CLIENT_SECRET_AQUI');
+
+// URL de redirecionamento (deve ser exatamente igual ao configurado no Google Console)
+// IMPORTANTE: Use o domínio de produção se tiver, ou localhost para desenvolvimento
+// Formato: https://seudominio.com/lactech/google-callback.php
+define('GOOGLE_REDIRECT_URI', 'https://lactechsys.com/lactech/google-callback.php');
+
+// Escopos necessários (geralmente não precisa alterar)
+define('GOOGLE_SCOPES', 'email profile');
+
+?>
+

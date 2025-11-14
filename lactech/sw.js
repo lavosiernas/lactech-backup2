@@ -1,269 +1,168 @@
-// =====================================================
-// SERVICE WORKER - LACTECH SYSTEM
-// Cache Strategy for Performance Optimization
-// =====================================================
-
-const CACHE_NAME = 'lactech-v1.0.0';
-const STATIC_CACHE = 'lactech-static-v1';
-const DYNAMIC_CACHE = 'lactech-dynamic-v1';
-
-// Critical resources to cache immediately
-const CRITICAL_RESOURCES = [
+// Service Worker para Web Push Notifications
+const CACHE_NAME = 'lactech-maintenance-v1';
+const urlsToCache = [
     '/',
-    '/gerente.php',
-    '/funcionario.php',
-    '/veterinario.php',
-    '/proprietario.php',
-    '/assets/css/critical.css',
-    '/assets/css/style.css',
-    '/assets/css/dark-theme-fixes.css',
-    // '/assets/css/loading-screen.css', DESABILITADO
-    '/assets/js/config_mysql.js',
-    '/assets/js/performance-optimizer.js',
-    // '/assets/js/loading-screen.js', DESABILITADO
-    '/assets/img/lactech-logo.png'
+    '/index.php',
+    '/assets/css/style.css'
 ];
 
-// Resources to cache on demand
-const CACHE_ON_DEMAND = [
-    '/api/',
-    '/assets/js/',
-    '/assets/css/',
-    '/assets/img/'
-];
-
-// Install event - cache critical resources
-self.addEventListener('install', (event) => {
-    console.log('🔧 Service Worker installing...');
-    
+// Install event
+self.addEventListener('install', function(event) {
+    console.log('Service Worker: Install');
     event.waitUntil(
-        caches.open(STATIC_CACHE)
-            .then((cache) => {
-                console.log('📦 Caching critical resources');
-                return cache.addAll(CRITICAL_RESOURCES);
-            })
-            .then(() => {
-                console.log('✅ Critical resources cached');
-                return self.skipWaiting();
-            })
-            .catch((error) => {
-                console.error('❌ Failed to cache critical resources:', error);
+        caches.open(CACHE_NAME)
+            .then(function(cache) {
+                console.log('Service Worker: Caching files');
+                return cache.addAll(urlsToCache);
             })
     );
 });
 
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-    console.log('🚀 Service Worker activating...');
-    
+// Activate event
+self.addEventListener('activate', function(event) {
+    console.log('Service Worker: Activate');
     event.waitUntil(
-        caches.keys()
-            .then((cacheNames) => {
-                return Promise.all(
-                    cacheNames.map((cacheName) => {
-                        if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-                            console.log('🗑️ Deleting old cache:', cacheName);
-                            return caches.delete(cacheName);
-                        }
-                    })
-                );
-            })
-            .then(() => {
-                console.log('✅ Service Worker activated');
-                return self.clients.claim();
-            })
+        caches.keys().then(function(cacheNames) {
+            return Promise.all(
+                cacheNames.map(function(cacheName) {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('Service Worker: Clearing old cache');
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
     );
 });
 
-// Fetch event - serve from cache with network fallback
-self.addEventListener('fetch', (event) => {
-    const { request } = event;
-    const url = new URL(request.url);
+// Push event - NOTIFICAÇÕES NATIVAS
+self.addEventListener('push', function(event) {
+    console.log('Service Worker: Push received');
     
-    // Skip non-GET requests
-    if (request.method !== 'GET') {
-        return;
-    }
-    
-    // Skip external requests
-    if (url.origin !== location.origin) {
-        return;
-    }
-    
-    event.respondWith(
-        caches.match(request)
-            .then((cachedResponse) => {
-                // Return cached version if available
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-                
-                // Fetch from network and cache
-                return fetch(request)
-                    .then((networkResponse) => {
-                        // Don't cache non-successful responses
-                        if (!networkResponse || networkResponse.status !== 200) {
-                            return networkResponse;
-                        }
-                        
-                        // Clone response for caching
-                        const responseToCache = networkResponse.clone();
-                        
-                        // Cache based on resource type
-                        if (shouldCache(request)) {
-                            caches.open(getCacheName(request))
-                                .then((cache) => {
-                                    cache.put(request, responseToCache);
-                                });
-                        }
-                        
-                        return networkResponse;
-                    })
-                    .catch((error) => {
-                        console.error('❌ Network request failed:', error);
-                        
-                        // Return offline page for navigation requests
-                        if (request.mode === 'navigate') {
-                            return caches.match('/offline.html');
-                        }
-                        
-                        throw error;
-                    });
-            })
-    );
-});
-
-// Determine if request should be cached
-function shouldCache(request) {
-    const url = new URL(request.url);
-    
-    // Cache API responses
-    if (url.pathname.startsWith('/api/')) {
-        return true;
-    }
-    
-    // Cache static assets
-    if (url.pathname.startsWith('/assets/')) {
-        return true;
-    }
-    
-    // Cache HTML pages
-    if (url.pathname.endsWith('.php') || url.pathname === '/') {
-        return true;
-    }
-    
-    return false;
-}
-
-// Get appropriate cache name
-function getCacheName(request) {
-    const url = new URL(request.url);
-    
-    // Static assets go to static cache
-    if (url.pathname.startsWith('/assets/')) {
-        return STATIC_CACHE;
-    }
-    
-    // Dynamic content goes to dynamic cache
-    return DYNAMIC_CACHE;
-}
-
-// Background sync for offline data
-self.addEventListener('sync', (event) => {
-    if (event.tag === 'background-sync') {
-        console.log('🔄 Background sync triggered');
-        
-        event.waitUntil(
-            // Sync offline data when connection is restored
-            syncOfflineData()
-        );
-    }
-});
-
-// Push notifications
-self.addEventListener('push', (event) => {
-    console.log('📱 Push notification received');
-    
-    const options = {
-        body: event.data ? event.data.text() : 'Nova atualização disponível',
-        icon: '/assets/img/lactech-logo.png',
-        badge: '/assets/img/lactech-logo.png',
-        vibrate: [200, 100, 200],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        },
+    let data = {
+        title: 'LacTech - Sistema em Manutenção',
+        body: 'Sistema ainda em manutenção. Continue acompanhando!',
+        icon: 'https://i.postimg.cc/vmrkgDcB/lactech.png',
+        badge: 'https://i.postimg.cc/vmrkgDcB/lactech.png',
+        tag: 'lactech-maintenance',
+        requireInteraction: true,
         actions: [
             {
-                action: 'explore',
-                title: 'Ver detalhes',
-                icon: '/assets/img/lactech-logo.png'
+                action: 'open',
+                title: 'Abrir Sistema',
+                icon: 'https://i.postimg.cc/vmrkgDcB/lactech.png'
             },
             {
                 action: 'close',
                 title: 'Fechar',
-                icon: '/assets/img/lactech-logo.png'
+                icon: 'https://i.postimg.cc/vmrkgDcB/lactech.png'
             }
         ]
     };
     
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (e) {
+            data.body = event.data.text();
+        }
+    }
+    
+    const options = {
+        body: data.body,
+        icon: data.icon,
+        badge: data.badge,
+        tag: data.tag,
+        requireInteraction: data.requireInteraction,
+        actions: data.actions,
+        data: {
+            url: '/index.php'
+        }
+    };
+    
     event.waitUntil(
-        self.registration.showNotification('LacTech System', options)
+        self.registration.showNotification(data.title, options)
     );
 });
 
-// Notification click handler
-self.addEventListener('notificationclick', (event) => {
-    console.log('🔔 Notification clicked:', event.action);
+// Notification click event
+self.addEventListener('notificationclick', function(event) {
+    console.log('Service Worker: Notification click received');
     
     event.notification.close();
     
-    if (event.action === 'explore') {
+    if (event.action === 'open') {
         event.waitUntil(
-            clients.openWindow('/gerente.php')
+            clients.openWindow('/index.php')
+        );
+    } else if (event.action === 'close') {
+        // Apenas fechar a notificação
+        return;
+    } else {
+        // Click na notificação (não em ações)
+        event.waitUntil(
+            clients.openWindow('/index.php')
         );
     }
 });
 
-// Helper function to sync offline data
-async function syncOfflineData() {
-    try {
-        // Get offline data from IndexedDB
-        const offlineData = await getOfflineData();
+// Message event - receber mensagens do JavaScript
+self.addEventListener('message', function(event) {
+    console.log('🔔 Service Worker: Message received', event.data);
+    
+    if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+        const { title, body, icon, badge, tag, requireInteraction, actions } = event.data;
         
-        if (offlineData.length > 0) {
-            console.log('📤 Syncing offline data:', offlineData.length, 'items');
-            
-            // Send data to server
-            for (const item of offlineData) {
-                try {
-                    await fetch(item.url, {
-                        method: item.method,
-                        headers: item.headers,
-                        body: item.body
-                    });
-                    
-                    // Remove from offline storage after successful sync
-                    await removeOfflineData(item.id);
-                } catch (error) {
-                    console.error('❌ Failed to sync item:', error);
-                }
+        console.log('📱 Service Worker: Creating notification:', title);
+        
+        const options = {
+            body: body,
+            icon: icon,
+            badge: badge,
+            tag: tag,
+            requireInteraction: requireInteraction,
+            actions: actions,
+            data: {
+                url: '/index.php'
             }
-        }
-    } catch (error) {
-        console.error('❌ Background sync failed:', error);
+        };
+        
+        event.waitUntil(
+            self.registration.showNotification(title, options)
+                .then(() => {
+                    console.log('✅ Service Worker: Notification sent successfully');
+                })
+                .catch((error) => {
+                    console.error('❌ Service Worker: Error sending notification:', error);
+                })
+        );
     }
-}
+});
 
-// Placeholder functions for offline data management
-async function getOfflineData() {
-    // Implementation would depend on your offline storage solution
-    return [];
-}
+// Background sync para notificações
+self.addEventListener('sync', function(event) {
+    if (event.tag === 'background-sync') {
+        console.log('Service Worker: Background sync');
+        event.waitUntil(doBackgroundSync());
+    }
+});
 
-async function removeOfflineData(id) {
-    // Implementation would depend on your offline storage solution
-    return true;
+function doBackgroundSync() {
+    return fetch('/api/notifications/sync')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.notification) {
+                return self.registration.showNotification(data.title, {
+                    body: data.body,
+                    icon: data.icon,
+                    badge: data.badge,
+                    tag: data.tag
+                });
+            }
+        })
+        .catch(function(error) {
+            console.log('Background sync failed:', error);
+        });
 }
-
-console.log('✅ Service Worker loaded successfully');

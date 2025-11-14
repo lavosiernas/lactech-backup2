@@ -1,107 +1,179 @@
 <?php
-// API para Alertas Sanitários
+/**
+ * API de Alertas de Saúde
+ * Retorna alertas de mastite, vacinação e medicamentos do banco de dados
+ */
 
-// Header ANTES de qualquer output
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
-error_reporting(0);
-ini_set('display_errors', 0);
-
-// Buffer de saída
-ob_start();
-
-if (session_status() === PHP_SESSION_NONE) {
-    @session_start();
-}
-
-$dbPath = __DIR__ . '/../includes/Database.class.php';
-if (!file_exists($dbPath)) {
-    ob_clean();
-    echo json_encode(['success' => false, 'error' => 'Database class não encontrada']);
-    exit;
-}
-
-require_once $dbPath;
-
-// Limpar buffer
-ob_clean();
-
-function sendResponse($data = null, $error = null) {
-    $response = ['success' => $error === null];
-    if ($data !== null) $response['data'] = $data;
-    if ($error !== null) $response['error'] = $error;
-    echo json_encode($response);
-    exit;
-}
+require_once __DIR__ . '/../includes/Database.class.php';
 
 try {
     $db = Database::getInstance();
-    $conn = $db->getConnection();
-    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    $action = $_GET['action'] ?? 'get_alerts';
     
-    if ($method === 'GET') {
-        $action = $_GET['action'] ?? '';
-        
-        switch ($action) {
-            case 'select':
-            case 'get_all':
-            case 'get_active':
-                // Query direta usando PDO
-                $stmt = $conn->prepare("
-                    SELECT ha.*, a.animal_number, a.name as animal_name 
-                    FROM health_alerts ha
-                    LEFT JOIN animals a ON ha.animal_id = a.id
-                    WHERE ha.farm_id = 1
-                    ORDER BY ha.alert_date DESC, ha.created_at DESC
-                ");
-                $stmt->execute();
-                $alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                sendResponse($alerts);
-                break;
-                
-            case 'get_by_animal':
-                $animal_id = $_GET['animal_id'] ?? null;
-                if (!$animal_id) sendResponse(null, 'Animal ID não fornecido');
-                $alerts = $db->getHealthAlertsByAnimal($animal_id);
-                sendResponse($alerts);
-                break;
-                
-            case 'get_by_type':
-                $type = $_GET['type'] ?? null;
-                if (!$type) sendResponse(null, 'Tipo não fornecido');
-                $alerts = $db->getHealthAlertsByType($type);
-                sendResponse($alerts);
-                break;
-                
-            default:
-                sendResponse(null, 'Ação não especificada');
-        }
-    }
-    
-    if ($method === 'POST') {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $action = $input['action'] ?? '';
-        
-        switch ($action) {
-            case 'resolve':
-                $id = $input['id'] ?? null;
-                if (!$id) sendResponse(null, 'ID não fornecido');
-                $result = $db->resolveHealthAlert($id);
-                sendResponse($result);
-                break;
-                
-            case 'create':
-                $result = $db->createHealthAlert($input);
-                sendResponse($result);
-                break;
-                
-            default:
-                sendResponse(null, 'Ação não especificada');
-        }
+    switch ($action) {
+        case 'get_alerts':
+            // Buscar alertas de mastite (usando health_alerts com alert_type = 'medicamento' ou 'outros')
+            // Nota: O banco não tem tipo específico 'mastite', então buscamos em 'medicamento' ou 'outros'
+            $mastitisAlerts = $db->query("
+                SELECT 
+                    ha.id,
+                    ha.animal_id,
+                    ha.alert_type,
+                    ha.alert_message as message,
+                    'high' as severity,
+                    ha.created_at,
+                    a.animal_number,
+                    a.name as animal_name,
+                    a.breed
+                FROM health_alerts ha
+                LEFT JOIN animals a ON ha.animal_id = a.id
+                WHERE ha.farm_id = 1 
+                AND ha.is_resolved = 0
+                AND (ha.alert_type = 'medicamento' OR ha.alert_type = 'outros')
+                AND (ha.alert_message LIKE '%mastite%' OR ha.alert_message LIKE '%mastitis%')
+                ORDER BY ha.created_at DESC
+                LIMIT 10
+            ");
+            
+            // Buscar alertas de vacinação pendentes (usando health_records com record_type = 'Vacinação')
+            $vaccinationAlerts = $db->query("
+                SELECT 
+                    hr.id,
+                    hr.animal_id,
+                    hr.medication as vaccine_name,
+                    hr.next_date as due_date,
+                    DATEDIFF(hr.next_date, CURDATE()) as days_remaining,
+                    a.animal_number,
+                    a.name as animal_name
+                FROM health_records hr
+                LEFT JOIN animals a ON hr.animal_id = a.id
+                WHERE hr.farm_id = 1
+                AND hr.record_type = 'Vacinação'
+                AND hr.next_date IS NOT NULL
+                AND hr.next_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                AND hr.next_date >= CURDATE()
+                ORDER BY hr.next_date ASC
+                LIMIT 10
+            ");
+            
+            // Buscar medicamentos com estoque baixo (usando medications - nome correto da tabela)
+            $medicineAlerts = $db->query("
+                SELECT 
+                    m.id,
+                    m.name as medicine_name,
+                    m.stock_quantity as current_stock,
+                    m.min_stock as minimum_stock,
+                    (m.stock_quantity - m.min_stock) as remaining_doses
+                FROM medications m
+                WHERE m.farm_id = 1
+                AND m.is_active = 1
+                AND m.stock_quantity <= m.min_stock
+                ORDER BY (m.stock_quantity - m.min_stock) ASC
+                LIMIT 10
+            ");
+            
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'mastitis' => $mastitisAlerts ?? [],
+                    'vaccinations' => $vaccinationAlerts ?? [],
+                    'medicines' => $medicineAlerts ?? []
+                ]
+            ]);
+            break;
+            
+        case 'get_mastitis_alerts':
+            $alerts = $db->query("
+                SELECT 
+                    ha.id,
+                    ha.animal_id,
+                    ha.alert_message as message,
+                    'high' as severity,
+                    ha.created_at,
+                    a.animal_number,
+                    a.name as animal_name
+                FROM health_alerts ha
+                LEFT JOIN animals a ON ha.animal_id = a.id
+                WHERE ha.farm_id = 1 
+                AND ha.is_resolved = 0
+                AND (ha.alert_type = 'medicamento' OR ha.alert_type = 'outros')
+                AND (ha.alert_message LIKE '%mastite%' OR ha.alert_message LIKE '%mastitis%')
+                ORDER BY ha.created_at DESC
+                LIMIT 20
+            ");
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $alerts ?? []
+            ]);
+            break;
+            
+        case 'get_vaccination_alerts':
+            $alerts = $db->query("
+                SELECT 
+                    hr.id,
+                    hr.animal_id,
+                    hr.medication as vaccine_name,
+                    hr.next_date as due_date,
+                    DATEDIFF(hr.next_date, CURDATE()) as days_remaining,
+                    a.animal_number,
+                    a.name as animal_name
+                FROM health_records hr
+                LEFT JOIN animals a ON hr.animal_id = a.id
+                WHERE hr.farm_id = 1
+                AND hr.record_type = 'Vacinação'
+                AND hr.next_date IS NOT NULL
+                AND hr.next_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                AND hr.next_date >= CURDATE()
+                ORDER BY hr.next_date ASC
+                LIMIT 20
+            ");
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $alerts ?? []
+            ]);
+            break;
+            
+        case 'get_medicine_alerts':
+            $alerts = $db->query("
+                SELECT 
+                    m.id,
+                    m.name as medicine_name,
+                    m.stock_quantity as current_stock,
+                    m.min_stock as minimum_stock,
+                    (m.stock_quantity - m.min_stock) as remaining_doses
+                FROM medications m
+                WHERE m.farm_id = 1
+                AND m.is_active = 1
+                AND m.stock_quantity <= m.min_stock
+                ORDER BY (m.stock_quantity - m.min_stock) ASC
+                LIMIT 20
+            ");
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $alerts ?? []
+            ]);
+            break;
+            
+        default:
+            echo json_encode([
+                'success' => false,
+                'error' => 'Ação inválida'
+            ]);
     }
     
 } catch (Exception $e) {
-    sendResponse(null, $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'error' => 'Erro no servidor: ' . $e->getMessage()
+    ]);
 }
 ?>
 

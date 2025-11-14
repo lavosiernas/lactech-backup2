@@ -4,7 +4,7 @@ session_start();
 
 // Verificar autenticação básica
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
-    header('Location: ../login.php');
+    header('Location: ../inicio-login.php');
     exit;
 }
 
@@ -15,7 +15,7 @@ $user = [
 ];
 
 // Verificar permissões
-$allowedRoles = ['gerente', 'funcionario', 'veterinario'];
+$allowedRoles = ['gerente', 'funcionario'];
 if (!in_array($user['role'], $allowedRoles)) {
     header('Location: ../index.php');
     exit;

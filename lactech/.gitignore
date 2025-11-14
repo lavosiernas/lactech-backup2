@@ -1,99 +1,38 @@
-# Arquivos de ambiente - INFORMAÇÕES SENSÍVEIS
+# Arquivos de configuração sensíveis
+# ⚠️ NUNCA commite arquivos com dados sensíveis
+
+# Arquivo de variáveis de ambiente (contém senhas e secrets)
 .env
 .env.local
 .env.production
-.env.development
-.env.test
-.env.*
+.env.*.local
+**/.env
+**/.env.*
 
 # Arquivos de configuração com dados sensíveis
-config/database.php
-config/local.php
-config/production.php
-config/credentials.php
+includes/config_google.php
+includes/config_mysql.php
+includes/config_local.php
+includes/config_prod.php
+includes/config.php
+config_google.php
+config_mysql.php
+config.php
+api/client_secret*.json
 
-# Arquivos JavaScript obfuscados e backups
-*.js.backup
-*.min.js
-
-# Arquivos de configuração com dados sensíveis
-config/database.php
-config/local.php
-config/production.php
-config/credentials.php
-
-# Logs
+# Arquivos de log (podem conter informações sensíveis)
 *.log
 logs/
-error.log
-access.log
+*.log.*
 
-# Arquivos temporários
-*.tmp
-*.temp
-temp/
-tmp/
+# Arquivos de backup que podem conter dados sensíveis
+backup/*.sql
+backup/*.gz
+backup/*.zip
 
-# Arquivos de backup
-*.bak
-*.backup
-backup/
-backups/
-
-# Arquivos de cache
-cache/
-*.cache
-*.cached
-
-# Arquivos de sessão
-sessions/
-*.sess
-
-# Arquivos de upload
-uploads/
-files/
-images/uploads/
-assets/uploads/
-
-# Arquivos de configuração do servidor
-.htaccess.local
-.htaccess.production
-php.ini
-vhost.conf
-
-# Arquivos de IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Arquivos do sistema operacional
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Arquivos de dependências
-vendor/
-node_modules/
-composer.lock
-package-lock.json
-
-# Arquivos de build
-build/
-dist/
-public/build/
-
-# Arquivos de teste
-tests/coverage/
-phpunit.xml
-.phpunit.result.cache
-
-# Arquivos específicos do projeto
-database.sql
-*.sql
-*.dump
-
-# Arquivos de configuração sensíveis
-includes/config_sensitive.php
-includes/database_credentials.php
+# Outros arquivos sensíveis
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
