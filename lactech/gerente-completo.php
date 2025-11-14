@@ -1222,6 +1222,7 @@ $v = time();
                     </div>
                     <div>
                         <h1 class="text-xl font-bold">LacTech</h1>
+
                         <p class="text-forest-200 text-sm"><?php echo htmlspecialchars($farm_name); ?></p>
                     </div>
                 </div>
@@ -1262,15 +1263,12 @@ $v = time();
                     <button onclick="openProfileOverlay()" class="flex items-center space-x-3 text-white hover:text-forest-200 p-2 rounded-lg transition-all" id="profileButton">
                         <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden border-2 border-white border-opacity-30">
                             <?php 
-                            // Verificar e exibir foto de perfil no header
                             $headerPhotoSrc = '';
                             $headerShowPhoto = false;
                             
                             if (!empty($current_user_photo)) {
-                                // Normalizar caminho
                                 $headerPhotoPath = trim($current_user_photo, '/\\');
                                 
-                                // Tentar múltiplos caminhos
                                 $pathsToTry = [
                                     __DIR__ . '/' . $headerPhotoPath,
                                     __DIR__ . '/../' . $headerPhotoPath,
