@@ -444,9 +444,85 @@ try {
             break;
             
         case 'animals':
-            // Listar animais disponíveis
-            $animals = $db->getAllAnimals();
-            sendResponse($animals ?? []);
+            // Listar TODOS os animais da tabela animals
+            try {
+                error_log("Feed API - Buscando TODOS os animais para farm_id: " . $farm_id);
+                
+                // Query simplificada - buscar todos os animais ativos da fazenda
+                $sql = "
+                    SELECT 
+                        a.id,
+                        a.animal_number,
+                        a.name,
+                        a.breed,
+                        a.gender,
+                        a.birth_date,
+                        a.status,
+                        a.farm_id,
+                        a.is_active,
+                        DATEDIFF(CURDATE(), a.birth_date) as age_days
+                    FROM animals a
+                    WHERE a.farm_id = ? AND (a.is_active = 1 OR a.is_active IS NULL)
+                    ORDER BY a.animal_number ASC
+                ";
+                
+                $animals = $db->query($sql, [$farm_id]);
+                
+                // Se não encontrar, tentar sem filtro de is_active
+                if (empty($animals) || !is_array($animals) || count($animals) === 0) {
+                    error_log("Feed API - Tentando sem filtro is_active...");
+                    $sql = "
+                        SELECT 
+                            a.id,
+                            a.animal_number,
+                            a.name,
+                            a.breed,
+                            a.gender,
+                            a.birth_date,
+                            a.status,
+                            a.farm_id,
+                            a.is_active,
+                            DATEDIFF(CURDATE(), a.birth_date) as age_days
+                        FROM animals a
+                        WHERE a.farm_id = ?
+                        ORDER BY a.animal_number ASC
+                    ";
+                    $animals = $db->query($sql, [$farm_id]);
+                }
+                
+                // Se ainda não encontrar, buscar todos (fallback)
+                if (empty($animals) || !is_array($animals) || count($animals) === 0) {
+                    error_log("Feed API - Buscando TODOS os animais (fallback)...");
+                    $sql = "
+                        SELECT 
+                            a.id,
+                            a.animal_number,
+                            a.name,
+                            a.breed,
+                            a.gender,
+                            a.birth_date,
+                            a.status,
+                            a.farm_id,
+                            a.is_active,
+                            DATEDIFF(CURDATE(), a.birth_date) as age_days
+                        FROM animals a
+                        ORDER BY a.animal_number ASC
+                        LIMIT 200
+                    ";
+                    $animals = $db->query($sql);
+                }
+                
+                $animalsArray = is_array($animals) ? $animals : [];
+                error_log("Feed API - Total de animais encontrados: " . count($animalsArray));
+                
+                // Retornar sempre um array, mesmo que vazio
+                sendResponse($animalsArray);
+                
+            } catch (Exception $e) {
+                error_log("Feed API - ERRO: " . $e->getMessage());
+                error_log("Feed API - Stack: " . $e->getTraceAsString());
+                sendResponse([], 'Erro ao buscar animais: ' . $e->getMessage());
+            }
             break;
             
         default:

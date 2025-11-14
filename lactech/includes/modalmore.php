@@ -1743,7 +1743,7 @@ try {
     </div>
 
     <!-- Modal Formulário de Alimentação -->
-    <div id="modal-feeding-form" class="modal" style="display: none;">
+    <div id="modal-feeding-form" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
                 <h2 class="text-xl font-bold text-gray-900" id="feeding-form-title">Novo Registro de Alimentação</h2>
@@ -3043,43 +3043,96 @@ try {
 
         // Carregar lista de animais
         function loadFeedingAnimals() {
+            console.log('🔄 [FEED] Carregando animais da tabela animals...');
             return fetch('api/feed.php?action=animals')
-                .then(response => response.json())
+                .then(response => {
+                    console.log('📡 [FEED] Status da resposta:', response.status, response.statusText);
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                    }
+                    return response.text().then(text => {
+                        console.log('📦 [FEED] Resposta bruta:', text.substring(0, 500));
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error('❌ [FEED] Erro ao fazer parse do JSON:', e);
+                            throw new Error('Resposta inválida do servidor');
+                        }
+                    });
+                })
                 .then(data => {
-                    if (data.success && data.data) {
-                        feedingAnimals = data.data;
-                        const selectForm = document.getElementById('feeding-form-animal');
-                        const selectFilter = document.getElementById('feeding-filter-animal');
-                        
-                        // Limpar e preencher select do formulário
-                        if (selectForm) {
-                            selectForm.innerHTML = '<option value="">Selecione o animal</option>';
+                    console.log('📦 [FEED] Dados parseados:', data);
+                    
+                    // Extrair array de animais
+                    let animals = [];
+                    if (data && data.success !== false) {
+                        // Pode vir em data.data ou diretamente em data
+                        animals = data.data || (Array.isArray(data) ? data : []);
+                    } else if (data && data.error) {
+                        console.error('❌ [FEED] Erro na API:', data.error);
+                        showCustomMessage('Erro', data.error, 'error');
+                        return null;
+                    }
+                    
+                    // Garantir que é um array
+                    feedingAnimals = Array.isArray(animals) ? animals : [];
+                    console.log('🐄 [FEED] Total de animais processados:', feedingAnimals.length);
+                    
+                    // Preencher select do formulário
+                    const selectForm = document.getElementById('feeding-form-animal');
+                    if (selectForm) {
+                        selectForm.innerHTML = '<option value="">Selecione o animal</option>';
+                        if (feedingAnimals.length > 0) {
                             feedingAnimals.forEach(animal => {
                                 const option = document.createElement('option');
-                                option.value = animal.id;
-                                option.textContent = `${animal.animal_number || ''} ${animal.name || ''}`.trim();
+                                option.value = animal.id || animal.ID;
+                                const num = animal.animal_number || animal.animalNumber || '';
+                                const name = animal.name || '';
+                                const displayName = (num + ' ' + name).trim() || `Animal #${animal.id || animal.ID}`;
+                                option.textContent = displayName;
                                 selectForm.appendChild(option);
                             });
+                            console.log('✅ [FEED] Select do formulário preenchido com', feedingAnimals.length, 'animais');
+                        } else {
+                            console.warn('⚠️ [FEED] Nenhum animal encontrado para preencher o select');
+                            selectForm.innerHTML = '<option value="">Nenhum animal encontrado</option>';
                         }
-                        
-                        // Limpar e preencher select do filtro
-                        if (selectFilter) {
-                            const currentValue = selectFilter.value;
-                            selectFilter.innerHTML = '<option value="">Todos os animais</option>';
+                    } else {
+                        console.error('❌ [FEED] Elemento #feeding-form-animal não encontrado no DOM!');
+                    }
+                    
+                    // Preencher select do filtro
+                    const selectFilter = document.getElementById('feeding-filter-animal');
+                    if (selectFilter) {
+                        const currentValue = selectFilter.value;
+                        selectFilter.innerHTML = '<option value="">Todos os animais</option>';
+                        if (feedingAnimals.length > 0) {
                             feedingAnimals.forEach(animal => {
                                 const option = document.createElement('option');
-                                option.value = animal.id;
-                                option.textContent = `${animal.animal_number || ''} ${animal.name || ''}`.trim();
+                                option.value = animal.id || animal.ID;
+                                const num = animal.animal_number || animal.animalNumber || '';
+                                const name = animal.name || '';
+                                const displayName = (num + ' ' + name).trim() || `Animal #${animal.id || animal.ID}`;
+                                option.textContent = displayName;
                                 selectFilter.appendChild(option);
                             });
                             selectFilter.value = currentValue;
+                            console.log('✅ [FEED] Select do filtro preenchido com', feedingAnimals.length, 'animais');
                         }
+                    } else {
+                        console.error('❌ [FEED] Elemento #feeding-filter-animal não encontrado no DOM!');
                     }
-                    return data;
+                    
+                    if (feedingAnimals.length === 0) {
+                        console.warn('⚠️ [FEED] AVISO: Nenhum animal foi carregado!');
+                        showCustomMessage('Aviso', 'Nenhum animal encontrado no banco de dados. Cadastre animais primeiro.', 'warning');
+                    }
+                    
+                    return { success: true, data: feedingAnimals };
                 })
                 .catch(error => {
-                    console.error('Erro ao carregar animais:', error);
-                    showCustomMessage('Erro', 'Erro ao carregar lista de animais', 'error');
+                    console.error('❌ [FEED] Erro ao carregar animais:', error);
+                    showCustomMessage('Erro', 'Erro ao carregar lista de animais: ' + error.message, 'error');
                     return null;
                 });
         }
@@ -3222,7 +3275,8 @@ try {
                     if (title) title.textContent = 'Novo Registro de Alimentação';
                     resetFeedingForm();
                 }
-                form.style.display = 'block';
+                // Usar a classe 'show' que faz display: flex conforme o CSS
+                form.style.display = '';
                 form.classList.add('show');
                 document.body.style.overflow = 'hidden';
                 console.log('Formulário aberto com sucesso');
@@ -3233,7 +3287,6 @@ try {
         function closeFeedingForm() {
             const form = document.getElementById('modal-feeding-form');
             if (form) {
-                form.style.display = 'none';
                 form.classList.remove('show');
                 document.body.style.overflow = '';
                 resetFeedingForm();
@@ -3390,9 +3443,17 @@ try {
         // Inicializar modal quando carregar
         function initFeedingModal() {
             console.log('Inicializando modal de alimentação...');
-            loadFeedingAnimals();
-            loadFeedingRecords();
-            loadFeedingDailySummary();
+            // Carregar animais primeiro, depois os registros
+            loadFeedingAnimals().then(() => {
+                console.log('Animais carregados:', feedingAnimals.length);
+                loadFeedingRecords();
+                loadFeedingDailySummary();
+            }).catch(error => {
+                console.error('Erro ao carregar animais:', error);
+                // Mesmo com erro, tentar carregar registros
+                loadFeedingRecords();
+                loadFeedingDailySummary();
+            });
         }
 
         // Tornar todas as funções globais - executar após todas as declarações
@@ -3418,6 +3479,9 @@ try {
                     if (typeof initFeedingModal === 'function') {
                         window.initFeedingModal = initFeedingModal;
                     }
+                    if (typeof loadFeedingAnimals === 'function') {
+                        window.loadFeedingAnimals = loadFeedingAnimals;
+                    }
                     console.log('✅ Funções de alimentação expostas globalmente');
                 } catch(e) {
                     console.error('Erro ao expor funções:', e);
@@ -3441,7 +3505,7 @@ try {
             const formModal = document.getElementById('modal-feeding-form');
             if (formModal) {
                 console.log('Abrindo modal diretamente...');
-                formModal.style.display = 'block';
+                formModal.style.display = '';
                 formModal.classList.add('show');
                 document.body.style.overflow = 'hidden';
                 

@@ -14,7 +14,6 @@ $user = [
     'farm_id' => 1 // Lagoa Do Mato
 ];
 
-// Verificar permissões
 $allowedRoles = ['gerente', 'funcionario'];
 if (!in_array($user['role'], $allowedRoles)) {
     header('Location: ../index.php');
@@ -22,7 +21,6 @@ if (!in_array($user['role'], $allowedRoles)) {
 }
 
 try {
-    // Obter parâmetros
     $startDate = sanitizeInput($_GET['start_date'] ?? date('Y-m-01'));
     $endDate = sanitizeInput($_GET['end_date'] ?? date('Y-m-d'));
     $isPreview = isset($_GET['preview']) && $_GET['preview'] === '1';
@@ -36,7 +34,6 @@ try {
         throw new Exception('Data inicial não pode ser maior que a data final');
     }
     
-    // Buscar dados do relatório
     $stmt = $pdo->prepare("
         SELECT 
             p.production_date,
@@ -60,7 +57,6 @@ try {
         throw new Exception('Nenhum registro encontrado para o período selecionado');
     }
     
-    // Gerar PDF
     $pdfGenerator = new PDFGenerator();
     $pdfGenerator->generateVolumeReport($data, $isPreview);
     
