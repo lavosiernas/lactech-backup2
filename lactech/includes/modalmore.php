@@ -2996,21 +2996,39 @@ try {
                 console.log('Modal de alimentação encontrado');
                 
                 // Observar quando o modal é aberto
+                let lastInitTime = 0;
                 const observer = new MutationObserver(function(mutations) {
                     mutations.forEach(function(mutation) {
-                        if (mutation.target.classList.contains('show') || mutation.target.style.display !== 'none') {
-                            console.log('Modal de alimentação aberto, inicializando...');
-                            setTimeout(function() {
-                                initFeedingModal();
-                            }, 200);
+                        const isVisible = feedingModal.classList.contains('show') || 
+                                         (feedingModal.style.display && feedingModal.style.display !== 'none');
+                        if (isVisible) {
+                            const now = Date.now();
+                            // Evitar múltiplas inicializações em menos de 1 segundo
+                            if (now - lastInitTime > 1000) {
+                                lastInitTime = now;
+                                console.log('🔄 [FEED] Modal de alimentação aberto, inicializando...');
+                                setTimeout(function() {
+                                    initFeedingModal();
+                                }, 200);
+                            }
                         }
                     });
                 });
                 
                 observer.observe(feedingModal, {
                     attributes: true,
-                    attributeFilter: ['class', 'style']
+                    attributeFilter: ['class', 'style'],
+                    childList: false,
+                    subtree: false
                 });
+                
+                // Também verificar imediatamente se o modal já está aberto
+                if (feedingModal.classList.contains('show')) {
+                    console.log('🔄 [FEED] Modal já está aberto, inicializando...');
+                    setTimeout(function() {
+                        initFeedingModal();
+                    }, 100);
+                }
                 
                 // Também verificar quando o modal é aberto via openSubModal
                 const originalOpenSubModal = window.openSubModal;
@@ -3019,10 +3037,14 @@ try {
                         originalOpenSubModal(modalName);
                         if (modalName === 'feeding') {
                             setTimeout(function() {
+                                console.log('🔄 [FEED] Modal aberto via openSubModal, inicializando...');
                                 initFeedingModal();
                             }, 300);
                         }
                     };
+                } else {
+                    // Se não existir, criar uma função que observa mudanças no modal
+                    console.log('⚠️ [FEED] openSubModal não encontrado, usando observer apenas');
                 }
             } else {
                 console.error('Modal de alimentação NÃO encontrado!');
@@ -3442,14 +3464,14 @@ try {
 
         // Inicializar modal quando carregar
         function initFeedingModal() {
-            console.log('Inicializando modal de alimentação...');
+            console.log('🔄 [FEED] Inicializando modal de alimentação...');
             // Carregar animais primeiro, depois os registros
-            loadFeedingAnimals().then(() => {
-                console.log('Animais carregados:', feedingAnimals.length);
+            loadFeedingAnimals().then((result) => {
+                console.log('✅ [FEED] Animais carregados:', feedingAnimals.length);
                 loadFeedingRecords();
                 loadFeedingDailySummary();
             }).catch(error => {
-                console.error('Erro ao carregar animais:', error);
+                console.error('❌ [FEED] Erro ao carregar animais:', error);
                 // Mesmo com erro, tentar carregar registros
                 loadFeedingRecords();
                 loadFeedingDailySummary();
