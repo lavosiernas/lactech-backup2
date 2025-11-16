@@ -156,7 +156,6 @@ try {
     $farm_cnpj = ''; // Não usar CNPJ hardcode
     $farm_address = ''; // Não usar endereço hardcode - deve ser cadastrado no banco
 }
-
        // Buscar dados para o modal Mais Opções
        try {
            $db = Database::getInstance();
@@ -345,18 +344,15 @@ $v = time();
         .chart-container canvas {
             border-radius: 8px;
         }
-        
         /* Data cards */
         .data-card {
             transition: all 0.3s ease;
             background: white;
         }
-        
         .data-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
-        
         /* Metric cards */
         .metric-card {
             background: white;
@@ -546,7 +542,6 @@ $v = time();
         .animate-slideUp {
             animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
         .bottom-nav-item::before {
             content: '';
             position: absolute;
@@ -559,7 +554,6 @@ $v = time();
             border-radius: 0 0 3px 3px;
             transition: width 0.3s ease;
         }
-        
         .bottom-nav-item.active {
             color: #ffffff;
             background: rgba(255, 255, 255, 0.1);
@@ -694,7 +688,6 @@ $v = time();
         .dark-mode .bg-white {
             background-color: #1e1e1e !important;
         }
-        
         .dark-mode .bg-gray-100 {
             background-color: #1f1f1f !important;
         }
@@ -705,7 +698,6 @@ $v = time();
             border-color: #2a2a2a !important;
             color: #e0e0e0 !important;
         }
-        
         .dark-mode .data-card {
             background-color: #1e1e1e !important;
             border-color: #2a2a2a !important;
@@ -744,7 +736,6 @@ $v = time();
         .dark-mode .text-slate-700 {
             color: #c0c0c0 !important;
         }
-        
         /* Bordas - tons harmoniosos */
         .dark-mode .border-gray-200,
         .dark-mode .border-slate-200 {
@@ -755,7 +746,6 @@ $v = time();
         .dark-mode .border-slate-300 {
             border-color: #3a3a3a !important;
         }
-        
         /* Inputs e selects */
         .dark-mode input,
         .dark-mode select,
@@ -942,7 +932,6 @@ $v = time();
         .dark-mode [id*="Overlay"] > div > div.bg-white {
             background-color: #1e1e1e !important;
         }
-        
         /* Formulários dentro de modais */
         .dark-mode [class*="bg-gradient-to-br"][class*="from-slate"],
         .dark-mode [class*="bg-gradient-to-br"][class*="from-green"],
@@ -956,7 +945,6 @@ $v = time();
             background-color: #1e1e1e !important;
             border-color: #2a2a2a !important;
         }
-        
         /* Dropdowns */
         .dark-mode [class*="dropdown"],
         .dark-mode [class*="menu"] {
@@ -1045,7 +1033,6 @@ $v = time();
             color: #e0e0e0 !important;
             border-color: #2a2a2a !important;
         }
-        
         /* Corrigir duplicatas de tabela */
         .dark-mode table th {
             background-color: #1a1a1a !important;
@@ -1057,11 +1044,9 @@ $v = time();
             border-color: #2a2a2a !important;
             color: #e0e0e0 !important;
         }
-        
         .dark-mode table tr:hover {
             background-color: #252525 !important;
         }
-        
         .dark-mode td {
             border-color: #2a2a2a !important;
             color: #e0e0e0 !important;
@@ -1142,7 +1127,6 @@ $v = time();
             border-color: #2a2a2a !important;
             color: #e0e0e0 !important;
         }
-        
         .dark-mode [id*="Overlay"] button[type="button"]:not([class*="bg-green"]):not([class*="bg-blue"]):hover,
         .dark-mode [id*="overlay"] button[type="button"]:not([class*="bg-green"]):not([class*="bg-blue"]):hover {
             background-color: #252525 !important;
@@ -1161,7 +1145,6 @@ $v = time();
         .dark-mode [id*="overlay"] ::-webkit-scrollbar {
             width: 8px;
         }
-        
         .dark-mode [id*="Overlay"] ::-webkit-scrollbar-track,
         .dark-mode [id*="overlay"] ::-webkit-scrollbar-track {
             background: #1a1a1a;
@@ -1308,7 +1291,6 @@ $v = time();
             </div>
         </div>
     </header>
-
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Dashboard Tab -->
@@ -1377,11 +1359,10 @@ $v = time();
                     <div class="metric-label text-gray-900 font-semibold mt-1">Sistema</div>
                 </div>
             </div>
-
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                 <!-- Volume Chart -->
-                <div class="data-card rounded-2xl p-4 sm:p-6 card-compact">
+                <div class="data-card rounded-2xl p-4 sm:p-6 card-compact" id="volumeTableWrapper">
                     <div class="flex items-center justify-between mb-3 sm:mb-4">
                         <h3 class="card-title font-bold text-slate-900">Volume Semanal</h3>
                     </div>
@@ -1400,11 +1381,10 @@ $v = time();
                     </div>
                 </div>
             </div>
-
             <!-- Quality Chart Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                 <!-- Quality Chart -->
-                <div class="data-card rounded-2xl p-4 sm:p-6 card-compact">
+                <div class="data-card rounded-2xl p-4 sm:p-6 card-compact" id="qualityTableWrapper">
                     <div class="flex items-center justify-between mb-3 sm:mb-4">
                         <h3 class="card-title font-bold text-slate-900">Qualidade do Leite (Últimos 7 dias)</h3>
                     </div>
@@ -1413,7 +1393,6 @@ $v = time();
                     </div>
                 </div>
             </div>
-
             <!-- Temperature Chart Section -->
             <div class="grid grid-cols-1 gap-6 mb-6">
                 <div class="data-card rounded-2xl p-4 sm:p-6 card-compact">
@@ -1482,16 +1461,9 @@ $v = time();
                                 </svg>
                                 Por Vaca
                             </button>
-                            <button id="exportVolumeBtn" onclick="exportVolumeReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-4-4m4 4l4-4m3 8H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1"></path>
-                                </svg>
-                                Exportar
-                            </button>
                         </div>
                     </div>
                 </div>
-
                 <!-- Volume Metrics -->
                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
                     <div class="metric-card rounded-2xl p-4 text-center">
@@ -1548,7 +1520,7 @@ $v = time();
                         </button>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" id="volumeTable">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
@@ -1591,12 +1563,6 @@ $v = time();
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 + Teste
-                            </button>
-                            <button id="exportQualityBtn" onclick="exportQualityReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-4-4m4 4l4-4m3 8H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1"></path>
-                                </svg>
-                                Exportar
                             </button>
                         </div>
                     </div>
@@ -1661,7 +1627,7 @@ $v = time();
                 <div class="data-card rounded-2xl p-6">
                     <h3 class="text-lg font-bold text-slate-900 mb-4">Registros de Qualidade</h3>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" id="qualityTable">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
@@ -1681,7 +1647,6 @@ $v = time();
                 </div>
             </div>
         </div>
-
         <!-- Financial Tab -->
         <div id="payments-tab" class="tab-content hidden">
             <div class="space-y-6">
@@ -1704,16 +1669,9 @@ $v = time();
                                 </svg>
                                 + Venda
                             </button>
-                            <button id="exportFinancialBtn" onclick="exportFinancialReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-4-4m4 4l4-4m3 8H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1"></path>
-                                </svg>
-                                Exportar
-                            </button>
                         </div>
                     </div>
                 </div>
-
                 <!-- Financial Metrics -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="metric-card rounded-2xl p-4 text-center">
@@ -1762,38 +1720,14 @@ $v = time();
                 </div>
 
                 <!-- Financial Chart -->
-                <div class="data-card rounded-2xl p-6">
+                <div class="data-card rounded-2xl p-6" id="financialTableWrapper">
                     <h3 class="text-lg font-bold text-slate-900 mb-4">Gráfico Financeiro</h3>
                     <div class="chart-container">
                         <canvas id="financialTabChart"></canvas>
                     </div>
                 </div>
-
-                <!-- Financial Records Table -->
-                <div class="data-card rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Registros Financeiros</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Data</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Tipo</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Descrição</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Valor</th>
-                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="financialRecordsTable">
-                                <tr>
-                                    <td colspan="5" class="text-center py-8 text-gray-500">Carregando registros...</td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
-            </div>
-        </div>
-
         <!-- Users Tab -->
         <div id="users-tab" class="tab-content hidden">
             <div class="space-y-6">
@@ -1863,7 +1797,6 @@ $v = time();
             </div>
         </div>
     </main>
-
     <!-- Bottom Navigation Bar (Mobile Only) -->
     <nav class="bottom-nav md:hidden">
         <div class="bottom-nav-container">
@@ -2021,7 +1954,7 @@ $v = time();
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">
                                         <span class="flex items-center gap-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1V9a5 5 0 00-10 0v6a4 4 0 004 4zm0-10a2 2 0 112 2"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
                                             </svg>
                                             Temperatura
                                             <span class="text-xs font-normal text-slate-500">(opcional)</span>
@@ -2052,7 +1985,6 @@ $v = time();
             </div>
         </div>
     </div>
-
     <!-- Modal Confirmar Exclusão de Todos os Registros de Volume -->
     <div id="deleteAllVolumeModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeDeleteAllVolumeModal()"></div>
@@ -2111,7 +2043,6 @@ $v = time();
                         </div>
                     </div>
                 </div>
-
                 <!-- Footer -->
                 <div class="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
                     <button type="button" onclick="closeDeleteAllVolumeModal()" class="px-6 py-3 text-sm font-semibold border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-all">
@@ -2127,7 +2058,6 @@ $v = time();
             </div>
         </div>
     </div>
-
     <!-- Modal Sucesso Restauração de Registros -->
     <div id="restoreVolumeSuccessModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRestoreVolumeSuccessModal()"></div>
@@ -2253,7 +2183,6 @@ $v = time();
                         </div>
                     </div>
                 </div>
-
                 <!-- Footer -->
                 <div class="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
                     <button type="button" onclick="closeRestoreVolumeErrorModal()" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
@@ -2333,7 +2262,6 @@ $v = time();
                                 </div>
                             </div>
                         </div>
-
                         <!-- Medições -->
                         <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-5">
                             <div class="flex items-center gap-2 mb-4">
@@ -2376,7 +2304,7 @@ $v = time();
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">
                                         <span class="flex items-center gap-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1V9a5 5 0 00-10 0v6a4 4 0 004 4zm0-10a2 2 0 112 2"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
                                             </svg>
                                             Temperatura
                                             <span class="text-xs font-normal text-slate-500">(opcional)</span>
@@ -2407,7 +2335,6 @@ $v = time();
             </div>
         </div>
     </div>
-
     <!-- Modal Teste de Qualidade - Melhorado -->
     <div id="qualityOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
         <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeQualityOverlay()"></div>
@@ -2432,7 +2359,6 @@ $v = time();
                         </svg>
                     </button>
                 </div>
-
                 <!-- Form -->
                 <form id="qualityForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
                     <div class="p-6 space-y-6">
@@ -2501,7 +2427,7 @@ $v = time();
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">
                                         <span class="flex items-center gap-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
                                             </svg>
                                             Proteína
                                         </span>
@@ -2567,7 +2493,6 @@ $v = time();
                         </svg>
                     </button>
                 </div>
-
                 <!-- Form -->
                 <form id="salesForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
                     <div class="p-6 space-y-6">
@@ -2659,6 +2584,477 @@ $v = time();
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                             </svg>
                             Registrar Venda
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Adicionar Tratamento -->
+    <div id="treatmentOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeTreatmentOverlay()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-500 to-rose-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Registrar Tratamento</h3>
+                            <p class="text-sm text-white/90">Registro de saúde animal</p>
+                        </div>
+                    </div>
+                    <button onclick="closeTreatmentOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <form id="treatmentForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="p-6 space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="treatmentMessage" class="hidden p-4 rounded-xl border"></div>
+
+                        <!-- Identificação do Animal -->
+                        <div class="bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Identificação do Animal</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
+                                            </svg>
+                                            Animal
+                                        </span>
+                                    </label>
+                                    <select name="animal_id" id="treatmentAnimalSelect" class="w-full px-4 py-3 border-2 border-red-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" required>
+                                        <option value="">Selecione um animal</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Data do Tratamento
+                                        </span>
+                                    </label>
+                                    <input type="date" name="record_date" class="w-full px-4 py-3 border-2 border-red-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" required>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Detalhes do Tratamento -->
+                        <div class="bg-gradient-to-br from-rose-50 to-pink-50 border-2 border-rose-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Detalhes do Tratamento</h4>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            Tipo de Tratamento
+                                        </span>
+                                    </label>
+                                    <select name="record_type" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" required>
+                                        <option value="">Selecione o tipo</option>
+                                        <option value="medicacao">Medicação</option>
+                                        <option value="vacina">Vacina</option>
+                                        <option value="vermifugacao">Vermifugação</option>
+                                        <option value="exame">Exame</option>
+                                        <option value="cirurgia">Cirurgia</option>
+                                        <option value="outro">Outro</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Descrição</label>
+                                    <textarea name="description" rows="3" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" placeholder="Descreva o tratamento realizado..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Medicamento</label>
+                                        <input type="text" name="medication" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" placeholder="Nome do medicamento">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Dosagem</label>
+                                        <input type="text" name="dosage" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" placeholder="Ex: 10ml, 2 comprimidos">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Custo (R$)</label>
+                                        <input type="number" name="cost" step="0.01" min="0" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" placeholder="0.00">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Próxima Data</label>
+                                        <input type="date" name="next_date" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Veterinário</label>
+                                    <input type="text" name="veterinarian" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white" placeholder="Nome do veterinário">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeTreatmentOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-xl hover:from-red-700 hover:to-rose-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Tratamento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Inseminação -->
+    <div id="inseminationOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeInseminationOverlay()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-pink-500 to-rose-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Registrar Inseminação</h3>
+                            <p class="text-sm text-white/90">Registro de reprodução</p>
+                        </div>
+                    </div>
+                    <button onclick="closeInseminationOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <form id="inseminationForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
+                    <div class="p-6 space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="inseminationMessage" class="hidden p-4 rounded-xl border"></div>
+
+                        <!-- Identificação -->
+                        <div class="bg-gradient-to-br from-pink-50 to-rose-50 border-2 border-pink-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Identificação</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
+                                            </svg>
+                                            Animal
+                                        </span>
+                                    </label>
+                                    <select name="animal_id" id="inseminationAnimalSelect" class="w-full px-4 py-3 border-2 border-pink-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white" required>
+                                        <option value="">Selecione uma vaca</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Data da Inseminação
+                                        </span>
+                                    </label>
+                                    <input type="date" name="insemination_date" class="w-full px-4 py-3 border-2 border-pink-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Hora</label>
+                                    <input type="time" name="insemination_time" class="w-full px-4 py-3 border-2 border-pink-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Touro</label>
+                                    <select name="bull_id" id="inseminationBullSelect" class="w-full px-4 py-3 border-2 border-pink-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white">
+                                        <option value="">Selecione o touro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detalhes da Inseminação -->
+                        <div class="bg-gradient-to-br from-rose-50 to-pink-50 border-2 border-rose-200 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <h4 class="text-base font-bold text-slate-800">Detalhes da Inseminação</h4>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Técnico/Inseminador</label>
+                                    <input type="text" name="technician_name" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white" placeholder="Nome do técnico">
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Lote do Sêmen</label>
+                                        <input type="text" name="semen_batch" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white" placeholder="Número do lote">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-2">Palheta Nº</label>
+                                        <input type="text" name="semen_straw_number" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white" placeholder="Número da palheta">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Método</label>
+                                    <select name="insemination_method" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white">
+                                        <option value="IA">Inseminação Artificial (IA)</option>
+                                        <option value="monta_natural">Monta Natural</option>
+                                        <option value="FIV">Fertilização In Vitro (FIV)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Custo (R$)</label>
+                                    <input type="number" name="cost" step="0.01" min="0" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Observações</label>
+                                    <textarea name="notes" rows="3" class="w-full px-4 py-3 border-2 border-rose-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-white" placeholder="Anotações adicionais..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeInseminationOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-pink-600 to-rose-700 text-white rounded-xl hover:from-pink-700 hover:to-rose-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Inseminação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar/Editar Produto -->
+    <div id="addProductModal" class="fixed inset-0 z-[200] hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAddProductModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp flex flex-col">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white" id="addProductModalTitle">Adicionar Produto</h3>
+                            <p class="text-sm text-white/90">Cadastro de novo insumo</p>
+                        </div>
+                    </div>
+                    <button onclick="closeAddProductModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Form -->
+                <form id="addProductForm" class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div id="addProductMessage" class="hidden p-4 rounded-xl border"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Nome do Produto *</label>
+                            <input type="text" name="name" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Tipo *</label>
+                            <select name="type" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all" required>
+                                <option value="">Selecione</option>
+                                <option value="racao">Ração</option>
+                                <option value="medicamento">Medicamento</option>
+                                <option value="insumo">Insumo</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Unidade *</label>
+                            <input type="text" name="unit" value="unidade" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all" placeholder="kg, litro, unidade" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Estoque Atual</label>
+                            <input type="number" name="current_stock" step="0.01" min="0" value="0" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Estoque Mínimo *</label>
+                            <input type="number" name="min_stock" step="0.01" min="0" value="0" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Custo por Unidade (R$)</label>
+                            <input type="number" name="cost_per_unit" step="0.01" min="0" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Estoque Máximo</label>
+                            <input type="number" name="max_stock" step="0.01" min="0" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Fornecedor</label>
+                            <input type="text" name="supplier" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Categoria</label>
+                            <input type="text" name="category" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Descrição</label>
+                        <textarea name="description" rows="3" class="w-full px-4 py-3 border-2 border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"></textarea>
+                    </div>
+
+                    <input type="hidden" name="product_id" id="editProductId">
+
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 -mx-6 -mb-6 flex justify-end gap-3">
+                        <button type="button" onclick="closeAddProductModal()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-orange-600 to-amber-700 text-white rounded-xl hover:from-orange-700 hover:to-amber-800 transition-all shadow-lg flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Salvar Produto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Adicionar Movimentação -->
+    <div id="addMovementModal" class="fixed inset-0 z-[200] hidden animate-fadeIn">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAddMovementModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp flex flex-col">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Nova Movimentação</h3>
+                            <p class="text-sm text-white/90">Entrada ou saída de estoque</p>
+                        </div>
+                    </div>
+                    <button onclick="closeAddMovementModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <form id="addMovementForm" class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div id="addMovementMessage" class="hidden p-4 rounded-xl border"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Produto *</label>
+                            <select name="product_id" id="movementProductSelect" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" required>
+                                <option value="">Selecione o produto</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Tipo *</label>
+                            <select name="movement_type" id="movementTypeSelect" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" required>
+                                <option value="">Selecione</option>
+                                <option value="entrada">Entrada</option>
+                                <option value="saida">Saída</option>
+                                <option value="ajuste">Ajuste</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Quantidade *</label>
+                            <input type="number" name="quantity" step="0.01" min="0" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Preço Unitário (R$)</label>
+                            <input type="number" name="unit_price" step="0.01" min="0" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Data *</label>
+                            <input type="date" name="movement_date" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Referência (NF, Pedido, etc)</label>
+                        <input type="text" name="reference" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Observações</label>
+                        <textarea name="notes" rows="3" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"></textarea>
+                    </div>
+                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 -mx-6 -mb-6 flex justify-end gap-3">
+                        <button type="button" onclick="closeAddMovementModal()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Registrar Movimentação
                         </button>
                     </div>
                 </form>
@@ -2916,7 +3312,6 @@ $v = time();
                                             Desvincular Conta Google
                                         </button>
                                     </div>
-
                                     <!-- Autenticação de Dois Fatores (2FA) - DESATIVADO -->
                                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 hidden">
                                         <div class="flex items-center justify-between mb-3">
@@ -3179,7 +3574,6 @@ $v = time();
                     </div>
                 </div>
             </div>
-            
             <!-- Ações da Conta -->
             <div class="px-6 lg:px-8 py-4 border-t border-gray-200">
                 <div class="max-w-7xl mx-auto">
@@ -3212,34 +3606,11 @@ $v = time();
             </div>
         </div>
     </div>
-
-    <!-- Modal de Adicionar Usuário -->
-    <!-- Modal Adicionar Novo Usuário - Melhorado -->
-    <div id="addUserModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAddUserModal()"></div>
-        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Adicionar Novo Usuário</h3>
-                            <p class="text-sm text-white/90">Criar nova conta no sistema</p>
-                        </div>
-                    </div>
-                    <button onclick="closeAddUserModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
                 </div>
 
-                <!-- Form -->
+     <script>
+         // Teste direto para verificar se os elementos existem
+
                 <form id="addUserForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
                     <div class="p-6 space-y-6">
                         <!-- Mensagem de sucesso/erro -->
@@ -3400,7 +3771,6 @@ $v = time();
             </div>
         </div>
     </div>
-
     <!-- Modal de Confirmação de Logout -->
     <div id="logoutModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <!-- Backdrop -->
@@ -3446,7 +3816,7 @@ $v = time();
             <div class="flex justify-center mb-4">
                 <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
                     <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                     </svg>
                 </div>
             </div>
@@ -3538,7 +3908,6 @@ $v = time();
     <div id="otpPasswordModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeOtpPasswordModal()"></div>
-        
         <!-- Modal Content -->
         <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
             <!-- Header -->
@@ -3585,7 +3954,6 @@ $v = time();
                     </div>
                 </div>
             </div>
-            
             <!-- Botões -->
             <div class="flex gap-3 mt-6">
                 <button onclick="closeOtpPasswordModal()" class="flex-1 px-4 py-2.5 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
@@ -3597,7 +3965,6 @@ $v = time();
             </div>
         </div>
     </div>
-
     <!-- Modal Ações na Conta -->
     <div id="accountActionsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
         <!-- Backdrop -->
@@ -3795,7 +4162,6 @@ $v = time();
             </form>
         </div>
     </div>
-
     <!-- Modal Ver Animal -->
     <div id="viewAnimalModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeViewAnimalModal()"></div>
@@ -3874,7 +4240,6 @@ $v = time();
                 installButton.style.display = 'none';
             }
         }
-        
         window.installPWA = async function installPWA() {
             if (!deferredPrompt) {
                 return;
@@ -3895,7 +4260,6 @@ $v = time();
             
             deferredPrompt = null;
         };
-        
         // Esconder botão se já estiver instalada
         window.addEventListener('appinstalled', () => {
             console.log('✅ PWA instalada');
@@ -3923,8 +4287,8 @@ $v = time();
             }
         }
     </script>
-    
-    <!-- Modal Mais Opções - Fullscreen -->
+</body>
+</html>
     <div id="moreOptionsModal" class="fixed inset-0 z-[100] hidden bg-white">
         <style>
             /* Estilos específicos do modal Mais Opções */
@@ -4084,6 +4448,21 @@ $v = time();
                                 </div>
                             </div>
                             
+                            <!-- Gestão de Estoque -->
+                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('stock')">
+                                <div class="flex flex-col items-center text-center space-y-2">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900 text-xs">Estoque</p>
+                                        <p class="text-[10px] text-gray-600 mt-0.5">Insumos e rações</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <!-- Dashboard Analítico -->
                             <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('analytics')">
                                 <div class="flex flex-col items-center text-center space-y-2">
@@ -4160,7 +4539,6 @@ $v = time();
                             </a>
                         </div>
                     </div>
-                    
                     <!-- Utilitários -->
                     <div class="mb-10">
                         <h3 class="text-lg font-bold text-gray-800 mb-5 flex items-center">
@@ -4222,7 +4600,6 @@ $v = time();
                 </div>
             </div>
         </div>
-        
         <!-- Submodais (Relatórios, Gestão de Rebanho, etc) -->
         <?php
         // Definir variáveis locais para uso nos modais (elas serão usadas no eval)
@@ -4239,7 +4616,6 @@ $v = time();
         if (!file_exists($modalmore_file_path)) {
             $modalmore_file_path = 'includes/modalmore.php';
         }
-        
         if (file_exists($modalmore_file_path)) {
             $modalmore_file = file_get_contents($modalmore_file_path);
             
@@ -4277,8 +4653,222 @@ $v = time();
             echo '<!-- Arquivo modalmore.php não encontrado -->';
         }
         ?>
+        
+        <!-- Submodal Gestão de Estoque/Insumos (Fullscreen dentro do Mais Opções) -->
+        <div id="modal-stock" class="submodal">
+            <div class="submodal-content bg-white w-full h-full overflow-y-auto" style="padding: 24px;">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200 sticky top-0 bg-white z-10">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Gestão de Estoque/Insumos</h2>
+                            <p class="text-sm text-gray-600">Controle de rações, medicamentos e insumos</p>
+                        </div>
+                    </div>
+                    <button onclick="closeSubModal('stock')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
     </div>
     
+                <!-- Content -->
+                <div class="flex-1 overflow-hidden flex flex-col">
+                    <!-- Tabs de Navegação -->
+                    <div class="border-b border-gray-200 bg-gray-50 px-6 -mx-6 mb-6">
+                        <div class="flex gap-4">
+                            <button onclick="switchStockTab('products')" id="stockTabProducts" class="stock-tab-button px-6 py-3 text-sm font-semibold border-b-2 border-orange-500 text-orange-600 transition-all">
+                                Produtos
+                            </button>
+                            <button onclick="switchStockTab('movements')" id="stockTabMovements" class="stock-tab-button px-6 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-orange-600 transition-all">
+                                Movimentações
+                            </button>
+                            <button onclick="switchStockTab('alerts')" id="stockTabAlerts" class="stock-tab-button px-6 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-600 hover:text-orange-600 transition-all relative">
+                                Alertas
+                                <span id="stockAlertsBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center hidden">0</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Tab Content: Produtos -->
+                    <div id="stockTabProductsContent" class="flex-1 overflow-y-auto">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Total de Produtos</p>
+                                        <p id="stockStatsTotalProducts" class="text-2xl font-bold text-gray-900">0</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Estoque Baixo</p>
+                                        <p id="stockStatsLowStock" class="text-2xl font-bold text-red-600">0</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Valor Total</p>
+                                        <p id="stockStatsTotalValue" class="text-2xl font-bold text-green-600">R$ 0,00</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Movimentações (7d)</p>
+                                        <p id="stockStatsRecentMovements" class="text-2xl font-bold text-blue-600">0</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros e Botão Adicionar -->
+                        <div class="flex flex-col md:flex-row gap-4 mb-6">
+                            <div class="flex-1 flex gap-4">
+                                <input type="text" id="stockSearchInput" placeholder="Buscar produtos..." class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                                <select id="stockTypeFilter" class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                                    <option value="">Todos os tipos</option>
+                                    <option value="racao">Ração</option>
+                                    <option value="medicamento">Medicamento</option>
+                                    <option value="insumo">Insumo</option>
+                                    <option value="outro">Outro</option>
+                                </select>
+                                <button onclick="loadStockProducts(true)" class="px-4 py-3 bg-orange-100 text-orange-700 rounded-xl hover:bg-orange-200 transition-all">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button onclick="showAddProductModal()" class="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-700 text-white rounded-xl hover:from-orange-700 hover:to-amber-800 transition-all shadow-lg flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Adicionar Produto
+                            </button>
+                        </div>
+
+                        <!-- Tabela de Produtos -->
+                        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <div id="stockProductsTable" class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Produto</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tipo</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Estoque Atual</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Mínimo</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Valor Unit.</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Valor Total</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockProductsList" class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                                                Carregando produtos...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content: Movimentações -->
+                    <div id="stockTabMovementsContent" class="flex-1 overflow-y-auto hidden">
+                        <!-- Filtros -->
+                        <div class="flex flex-col md:flex-row gap-4 mb-6">
+                            <select id="movementProductFilter" class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                                <option value="">Todos os produtos</option>
+                            </select>
+                            <select id="movementTypeFilter" class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                                <option value="">Todos os tipos</option>
+                                <option value="entrada">Entrada</option>
+                                <option value="saida">Saída</option>
+                                <option value="ajuste">Ajuste</option>
+                            </select>
+                            <input type="date" id="movementDateFrom" class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                            <input type="date" id="movementDateTo" class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
+                            <button onclick="loadStockMovements()" class="px-4 py-3 bg-orange-100 text-orange-700 rounded-xl hover:bg-orange-200 transition-all">
+                                Filtrar
+                            </button>
+                            <button onclick="showAddMovementModal()" class="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-700 text-white rounded-xl hover:from-orange-700 hover:to-amber-800 transition-all shadow-lg flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Nova Movimentação
+                            </button>
+                        </div>
+
+                        <!-- Tabela de Movimentações -->
+                        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <div id="stockMovementsTable" class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Data</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Produto</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tipo</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Quantidade</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Preço Unit.</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Total</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Estoque</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Registrado por</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockMovementsList" class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                                                Carregando movimentações...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content: Alertas -->
+                    <div id="stockTabAlertsContent" class="flex-1 overflow-y-auto hidden">
+                        <div id="stockAlertsList" class="space-y-4">
+                            <!-- Alertas serão carregados aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         // Funções para gerenciar submodais dentro do modal Mais Opções
         let currentSubModal = null;
@@ -4325,11 +4915,25 @@ $v = time();
                         }
                     }, 400);
                 }
+                
+                // Se for o modal de estoque, carregar dados
+                if (modalName === 'stock') {
+                    setTimeout(() => {
+                        if (typeof window.loadStockStats === 'function') {
+                            window.loadStockStats();
+                        }
+                        if (typeof window.loadStockProducts === 'function') {
+                            window.loadStockProducts();
+                        }
+                        if (typeof window.switchStockTab === 'function') {
+                            window.switchStockTab('products');
+                        }
+                    }, 300);
+                }
             } else {
                 console.error('❌ Submodal não encontrado: modal-' + modalName);
             }
         }
-        
         function closeSubModal(modalName) {
             console.log('🔒 Fechando submodal:', modalName || 'atual');
             
@@ -4353,365 +4957,9 @@ $v = time();
                 console.log('✅ Submodal fechado');
             }
         }
-        
         // Tornar funções globais
         window.openSubModal = openSubModal;
         window.closeSubModal = closeSubModal;
-        
-        // Fechar submodal ao clicar fora ou pressionar ESC
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('submodal')) {
-                closeSubModal();
-            }
-        });
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && currentSubModal) {
-                closeSubModal();
-            }
-        });
-        
-        // Também disponibilizar openModal e closeModal como aliases para compatibilidade
-        window.openModal = openSubModal;
-        window.closeModal = closeSubModal;
-    </script>
-    
-    <script>
-        // Teste direto para verificar se os elementos existem
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 Verificando elementos...');
-            
-            const elements = [
-                'todayVolume',
-                'qualityAverage', 
-                'pendingPayments',
-                'activeUsers',
-                'monthlyProductionChart',
-                'recentActivities',
-                'lastUpdate'
-            ];
-            
-            elements.forEach(id => {
-                const el = document.getElementById(id);
-                console.log(`${id}:`, el ? '✅ Encontrado' : '❌ Não encontrado');
-            });
-            
-            // Teste da API
-            console.log('🧪 Testando API...');
-            fetch('./api/endpoints/dashboard.php')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('✅ API funcionando:', data);
-                })
-                .catch(error => {
-                    console.error('❌ Erro na API:', error);
-                });
-        });
-    </script>
-    
-    <script>
-        // Sistema de navegação simplificado
-        (function() {
-            'use strict';
-            
-            // Interceptar cliques em links para "Mais Opções"
-            document.addEventListener('click', function(e) {
-                const link = e.target.closest('a[href*="modalmore.php"]');
-                if (link) {
-                    e.preventDefault();
-                    
-                    // Salvar estado atual
-                    const state = {
-                        scrollY: window.pageYOffset,
-                        timestamp: Date.now(),
-                        url: window.location.href
-                    };
-                    localStorage.setItem('lactech_dashboard_state', JSON.stringify(state));
-                    
-                    // Navegar
-                    window.location.href = link.href;
-                }
-            });
-            
-            // Verificar se voltou da página "Mais Opções"
-            function checkForReturnFromMoreOptions() {
-                const cachedState = localStorage.getItem('lactech_page_state');
-                if (cachedState) {
-                    const state = JSON.parse(cachedState);
-                    if (state.url && state.url.includes('modalmore.php')) {
-                        localStorage.removeItem('lactech_page_state');
-                        
-                        // Restaurar scroll
-                        if (state.scrollY !== undefined) {
-                            setTimeout(() => {
-                                window.scrollTo(0, state.scrollY);
-                            }, 100);
-                        }
-                        
-                        return true;
-                    }
-                }
-                return false;
-            }
-            
-            // Inicializar
-            window.addEventListener('load', function() {
-                if (checkForReturnFromMoreOptions()) {
-                    console.log('Dashboard restaurado - sem recarregamento');
-                }
-            });
-            
-        })();
-        
-        // Funções dos modais
-        function openNotificationsModal() {
-            document.getElementById('notificationsModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeNotificationsModal() {
-            document.getElementById('notificationsModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-        function openProfileOverlay() {
-            document.getElementById('profileOverlay').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeProfileOverlay() {
-            document.getElementById('profileOverlay').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-        function openAddUserModal() {
-            const modal = document.getElementById('addUserModal');
-            const form = document.getElementById('addUserForm');
-            const messageDiv = document.getElementById('addUserMessage');
-            
-            if (modal) {
-                // Resetar formulário e mensagens
-                if (form) {
-                    form.reset();
-                }
-                if (messageDiv) {
-                    messageDiv.classList.add('hidden');
-                    messageDiv.className = 'hidden p-4 rounded-xl border';
-                }
-                
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-        
-        function closeAddUserModal() {
-            const modal = document.getElementById('addUserModal');
-            const form = document.getElementById('addUserForm');
-            const messageDiv = document.getElementById('addUserMessage');
-            
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-            }
-            
-            // Limpar formulário e mensagens
-            if (form) {
-                form.reset();
-            }
-            if (messageDiv) {
-                messageDiv.classList.add('hidden');
-                messageDiv.className = 'hidden p-4 rounded-xl border';
-            }
-        }
-        
-        function openLogoutModal() {
-            document.getElementById('logoutModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-        function openUnlinkGoogleModal() {
-            document.getElementById('unlinkGoogleModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeUnlinkGoogleModal() {
-            document.getElementById('unlinkGoogleModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Modal OTP e Senha
-        function openOtpPasswordModal(title, message, requirePassword, callback) {
-            const modal = document.getElementById('otpPasswordModal');
-            if (!modal) return;
-            
-            // Armazenar callback
-            window.otpPasswordCallback = callback;
-            window.otpPasswordRequirePassword = requirePassword;
-            
-            // Atualizar texto
-            const titleEl = document.getElementById('otpModalTitle');
-            const messageEl = document.getElementById('otpModalMessage');
-            const passwordContainer = document.getElementById('otpPasswordInputContainer');
-            
-            if (titleEl) titleEl.textContent = title || 'Verificação de Segurança';
-            if (messageEl) messageEl.textContent = message || 'Digite o código OTP enviado para seu e-mail:';
-            
-            // Mostrar/esconder campo de senha
-            if (passwordContainer) {
-                if (requirePassword) {
-                    passwordContainer.classList.remove('hidden');
-                } else {
-                    passwordContainer.classList.add('hidden');
-                }
-            }
-            
-            // Limpar campos
-            const otpInput = document.getElementById('otpCodeInput');
-            const passwordInput = document.getElementById('otpPasswordInput');
-            if (otpInput) {
-                otpInput.value = '';
-                setTimeout(() => otpInput.focus(), 100);
-            }
-            if (passwordInput) passwordInput.value = '';
-            
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeOtpPasswordModal() {
-            const modal = document.getElementById('otpPasswordModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-            }
-            // Limpar callback
-            window.otpPasswordCallback = null;
-            window.otpPasswordRequirePassword = false;
-        }
-        
-        function submitOtpPassword() {
-            const otpInput = document.getElementById('otpCodeInput');
-            const passwordInput = document.getElementById('otpPasswordInput');
-            const callback = window.otpPasswordCallback;
-            const requirePassword = window.otpPasswordRequirePassword;
-            
-            if (!otpInput || !callback) return;
-            
-            const otpCode = otpInput.value.trim().replace(/\D/g, ''); // Remover não-dígitos
-            const password = requirePassword && passwordInput ? passwordInput.value : null;
-            
-            if (!otpCode || otpCode.length !== 6) {
-                if (typeof showErrorModal === 'function') {
-                    showErrorModal('Código OTP inválido. Deve ter 6 dígitos.');
-                }
-                return;
-            }
-            
-            if (requirePassword && !password) {
-                if (typeof showErrorModal === 'function') {
-                    showErrorModal('Senha atual é obrigatória.');
-                }
-                return;
-            }
-            
-            // Fechar modal
-            closeOtpPasswordModal();
-            
-            // Executar callback
-            if (requirePassword) {
-                callback(otpCode, password);
-            } else {
-                callback(otpCode);
-            }
-        }
-        
-        function toggleOtpPasswordVisibility() {
-            const passwordInput = document.getElementById('otpPasswordInput');
-            const eyeIcon = document.getElementById('otpPasswordEye');
-            
-            if (!passwordInput || !eyeIcon) return;
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>';
-            } else {
-                passwordInput.type = 'password';
-                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
-            }
-        }
-        
-        // Permitir Enter para submeter
-        document.addEventListener('DOMContentLoaded', function() {
-            const otpInput = document.getElementById('otpCodeInput');
-            if (otpInput) {
-                otpInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        const passwordInput = document.getElementById('otpPasswordInput');
-                        const requirePassword = window.otpPasswordRequirePassword;
-                        
-                        if (requirePassword && passwordInput && !passwordInput.value) {
-                            passwordInput.focus();
-                        } else {
-                            submitOtpPassword();
-                        }
-                    }
-                });
-                
-                // Permitir apenas números
-                otpInput.addEventListener('input', function(e) {
-                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                });
-            }
-            
-            const passwordInput = document.getElementById('otpPasswordInput');
-            if (passwordInput) {
-                passwordInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        submitOtpPassword();
-                    }
-                });
-            }
-        });
-        
-        // Função saveProfile está definida em gerente-completo.js
-        // Não definir aqui para não sobrescrever a função correta
-        
-        function toggleUserPasswordVisibility(inputId, buttonId) {
-            const input = document.getElementById(inputId);
-            const button = document.getElementById(buttonId);
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>';
-            } else {
-                input.type = 'password';
-                button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
-            }
-        }
-        
-        window.toggleProfilePasswordVisibility = function toggleProfilePasswordVisibility(inputId, buttonId) {
-            const input = document.getElementById(inputId);
-            const button = document.getElementById(buttonId);
-            
-            if (!input || !button) return;
-            
-            // Só funciona quando o campo não está desabilitado
-            if (input.disabled) return;
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>';
-            } else {
-                input.type = 'password';
-                button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
-            }
-        }
-        
         window.openAccountActionsModal = function openAccountActionsModal() {
             const modal = document.getElementById('accountActionsModal');
             if (!modal) return;
@@ -4827,7 +5075,6 @@ $v = time();
                 offlineManager.updateUI();
             }
         };
-        
         // Verificar resultados de vinculação Google e carregar status
         document.addEventListener('DOMContentLoaded', function() {
             // Carregar status do Google automaticamente quando a página carregar
@@ -4897,7 +5144,6 @@ $v = time();
             
             console.log('✅ Controle das abas configurado!');
         });
-        
         // Função para mudar de aba (usada tanto pelo menu superior quanto inferior)
         function switchTab(tabName) {
             // Selecionar todos os botões de navegação (superior e inferior)
@@ -5012,7 +5258,6 @@ $v = time();
                     });
                 }, 10);
             }
-            
             function handleScroll() {
                 ticking = false; // Sempre resetar o ticking
                 
@@ -5061,7 +5306,6 @@ $v = time();
                     ticking = true;
                 }
             }, { passive: true });
-            
             // Resetar ao redimensionar
             window.addEventListener('resize', function() {
                 if (window.innerWidth >= 768) {
@@ -5180,10 +5424,8 @@ $v = time();
             removeDarkMode();
         }
     </script>
-
     <!-- Proteção contra cópia de código no console -->
     <script src="./assets/js/console-protection.js"></script>
-
     <!-- Modal Sistema de Touros Full Screen -->
     <div id="bulls-modal-fullscreen" class="fixed inset-0 bg-gray-50 z-[9999] hidden overflow-y-auto">
         <div class="w-full h-full flex flex-col">
@@ -5217,7 +5459,6 @@ $v = time();
                     </div>
                 </div>
             </header>
-            
             <!-- Main Content -->
             <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
                 <!-- Estatísticas Gerais -->
@@ -5334,7 +5575,6 @@ $v = time();
             </main>
         </div>
     </div>
-
     <!-- Modal de Cadastro/Edição de Touro Full Screen -->
     <div id="bull-modal" class="fixed inset-0 bg-gray-50 z-[10000] hidden overflow-y-auto">
         <div class="w-full h-full flex flex-col">
@@ -5520,7 +5760,6 @@ $v = time();
                         </div>
                         </div>
                     </div>
-                    
                     <!-- Seção: Avaliação Genética -->
                     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                         <h3 class="text-lg font-bold mb-4 text-gray-900 flex items-center space-x-2">
@@ -5688,7 +5927,6 @@ $v = time();
             breed: '',
             status: ''
         };
-
         // Carregar estatísticas
         async function bullsLoadStatistics() {
             try {
@@ -5709,7 +5947,6 @@ $v = time();
                 console.error('Erro ao carregar estatísticas:', error);
             }
         }
-
         // Carregar touros
         async function bullsLoadBulls() {
             const container = document.getElementById('bulls-container');
@@ -5847,7 +6084,6 @@ $v = time();
                 closeBullDetailsModal();
             }
         }
-
         function renderBullDetailsInfo(data) {
             // Header
             const headerName = document.getElementById('bull-details-name-header');
@@ -5910,7 +6146,6 @@ $v = time();
             };
             return labels[status] || status;
         }
-
         function getBullStatusClass(status) {
             const classes = {
                 'ativo': 'bg-green-100 text-green-800',
@@ -5991,7 +6226,6 @@ $v = time();
                 alert('Erro ao carregar dados do touro para edição');
             }
         }
-
         // Autocomplete para campos de genealogia
         function initGenealogyAutocomplete(inputId, autocompleteId) {
             const input = document.getElementById(inputId);
@@ -6052,7 +6286,6 @@ $v = time();
                     }
                 }, 300);
             });
-            
             input.addEventListener('keydown', function(e) {
                 const items = autocomplete.querySelectorAll('.autocomplete-item');
                 
@@ -6096,7 +6329,6 @@ $v = time();
                 }
             });
         }
-        
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             // Inicializar autocomplete para campos de genealogia
@@ -6149,7 +6381,6 @@ $v = time();
                     submitBtn.disabled = true;
                     submitText.textContent = 'Salvando...';
                     submitLoading.classList.remove('hidden');
-                    
                     try {
                         const formData = new FormData(form);
                         const data = {};
@@ -6253,7 +6484,6 @@ $v = time();
                     </div>
                 </div>
             </header>
-            
             <!-- Main Content -->
             <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
                 <!-- Informações Básicas -->
@@ -6342,7 +6572,6 @@ $v = time();
                             </div>
                         </div>
                     </div>
-                    
                     <div class="mt-6">
                         <h4 class="text-base font-semibold mb-3 text-gray-800">Avaliação Genética</h4>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
