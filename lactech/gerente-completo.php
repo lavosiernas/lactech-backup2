@@ -1178,18 +1178,540 @@ $v = time();
             background: #3a3a3a;
         }
         */ /* FIM DO MODO ESCURO DESABILITADO */
+        
+        /* Sistema de Notificações Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+            pointer-events: none;
+        }
+        
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            pointer-events: auto;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 4px solid;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            border-left-color: #10b981;
+        }
+        
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+        
+        .toast-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+        
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+        
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+        
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .toast-message {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .toast-close {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            color: #9ca3af;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast-close:hover {
+            color: #374151;
+        }
+        
+        @media (max-width: 640px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+            
+            .toast {
+                min-width: auto;
+                max-width: none;
+            }
+        }
+        
+        /* Sistema de Validação de Formulários */
+        .form-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        
+        .form-input.valid {
+            border-color: #10b981 !important;
+            border-width: 2px;
+        }
+        
+        .form-input.invalid {
+            border-color: #ef4444 !important;
+            border-width: 2px;
+            background-color: #fef2f2;
+        }
+        
+        .form-input:focus.valid {
+            ring-color: #10b981;
+            border-color: #10b981;
+        }
+        
+        .form-input:focus.invalid {
+            ring-color: #ef4444;
+            border-color: #ef4444;
+        }
+        
+        .form-error-message {
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .form-error-message.show {
+            display: flex;
+        }
+        
+        .form-success-message {
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .form-success-message.show {
+            display: flex;
+        }
+        
+        .form-input-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .form-input-icon.show {
+            opacity: 1;
+        }
+        
+        .form-input-icon.valid-icon {
+            color: #10b981;
+        }
+        
+        .form-input-icon.invalid-icon {
+            color: #ef4444;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-group.has-error .form-label {
+            color: #ef4444;
+        }
+        
+        .form-group.has-success .form-label {
+            color: #10b981;
+        }
+        
+        /* Loading state para botões */
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+        }
+        
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Skeleton Loaders */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s ease-in-out infinite;
+            border-radius: 0.5rem;
+        }
+        
+        .skeleton-text {
+            height: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        
+        .skeleton-title {
+            height: 1.5rem;
+            width: 60%;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+        }
+        
+        .skeleton-card {
+            height: 200px;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .skeleton-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+        }
+        
+        .skeleton-button {
+            height: 40px;
+            width: 120px;
+            border-radius: 0.5rem;
+        }
+        
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Indicadores de Progresso */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            animation: progress-shimmer 1.5s infinite;
+        }
+        
+        @keyframes progress-shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Melhorias de Acessibilidade */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        /* Focus visível para navegação por teclado */
+        *:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        /* Skip to main content link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #1f2937;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            z-index: 100;
+            border-radius: 0 0 4px 0;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        /* Melhorias de Responsividade Mobile */
+        @media (max-width: 640px) {
+            /* Ajustes de espaçamento */
+            .container-mobile {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            /* Textos menores em mobile */
+            .text-mobile-sm {
+                font-size: 0.875rem;
+            }
+            
+            /* Cards mais compactos */
+            .card-mobile {
+                padding: 1rem;
+            }
+            
+            /* Botões full width em mobile quando necessário */
+            .btn-mobile-full {
+                width: 100%;
+            }
+            
+            /* Inputs maiores para melhor toque */
+            input[type="text"],
+            input[type="email"],
+            input[type="password"],
+            input[type="number"],
+            input[type="tel"],
+            input[type="date"],
+            select,
+            textarea {
+                font-size: 16px; /* Previne zoom no iOS */
+                min-height: 44px; /* Tamanho mínimo recomendado para toque */
+            }
+        }
+        
+        /* Melhorias no sistema de notificações - Agrupamento */
+        .toast-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .toast-group-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 0;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 4px;
+        }
+        
+        /* Animações suaves */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .scale-in {
+            animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Estados de loading para elementos */
+        .loading-overlay {
+            position: relative;
+        }
+        
+        .loading-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: inherit;
+        }
+        
+        .loading-overlay.loading::after {
+            content: '';
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Melhorias de toque para mobile */
+        @media (hover: none) and (pointer: coarse) {
+            button,
+            a,
+            [role="button"] {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* Aumentar área de toque */
+            .touch-target {
+                padding: 12px;
+                margin: -12px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-inter" id="mainBody">
+    <!-- Skip to main content link para acessibilidade -->
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+    
     <!-- Tela de Carregamento -->
-    <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-white flex items-center justify-center">
+    <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-white flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando página">
         <div class="flex flex-col items-center justify-center space-y-8">
             <!-- Círculo de carregamento -->
-            <div class="relative">
+            <div class="relative" aria-hidden="true">
                 <div class="w-24 h-24 border-8 border-green-100 border-t-green-600 rounded-full animate-spin"></div>
                 <div class="absolute inset-0 flex items-center justify-center">
                     <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
-                        <svg class="w-8 h-8 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-8 h-8 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
@@ -1202,49 +1724,53 @@ $v = time();
                 <p id="loadingMessage" class="text-lg text-gray-600 font-medium min-h-[32px] transition-all duration-500">
                     Preparando tudo para você! 🚀
                 </p>
-                <div class="flex items-center justify-center space-x-2 mt-4">
+                <div class="flex items-center justify-center space-x-2 mt-4" aria-hidden="true">
                     <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
                     <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
                     <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
                 </div>
             </div>
         </div>
+        <span class="sr-only">Carregando conteúdo da página, por favor aguarde</span>
     </div>
+    
+    <!-- Container de Notificações Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+    
     <!-- Header -->
-    <header class="gradient-forest text-white shadow-lg">
+    <header class="gradient-forest text-white shadow-lg" role="banner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo e Título -->
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-2 shadow-lg">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-2 shadow-lg" aria-hidden="true">
                         <img src="./assets/img/lactech-logo.png" alt="LacTech Logo" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <img src="./assets/video/lactechbranca.png" alt="LacTech Logo" class="w-full h-full object-contain" style="display: none;" onerror="this.style.display='none';">
                     </div>
                     <div>
                         <h1 class="text-xl font-bold">LacTech</h1>
-
                         <p class="text-forest-200 text-sm"><?php echo htmlspecialchars($farm_name); ?></p>
                     </div>
                 </div>
                 
                 <!-- Navegação -->
-                <nav class="hidden md:flex items-center space-x-1">
-                    <button class="nav-item active px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="dashboard">
+                <nav class="hidden md:flex items-center space-x-1" role="navigation" aria-label="Navegação principal">
+                    <button class="nav-item active px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="dashboard" aria-label="Ir para Dashboard" aria-current="page">
                         Dashboard
                     </button>
-                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="volume">
+                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="volume" aria-label="Ir para Volume">
                         Volume
                     </button>
-                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="quality">
+                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="quality" aria-label="Ir para Qualidade">
                         Qualidade
                     </button>
-                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="payments">
+                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="payments" aria-label="Ir para Financeiro">
                         Financeiro
                     </button>
-                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="users">
+                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="users" aria-label="Ir para Usuários">
                         Usuários
                     </button>
-                    <button onclick="openMoreOptionsModal()" class="px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg">
+                    <button onclick="openMoreOptionsModal()" class="px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" aria-label="Abrir menu Mais Opções">
                         <span>MAIS</span>
                     </button>
                 </nav>
@@ -1252,11 +1778,11 @@ $v = time();
                 <!-- Perfil do Usuário -->
                 <div class="flex items-center space-x-4">
                     <!-- Notificações -->
-                    <button onclick="openNotificationsDrawer()" class="relative p-2 text-white hover:text-forest-200 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <button onclick="openNotificationsDrawer()" class="relative p-2 text-white hover:text-forest-200 transition-colors" aria-label="Abrir notificações" aria-describedby="notificationsBellCount">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
-                        <span id="notificationsBellCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] leading-none py-1 px-1.5 font-bold rounded-full min-w-[18px] text-center hidden"></span>
+                        <span id="notificationsBellCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] leading-none py-1 px-1.5 font-bold rounded-full min-w-[18px] text-center hidden" aria-label="Número de notificações não lidas"></span>
                     </button>
                     
                     <!-- Perfil -->
@@ -3826,12 +4352,726 @@ $v = time();
     
     <!-- PWA e Service Worker -->
     <script>
+        // ============================================
+        // SISTEMA DE NOTIFICAÇÕES TOAST MELHORADO
+        // ============================================
+        (function() {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastGroups = new Map(); // Para agrupamento de notificações similares
+            const MAX_TOASTS = 5; // Máximo de toasts visíveis
+            const GROUP_TIMEOUT = 1000; // Tempo para agrupar notificações similares
+            
+            function showToast(message, type = 'info', title = null, duration = 5000, groupKey = null) {
+                if (!toastContainer) return;
+                
+                // Limitar número de toasts
+                const existingToasts = toastContainer.querySelectorAll('.toast');
+                if (existingToasts.length >= MAX_TOASTS) {
+                    // Remover o mais antigo
+                    const oldest = existingToasts[0];
+                    oldest.classList.remove('show');
+                    setTimeout(() => oldest.remove(), 400);
+                }
+                
+                // Agrupamento de notificações similares
+                if (groupKey) {
+                    const existingGroup = toastGroups.get(groupKey);
+                    if (existingGroup && Date.now() - existingGroup.timestamp < GROUP_TIMEOUT) {
+                        // Atualizar toast existente no grupo
+                        existingGroup.count++;
+                        existingGroup.toast.querySelector('.toast-message').textContent = 
+                            `${message} (${existingGroup.count}x)`;
+                        existingGroup.timestamp = Date.now();
+                        return existingGroup.toast;
+                    }
+                }
+                
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+                toast.setAttribute('aria-atomic', 'true');
+                
+                // Ícones por tipo
+                const icons = {
+                    success: '<svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                    error: '<svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                    warning: '<svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>',
+                    info: '<svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                };
+                
+                // Títulos padrão por tipo
+                const defaultTitles = {
+                    success: 'Sucesso',
+                    error: 'Erro',
+                    warning: 'Atenção',
+                    info: 'Informação'
+                };
+                
+                const displayTitle = title || defaultTitles[type] || 'Notificação';
+                
+                toast.innerHTML = `
+                    ${icons[type] || icons.info}
+                    <div class="toast-content">
+                        <div class="toast-title">${displayTitle}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                    <button class="toast-close" onclick="this.parentElement.remove()" aria-label="Fechar notificação">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                // Trigger animation
+                setTimeout(() => toast.classList.add('show'), 10);
+                
+                // Registrar no grupo se necessário
+                if (groupKey) {
+                    toastGroups.set(groupKey, {
+                        toast: toast,
+                        count: 1,
+                        timestamp: Date.now()
+                    });
+                }
+                
+                // Auto remove
+                if (duration > 0) {
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => {
+                            toast.remove();
+                            if (groupKey) {
+                                toastGroups.delete(groupKey);
+                            }
+                        }, 400);
+                    }, duration);
+                }
+                
+                return toast;
+            }
+            
+            // Exportar funções globais
+            window.showToast = showToast;
+            window.showSuccessToast = (message, title, groupKey) => showToast(message, 'success', title, 5000, groupKey);
+            window.showErrorToast = (message, title, groupKey) => showToast(message, 'error', title, 7000, groupKey);
+            window.showWarningToast = (message, title, groupKey) => showToast(message, 'warning', title, 6000, groupKey);
+            window.showInfoToast = (message, title, groupKey) => showToast(message, 'info', title, 5000, groupKey);
+        })();
+        
+        // ============================================
+        // SISTEMA DE SKELETON LOADERS
+        // ============================================
+        (function() {
+            // Criar skeleton loader
+            function createSkeleton(type = 'text', count = 1) {
+                const skeletons = [];
+                for (let i = 0; i < count; i++) {
+                    const skeleton = document.createElement('div');
+                    skeleton.className = `skeleton skeleton-${type}`;
+                    skeleton.setAttribute('aria-hidden', 'true');
+                    skeletons.push(skeleton);
+                }
+                return skeletons.length === 1 ? skeletons[0] : skeletons;
+            }
+            
+            // Criar skeleton card
+            function createSkeletonCard() {
+                const card = document.createElement('div');
+                card.className = 'skeleton-card';
+                card.setAttribute('aria-hidden', 'true');
+                return card;
+            }
+            
+            // Criar skeleton para lista
+            function createSkeletonList(count = 3) {
+                const container = document.createElement('div');
+                container.className = 'space-y-4';
+                container.setAttribute('aria-hidden', 'true');
+                
+                for (let i = 0; i < count; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center space-x-4';
+                    item.innerHTML = `
+                        <div class="skeleton skeleton-avatar"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                            <div class="skeleton skeleton-text" style="width: 40%;"></div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                }
+                
+                return container;
+            }
+            
+            // Mostrar skeleton loader em um elemento
+            function showSkeleton(element, type = 'text', count = 1) {
+                if (!element) return;
+                
+                const skeletons = createSkeleton(type, count);
+                if (Array.isArray(skeletons)) {
+                    element.innerHTML = '';
+                    skeletons.forEach(s => element.appendChild(s));
+                } else {
+                    element.innerHTML = '';
+                    element.appendChild(skeletons);
+                }
+            }
+            
+            // Esconder skeleton loader
+            function hideSkeleton(element) {
+                if (!element) return;
+                const skeletons = element.querySelectorAll('.skeleton');
+                skeletons.forEach(s => s.remove());
+            }
+            
+            // Exportar funções
+            window.createSkeleton = createSkeleton;
+            window.createSkeletonCard = createSkeletonCard;
+            window.createSkeletonList = createSkeletonList;
+            window.showSkeleton = showSkeleton;
+            window.hideSkeleton = hideSkeleton;
+        })();
+        
+        // ============================================
+        // MELHORIAS DE ACESSIBILIDADE
+        // ============================================
+        (function() {
+            // Adicionar atributos ARIA em elementos interativos
+            function enhanceAccessibility() {
+                // Adicionar aria-label em botões sem texto
+                document.querySelectorAll('button:not([aria-label]):not([aria-labelledby])').forEach(btn => {
+                    if (!btn.textContent.trim() && !btn.querySelector('svg[aria-label]')) {
+                        const icon = btn.querySelector('svg');
+                        if (icon) {
+                            // Tentar inferir do contexto
+                            const parent = btn.closest('[aria-label]');
+                            if (parent) {
+                                btn.setAttribute('aria-label', parent.getAttribute('aria-label'));
+                            } else {
+                                btn.setAttribute('aria-label', 'Botão');
+                            }
+                        }
+                    }
+                });
+                
+                // Adicionar role em elementos que se comportam como botões
+                document.querySelectorAll('[onclick]:not(button):not(a)').forEach(el => {
+                    if (!el.getAttribute('role')) {
+                        el.setAttribute('role', 'button');
+                        el.setAttribute('tabindex', '0');
+                    }
+                });
+                
+                // Melhorar navegação por teclado em elementos com role="button"
+                document.querySelectorAll('[role="button"]').forEach(el => {
+                    el.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            this.click();
+                        }
+                    });
+                });
+                
+                // Adicionar aria-live em regiões dinâmicas
+                const mainContent = document.getElementById('main-content') || document.querySelector('main');
+                if (mainContent && !mainContent.getAttribute('aria-live')) {
+                    mainContent.setAttribute('aria-live', 'polite');
+                    mainContent.setAttribute('aria-atomic', 'false');
+                }
+            }
+            
+            // Melhorar navegação por teclado em modais
+            function enhanceModalAccessibility(modal) {
+                if (!modal) return;
+                
+                // Focar no primeiro elemento focável ao abrir
+                const firstFocusable = modal.querySelector(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (firstFocusable) {
+                    setTimeout(() => firstFocusable.focus(), 100);
+                }
+                
+                // Trap de foco dentro do modal
+                const focusableElements = modal.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+                
+                modal.addEventListener('keydown', function(e) {
+                    if (e.key === 'Tab') {
+                        if (e.shiftKey) {
+                            if (document.activeElement === firstElement) {
+                                e.preventDefault();
+                                lastElement.focus();
+                            }
+                        } else {
+                            if (document.activeElement === lastElement) {
+                                e.preventDefault();
+                                firstElement.focus();
+                            }
+                        }
+                    }
+                    if (e.key === 'Escape') {
+                        const closeBtn = modal.querySelector('[aria-label*="Fechar"], [aria-label*="Close"]');
+                        if (closeBtn) closeBtn.click();
+                    }
+                });
+            }
+            
+            // Adicionar indicadores de progresso
+            function createProgressBar(container, value = 0, max = 100) {
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                progressBar.setAttribute('role', 'progressbar');
+                progressBar.setAttribute('aria-valuenow', value);
+                progressBar.setAttribute('aria-valuemin', '0');
+                progressBar.setAttribute('aria-valuemax', max);
+                progressBar.setAttribute('aria-label', 'Progresso');
+                
+                const fill = document.createElement('div');
+                fill.className = 'progress-bar-fill';
+                fill.style.width = `${(value / max) * 100}%`;
+                
+                progressBar.appendChild(fill);
+                if (container) {
+                    container.innerHTML = '';
+                    container.appendChild(progressBar);
+                }
+                
+                return {
+                    element: progressBar,
+                    update: function(newValue) {
+                        const percentage = (newValue / max) * 100;
+                        fill.style.width = `${percentage}%`;
+                        progressBar.setAttribute('aria-valuenow', newValue);
+                    }
+                };
+            }
+            
+            // Inicializar melhorias de acessibilidade
+            document.addEventListener('DOMContentLoaded', function() {
+                enhanceAccessibility();
+                
+                // Adicionar id="main-content" se não existir
+                if (!document.getElementById('main-content')) {
+                    const main = document.querySelector('main') || document.body;
+                    main.id = 'main-content';
+                    main.setAttribute('role', 'main');
+                }
+            });
+            
+            // Exportar funções
+            window.enhanceAccessibility = enhanceAccessibility;
+            window.enhanceModalAccessibility = enhanceModalAccessibility;
+            window.createProgressBar = createProgressBar;
+        })();
+        
+        // ============================================
+        // SISTEMA DE VALIDAÇÃO DE FORMULÁRIOS
+        // ============================================
+        (function() {
+            // Validadores
+            const validators = {
+                required: (value) => {
+                    if (typeof value === 'string') {
+                        return value.trim().length > 0;
+                    }
+                    return value !== null && value !== undefined && value !== '';
+                },
+                
+                email: (value) => {
+                    if (!value) return true; // Se vazio, não valida (usar required separadamente)
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(value);
+                },
+                
+                minLength: (value, min) => {
+                    if (!value) return true;
+                    return value.length >= min;
+                },
+                
+                maxLength: (value, max) => {
+                    if (!value) return true;
+                    return value.length <= max;
+                },
+                
+                password: (value) => {
+                    if (!value) return true;
+                    // Mínimo 6 caracteres
+                    return value.length >= 6;
+                },
+                
+                passwordMatch: (value, compareValue) => {
+                    if (!value) return true;
+                    return value === compareValue;
+                },
+                
+                phone: (value) => {
+                    if (!value) return true;
+                    // Remove caracteres não numéricos
+                    const digits = value.replace(/\D/g, '');
+                    return digits.length >= 10 && digits.length <= 11;
+                },
+                
+                number: (value) => {
+                    if (!value) return true;
+                    return !isNaN(value) && !isNaN(parseFloat(value));
+                },
+                
+                min: (value, min) => {
+                    if (!value) return true;
+                    const num = parseFloat(value);
+                    return !isNaN(num) && num >= min;
+                },
+                
+                max: (value, max) => {
+                    if (!value) return true;
+                    const num = parseFloat(value);
+                    return !isNaN(num) && num <= max;
+                },
+                
+                positive: (value) => {
+                    if (!value) return true;
+                    const num = parseFloat(value);
+                    return !isNaN(num) && num > 0;
+                }
+            };
+            
+            // Mensagens de erro padrão
+            const errorMessages = {
+                required: 'Este campo é obrigatório',
+                email: 'Email inválido',
+                minLength: (min) => `Mínimo de ${min} caracteres`,
+                maxLength: (max) => `Máximo de ${max} caracteres`,
+                password: 'Senha deve ter no mínimo 6 caracteres',
+                passwordMatch: 'As senhas não coincidem',
+                phone: 'Telefone inválido',
+                number: 'Digite um número válido',
+                min: (min) => `Valor mínimo: ${min}`,
+                max: (max) => `Valor máximo: ${max}`,
+                positive: 'Digite um valor positivo'
+            };
+            
+            // Validar campo individual
+            function validateField(input, rules = {}) {
+                const value = input.value;
+                const fieldName = input.name || input.id;
+                const formGroup = input.closest('.form-group') || input.parentElement;
+                let isValid = true;
+                let errorMessage = '';
+                
+                // Remover classes anteriores
+                input.classList.remove('valid', 'invalid');
+                formGroup?.classList.remove('has-error', 'has-success');
+                
+                // Remover mensagens anteriores
+                const existingError = formGroup?.querySelector('.form-error-message');
+                const existingSuccess = formGroup?.querySelector('.form-success-message');
+                if (existingError) existingError.remove();
+                if (existingSuccess) existingSuccess.remove();
+                
+                // Remover ícones anteriores
+                const existingIcon = formGroup?.querySelector('.form-input-icon');
+                if (existingIcon) existingIcon.remove();
+                
+                // Validar regras
+                for (const [rule, ruleValue] of Object.entries(rules)) {
+                    if (rule === 'required' && !validators.required(value)) {
+                        isValid = false;
+                        errorMessage = errorMessages.required;
+                        break;
+                    } else if (rule === 'email' && value && !validators.email(value)) {
+                        isValid = false;
+                        errorMessage = errorMessages.email;
+                        break;
+                    } else if (rule === 'minLength' && value && !validators.minLength(value, ruleValue)) {
+                        isValid = false;
+                        errorMessage = typeof errorMessages.minLength === 'function' 
+                            ? errorMessages.minLength(ruleValue) 
+                            : errorMessages.minLength;
+                        break;
+                    } else if (rule === 'maxLength' && value && !validators.maxLength(value, ruleValue)) {
+                        isValid = false;
+                        errorMessage = typeof errorMessages.maxLength === 'function' 
+                            ? errorMessages.maxLength(ruleValue) 
+                            : errorMessages.maxLength;
+                        break;
+                    } else if (rule === 'password' && value && !validators.password(value)) {
+                        isValid = false;
+                        errorMessage = errorMessages.password;
+                        break;
+                    } else if (rule === 'phone' && value && !validators.phone(value)) {
+                        isValid = false;
+                        errorMessage = errorMessages.phone;
+                        break;
+                    } else if (rule === 'number' && value && !validators.number(value)) {
+                        isValid = false;
+                        errorMessage = errorMessages.number;
+                        break;
+                    } else if (rule === 'min' && value && !validators.min(value, ruleValue)) {
+                        isValid = false;
+                        errorMessage = typeof errorMessages.min === 'function' 
+                            ? errorMessages.min(ruleValue) 
+                            : errorMessages.min;
+                        break;
+                    } else if (rule === 'max' && value && !validators.max(value, ruleValue)) {
+                        isValid = false;
+                        errorMessage = typeof errorMessages.max === 'function' 
+                            ? errorMessages.max(ruleValue) 
+                            : errorMessages.max;
+                        break;
+                    } else if (rule === 'positive' && value && !validators.positive(value)) {
+                        isValid = false;
+                        errorMessage = errorMessages.positive;
+                        break;
+                    }
+                }
+                
+                // Aplicar feedback visual
+                if (value && isValid) {
+                    input.classList.add('valid');
+                    formGroup?.classList.add('has-success');
+                    
+                    // Adicionar ícone de sucesso
+                    const successIcon = document.createElement('div');
+                    successIcon.className = 'form-input-icon valid-icon show';
+                    successIcon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                    formGroup?.appendChild(successIcon);
+                } else if (!isValid) {
+                    input.classList.add('invalid');
+                    formGroup?.classList.add('has-error');
+                    
+                    // Adicionar mensagem de erro
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'form-error-message show';
+                    errorDiv.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>${errorMessage}</span>
+                    `;
+                    formGroup?.appendChild(errorDiv);
+                    
+                    // Adicionar ícone de erro
+                    const errorIcon = document.createElement('div');
+                    errorIcon.className = 'form-input-icon invalid-icon show';
+                    errorIcon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                    formGroup?.appendChild(errorIcon);
+                }
+                
+                return isValid;
+            }
+            
+            // Validar formulário completo
+            function validateForm(form, rules = {}) {
+                const inputs = form.querySelectorAll('input, select, textarea');
+                let isFormValid = true;
+                
+                inputs.forEach(input => {
+                    const fieldRules = rules[input.name] || rules[input.id] || {};
+                    
+                    // Se o campo tem atributo required, adicionar validação
+                    if (input.hasAttribute('required') && !fieldRules.required) {
+                        fieldRules.required = true;
+                    }
+                    
+                    // Se o campo tem tipo email, adicionar validação
+                    if (input.type === 'email' && !fieldRules.email) {
+                        fieldRules.email = true;
+                    }
+                    
+                    if (Object.keys(fieldRules).length > 0) {
+                        const isValid = validateField(input, fieldRules);
+                        if (!isValid) {
+                            isFormValid = false;
+                        }
+                    }
+                });
+                
+                return isFormValid;
+            }
+            
+            // Inicializar validação em tempo real para um formulário
+            function initFormValidation(form, rules = {}, options = {}) {
+                const { validateOnBlur = true, validateOnInput = true, validateOnSubmit = true } = options;
+                
+                const inputs = form.querySelectorAll('input, select, textarea');
+                
+                inputs.forEach(input => {
+                    const fieldRules = rules[input.name] || rules[input.id] || {};
+                    
+                    // Adicionar classe form-input se não tiver
+                    if (!input.classList.contains('form-input')) {
+                        input.classList.add('form-input');
+                    }
+                    
+                    // Envolver em form-group se necessário
+                    if (!input.closest('.form-group')) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'form-group';
+                        input.parentNode.insertBefore(wrapper, input);
+                        wrapper.appendChild(input);
+                    }
+                    
+                    if (validateOnInput) {
+                        input.addEventListener('input', function() {
+                            // Aguardar um pouco para não validar a cada tecla
+                            clearTimeout(input.validationTimeout);
+                            input.validationTimeout = setTimeout(() => {
+                                validateField(input, fieldRules);
+                            }, 300);
+                        });
+                    }
+                    
+                    if (validateOnBlur) {
+                        input.addEventListener('blur', function() {
+                            validateField(input, fieldRules);
+                        });
+                    }
+                });
+                
+                if (validateOnSubmit) {
+                    form.addEventListener('submit', function(e) {
+                        const isValid = validateForm(form, rules);
+                        if (!isValid) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Focar no primeiro campo inválido
+                            const firstInvalid = form.querySelector('.invalid');
+                            if (firstInvalid) {
+                                firstInvalid.focus();
+                                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            
+                            showErrorToast('Por favor, corrija os erros no formulário', 'Erro de Validação');
+                            return false;
+                        }
+                    });
+                }
+            }
+            
+            // Exportar funções globais
+            window.validateField = validateField;
+            window.validateForm = validateForm;
+            window.initFormValidation = initFormValidation;
+            window.formValidators = validators;
+        })();
+        
+        // ============================================
+        // SISTEMA DE TRATAMENTO DE ERROS MELHORADO
+        // ============================================
+        (function() {
+            // Função para tratar erros de fetch de forma consistente
+            async function safeFetch(url, options = {}) {
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...options.headers
+                        }
+                    });
+                    
+                    // Verificar se a resposta é OK
+                    if (!response.ok) {
+                        let errorMessage = `Erro ${response.status}: ${response.statusText}`;
+                        
+                        // Tentar obter mensagem de erro do corpo da resposta
+                        try {
+                            const errorData = await response.json();
+                            if (errorData.error) {
+                                errorMessage = errorData.error;
+                            } else if (errorData.message) {
+                                errorMessage = errorData.message;
+                            }
+                        } catch (e) {
+                            // Se não conseguir parsear JSON, usar mensagem padrão
+                        }
+                        
+                        throw new Error(errorMessage);
+                    }
+                    
+                    // Tentar parsear JSON
+                    try {
+                        const data = await response.json();
+                        return { success: true, data, response };
+                    } catch (e) {
+                        // Se não for JSON, retornar texto
+                        const text = await response.text();
+                        return { success: true, data: text, response };
+                    }
+                } catch (error) {
+                    // Tratar diferentes tipos de erro
+                    let userMessage = 'Erro ao processar solicitação';
+                    
+                    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                        userMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+                    } else if (error.message) {
+                        userMessage = error.message;
+                    }
+                    
+                    console.error('Erro na requisição:', error);
+                    return { success: false, error: userMessage, originalError: error };
+                }
+            }
+            
+            // Função para executar operações assíncronas com tratamento de erro
+            async function safeAsyncOperation(operation, errorMessage = 'Erro ao executar operação') {
+                try {
+                    const result = await operation();
+                    return { success: true, data: result };
+                } catch (error) {
+                    console.error('Erro na operação:', error);
+                    
+                    let userMessage = errorMessage;
+                    if (error.message) {
+                        userMessage = error.message;
+                    }
+                    
+                    return { success: false, error: userMessage, originalError: error };
+                }
+            }
+            
+            // Exportar funções
+            window.safeFetch = safeFetch;
+            window.safeAsyncOperation = safeAsyncOperation;
+        })();
+        
+        // ============================================
+        // SISTEMA DE DEBUG CONDICIONAL
+        // ============================================
+        (function() {
+            // Verificar se está em modo desenvolvimento
+            // Pode ser alterado para verificar variável de ambiente ou configuração
+            const isDevelopment = window.location.hostname === 'localhost' || 
+                                 window.location.hostname === '127.0.0.1' ||
+                                 window.location.hostname.includes('localhost') ||
+                                 window.location.search.includes('debug=true');
+            
+            // Função de debug condicional
+            window.debugLog = function(...args) {
+                if (isDevelopment) {
+                    console.log(...args);
+                }
+            };
+            
+            // Manter console.error sempre ativo para erros críticos
+            // Mas podemos criar uma versão customizada se necessário
+        })();
+        
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw-manager.js')
                     .then((registration) => {
-                        console.log('✅ Service Worker registrado com sucesso:', registration.scope);
+                        debugLog('✅ Service Worker registrado com sucesso:', registration.scope);
                         
                         // Verificar atualizações periodicamente
                         setInterval(() => {
@@ -3887,10 +5127,10 @@ $v = time();
             const { outcome } = await deferredPrompt.userChoice;
             
             if (outcome === 'accepted') {
-                console.log('✅ PWA instalada pelo usuário');
+                debugLog('✅ PWA instalada pelo usuário');
                 hideInstallButton();
             } else {
-                console.log('❌ PWA não instalada');
+                debugLog('❌ PWA não instalada');
             }
             
             deferredPrompt = null;
@@ -3898,7 +5138,7 @@ $v = time();
         
         // Esconder botão se já estiver instalada
         window.addEventListener('appinstalled', () => {
-            console.log('✅ PWA instalada');
+            debugLog('✅ PWA instalada');
             hideInstallButton();
             deferredPrompt = null;
         });
@@ -3917,7 +5157,7 @@ $v = time();
         
         // Verificar se já está instalada como PWA
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            console.log('✅ PWA já instalada');
+            debugLog('✅ PWA já instalada');
             if (installButton) {
                 installButton.style.display = 'none';
             }
@@ -4284,7 +5524,7 @@ $v = time();
         let currentSubModal = null;
         
         function openSubModal(modalName) {
-            console.log('🔓 Abrindo submodal:', modalName);
+            debugLog('🔓 Abrindo submodal:', modalName);
             
             // Se for o modal de novilhas, abrir overlay diretamente
             if (modalName === 'heifers') {
@@ -4310,7 +5550,7 @@ $v = time();
                 modal.classList.add('show');
                 currentSubModal = modal;
                 // Não bloquear o scroll do body aqui, pois o modal principal já está aberto
-                console.log('✅ Submodal aberto:', modalName);
+                debugLog('✅ Submodal aberto:', modalName);
                 
                 // Se for o modal de animais, inicializar busca e filtros
                 if (modalName === 'animals') {
@@ -4331,7 +5571,7 @@ $v = time();
         }
         
         function closeSubModal(modalName) {
-            console.log('🔒 Fechando submodal:', modalName || 'atual');
+            debugLog('🔒 Fechando submodal:', modalName || 'atual');
             
             // Se for o overlay de novilhas, fechar usando a função específica
             if (modalName === 'heifers') {
@@ -4350,7 +5590,7 @@ $v = time();
             if (modal) {
                 modal.classList.remove('show');
                 currentSubModal = null;
-                console.log('✅ Submodal fechado');
+                debugLog('✅ Submodal fechado');
             }
         }
         
@@ -4379,7 +5619,7 @@ $v = time();
     <script>
         // Teste direto para verificar se os elementos existem
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 Verificando elementos...');
+            debugLog('🔍 Verificando elementos...');
             
             const elements = [
                 'todayVolume',
@@ -4393,15 +5633,15 @@ $v = time();
             
             elements.forEach(id => {
                 const el = document.getElementById(id);
-                console.log(`${id}:`, el ? '✅ Encontrado' : '❌ Não encontrado');
+                debugLog(`${id}:`, el ? '✅ Encontrado' : '❌ Não encontrado');
             });
             
             // Teste da API
-            console.log('🧪 Testando API...');
+            debugLog('🧪 Testando API...');
             fetch('./api/endpoints/dashboard.php')
                 .then(response => response.json())
                 .then(data => {
-                    console.log('✅ API funcionando:', data);
+                    debugLog('✅ API funcionando:', data);
                 })
                 .catch(error => {
                     console.error('❌ Erro na API:', error);
@@ -4457,7 +5697,7 @@ $v = time();
             // Inicializar
             window.addEventListener('load', function() {
                 if (checkForReturnFromMoreOptions()) {
-                    console.log('Dashboard restaurado - sem recarregamento');
+                    debugLog('Dashboard restaurado - sem recarregamento');
                 }
             });
             
@@ -4798,19 +6038,127 @@ $v = time();
         }
         
         // Formulário de adicionar usuário
-        document.getElementById('addUserForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            if (formData.get('password') !== formData.get('confirm_password')) {
-                alert('As senhas não coincidem!');
-                return;
+        // Inicializar validação do formulário de adicionar usuário
+        document.addEventListener('DOMContentLoaded', function() {
+            const addUserForm = document.getElementById('addUserForm');
+            if (addUserForm) {
+                // Regras de validação
+                const validationRules = {
+                    name: { required: true, minLength: 3 },
+                    email: { required: true, email: true },
+                    phone: { phone: true },
+                    password: { required: true, password: true, minLength: 6 },
+                    confirm_password: { 
+                        required: true,
+                        passwordMatch: true // Validação customizada será feita no submit
+                    },
+                    role: { required: true }
+                };
+                
+                // Inicializar validação em tempo real
+                initFormValidation(addUserForm, validationRules);
+                
+                // Validação customizada de confirmação de senha
+                const passwordInput = addUserForm.querySelector('input[name="password"]');
+                const confirmPasswordInput = addUserForm.querySelector('input[name="confirm_password"]');
+                
+                if (passwordInput && confirmPasswordInput) {
+                    confirmPasswordInput.addEventListener('blur', function() {
+                        const password = passwordInput.value;
+                        const confirmPassword = this.value;
+                        
+                        if (confirmPassword && password !== confirmPassword) {
+                            validateField(this, { passwordMatch: false });
+                            // Criar mensagem customizada
+                            const formGroup = this.closest('.form-group');
+                            const existingError = formGroup?.querySelector('.form-error-message');
+                            if (existingError) {
+                                existingError.innerHTML = `
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>As senhas não coincidem</span>
+                                `;
+                            }
+                        } else if (confirmPassword && password === confirmPassword) {
+                            validateField(this, {});
+                        }
+                    });
+                }
+                
+                // Submit handler melhorado
+                addUserForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // Validar formulário completo
+                    if (!validateForm(addUserForm, validationRules)) {
+                        return;
+                    }
+                    
+                    const formData = new FormData(this);
+                    
+                    // Validação adicional de senhas
+                    if (formData.get('password') !== formData.get('confirm_password')) {
+                        showErrorToast('As senhas não coincidem!', 'Erro de Validação');
+                        if (confirmPasswordInput) {
+                            validateField(confirmPasswordInput, { passwordMatch: false });
+                            confirmPasswordInput.focus();
+                        }
+                        return;
+                    }
+                    
+                    // Desabilitar botão e mostrar loading
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn?.textContent;
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('btn-loading');
+                        submitBtn.textContent = 'Salvando...';
+                    }
+                    
+                    try {
+                        // Preparar dados
+                        const data = {
+                            name: formData.get('name'),
+                            email: formData.get('email'),
+                            phone: formData.get('phone') || null,
+                            password: formData.get('password'),
+                            role: formData.get('role')
+                        };
+                        
+                        // Enviar para API
+                        const result = await safeFetch('./api/actions.php?action=add_user', {
+                            method: 'POST',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (result.success && result.data) {
+                            showSuccessToast('Usuário adicionado com sucesso!', 'Sucesso');
+                            addUserForm.reset();
+                            // Remover classes de validação
+                            addUserForm.querySelectorAll('.valid, .invalid').forEach(el => {
+                                el.classList.remove('valid', 'invalid');
+                            });
+                            addUserForm.querySelectorAll('.form-group').forEach(el => {
+                                el.classList.remove('has-error', 'has-success');
+                            });
+                            closeAddUserModal();
+                        } else {
+                            showErrorToast(result.error || 'Erro ao adicionar usuário', 'Erro');
+                        }
+                    } catch (error) {
+                        console.error('Erro ao adicionar usuário:', error);
+                        showErrorToast('Erro ao adicionar usuário. Tente novamente.', 'Erro');
+                    } finally {
+                        // Reabilitar botão
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('btn-loading');
+                            submitBtn.textContent = originalText;
+                        }
+                    }
+                });
             }
-            
-            // Implementar envio do formulário
-            alert('Usuário adicionado com sucesso!');
-            closeAddUserModal();
         });
         
         // Exportar funções globais
@@ -4878,14 +6226,14 @@ $v = time();
         
         // Sistema de controle de abas
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔧 Configurando controle das abas...');
+            debugLog('🔧 Configurando controle das abas...');
             
             // Selecionar todos os botões de navegação
             const navButtons = document.querySelectorAll('.nav-item[data-tab]');
             const tabContents = document.querySelectorAll('.tab-content');
             
-            console.log('🔍 Botões encontrados:', navButtons.length);
-            console.log('🔍 Conteúdos encontrados:', tabContents.length);
+            debugLog('🔍 Botões encontrados:', navButtons.length);
+            debugLog('🔍 Conteúdos encontrados:', tabContents.length);
             
             // Adicionar event listener para cada botão
             navButtons.forEach(button => {
@@ -4895,7 +6243,7 @@ $v = time();
                 });
             });
             
-            console.log('✅ Controle das abas configurado!');
+            debugLog('✅ Controle das abas configurado!');
         });
         
         // Função para mudar de aba (usada tanto pelo menu superior quanto inferior)
@@ -5100,29 +6448,29 @@ $v = time();
         
         // Funções para o modal Mais Opções
         function openMoreOptionsModal() {
-            console.log('🔓 Tentando abrir modal Mais Opções...');
+            debugLog('🔓 Tentando abrir modal Mais Opções...');
             const modal = document.getElementById('moreOptionsModal');
             if (!modal) {
                 console.error('❌ Modal maisOptionsModal não encontrado!');
-                alert('Erro: Modal não encontrado. Verifique o console para mais detalhes.');
+                showErrorToast('Modal não encontrado. Por favor, recarregue a página.', 'Erro');
                 return;
             }
-            console.log('✅ Modal encontrado, removendo classe hidden...');
+            debugLog('✅ Modal encontrado, removendo classe hidden...');
             // Remover hidden e garantir display block
             modal.classList.remove('hidden');
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
-            console.log('✅ Modal Mais Opções aberto!');
+            debugLog('✅ Modal Mais Opções aberto!');
         }
         
         function closeMoreOptionsModal() {
-            console.log('🔒 Fechando modal Mais Opções...');
+            debugLog('🔒 Fechando modal Mais Opções...');
             const modal = document.getElementById('moreOptionsModal');
             if (modal) {
                 modal.classList.add('hidden');
                 modal.style.display = 'none';
                 document.body.style.overflow = 'auto';
-                console.log('✅ Modal fechado!');
+                debugLog('✅ Modal fechado!');
             }
         }
         
@@ -5144,7 +6492,7 @@ $v = time();
         document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('moreOptionsModal');
             if (modal) {
-                console.log('✅ Modal Mais Opções encontrado e pronto!');
+                debugLog('✅ Modal Mais Opções encontrado e pronto!');
                 // Garantir que está oculto inicialmente
                 modal.classList.add('hidden');
                 modal.style.display = 'none';
@@ -5154,7 +6502,7 @@ $v = time();
             
             // Testar função
             if (typeof window.openMoreOptionsModal === 'function') {
-                console.log('✅ Função openMoreOptionsModal está disponível globalmente');
+                debugLog('✅ Função openMoreOptionsModal está disponível globalmente');
             } else {
                 console.error('❌ Função openMoreOptionsModal NÃO está disponível globalmente!');
             }
@@ -5692,21 +7040,36 @@ $v = time();
         // Carregar estatísticas
         async function bullsLoadStatistics() {
             try {
-                const response = await fetch(`${BULLS_API_BASE}?action=statistics`);
-                const result = await response.json();
+                const result = await safeFetch(`${BULLS_API_BASE}?action=statistics`);
                 
                 if (result.success && result.data) {
                     const stats = result.data;
                     
-                    document.getElementById('bulls-stat-total').textContent = stats.total_bulls || 0;
-                    document.getElementById('bulls-stat-breeding').textContent = stats.breeding_bulls || 0;
-                    document.getElementById('bulls-stat-efficiency').textContent = 
-                        stats.avg_efficiency ? stats.avg_efficiency.toFixed(1) + '%' : '-';
-                    document.getElementById('bulls-stat-semen').textContent = 
-                        (stats.semen && stats.semen.total_available) ? stats.semen.total_available : 0;
+                    const totalEl = document.getElementById('bulls-stat-total');
+                    const breedingEl = document.getElementById('bulls-stat-breeding');
+                    const efficiencyEl = document.getElementById('bulls-stat-efficiency');
+                    const semenEl = document.getElementById('bulls-stat-semen');
+                    
+                    if (totalEl) totalEl.textContent = stats.total_bulls || 0;
+                    if (breedingEl) breedingEl.textContent = stats.breeding_bulls || 0;
+                    if (efficiencyEl) {
+                        efficiencyEl.textContent = stats.avg_efficiency 
+                            ? stats.avg_efficiency.toFixed(1) + '%' 
+                            : '-';
+                    }
+                    if (semenEl) {
+                        semenEl.textContent = (stats.semen && stats.semen.total_available) 
+                            ? stats.semen.total_available 
+                            : 0;
+                    }
+                } else {
+                    debugLog('Erro ao carregar estatísticas:', result.error);
+                    // Não mostrar toast para erros de carregamento de estatísticas
+                    // para não incomodar o usuário
                 }
             } catch (error) {
                 console.error('Erro ao carregar estatísticas:', error);
+                debugLog('Erro crítico ao carregar estatísticas:', error);
             }
         }
 
@@ -5716,7 +7079,11 @@ $v = time();
             const loading = document.getElementById('bulls-loading');
             const emptyState = document.getElementById('bulls-empty-state');
             
-            if (container) container.innerHTML = '';
+            // Mostrar skeleton loader
+            if (container) {
+                container.innerHTML = '';
+                showSkeleton(container, 'card', 6);
+            }
             if (loading) loading.classList.remove('hidden');
             if (emptyState) emptyState.classList.add('hidden');
             
@@ -5728,19 +7095,42 @@ $v = time();
                     status: bullsFilters.status || ''
                 });
                 
-                const response = await fetch(`${BULLS_API_BASE}?${params.toString()}`);
-                const result = await response.json();
+                const result = await safeFetch(`${BULLS_API_BASE}?${params.toString()}`);
                 
                 if (result.success && result.data) {
                     // A API retorna { data: [...], pagination: {...} }
-                    bullsData = Array.isArray(result.data) ? result.data : (result.data.data || result.data.bulls || []);
+                    bullsData = Array.isArray(result.data) 
+                        ? result.data 
+                        : (result.data.data || result.data.bulls || []);
+                    
+                    // Remover skeleton loaders antes de renderizar
+                    if (container) {
+                        hideSkeleton(container);
+                    }
+                    
                     renderBullsCards(bullsData);
                 } else {
+                    // Remover skeleton loaders
+                    if (container) {
+                        hideSkeleton(container);
+                    }
                     showBullsEmptyState();
+                    // Mostrar erro apenas se não for uma busca vazia
+                    if (bullsFilters.search || bullsFilters.breed || bullsFilters.status) {
+                        showErrorToast(
+                            result.error || 'Erro ao carregar touros. Tente novamente.',
+                            'Erro'
+                        );
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar touros:', error);
+                // Remover skeleton loaders em caso de erro
+                if (container) {
+                    hideSkeleton(container);
+                }
                 showBullsEmptyState();
+                showErrorToast('Erro ao carregar touros. Verifique sua conexão.', 'Erro de Conexão');
             } finally {
                 if (loading) loading.classList.add('hidden');
             }
@@ -5827,23 +7217,36 @@ $v = time();
         }
 
         async function loadBullDetailsData(bullId) {
+            if (!bullId) {
+                showErrorToast('ID do touro não fornecido', 'Erro');
+                return;
+            }
+            
             // Armazenar ID no modal para uso posterior
-            document.getElementById('bull-details-modal-fullscreen').dataset.bullId = bullId;
+            const modal = document.getElementById('bull-details-modal-fullscreen');
+            if (modal) {
+                modal.dataset.bullId = bullId;
+            }
             
             try {
-                const response = await fetch(`${BULLS_API_BASE}?action=get&id=${bullId}`);
-                const result = await response.json();
+                const result = await safeFetch(`${BULLS_API_BASE}?action=get&id=${bullId}`);
                 
                 if (result.success && result.data) {
                     const bull = result.data;
                     renderBullDetailsInfo(bull);
                 } else {
-                    alert('Erro ao carregar dados do touro');
+                    showErrorToast(
+                        result.error || 'Erro ao carregar dados do touro. Tente novamente.',
+                        'Erro'
+                    );
                     closeBullDetailsModal();
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados do touro:', error);
-                alert('Erro ao carregar dados do touro');
+                showErrorToast(
+                    'Erro ao carregar dados do touro. Verifique sua conexão.',
+                    'Erro de Conexão'
+                );
                 closeBullDetailsModal();
             }
         }
@@ -5934,61 +7337,82 @@ $v = time();
         }
 
         async function editBullFromDetails() {
-            const bullId = document.getElementById('bull-details-modal-fullscreen').dataset.bullId;
-            if (!bullId) return;
+            const modal = document.getElementById('bull-details-modal-fullscreen');
+            const bullId = modal?.dataset?.bullId;
+            
+            if (!bullId) {
+                showErrorToast('ID do touro não encontrado', 'Erro');
+                return;
+            }
             
             try {
-                const response = await fetch(`${BULLS_API_BASE}?action=get&id=${bullId}`);
-                const result = await response.json();
+                const result = await safeFetch(`${BULLS_API_BASE}?action=get&id=${bullId}`);
                 
                 if (result.success && result.data) {
                     const bull = result.data;
                     
-                    // Preencher formulário
-                    document.getElementById('bull-id').value = bull.id;
-                    document.getElementById('bull-number').value = bull.bull_number || '';
-                    document.getElementById('bull-name').value = bull.name || '';
-                    document.getElementById('bull-breed').value = bull.breed || '';
-                    document.getElementById('bull-birth-date').value = bull.birth_date || '';
-                    document.getElementById('bull-rfid').value = bull.rfid_code || '';
-                    document.getElementById('bull-earring').value = bull.earring_number || '';
-                    document.getElementById('bull-status').value = bull.status || 'ativo';
-                    document.getElementById('bull-source').value = bull.source || 'proprio';
-                    document.getElementById('bull-location').value = bull.location || '';
-                    document.getElementById('bull-breeding-active').value = bull.is_breeding_active ? '1' : '0';
-                    document.getElementById('bull-weight').value = bull.weight || '';
-                    document.getElementById('bull-body-score').value = bull.body_score || '';
-                    document.getElementById('bull-sire').value = bull.sire || '';
-                    document.getElementById('bull-dam').value = bull.dam || '';
-                    document.getElementById('bull-grandsire-father').value = bull.grandsire_father || '';
-                    document.getElementById('bull-granddam-father').value = bull.granddam_father || '';
-                    document.getElementById('bull-grandsire-mother').value = bull.grandsire_mother || '';
-                    document.getElementById('bull-granddam-mother').value = bull.granddam_mother || '';
-                    document.getElementById('bull-genetic-code').value = bull.genetic_code || '';
-                    document.getElementById('bull-genetic-merit').value = bull.genetic_merit || '';
-                    document.getElementById('bull-milk-index').value = bull.milk_production_index || '';
-                    document.getElementById('bull-fat-index').value = bull.fat_production_index || '';
-                    document.getElementById('bull-protein-index').value = bull.protein_production_index || '';
-                    document.getElementById('bull-fertility-index').value = bull.fertility_index || '';
-                    document.getElementById('bull-health-index').value = bull.health_index || '';
-                    document.getElementById('bull-genetic-evaluation').value = bull.genetic_evaluation || '';
-                    document.getElementById('bull-behavior-notes').value = bull.behavior_notes || '';
-                    document.getElementById('bull-aptitude-notes').value = bull.aptitude_notes || '';
-                    document.getElementById('bull-notes').value = bull.notes || '';
+                    // Preencher formulário com verificações de segurança
+                    const setValue = (id, value) => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = value || '';
+                    };
+                    
+                    setValue('bull-id', bull.id);
+                    setValue('bull-number', bull.bull_number);
+                    setValue('bull-name', bull.name);
+                    setValue('bull-breed', bull.breed);
+                    setValue('bull-birth-date', bull.birth_date);
+                    setValue('bull-rfid', bull.rfid_code);
+                    setValue('bull-earring', bull.earring_number);
+                    setValue('bull-status', bull.status || 'ativo');
+                    setValue('bull-source', bull.source || 'proprio');
+                    setValue('bull-location', bull.location);
+                    setValue('bull-breeding-active', bull.is_breeding_active ? '1' : '0');
+                    setValue('bull-weight', bull.weight);
+                    setValue('bull-body-score', bull.body_score);
+                    setValue('bull-sire', bull.sire);
+                    setValue('bull-dam', bull.dam);
+                    setValue('bull-grandsire-father', bull.grandsire_father);
+                    setValue('bull-granddam-father', bull.granddam_father);
+                    setValue('bull-grandsire-mother', bull.grandsire_mother);
+                    setValue('bull-granddam-mother', bull.granddam_mother);
+                    setValue('bull-genetic-code', bull.genetic_code);
+                    setValue('bull-genetic-merit', bull.genetic_merit);
+                    setValue('bull-milk-index', bull.milk_production_index);
+                    setValue('bull-fat-index', bull.fat_production_index);
+                    setValue('bull-protein-index', bull.protein_production_index);
+                    setValue('bull-fertility-index', bull.fertility_index);
+                    setValue('bull-health-index', bull.health_index);
+                    setValue('bull-genetic-evaluation', bull.genetic_evaluation);
+                    setValue('bull-behavior-notes', bull.behavior_notes);
+                    setValue('bull-aptitude-notes', bull.aptitude_notes);
+                    setValue('bull-notes', bull.notes);
                     
                     // Atualizar título
-                    document.getElementById('bull-modal-title').textContent = 'Editar Touro';
+                    const titleEl = document.getElementById('bull-modal-title');
+                    if (titleEl) titleEl.textContent = 'Editar Touro';
                     
                     // Fechar modal de detalhes e abrir modal de edição
                     closeBullDetailsModal();
-                    document.getElementById('bull-modal').classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
+                    const editModal = document.getElementById('bull-modal');
+                    if (editModal) {
+                        editModal.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        showErrorToast('Modal de edição não encontrado', 'Erro');
+                    }
                 } else {
-                    alert('Erro ao carregar dados do touro para edição');
+                    showErrorToast(
+                        result.error || 'Erro ao carregar dados do touro para edição. Tente novamente.',
+                        'Erro'
+                    );
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados do touro:', error);
-                alert('Erro ao carregar dados do touro para edição');
+                showErrorToast(
+                    'Erro ao carregar dados do touro para edição. Verifique sua conexão.',
+                    'Erro de Conexão'
+                );
             }
         }
 
@@ -6161,34 +7585,40 @@ $v = time();
                             }
                         }
                         
+                        // Validações básicas
+                        if (!data.bull_number && !data.name) {
+                            showErrorToast('Informe pelo menos o número ou nome do touro', 'Erro de Validação');
+                            return;
+                        }
+                        
                         // Converter is_breeding_active para int
                         if (data.is_breeding_active !== undefined) {
                             data.is_breeding_active = data.is_breeding_active === '1' ? 1 : 0;
                         }
                         
-                        // Converter campos numéricos
-                        if (data.weight) data.weight = parseFloat(data.weight);
-                        if (data.body_score) data.body_score = parseFloat(data.body_score);
-                        if (data.genetic_merit) data.genetic_merit = parseFloat(data.genetic_merit);
-                        if (data.milk_production_index) data.milk_production_index = parseFloat(data.milk_production_index);
-                        if (data.fat_production_index) data.fat_production_index = parseFloat(data.fat_production_index);
-                        if (data.protein_production_index) data.protein_production_index = parseFloat(data.protein_production_index);
-                        if (data.fertility_index) data.fertility_index = parseFloat(data.fertility_index);
-                        if (data.health_index) data.health_index = parseFloat(data.health_index);
+                        // Converter campos numéricos com validação
+                        try {
+                            if (data.weight) data.weight = parseFloat(data.weight);
+                            if (data.body_score) data.body_score = parseFloat(data.body_score);
+                            if (data.genetic_merit) data.genetic_merit = parseFloat(data.genetic_merit);
+                            if (data.milk_production_index) data.milk_production_index = parseFloat(data.milk_production_index);
+                            if (data.fat_production_index) data.fat_production_index = parseFloat(data.fat_production_index);
+                            if (data.protein_production_index) data.protein_production_index = parseFloat(data.protein_production_index);
+                            if (data.fertility_index) data.fertility_index = parseFloat(data.fertility_index);
+                            if (data.health_index) data.health_index = parseFloat(data.health_index);
+                        } catch (parseError) {
+                            showErrorToast('Erro ao processar valores numéricos. Verifique os campos.', 'Erro de Validação');
+                            return;
+                        }
                         
                         const bullId = data.id;
                         const action = bullId ? 'update' : 'create';
                         const method = bullId ? 'PUT' : 'POST';
                         
-                        const response = await fetch(`${BULLS_API_BASE}?action=${action}`, {
+                        const result = await safeFetch(`${BULLS_API_BASE}?action=${action}`, {
                             method: method,
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
                             body: JSON.stringify(data)
                         });
-                        
-                        const result = await response.json();
                         
                         if (result.success) {
                             // Fechar modal e recarregar lista
@@ -6197,13 +7627,22 @@ $v = time();
                             bullsLoadStatistics();
                             
                             // Mostrar mensagem de sucesso
-                            alert(bullId ? 'Touro atualizado com sucesso!' : 'Touro cadastrado com sucesso!');
+                            showSuccessToast(
+                                bullId ? 'Touro atualizado com sucesso!' : 'Touro cadastrado com sucesso!',
+                                'Sucesso'
+                            );
                         } else {
-                            alert('Erro: ' + (result.error || 'Erro ao salvar touro'));
+                            showErrorToast(
+                                result.error || 'Erro ao salvar touro. Verifique os dados e tente novamente.',
+                                'Erro'
+                            );
                         }
                     } catch (error) {
                         console.error('Erro ao salvar touro:', error);
-                        alert('Erro ao salvar touro. Verifique o console para mais detalhes.');
+                        showErrorToast(
+                            'Erro ao salvar touro. Verifique sua conexão e tente novamente.',
+                            'Erro de Conexão'
+                        );
                     } finally {
                         // Reabilitar botão e esconder loading
                         submitBtn.disabled = false;
