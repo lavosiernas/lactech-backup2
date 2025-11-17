@@ -8574,10 +8574,120 @@ async function registerCurrentSession() {
             // Ignorar erro, usar IP do servidor
         }
         
+        // Tentar obter geolocalização precisa do navegador
+        // Verificar se já temos permissão antes de solicitar
+        let gpsCoords = null;
+        try {
+            if (navigator.geolocation) {
+                // Verificar permissão primeiro
+                if (navigator.permissions) {
+                    try {
+                        const permission = await navigator.permissions.query({ name: 'geolocation' });
+                        if (permission.state === 'granted') {
+                            // Já tem permissão, obter localização silenciosamente
+                            gpsCoords = await new Promise((resolve) => {
+                                const timeout = setTimeout(() => resolve(null), 5000);
+                                
+                                navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                        clearTimeout(timeout);
+                                        resolve({
+                                            latitude: position.coords.latitude,
+                                            longitude: position.coords.longitude,
+                                            accuracy: position.coords.accuracy
+                                        });
+                                    },
+                                    () => {
+                                        clearTimeout(timeout);
+                                        resolve(null);
+                                    },
+                                    {
+                                        enableHighAccuracy: true,
+                                        timeout: 5000,
+                                        maximumAge: 0
+                                    }
+                                );
+                            });
+                        } else if (permission.state === 'prompt') {
+                            // Mostrar modal de permissão
+                            if (typeof openLocationPermissionModal === 'function') {
+                                gpsCoords = await new Promise((resolve) => {
+                                    openLocationPermissionModal((coords) => {
+                                        resolve(coords);
+                                    }, 'register');
+                                });
+                            }
+                        }
+                        // Se permission.state === 'denied', não fazer nada (usar IP)
+                    } catch (e) {
+                        // API de permissões não suportada, tentar obter silenciosamente
+                        gpsCoords = await new Promise((resolve) => {
+                            const timeout = setTimeout(() => resolve(null), 5000);
+                            
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => {
+                                    clearTimeout(timeout);
+                                    resolve({
+                                        latitude: position.coords.latitude,
+                                        longitude: position.coords.longitude,
+                                        accuracy: position.coords.accuracy
+                                    });
+                                },
+                                () => {
+                                    clearTimeout(timeout);
+                                    resolve(null);
+                                },
+                                {
+                                    enableHighAccuracy: true,
+                                    timeout: 5000,
+                                    maximumAge: 0
+                                }
+                            );
+                        });
+                    }
+                } else {
+                    // API de permissões não suportada, tentar obter silenciosamente
+                    gpsCoords = await new Promise((resolve) => {
+                        const timeout = setTimeout(() => resolve(null), 5000);
+                        
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                clearTimeout(timeout);
+                                resolve({
+                                    latitude: position.coords.latitude,
+                                    longitude: position.coords.longitude,
+                                    accuracy: position.coords.accuracy
+                                });
+                            },
+                            () => {
+                                clearTimeout(timeout);
+                                resolve(null);
+                            },
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 0
+                            }
+                        );
+                    });
+                }
+            }
+        } catch (e) {
+            // Ignorar erro de geolocalização
+            console.log('Geolocalização não disponível:', e);
+        }
+        
         const formData = new FormData();
         formData.append('action', 'register_session');
         if (publicIP) {
             formData.append('public_ip', publicIP);
+        }
+        if (gpsCoords) {
+            formData.append('gps_latitude', gpsCoords.latitude);
+            formData.append('gps_longitude', gpsCoords.longitude);
+            if (gpsCoords.accuracy) {
+                formData.append('gps_accuracy', gpsCoords.accuracy);
+            }
         }
         
         await fetch('./api/actions.php', {

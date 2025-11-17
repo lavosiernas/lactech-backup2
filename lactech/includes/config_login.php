@@ -328,6 +328,33 @@ function changePassword($userId, $currentPassword, $newPassword) {
         $updateStmt = $db->prepare("UPDATE users SET password = ?, password_changed_at = CURRENT_TIMESTAMP, password_change_required = 0 WHERE id = ?");
         $updateStmt->execute([$hashedPassword, $userId]);
         
+        // Registrar na tabela de auditoria se existir
+        try {
+            $ipAddress = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+            $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            
+            // Verificar se a tabela existe
+            $checkStmt = $db->prepare("SHOW TABLES LIKE 'security_audit_log'");
+            $checkStmt->execute();
+            $tableExists = $checkStmt->rowCount() > 0;
+            
+            if ($tableExists) {
+                $auditStmt = $db->prepare("
+                    INSERT INTO security_audit_log (
+                        user_id, action, description, ip_address, user_agent, 
+                        success, metadata
+                    ) VALUES (
+                        ?, 'password_changed', 'Senha alterada com sucesso', 
+                        ?, ?, 1, NULL
+                    )
+                ");
+                $auditStmt->execute([$userId, $ipAddress, $userAgent]);
+            }
+        } catch (Exception $e) {
+            // Se a tabela não existir, apenas logar o erro mas não falhar
+            error_log("Aviso: Não foi possível registrar na tabela de auditoria: " . $e->getMessage());
+        }
+        
         return ['success' => true, 'message' => 'Senha alterada com sucesso'];
         
     } catch (PDOException $e) {

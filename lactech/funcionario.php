@@ -6758,7 +6758,7 @@
                             </svg>
                             <span>Atualizar</span>
                         </button>
-                        <button onclick="window.open('solicitar-alteracao-senha.php', '_blank')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                        <button onclick="window.open('esqueceu-senha.php', '_blank')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -6785,7 +6785,7 @@
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Nenhuma solicitação encontrada</h3>
                     <p class="text-gray-500 mb-6">Você ainda não fez nenhuma solicitação de alteração de senha</p>
-                    <button onclick="window.open('solicitar-alteracao-senha.php', '_blank')" class="px-6 py-3 bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-lg transition-colors flex items-center space-x-2 mx-auto">
+                    <button onclick="window.open('esqueceu-senha.php', '_blank')" class="px-6 py-3 bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-lg transition-colors flex items-center space-x-2 mx-auto">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                         </svg>

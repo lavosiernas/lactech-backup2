@@ -14,6 +14,22 @@ class OfflineManager {
         this.connectionQuality = 'unknown'; // 'good', 'poor', 'unknown'
         this.connectionCheckInterval = null;
         this.offlineNotificationInterval = null; // Timer para notificações offline
+        this.lastSyncTime = 0;
+        this.syncProgress = { current: 0, total: 0 };
+        this.maxRetries = 5; // Aumentado de 3 para 5
+        this.batchSize = 5; // Sincronizar até 5 registros por vez
+        this.latencyHistory = []; // Histórico de latências para cálculo adaptativo
+        this.priorityTypes = {
+            'delete_all_volume': 1,
+            'restore_volume': 1,
+            'create_user': 2,
+            'update_user': 2,
+            'delete_user': 2,
+            'volume_general': 3,
+            'volume_animal': 3,
+            'quality': 4,
+            'financial': 4
+        };
         
         this.init();
     }
@@ -72,12 +88,8 @@ class OfflineManager {
             this.sync();
         }
         
-        // Verificar conexão periodicamente
-        this.syncInterval = setInterval(() => {
-            if (this.isOnline && !this.forceOffline && this.queue.length > 0) {
-                this.sync();
-            }
-        }, 30000); // A cada 30 segundos
+        // Verificar conexão periodicamente com intervalo adaptativo
+        this.startAdaptiveSyncInterval();
         
         // Iniciar timer de notificações offline (a cada 5 minutos)
         this.startOfflineNotificationTimer();
@@ -111,6 +123,74 @@ class OfflineManager {
             clearInterval(this.offlineNotificationInterval);
             this.offlineNotificationInterval = null;
         }
+    }
+    
+    startAdaptiveSyncInterval() {
+        // Limpar intervalo anterior se existir
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+        }
+        
+        // Calcular intervalo baseado na qualidade da conexão e quantidade de registros
+        let interval = 30000; // Padrão: 30 segundos
+        
+        if (this.connectionQuality === 'good' && this.queue.length > 0) {
+            // Conexão boa: sincronizar mais frequentemente
+            interval = 10000; // 10 segundos
+        } else if (this.connectionQuality === 'poor' && this.queue.length > 0) {
+            // Conexão ruim: sincronizar menos frequentemente
+            interval = 60000; // 60 segundos
+        } else if (this.queue.length === 0) {
+            // Sem registros: verificar menos frequentemente
+            interval = 120000; // 2 minutos
+        }
+        
+        this.syncInterval = setInterval(() => {
+            if (this.isOnline && !this.forceOffline && this.queue.length > 0) {
+                this.sync();
+            }
+        }, interval);
+    }
+    
+    calculateBackoffDelay(retries) {
+        // Backoff exponencial: 2^retries segundos, máximo 60 segundos
+        const delay = Math.min(Math.pow(2, retries) * 1000, 60000);
+        // Adicionar jitter aleatório para evitar sincronização simultânea
+        const jitter = Math.random() * 1000;
+        return delay + jitter;
+    }
+    
+    sortQueueByPriority() {
+        // Ordenar fila por prioridade (menor número = maior prioridade)
+        this.queue.sort((a, b) => {
+            const priorityA = this.priorityTypes[a.type] || 5;
+            const priorityB = this.priorityTypes[b.type] || 5;
+            
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+            }
+            
+            // Se mesma prioridade, ordenar por timestamp (mais antigo primeiro)
+            return new Date(a.timestamp) - new Date(b.timestamp);
+        });
+    }
+    
+    validateRecord(record) {
+        // Validar se o registro ainda é válido antes de sincronizar
+        if (!record || !record.data || !record.type) {
+            return false;
+        }
+        
+        // Verificar se o registro não é muito antigo (opcional: máximo 30 dias)
+        const recordAge = Date.now() - new Date(record.timestamp).getTime();
+        const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dias em milissegundos
+        
+        if (recordAge > maxAge) {
+            console.warn(`Registro ${record.id} muito antigo, removendo da fila`);
+            return false;
+        }
+        
+        return true;
     }
     
     showOfflineNotification() {
@@ -149,29 +229,45 @@ class OfflineManager {
             const endTime = performance.now();
             const latency = endTime - startTime;
             
+            // Adicionar latência ao histórico (manter últimas 10 medições)
+            this.latencyHistory.push(latency);
+            if (this.latencyHistory.length > 10) {
+                this.latencyHistory.shift();
+            }
+            
+            // Calcular latência média
+            const avgLatency = this.latencyHistory.reduce((a, b) => a + b, 0) / this.latencyHistory.length;
+            
             if (response.ok) {
-                // Se a latência for maior que 3 segundos (aumentado o threshold), considerar conexão ruim
-                if (latency > 3000) {
+                // Usar latência média para decisão mais estável
+                if (avgLatency > 3000 || latency > 5000) {
                     this.connectionQuality = 'poor';
                     // Ativar modo offline automaticamente se conexão estiver muito lenta
                     // Mas só se realmente estiver lenta repetidamente (não na primeira verificação)
-                    if (!this.forceOffline && this.connectionCheckInterval) {
-                        // Só ativar se já estiver verificando há um tempo (não na primeira carga)
-                        this.forceOffline = true;
-                        localStorage.setItem('lactech_force_offline', 'true');
-                        this.showNotification('Conexão lenta detectada. Modo offline ativado automaticamente.', 'warning');
-                        this.updateUI();
+                    if (!this.forceOffline && this.connectionCheckInterval && this.latencyHistory.length >= 3) {
+                        // Só ativar se já tiver pelo menos 3 medições ruins
+                        const recentPoor = this.latencyHistory.slice(-3).filter(l => l > 3000).length;
+                        if (recentPoor >= 2) {
+                            this.forceOffline = true;
+                            localStorage.setItem('lactech_force_offline', 'true');
+                            this.showNotification('Conexão lenta detectada. Modo offline ativado automaticamente.', 'warning');
+                            this.updateUI();
+                            this.startAdaptiveSyncInterval(); // Atualizar intervalo
+                        }
                     }
                 } else {
                     this.connectionQuality = 'good';
                     // Se estava forçado offline mas agora a conexão melhorou, desativar modo offline
                     // Mas só se não houver registros pendentes (para não interromper sincronização)
-                    if (this.forceOffline && latency < 1000 && this.queue.length === 0) {
+                    if (this.forceOffline && avgLatency < 1000 && this.queue.length === 0) {
                         this.toggleOfflineMode(false);
                     }
+                    // Atualizar intervalo de sincronização
+                    this.startAdaptiveSyncInterval();
                 }
             } else {
                 this.connectionQuality = 'poor';
+                this.startAdaptiveSyncInterval();
             }
         } catch (error) {
             // Erro na verificação = conexão ruim ou offline (incluindo timeout)
@@ -227,8 +323,13 @@ class OfflineManager {
             this.stopOfflineNotificationTimer();
             // Tentar sincronizar imediatamente
             if (this.queue.length > 0) {
-                this.sync();
+                // Aguardar um pouco para garantir que a conexão está estável
+                setTimeout(() => {
+                    this.sync();
+                }, 1000);
             }
+            // Atualizar intervalo de sincronização
+            this.startAdaptiveSyncInterval();
         }
     }
     
@@ -237,6 +338,17 @@ class OfflineManager {
             const stored = localStorage.getItem(this.storageKey);
             if (stored) {
                 this.queue = JSON.parse(stored);
+                // Garantir que todos os registros tenham nextRetryTime
+                const now = Date.now();
+                this.queue.forEach(record => {
+                    if (!record.nextRetryTime || record.nextRetryTime < now) {
+                        record.nextRetryTime = now;
+                    }
+                    if (!record.priority) {
+                        record.priority = this.priorityTypes[record.type] || 5;
+                    }
+                });
+                this.sortQueueByPriority();
             }
         } catch (e) {
             console.error('Erro ao carregar fila offline:', e);
@@ -277,6 +389,8 @@ class OfflineManager {
                         this.sync();
                     }
                 }, 2000);
+                // Atualizar intervalo de sincronização
+                this.startAdaptiveSyncInterval();
             } else {
                 // Mesmo online, se estiver forçado offline, manter modo offline e iniciar timer
                 this.updateUI();
@@ -322,10 +436,13 @@ class OfflineManager {
             endpoint: endpoint || './api/actions.php',
             timestamp: new Date().toISOString(),
             retries: 0,
-            hasFiles: hasFiles
+            hasFiles: hasFiles,
+            nextRetryTime: Date.now(), // Tempo para próxima tentativa
+            priority: this.priorityTypes[type] || 5
         };
         
         this.queue.push(record);
+        this.sortQueueByPriority(); // Ordenar por prioridade
         this.saveQueue();
         
         if (hasFiles) {
@@ -345,16 +462,42 @@ class OfflineManager {
             return;
         }
         
+        // Filtrar registros que ainda não podem ser tentados (backoff)
+        const now = Date.now();
+        const readyRecords = this.queue.filter(r => r.nextRetryTime <= now);
+        
+        if (readyRecords.length === 0) {
+            return; // Nenhum registro pronto para sincronizar
+        }
+        
         this.syncInProgress = true;
+        
+        // Ordenar por prioridade
+        this.sortQueueByPriority();
+        
+        // Pegar apenas registros prontos e limitar ao batch size
+        const recordsToSync = readyRecords.slice(0, this.batchSize);
+        this.syncProgress = { current: 0, total: recordsToSync.length };
+        
         this.updateUI();
         
-        console.log(`Iniciando sincronização de ${this.queue.length} registro(s)...`);
+        console.log(`Iniciando sincronização de ${recordsToSync.length} registro(s) de ${this.queue.length} total...`);
         
-        const recordsToSync = [...this.queue];
         const failedRecords = [];
         let successCount = 0;
         
-        for (const record of recordsToSync) {
+        for (let i = 0; i < recordsToSync.length; i++) {
+            const record = recordsToSync[i];
+            this.syncProgress.current = i + 1;
+            this.updateUI();
+            
+            // Validar registro antes de sincronizar
+            if (!this.validateRecord(record)) {
+                console.warn(`Registro ${record.id} inválido, removendo da fila`);
+                this.queue = this.queue.filter(r => r.id !== record.id);
+                continue;
+            }
+            
             try {
                 const formData = new FormData();
                 
@@ -387,17 +530,26 @@ class OfflineManager {
                     throw new Error('Sem conexão');
                 }
                 
-                // Criar timeout para requisição
+                // Timeout adaptativo baseado na qualidade da conexão
+                const timeout = this.connectionQuality === 'good' ? 15000 : 30000;
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout de 15 segundos
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
                 
+                const startTime = performance.now();
                 const response = await fetch(record.endpoint, {
                     method: 'POST',
                     body: formData,
                     signal: controller.signal
                 });
+                const endTime = performance.now();
                 
                 clearTimeout(timeoutId);
+                
+                // Atualizar histórico de latência
+                this.latencyHistory.push(endTime - startTime);
+                if (this.latencyHistory.length > 10) {
+                    this.latencyHistory.shift();
+                }
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
@@ -417,21 +569,32 @@ class OfflineManager {
                 console.error(`Erro ao sincronizar registro ${record.id}:`, error);
                 record.retries++;
                 
-                // Se já tentou 3 vezes, marcar como falha permanente
-                if (record.retries >= 3) {
-                    console.warn(`Registro ${record.id} falhou após ${record.retries} tentativas`);
-                    failedRecords.push(record);
+                // Se já tentou o máximo de vezes, marcar como falha permanente
+                if (record.retries >= this.maxRetries) {
+                    console.warn(`Registro ${record.id} falhou após ${record.retries} tentativas, removendo da fila`);
+                    // Remover da fila após muitas tentativas
+                    this.queue = this.queue.filter(r => r.id !== record.id);
+                    this.showNotification(`Registro falhou após ${this.maxRetries} tentativas e foi removido da fila`, 'error');
                 } else {
-                    // Manter na fila para tentar novamente
+                    // Calcular próximo tempo de retry com backoff exponencial
+                    record.nextRetryTime = Date.now() + this.calculateBackoffDelay(record.retries);
                     failedRecords.push(record);
+                    console.log(`Registro ${record.id} será tentado novamente em ${Math.round((record.nextRetryTime - Date.now()) / 1000)} segundos`);
                 }
                 
                 // Se perder conexão durante sincronização, parar
                 if (!navigator.onLine) {
                     console.log('Conexão perdida durante sincronização. Parando...');
-                    this.queue = [...this.queue.filter(r => r.id !== record.id), ...failedRecords];
+                    // Atualizar próximos tempos de retry para os registros restantes
+                    failedRecords.forEach(r => {
+                        if (!r.nextRetryTime || r.nextRetryTime <= Date.now()) {
+                            r.nextRetryTime = Date.now() + this.calculateBackoffDelay(r.retries);
+                        }
+                    });
+                    this.queue = [...this.queue.filter(r => !recordsToSync.find(rs => rs.id === r.id)), ...failedRecords];
                     this.saveQueue();
                     this.syncInProgress = false;
+                    this.syncProgress = { current: 0, total: 0 };
                     this.updateUI();
                     this.showNotification('Conexão perdida. Sincronização será retomada quando a conexão for restaurada.', 'warning');
                     return;
@@ -439,14 +602,23 @@ class OfflineManager {
             }
         }
         
-        this.queue = failedRecords;
+        // Atualizar fila com registros que falharam
+        const remainingRecords = this.queue.filter(r => !recordsToSync.find(rs => rs.id === r.id));
+        this.queue = [...remainingRecords, ...failedRecords];
+        this.sortQueueByPriority();
         this.saveQueue();
+        
         this.syncInProgress = false;
+        this.syncProgress = { current: 0, total: 0 };
+        this.lastSyncTime = Date.now();
         this.updateUI();
+        
+        // Atualizar intervalo de sincronização baseado na qualidade da conexão
+        this.startAdaptiveSyncInterval();
         
         if (successCount > 0) {
             console.log(`${successCount} registro(s) sincronizado(s) com sucesso`);
-            this.showNotification(`${successCount} registro(s) sincronizado(s)`, 'success');
+            this.showNotification(`${successCount} registro(s) sincronizado(s) com sucesso`, 'success');
             
             // Recarregar dados após sincronização bem-sucedida
             setTimeout(() => {
@@ -460,6 +632,18 @@ class OfflineManager {
         
         if (failedRecords.length > 0) {
             console.warn(`${failedRecords.length} registro(s) falharam e serão tentados novamente`);
+        }
+        
+        // Se ainda houver registros prontos, tentar sincronizar novamente após um pequeno delay
+        if (this.queue.length > 0 && this.isOnline && !this.forceOffline) {
+            const nextReady = this.queue.find(r => r.nextRetryTime <= Date.now());
+            if (nextReady) {
+                setTimeout(() => {
+                    if (!this.syncInProgress) {
+                        this.sync();
+                    }
+                }, 2000);
+            }
         }
     }
     
@@ -543,26 +727,43 @@ class OfflineManager {
         
         // Atualizar indicador no topo (apenas quando há registros pendentes ou sincronizando)
         if (this.syncInProgress && this.queue.length > 0) {
-            // Sincronizando - mostrar apenas se houver registros
-            indicator.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2';
+            // Sincronizando - mostrar progresso detalhado
+            const progressPercent = this.syncProgress.total > 0 
+                ? Math.round((this.syncProgress.current / this.syncProgress.total) * 100)
+                : 0;
+            indicator.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 min-w-[280px]';
             indicator.innerHTML = `
                 <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                 </svg>
-                <span>Sincronizando ${this.queue.length} registro(s)...</span>
+                <div class="flex-1">
+                    <div class="text-sm font-medium">Sincronizando ${this.syncProgress.current}/${this.syncProgress.total}...</div>
+                    <div class="w-full bg-yellow-600 rounded-full h-1.5 mt-1">
+                        <div class="bg-white h-1.5 rounded-full transition-all duration-300" style="width: ${progressPercent}%"></div>
+                    </div>
+                </div>
             `;
             indicator.classList.remove('hidden');
         } else if (this.queue.length > 0) {
-            // Há registros pendentes - mostrar indicador
+            // Há registros pendentes - mostrar indicador com informações detalhadas
             const modeInfo = this.forceOffline || !this.isOnline ? 'Offline' : 'Pendente';
+            const readyCount = this.queue.filter(r => r.nextRetryTime <= Date.now()).length;
+            const waitingCount = this.queue.length - readyCount;
+            
             indicator.className = this.forceOffline || !this.isOnline 
-                ? 'fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2'
-                : 'fixed top-4 right-4 z-50 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2';
+                ? 'fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 min-w-[280px]'
+                : 'fixed top-4 right-4 z-50 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 min-w-[280px]';
+            
+            let statusText = `${modeInfo} - ${this.queue.length} registro(s)`;
+            if (waitingCount > 0) {
+                statusText += ` (${readyCount} pronto${readyCount !== 1 ? 's' : ''}, ${waitingCount} aguardando)`;
+            }
+            
             indicator.innerHTML = `
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                <span>${modeInfo} - ${this.queue.length} registro(s) na fila</span>
+                <span class="text-sm">${statusText}</span>
             `;
             indicator.classList.remove('hidden');
         } else {

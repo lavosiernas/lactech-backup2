@@ -3621,6 +3621,28 @@ $v = time();
                                         </button>
                                     </div>
                                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <svg id="location-permission-icon-granted" class="w-5 h-5 text-green-600 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            <svg id="location-permission-icon-denied" class="w-5 h-5 text-red-600 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                            </svg>
+                                            <svg id="location-permission-icon-prompt" class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            <div class="flex-1">
+                                                <span class="text-sm font-medium text-gray-900 block">Permissão de Localização</span>
+                                                <span id="location-permission-status" class="text-xs text-gray-600">Verificando...</span>
+                                            </div>
+                                        </div>
+                                        <button id="location-permission-btn" onclick="manageLocationPermission()" class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                                            Gerenciar
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
                                         <div class="flex items-center gap-3">
                                             <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -4171,7 +4193,7 @@ $v = time();
                     </div>
                 </div>
                 
-                <!-- Seção para futuras ações -->
+                <!-- Outras Ações -->
                 <div class="border-t border-gray-200 pt-6">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -4179,7 +4201,14 @@ $v = time();
                         </svg>
                         Outras Ações
                     </h4>
-                    <p class="text-sm text-gray-500 italic">Mais funcionalidades serão adicionadas em breve...</p>
+                    <div id="otherActionsList" class="space-y-3">
+                        <div class="flex items-center justify-center py-4">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                                <p class="text-xs text-gray-500">Carregando...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -5155,6 +5184,214 @@ $v = time();
             }
         };
         
+        // Funções para gerenciar permissão de localização
+        async function checkLocationPermissionStatus() {
+            const statusEl = document.getElementById('location-permission-status');
+            const iconGranted = document.getElementById('location-permission-icon-granted');
+            const iconDenied = document.getElementById('location-permission-icon-denied');
+            const iconPrompt = document.getElementById('location-permission-icon-prompt');
+            const btn = document.getElementById('location-permission-btn');
+            
+            if (!navigator.geolocation) {
+                if (statusEl) statusEl.textContent = 'Não suportado pelo navegador';
+                if (iconPrompt) iconPrompt.classList.add('hidden');
+                if (iconDenied) iconDenied.classList.remove('hidden');
+                if (btn) btn.disabled = true;
+                return;
+            }
+            
+            if (navigator.permissions) {
+                try {
+                    const permission = await navigator.permissions.query({ name: 'geolocation' });
+                    updateLocationPermissionUI(permission.state, statusEl, iconGranted, iconDenied, iconPrompt, btn);
+                    
+                    // Listener para mudanças no status
+                    permission.onchange = () => {
+                        updateLocationPermissionUI(permission.state, statusEl, iconGranted, iconDenied, iconPrompt, btn);
+                    };
+                } catch (e) {
+                    // API de permissões não suportada
+                    if (statusEl) statusEl.textContent = 'Status desconhecido';
+                    if (iconPrompt) iconPrompt.classList.remove('hidden');
+                    if (iconGranted) iconGranted.classList.add('hidden');
+                    if (iconDenied) iconDenied.classList.add('hidden');
+                }
+            } else {
+                // API de permissões não suportada
+                if (statusEl) statusEl.textContent = 'Status desconhecido';
+                if (iconPrompt) iconPrompt.classList.remove('hidden');
+                if (iconGranted) iconGranted.classList.add('hidden');
+                if (iconDenied) iconDenied.classList.add('hidden');
+            }
+        }
+        
+        function updateLocationPermissionUI(state, statusEl, iconGranted, iconDenied, iconPrompt, btn) {
+            // Esconder todos os ícones primeiro
+            if (iconGranted) iconGranted.classList.add('hidden');
+            if (iconDenied) iconDenied.classList.add('hidden');
+            if (iconPrompt) iconPrompt.classList.add('hidden');
+            
+            switch(state) {
+                case 'granted':
+                    if (statusEl) statusEl.textContent = 'Permissão concedida';
+                    if (iconGranted) iconGranted.classList.remove('hidden');
+                    if (btn) {
+                        btn.textContent = 'Atualizar';
+                        btn.onclick = () => requestLocationUpdate();
+                    }
+                    break;
+                case 'denied':
+                    if (statusEl) statusEl.textContent = 'Permissão negada';
+                    if (iconDenied) iconDenied.classList.remove('hidden');
+                    if (btn) {
+                        btn.textContent = 'Solicitar';
+                        btn.onclick = () => manageLocationPermission();
+                    }
+                    break;
+                case 'prompt':
+                default:
+                    if (statusEl) statusEl.textContent = 'Não solicitada';
+                    if (iconPrompt) iconPrompt.classList.remove('hidden');
+                    if (btn) {
+                        btn.textContent = 'Solicitar';
+                        btn.onclick = () => manageLocationPermission();
+                    }
+                    break;
+            }
+        }
+        
+        async function manageLocationPermission() {
+            if (!navigator.geolocation) {
+                showNotification('Geolocalização não está disponível no seu navegador', 'error');
+                return;
+            }
+            
+            // Verificar status atual
+            if (navigator.permissions) {
+                try {
+                    const permission = await navigator.permissions.query({ name: 'geolocation' });
+                    if (permission.state === 'granted') {
+                        // Já tem permissão, apenas atualizar localização
+                        await requestLocationUpdate();
+                        return;
+                    } else if (permission.state === 'denied') {
+                        showNotification('Permissão negada. Por favor, habilite a localização nas configurações do navegador.', 'error');
+                        return;
+                    }
+                } catch (e) {
+                    // Continuar para solicitar permissão
+                }
+            }
+            
+            // Mostrar modal explicativo
+            openLocationPermissionModal(async (gpsCoords) => {
+                if (gpsCoords) {
+                    showNotification('Permissão concedida! Localização GPS obtida com sucesso.', 'success');
+                    // Atualizar status
+                    await checkLocationPermissionStatus();
+                } else {
+                    // Atualizar status mesmo se não obteve coordenadas
+                    await checkLocationPermissionStatus();
+                }
+            }, 'settings');
+        }
+        
+        async function requestLocationUpdate() {
+            if (!navigator.geolocation) {
+                showNotification('Geolocalização não está disponível no seu navegador', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('location-permission-btn');
+            const originalText = btn ? btn.textContent : '';
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Obtendo...';
+            }
+            
+            try {
+                const gpsCoords = await new Promise((resolve) => {
+                    const timeout = setTimeout(() => resolve(null), 15000);
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            clearTimeout(timeout);
+                            resolve({
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                accuracy: position.coords.accuracy
+                            });
+                        },
+                        (error) => {
+                            clearTimeout(timeout);
+                            let errorMsg = 'Erro ao obter localização';
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMsg = 'Permissão de localização negada';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMsg = 'Localização indisponível';
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMsg = 'Tempo esgotado';
+                                    break;
+                            }
+                            showNotification(errorMsg, 'error');
+                            resolve(null);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        }
+                    );
+                });
+                
+                if (gpsCoords) {
+                    // Atualizar localização da sessão atual
+                    try {
+                        const formData = new FormData();
+                        formData.append('gps_latitude', gpsCoords.latitude);
+                        formData.append('gps_longitude', gpsCoords.longitude);
+                        if (gpsCoords.accuracy) {
+                            formData.append('gps_accuracy', gpsCoords.accuracy);
+                        }
+                        
+                        const response = await fetch('./api/actions.php?action=update_session_location', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            showNotification(`Localização atualizada! Precisão: ${Math.round(gpsCoords.accuracy)}m`, 'success');
+                        }
+                    } catch (e) {
+                        console.error('Erro ao atualizar localização:', e);
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao obter localização:', e);
+                showNotification('Erro ao obter localização', 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            }
+        }
+        
+        // Verificar status ao carregar a página
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkLocationPermissionStatus);
+        } else {
+            checkLocationPermissionStatus();
+        }
+        
+        window.manageLocationPermission = manageLocationPermission;
+        window.checkLocationPermissionStatus = checkLocationPermissionStatus;
+        
         // Verificar se já está instalada como PWA
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             debugLog('✅ PWA já instalada');
@@ -5971,6 +6208,7 @@ $v = time();
         
         async function loadAccountActions() {
             const passwordChangesList = document.getElementById('passwordChangesList');
+            const otherActionsList = document.getElementById('otherActionsList');
             if (!passwordChangesList) return;
             
             try {
@@ -5979,7 +6217,9 @@ $v = time();
                 
                 if (result.success && result.data) {
                     const passwordChanges = result.data.password_changes || [];
+                    const otherActions = result.data.other_actions || [];
                     
+                    // Renderizar alterações de senha
                     if (passwordChanges.length === 0) {
                         passwordChangesList.innerHTML = `
                             <div class="text-center py-8">
@@ -6000,6 +6240,10 @@ $v = time();
                                 minute: '2-digit'
                             });
                             
+                            const statusClass = change.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                            const statusText = change.success ? 'Concluída' : 'Falhou';
+                            const ipInfo = change.ip_address ? `<p class="text-xs text-gray-400 mt-1">IP: ${change.ip_address}</p>` : '';
+                            
                             return `
                                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-sm transition-shadow">
                                     <div class="flex items-center gap-3">
@@ -6011,14 +6255,92 @@ $v = time();
                                         <div>
                                             <p class="text-sm font-medium text-gray-900">Senha alterada</p>
                                             <p class="text-xs text-gray-500">${formattedDate}</p>
+                                            ${ipInfo}
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-lg">Concluída</span>
+                                        <span class="px-2 py-1 text-xs font-medium ${statusClass} rounded-lg">${statusText}</span>
                                     </div>
                                 </div>
                             `;
                         }).join('');
+                    }
+                    
+                    // Renderizar outras ações
+                    if (otherActionsList) {
+                        if (otherActions.length === 0) {
+                            otherActionsList.innerHTML = `
+                                <div class="text-center py-6">
+                                    <p class="text-sm text-gray-500">Nenhuma outra ação registrada ainda.</p>
+                                </div>
+                            `;
+                        } else {
+                            const actionIcons = {
+                                'email_verified': `<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`,
+                                'google_linked': `<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>`,
+                                'google_unlinked': `<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>`,
+                                '2fa_enabled': `<svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`,
+                                '2fa_disabled': `<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`,
+                                'otp_generated': `<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                                'otp_validated': `<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+                            };
+                            
+                            const actionLabels = {
+                                'email_verified': 'E-mail verificado',
+                                'google_linked': 'Conta Google vinculada',
+                                'google_unlinked': 'Conta Google desvinculada',
+                                '2fa_enabled': 'Autenticação de dois fatores ativada',
+                                '2fa_disabled': 'Autenticação de dois fatores desativada',
+                                'otp_generated': 'Código OTP gerado',
+                                'otp_validated': 'Código OTP validado'
+                            };
+                            
+                            const actionColors = {
+                                'email_verified': 'bg-green-100',
+                                'google_linked': 'bg-blue-100',
+                                'google_unlinked': 'bg-red-100',
+                                '2fa_enabled': 'bg-purple-100',
+                                '2fa_disabled': 'bg-gray-100',
+                                'otp_generated': 'bg-yellow-100',
+                                'otp_validated': 'bg-green-100'
+                            };
+                            
+                            otherActionsList.innerHTML = otherActions.map(action => {
+                                const date = new Date(action.created_at);
+                                const formattedDate = date.toLocaleDateString('pt-BR', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                                
+                                const icon = actionIcons[action.action] || `<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+                                const label = actionLabels[action.action] || action.description || action.action;
+                                const bgColor = actionColors[action.action] || 'bg-gray-100';
+                                const statusClass = action.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                                const statusText = action.success ? 'Sucesso' : 'Falhou';
+                                const ipInfo = action.ip_address ? `<p class="text-xs text-gray-400 mt-1">IP: ${action.ip_address}</p>` : '';
+                                
+                                return `
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-sm transition-shadow">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 ${bgColor} rounded-lg flex items-center justify-center">
+                                                ${icon}
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">${label}</p>
+                                                <p class="text-xs text-gray-500">${formattedDate}</p>
+                                                ${ipInfo}
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 text-xs font-medium ${statusClass} rounded-lg">${statusText}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
                     }
                 } else {
                     passwordChangesList.innerHTML = `
@@ -6026,6 +6348,13 @@ $v = time();
                             <p class="text-sm text-red-500">Erro ao carregar histórico: ${result.error || 'Erro desconhecido'}</p>
                         </div>
                     `;
+                    if (otherActionsList) {
+                        otherActionsList.innerHTML = `
+                            <div class="text-center py-6">
+                                <p class="text-sm text-red-500">Erro ao carregar outras ações.</p>
+                            </div>
+                        `;
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar ações da conta:', error);
@@ -6034,6 +6363,13 @@ $v = time();
                         <p class="text-sm text-red-500">Erro ao carregar histórico de ações.</p>
                     </div>
                 `;
+                if (otherActionsList) {
+                    otherActionsList.innerHTML = `
+                        <div class="text-center py-6">
+                            <p class="text-sm text-red-500">Erro ao carregar outras ações.</p>
+                        </div>
+                    `;
+                }
             }
         }
         
@@ -7808,8 +8144,746 @@ $v = time();
         </div>
     </div>
 
+    <!-- Modal Solicitar Permissão de Localização -->
+    <div id="locationPermissionModal" class="fixed inset-0 z-[70] hidden">
+        <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onclick="closeLocationPermissionModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Permissão de Localização</h3>
+                            <p class="text-blue-100 text-sm">Precisamos da sua localização</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="px-6 py-6">
+                    <div class="mb-6">
+                        <p class="text-gray-700 mb-4">
+                            Para fornecer uma localização mais precisa no mapa, precisamos da sua permissão para acessar sua localização GPS.
+                        </p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-blue-900 mb-1">Por que precisamos?</p>
+                                    <ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                                        <li>Localização precisa no mapa</li>
+                                        <li>Segurança da sua conta</li>
+                                        <li>Detecção de acessos suspeitos</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900 mb-1">Sua privacidade</p>
+                                    <p class="text-sm text-gray-700">
+                                        Sua localização é usada apenas para segurança e não é compartilhada com terceiros.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex gap-3">
+                        <button 
+                            onclick="denyLocationPermission()" 
+                            class="flex-1 px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        >
+                            Não Permitir
+                        </button>
+                        <button 
+                            onclick="allowLocationPermission()" 
+                            class="flex-1 px-4 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg transition-all shadow-md hover:shadow-lg"
+                        >
+                            Permitir Localização
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes do Dispositivo (Full Screen) -->
+    <div id="deviceDetailsModal" class="fixed inset-0 z-[60] hidden bg-white">
+        <div class="w-full h-full flex flex-col">
+            <!-- Header -->
+            <div class="sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white" id="deviceDetailsTitle">Detalhes do Dispositivo</h3>
+                        <p class="text-blue-100 text-sm" id="deviceDetailsSubtitle">Informações completas e localização</p>
+                    </div>
+                </div>
+                <button onclick="closeDeviceDetailsModal()" class="w-10 h-10 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl transition-all text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="max-w-7xl mx-auto">
+                    <!-- Informações do Dispositivo -->
+                    <div class="bg-white rounded-xl p-6 mb-6 shadow-sm border border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Informações do Dispositivo</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="deviceInfoContent">
+                            <!-- Será preenchido via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Mapa -->
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-gray-900">Localização</h4>
+                            <button id="updateLocationBtn" onclick="updateLocationFromModal()" class="px-3 py-1.5 text-sm font-medium text-green-600 hover:text-green-700 border border-green-600 rounded-lg hover:bg-green-50 transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Atualizar Localização
+                            </button>
+                        </div>
+                        <div id="deviceMap" class="w-full h-96 rounded-lg border border-gray-300" style="min-height: 400px;">
+                            <!-- Mapa será renderizado aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Incluir Overlay de Novilhas -->
     <?php include __DIR__ . '/includes/heifer-overlay.html'; ?>
+
+    <script>
+        // Funções para gerenciar dispositivos
+        window.openDevicesModal = function() {
+            const modal = document.getElementById('devicesModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                loadDevices();
+            }
+        };
+        
+        window.closeDevicesModal = function() {
+            const modal = document.getElementById('devicesModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        };
+        
+        let currentDeviceData = null;
+        
+        window.openDeviceDetailsModal = function(deviceData) {
+            const modal = document.getElementById('deviceDetailsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                currentDeviceData = deviceData;
+                showDeviceDetails(deviceData);
+            }
+        };
+        
+        window.closeDeviceDetailsModal = function() {
+            const modal = document.getElementById('deviceDetailsModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                // Limpar mapa
+                const mapContainer = document.getElementById('deviceMap');
+                if (mapContainer) {
+                    mapContainer.innerHTML = '';
+                }
+            }
+        };
+        
+        async function loadDevices() {
+            const devicesList = document.getElementById('devicesList');
+            if (!devicesList) return;
+            
+            devicesList.innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                    <p>Carregando dispositivos...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('./api/actions.php?action=get_active_sessions');
+                const result = await response.json();
+                
+                if (result.success && result.sessions) {
+                    const sessions = result.sessions;
+                    
+                    if (sessions.length === 0) {
+                        devicesList.innerHTML = `
+                            <div class="text-center py-12">
+                                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <p class="text-gray-500">Nenhum dispositivo conectado encontrado.</p>
+                            </div>
+                        `;
+                    } else {
+                        devicesList.innerHTML = sessions.map(session => {
+                            const date = new Date(session.lastActive);
+                            const formattedDate = date.toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
+                            const deviceIcon = session.device_type === 'mobile' 
+                                ? `<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`
+                                : `<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`;
+                            
+                            const currentBadge = session.current 
+                                ? `<span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-lg">Dispositivo Atual</span>`
+                                : '';
+                            
+                            const sessionCountBadge = session.sessionCount > 1
+                                ? `<span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-lg">${session.sessionCount} sessões</span>`
+                                : '';
+                            
+                            return `
+                                <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start gap-4 flex-1">
+                                            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                ${deviceIcon}
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h4 class="text-base font-semibold text-gray-900">${session.device || 'Dispositivo Desconhecido'}</h4>
+                                                    ${currentBadge}
+                                                    ${sessionCountBadge}
+                                                </div>
+                                                <p class="text-sm text-gray-600 mb-2">${session.location || 'Localização não disponível'}</p>
+                                                <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                                                    <span class="flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                        </svg>
+                                                        ${session.ip || 'N/A'}
+                                                    </span>
+                                                    <span class="flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                        </svg>
+                                                        ${formattedDate}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 ml-4">
+                                            <button onclick='openDeviceDetailsModal(${JSON.stringify(session).replace(/"/g, '&quot;')})' class="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                                                Mais Informações
+                                            </button>
+                                            ${(!session.latitude || !session.longitude) && session.ip && session.ip !== '127.0.0.1' ? `
+                                                <button onclick='updateDeviceLocation(${session.id})' class="px-3 py-2 text-xs font-medium text-green-600 hover:text-green-700 border border-green-600 rounded-lg hover:bg-green-50 transition-colors" title="Atualizar localização">
+                                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                                    </svg>
+                                                </button>
+                                            ` : ''}
+                                            ${!session.current ? `
+                                                <button onclick='revokeDevice(${session.id}, "${(session.device || '').replace(/"/g, '&quot;')}")' class="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-600 rounded-lg hover:bg-red-50 transition-colors">
+                                                    Encerrar
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                } else {
+                    devicesList.innerHTML = `
+                        <div class="text-center py-12">
+                            <p class="text-red-500">Erro ao carregar dispositivos: ${result.error || 'Erro desconhecido'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dispositivos:', error);
+                devicesList.innerHTML = `
+                    <div class="text-center py-12">
+                        <p class="text-red-500">Erro ao carregar dispositivos. Tente novamente.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function showDeviceDetails(deviceData) {
+            const title = document.getElementById('deviceDetailsTitle');
+            const subtitle = document.getElementById('deviceDetailsSubtitle');
+            const infoContent = document.getElementById('deviceInfoContent');
+            
+            if (title) title.textContent = deviceData.device || 'Dispositivo Desconhecido';
+            if (subtitle) subtitle.textContent = deviceData.location || 'Localização não disponível';
+            
+            if (infoContent) {
+                const date = new Date(deviceData.lastActive);
+                const createdDate = deviceData.createdAt ? new Date(deviceData.createdAt) : null;
+                
+                infoContent.innerHTML = `
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Tipo de Dispositivo</p>
+                        <p class="text-base font-medium text-gray-900">${deviceData.device_type === 'mobile' ? 'Móvel' : 'Desktop'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Endereço IP</p>
+                        <p class="text-base font-medium text-gray-900">${deviceData.ip || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Localização</p>
+                        <p class="text-base font-medium text-gray-900">${deviceData.location || 'Não disponível'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Cidade</p>
+                        <p class="text-base font-medium text-gray-900">${deviceData.city || 'Não disponível'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">ISP / Provedor</p>
+                        <p class="text-base font-medium text-gray-900">${deviceData.isp || 'Não disponível'}</p>
+                    </div>
+                    ${deviceData.timezone ? `
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Fuso Horário</p>
+                        <p class="text-base font-medium text-gray-900">${deviceData.timezone}</p>
+                    </div>
+                    ` : ''}
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Última Atividade</p>
+                        <p class="text-base font-medium text-gray-900">${date.toLocaleString('pt-BR')}</p>
+                    </div>
+                    ${createdDate ? `
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Primeiro Acesso</p>
+                        <p class="text-base font-medium text-gray-900">${createdDate.toLocaleString('pt-BR')}</p>
+                    </div>
+                    ` : ''}
+                    ${deviceData.sessionCount > 1 ? `
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Total de Sessões</p>
+                        <p class="text-base font-medium text-gray-900">${deviceData.sessionCount}</p>
+                    </div>
+                    ` : ''}
+                `;
+            }
+            
+            // Priorizar coordenadas GPS (mais precisas) sobre coordenadas do IP
+            let mapLat = deviceData.gps_latitude || deviceData.latitude;
+            let mapLng = deviceData.gps_longitude || deviceData.longitude;
+            let locationName = deviceData.location || deviceData.city || 'Localização';
+            
+            // Adicionar informação de precisão se for GPS
+            if (deviceData.gps_latitude && deviceData.gps_longitude) {
+                if (deviceData.gps_accuracy) {
+                    locationName += ` (Precisão: ${Math.round(deviceData.gps_accuracy)}m)`;
+                } else {
+                    locationName += ' (GPS)';
+                }
+            }
+            
+            // Carregar mapa se tiver coordenadas válidas
+            const hasValidCoords = mapLat != null && 
+                                   mapLng != null && 
+                                   mapLat != 0 && 
+                                   mapLng != 0 &&
+                                   !isNaN(mapLat) && 
+                                   !isNaN(mapLng);
+            
+            if (hasValidCoords) {
+                loadDeviceMap(
+                    parseFloat(mapLat), 
+                    parseFloat(mapLng), 
+                    locationName,
+                    deviceData.gps_accuracy
+                );
+            } else {
+                const mapContainer = document.getElementById('deviceMap');
+                if (mapContainer) {
+                    mapContainer.innerHTML = `
+                        <div class="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
+                            <div class="text-center">
+                                <svg class="w-16 h-16 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <p class="text-gray-500 mb-2">Localização não disponível no mapa</p>
+                                <p class="text-sm text-gray-400">As coordenadas de geolocalização não foram obtidas para este dispositivo.</p>
+                                ${deviceData.ip && deviceData.ip !== '127.0.0.1' ? `
+                                    <p class="text-xs text-gray-400 mt-2">IP: ${deviceData.ip}</p>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function loadDeviceMap(lat, lng, locationName, accuracy = null) {
+            const mapContainer = document.getElementById('deviceMap');
+            if (!mapContainer) return;
+            
+            // Usar Leaflet (OpenStreetMap) - API gratuita
+            if (typeof L === 'undefined') {
+                // Carregar Leaflet CSS e JS
+                const leafletCSS = document.createElement('link');
+                leafletCSS.rel = 'stylesheet';
+                leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                document.head.appendChild(leafletCSS);
+                
+                const leafletJS = document.createElement('script');
+                leafletJS.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                leafletJS.onload = () => {
+                    initMap(lat, lng, locationName, accuracy);
+                };
+                document.head.appendChild(leafletJS);
+            } else {
+                initMap(lat, lng, locationName, accuracy);
+            }
+            
+            function initMap(lat, lng, locationName, accuracy) {
+                mapContainer.innerHTML = '';
+                
+                // Zoom baseado na precisão (se GPS) ou zoom padrão
+                let zoom = 13;
+                if (accuracy) {
+                    // Ajustar zoom baseado na precisão
+                    if (accuracy < 50) zoom = 16; // Muito preciso
+                    else if (accuracy < 200) zoom = 15;
+                    else if (accuracy < 500) zoom = 14;
+                    else zoom = 13;
+                }
+                
+                const map = L.map(mapContainer).setView([lat, lng], zoom);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+                
+                // Criar marcador
+                const marker = L.marker([lat, lng]).addTo(map);
+                
+                // Se tiver precisão (GPS), adicionar círculo de precisão
+                if (accuracy && accuracy > 0) {
+                    const circle = L.circle([lat, lng], {
+                        radius: accuracy,
+                        color: '#3388ff',
+                        fillColor: '#3388ff',
+                        fillOpacity: 0.2,
+                        weight: 2
+                    }).addTo(map);
+                }
+                
+                // Popup com informações
+                let popupContent = `<b>${locationName}</b><br>`;
+                popupContent += `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+                if (accuracy) {
+                    popupContent += `<br>Precisão: ${Math.round(accuracy)}m`;
+                }
+                
+                marker.bindPopup(popupContent).openPopup();
+            }
+        }
+        
+        // Variáveis para controle do modal de permissão
+        let locationPermissionCallback = null;
+        let requestingLocationFor = null; // 'register' ou 'update'
+        
+        window.openLocationPermissionModal = function(callback, context = 'update') {
+            const modal = document.getElementById('locationPermissionModal');
+            if (modal) {
+                locationPermissionCallback = callback;
+                requestingLocationFor = context;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+        
+        window.closeLocationPermissionModal = function() {
+            const modal = document.getElementById('locationPermissionModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                locationPermissionCallback = null;
+                requestingLocationFor = null;
+            }
+        };
+        
+        window.allowLocationPermission = async function() {
+            closeLocationPermissionModal();
+            
+            if (!navigator.geolocation) {
+                showNotification('Geolocalização não está disponível no seu navegador', 'error');
+                if (locationPermissionCallback) {
+                    locationPermissionCallback(null);
+                }
+                return;
+            }
+            
+            try {
+                const updateBtn = document.getElementById('updateLocationBtn');
+                if (updateBtn && requestingLocationFor === 'update') {
+                    updateBtn.disabled = true;
+                    updateBtn.innerHTML = '<svg class="w-4 h-4 animate-spin inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Obtendo localização...';
+                }
+                
+                const gpsCoords = await new Promise((resolve) => {
+                    const timeout = setTimeout(() => {
+                        showNotification('Tempo esgotado ao obter localização', 'error');
+                        resolve(null);
+                    }, 15000); // Timeout de 15 segundos
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            clearTimeout(timeout);
+                            resolve({
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                accuracy: position.coords.accuracy
+                            });
+                        },
+                        (error) => {
+                            clearTimeout(timeout);
+                            let errorMsg = 'Erro ao obter localização';
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMsg = 'Permissão de localização negada';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMsg = 'Localização indisponível';
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMsg = 'Tempo esgotado ao obter localização';
+                                    break;
+                            }
+                            showNotification(errorMsg, 'error');
+                            resolve(null);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        }
+                    );
+                });
+                
+                if (updateBtn && requestingLocationFor === 'update') {
+                    updateBtn.disabled = false;
+                    updateBtn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Atualizar Localização
+                    `;
+                }
+                
+                if (locationPermissionCallback) {
+                    locationPermissionCallback(gpsCoords);
+                }
+            } catch (e) {
+                console.error('Erro ao obter geolocalização:', e);
+                showNotification('Erro ao obter localização. Tente novamente.', 'error');
+                if (locationPermissionCallback) {
+                    locationPermissionCallback(null);
+                }
+            }
+        }
+        
+        window.denyLocationPermission = function() {
+            closeLocationPermissionModal();
+            if (requestingLocationFor === 'update') {
+                showNotification('Localização não atualizada. Usando localização aproximada por IP.', 'info');
+            }
+            if (locationPermissionCallback) {
+                locationPermissionCallback(null);
+            }
+        };
+        
+        async function updateLocationFromModal() {
+            if (currentDeviceData && currentDeviceData.id) {
+                // Verificar se já temos permissão
+                if (navigator.permissions) {
+                    try {
+                        const permission = await navigator.permissions.query({ name: 'geolocation' });
+                        if (permission.state === 'granted') {
+                            // Já tem permissão, obter localização diretamente sem modal
+                            const updateBtn = document.getElementById('updateLocationBtn');
+                            if (updateBtn) {
+                                updateBtn.disabled = true;
+                                updateBtn.innerHTML = '<svg class="w-4 h-4 animate-spin inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Obtendo localização...';
+                            }
+                            
+                            const gpsCoords = await new Promise((resolve) => {
+                                const timeout = setTimeout(() => resolve(null), 15000);
+                                
+                                navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                        clearTimeout(timeout);
+                                        resolve({
+                                            latitude: position.coords.latitude,
+                                            longitude: position.coords.longitude,
+                                            accuracy: position.coords.accuracy
+                                        });
+                                    },
+                                    () => {
+                                        clearTimeout(timeout);
+                                        resolve(null);
+                                    },
+                                    {
+                                        enableHighAccuracy: true,
+                                        timeout: 15000,
+                                        maximumAge: 0
+                                    }
+                                );
+                            });
+                            
+                            if (updateBtn) {
+                                updateBtn.disabled = false;
+                                updateBtn.innerHTML = `
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Atualizar Localização
+                                `;
+                            }
+                            
+                            await updateDeviceLocation(currentDeviceData.id, gpsCoords);
+                            return;
+                        } else if (permission.state === 'prompt') {
+                            // Mostrar modal explicativo antes de solicitar
+                            openLocationPermissionModal(async (gpsCoords) => {
+                                await updateDeviceLocation(currentDeviceData.id, gpsCoords);
+                            }, 'update');
+                            return;
+                        } else {
+                            // Permissão negada, usar IP
+                            showNotification('Permissão de localização negada. Usando localização aproximada por IP.', 'info');
+                            await updateDeviceLocation(currentDeviceData.id, null);
+                            return;
+                        }
+                    } catch (e) {
+                        // API de permissões não suportada, mostrar modal
+                        openLocationPermissionModal(async (gpsCoords) => {
+                            await updateDeviceLocation(currentDeviceData.id, gpsCoords);
+                        }, 'update');
+                        return;
+                    }
+                } else {
+                    // API de permissões não suportada, mostrar modal
+                    openLocationPermissionModal(async (gpsCoords) => {
+                        await updateDeviceLocation(currentDeviceData.id, gpsCoords);
+                    }, 'update');
+                }
+            }
+        }
+        
+        async function updateDeviceLocation(deviceId, gpsCoords = null) {
+            try {
+                const formData = new FormData();
+                formData.append('device_id', deviceId);
+                
+                // Adicionar coordenadas GPS se disponíveis
+                if (gpsCoords) {
+                    formData.append('gps_latitude', gpsCoords.latitude);
+                    formData.append('gps_longitude', gpsCoords.longitude);
+                    if (gpsCoords.accuracy) {
+                        formData.append('gps_accuracy', gpsCoords.accuracy);
+                    }
+                }
+                
+                const response = await fetch('./api/actions.php?action=update_session_location', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Localização atualizada com sucesso' + (gpsCoords ? ' (GPS)' : ''), 'success');
+                    // Atualizar dados locais se o modal estiver aberto
+                    if (currentDeviceData && currentDeviceData.id == deviceId && result.data) {
+                        currentDeviceData.latitude = result.data.latitude;
+                        currentDeviceData.longitude = result.data.longitude;
+                        currentDeviceData.gps_latitude = result.data.gps_latitude;
+                        currentDeviceData.gps_longitude = result.data.gps_longitude;
+                        currentDeviceData.gps_accuracy = result.data.gps_accuracy;
+                        currentDeviceData.location = result.data.location;
+                        currentDeviceData.isp = result.data.isp;
+                        currentDeviceData.timezone = result.data.timezone;
+                        currentDeviceData.city = result.data.city;
+                        showDeviceDetails(currentDeviceData);
+                    }
+                    loadDevices();
+                } else {
+                    showNotification(result.error || 'Erro ao atualizar localização', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar localização:', error);
+                showNotification('Erro ao atualizar localização. Tente novamente.', 'error');
+            }
+        }
+        
+        async function revokeDevice(deviceId, deviceName) {
+            if (!confirm(`Tem certeza que deseja encerrar a sessão do dispositivo "${deviceName}"?`)) {
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('device_id', deviceId);
+                
+                const response = await fetch('./api/actions.php?action=revoke_session', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Sessão encerrada com sucesso', 'success');
+                    loadDevices();
+                } else {
+                    showNotification(result.error || 'Erro ao encerrar sessão', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao encerrar sessão:', error);
+                showNotification('Erro ao encerrar sessão. Tente novamente.', 'error');
+            }
+        }
+    </script>
 
 </body>
 </html>

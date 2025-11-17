@@ -40,6 +40,10 @@ try {
             getArticle($db);
             break;
             
+        case 'fetch_full_content':
+            fetchFullContent($db);
+            break;
+            
         case 'create_article':
             createArticle($db);
             break;
@@ -140,9 +144,19 @@ function getArticles($db) {
         $countResult = $db->query("SELECT COUNT(*) as total FROM agronews_articles WHERE {$whereClause}", $params);
         $total = $countResult[0]['total'] ?? 0;
         
+        // Verificar se campos de vídeo existem
+        $hasVideoFields = false;
+        try {
+            $db->query("SELECT video_url, video_embed FROM agronews_articles LIMIT 1");
+            $hasVideoFields = true;
+        } catch (Exception $e) {
+            // Campos não existem ainda
+        }
+        
         // Buscar artigos
         $sql = "SELECT a.*, c.name as category_name, c.icon as category_icon, c.color as category_color,
-                       u.name as author_name
+                       u.name as author_name" . 
+                       ($hasVideoFields ? ", a.video_url, a.video_embed" : "") . "
                 FROM agronews_articles a
                 LEFT JOIN agronews_categories c ON a.category_id = c.id
                 LEFT JOIN users u ON a.author_id = u.id
@@ -176,7 +190,17 @@ function getFeaturedArticles($db) {
     try {
         $limit = intval($_GET['limit'] ?? 4);
         
-        $articles = $db->query("SELECT a.*, c.name as category_name, c.icon as category_icon
+        // Verificar se campos de vídeo existem
+        $hasVideoFields = false;
+        try {
+            $db->query("SELECT video_url, video_embed FROM agronews_articles LIMIT 1");
+            $hasVideoFields = true;
+        } catch (Exception $e) {
+            // Campos não existem ainda
+        }
+        
+        $articles = $db->query("SELECT a.*, c.name as category_name, c.icon as category_icon" . 
+                               ($hasVideoFields ? ", a.video_url, a.video_embed" : "") . "
                            FROM agronews_articles a
                            LEFT JOIN agronews_categories c ON a.category_id = c.id
                            WHERE a.is_published = 1 AND a.is_featured = 1
@@ -201,8 +225,18 @@ function getArticle($db) {
             return;
         }
         
+        // Verificar se campos de vídeo existem
+        $hasVideoFields = false;
+        try {
+            $db->query("SELECT video_url, video_embed FROM agronews_articles LIMIT 1");
+            $hasVideoFields = true;
+        } catch (Exception $e) {
+            // Campos não existem ainda
+        }
+        
         $articleResult = $db->query("SELECT a.*, c.name as category_name, c.icon as category_icon, c.color as category_color,
-                                   u.name as author_name, u.email as author_email
+                                   u.name as author_name, u.email as author_email" . 
+                                   ($hasVideoFields ? ", a.video_url, a.video_embed" : "") . "
                            FROM agronews_articles a
                            LEFT JOIN agronews_categories c ON a.category_id = c.id
                            LEFT JOIN users u ON a.author_id = u.id
@@ -219,7 +253,8 @@ function getArticle($db) {
         incrementViews($db, $id);
         
         // Buscar artigos relacionados
-        $related = $db->query("SELECT a.*, c.name as category_name
+        $related = $db->query("SELECT a.*, c.name as category_name" . 
+                              ($hasVideoFields ? ", a.video_url, a.video_embed" : "") . "
                                   FROM agronews_articles a
                                   LEFT JOIN agronews_categories c ON a.category_id = c.id
                                   WHERE a.category_id = ? AND a.id != ? AND a.is_published = 1
@@ -561,6 +596,110 @@ function subscribeNewsletter($db) {
         }
         
         echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+}
+
+// ==========================================
+// BUSCAR CONTEÚDO COMPLETO
+// ==========================================
+
+function fetchFullContent($db) {
+    try {
+        $articleId = intval($_GET['id'] ?? 0);
+        
+        if (!$articleId) {
+            echo json_encode(['success' => false, 'error' => 'ID não fornecido']);
+            return;
+        }
+        
+        // Buscar artigo
+        $articleResult = $db->query("SELECT id, source_url, content FROM agronews_articles WHERE id = ?", [$articleId]);
+        $article = $articleResult[0] ?? null;
+        
+        if (!$article) {
+            echo json_encode(['success' => false, 'error' => 'Artigo não encontrado']);
+            return;
+        }
+        
+        // Se já tem conteúdo completo (mais de 1000 caracteres), retornar
+        if (strlen($article['content']) > 1000) {
+            echo json_encode([
+                'success' => true,
+                'data' => ['content' => $article['content'], 'already_complete' => true]
+            ]);
+            return;
+        }
+        
+        // Se não tem source_url, não pode buscar
+        if (empty($article['source_url'])) {
+            echo json_encode(['success' => false, 'error' => 'URL da fonte não disponível']);
+            return;
+        }
+        
+        // Tentar buscar conteúdo da URL (usando cURL)
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $article['source_url']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+        $html = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode !== 200 || !$html) {
+            echo json_encode(['success' => false, 'error' => 'Não foi possível buscar o conteúdo da fonte']);
+            return;
+        }
+        
+        // Extrair conteúdo do HTML (tentativa básica)
+        $dom = new DOMDocument();
+        @$dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+        $xpath = new DOMXPath($dom);
+        
+        // Tentar encontrar o conteúdo principal (article, main, .content, etc.)
+        $contentNodes = $xpath->query("//article//p | //main//p | //div[contains(@class, 'content')]//p | //div[contains(@class, 'article')]//p");
+        
+        $fullContent = '';
+        if ($contentNodes->length > 0) {
+            foreach ($contentNodes as $node) {
+                $text = trim($node->textContent);
+                if (strlen($text) > 50) { // Ignorar parágrafos muito curtos
+                    $fullContent .= $text . "\n\n";
+                }
+            }
+        }
+        
+        // Se não encontrou, usar todo o texto da página
+        if (empty($fullContent)) {
+            $fullContent = strip_tags($html);
+            $fullContent = preg_replace('/\s+/', ' ', $fullContent);
+            $fullContent = trim($fullContent);
+        }
+        
+        // Limitar tamanho (máximo 50KB)
+        if (strlen($fullContent) > 50000) {
+            $fullContent = substr($fullContent, 0, 50000) . '...';
+        }
+        
+        // Atualizar no banco se encontrou conteúdo
+        if (!empty($fullContent) && strlen($fullContent) > strlen($article['content'])) {
+            $pdo = $db->getConnection();
+            $stmt = $pdo->prepare("UPDATE agronews_articles SET content = ? WHERE id = ?");
+            $stmt->execute([$fullContent, $articleId]);
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'content' => $fullContent ?: $article['content'],
+                'fetched' => !empty($fullContent)
+            ]
+        ]);
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }

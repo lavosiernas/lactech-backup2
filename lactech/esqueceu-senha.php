@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redefinir Senha - LacTech</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="assets/js/config_mysql.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Esqueceu a Senha - LacTech</title>
+    
+    <!-- Favicon -->
     <link rel="icon" href="./assets/img/lactech-logo.png" type="image/x-icon">
+    
+    <!-- Tailwind CSS -->
+    <?php if (file_exists(__DIR__ . '/assets/css/tailwind.min.css')): ?>
+        <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <?php else: ?>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
+    
+    <!-- CSS customizado -->
     <link rel="stylesheet" href="assets/css/style.css">
+    
     <style>
         .error-message {
             background-color: #fef2f2;
@@ -44,21 +53,6 @@
             to { transform: rotate(360deg); }
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'forest': {
-                            50: '#f0f9f0', 100: '#dcf2dc', 200: '#bce5bc', 300: '#8dd18d',
-                            400: '#5bb85b', 500: '#369e36', 600: '#2a7f2a', 700: '#236523',
-                            800: '#1f511f', 900: '#1a431a',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="gradient-mesh min-h-screen">
     <!-- Mobile Layout -->
@@ -69,8 +63,8 @@
                 <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo LacTech" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4">
                 <h1 class="text-2xl font-bold text-slate-900 mb-1">LacTech</h1>
                 <p class="text-slate-600 text-sm mb-6">Sistema de Gestão Leiteira</p>
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Redefinir Senha</h2>
-                <p class="text-slate-600">Digite sua nova senha</p>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Esqueceu a Senha?</h2>
+                <p class="text-slate-600">Digite seu email e uma nova senha</p>
             </div>
 
             <!-- Error/Success Messages -->
@@ -88,11 +82,16 @@
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span id="successText">Senha redefinida com sucesso!</span>
+                    <span id="successText">Senha alterada com sucesso!</span>
                 </div>
             </div>
 
             <form id="resetPasswordForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+                    <input type="email" required name="email" id="email" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder="Digite seu email">
+                </div>
+
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Nova Senha</label>
                     <div class="relative">
@@ -121,7 +120,7 @@
 
                 <button type="submit" id="resetBtn" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
                     <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
-                    <span id="resetText">Redefinir Senha</span>
+                    <span id="resetText">Alterar Senha</span>
                 </button>
             </form>
 
@@ -159,8 +158,8 @@
                 <!-- Logo acima do título -->
                 <div class="text-center mb-8">
                     <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo LacTech" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Redefinir Senha</h2>
-                    <p class="text-slate-600">Digite sua nova senha</p>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Esqueceu a Senha?</h2>
+                    <p class="text-slate-600">Digite seu email e uma nova senha</p>
                 </div>
 
                 <!-- Error/Success Messages Desktop -->
@@ -178,11 +177,16 @@
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span id="successTextDesktop">Senha redefinida com sucesso!</span>
+                        <span id="successTextDesktop">Senha alterada com sucesso!</span>
                     </div>
                 </div>
 
                 <form id="resetPasswordFormDesktop" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+                        <input type="email" required name="email" id="emailDesktop" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-forest-500 focus:ring-2 focus:ring-forest-100 focus:outline-none" placeholder="Digite seu email">
+                    </div>
+
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Nova Senha</label>
                         <div class="relative">
@@ -211,7 +215,7 @@
 
                     <button type="submit" id="resetBtnDesktop" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
                         <span class="loading-spinner" id="loadingSpinnerDesktop" style="display: none;"></span>
-                        <span id="resetTextDesktop">Redefinir Senha</span>
+                        <span id="resetTextDesktop">Alterar Senha</span>
                     </button>
                 </form>
 
@@ -228,21 +232,6 @@
     </div>
 
     <script>
-        let supabaseClient = null;
-
-        // Aguardar Supabase estar disponível
-        async function waitForSupabase() {
-            let attempts = 0;
-            while (!window.supabase && attempts < 20) {
-                await new Promise((resolve) => setTimeout(resolve, 500));
-                attempts++;
-            }
-            if (!window.supabase) {
-                throw new Error("Supabase não disponível");
-            }
-            return window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
-        }
-
         // Toggle password visibility
         function togglePassword(inputId, iconId) {
             const input = document.getElementById(inputId);
@@ -302,10 +291,10 @@
             if (btn && btnText && spinner) {
                 btn.disabled = loading;
                 if (loading) {
-                    btnText.textContent = 'Redefinindo...';
+                    btnText.textContent = 'Alterando...';
                     spinner.style.display = 'inline-block';
                 } else {
-                    btnText.textContent = 'Redefinir Senha';
+                    btnText.textContent = 'Alterar Senha';
                     spinner.style.display = 'none';
                 }
             }
@@ -316,17 +305,13 @@
             e.preventDefault();
             
             const form = e.target;
+            const email = form.querySelector('[name="email"]').value;
             const newPassword = form.querySelector('[name="newPassword"]').value;
             const confirmPassword = form.querySelector('[name="confirmPassword"]').value;
             
             // Validation
-            if (!newPassword || !confirmPassword) {
+            if (!email || !newPassword || !confirmPassword) {
                 showError('Por favor, preencha todos os campos.', isDesktop);
-                return;
-            }
-            
-            if (newPassword.length < 6) {
-                showError('A senha deve ter pelo menos 6 caracteres.', isDesktop);
                 return;
             }
             
@@ -340,69 +325,54 @@
             setLoadingState(true, isDesktop);
             
             try {
-                // Ensure Supabase is ready
-                if (!supabaseClient || !supabaseClient.auth) {
-                    supabaseClient = await waitForSupabase();
-                }
-                
-                // Update password
-                const { error } = await supabaseClient.auth.updateUser({
-                    password: newPassword
+                const response = await fetch('api/actions.php?action=reset_password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        new_password: newPassword
+                    })
                 });
                 
-                if (error) throw error;
+                const result = await response.json();
                 
-                // Success
-                showSuccess('Senha redefinida com sucesso! Redirecionando para o login...', isDesktop);
-                setLoadingState(false, isDesktop);
-                
-                // Redirect to login after 2 seconds
-                setTimeout(() => {
-                    window.location.href = 'inicio-login.php';
-                }, 2000);
+                if (result.success) {
+                    showSuccess('Senha alterada com sucesso! Redirecionando para o login...', isDesktop);
+                    setLoadingState(false, isDesktop);
+                    
+                    // Redirect to login after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'inicio-login.php';
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Erro ao alterar senha');
+                }
                 
             } catch (error) {
-                console.error('Erro ao redefinir senha:', error);
+                console.error('Erro ao alterar senha:', error);
                 setLoadingState(false, isDesktop);
-                
-                // Show specific error messages
-                if (error.message.includes('Password should be at least')) {
-                    showError('A senha deve ter pelo menos 6 caracteres.', isDesktop);
-                } else if (error.message.includes('Invalid login credentials')) {
-                    showError('Sessão expirada. Solicite um novo link de recuperação.', isDesktop);
-                } else {
-                    showError('Erro ao redefinir senha. Tente novamente.', isDesktop);
-                }
+                showError(error.message || 'Erro ao alterar senha. Tente novamente.', isDesktop);
             }
         }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                // Wait for config.js and Supabase to be ready
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                if (!supabaseClient) {
-                    supabaseClient = await waitForSupabase();
-                }
-                
-                // Setup form listeners
-                const mobileForm = document.getElementById('resetPasswordForm');
-                const desktopForm = document.getElementById('resetPasswordFormDesktop');
-                
-                if (mobileForm) {
-                    mobileForm.addEventListener('submit', (e) => handlePasswordReset(e, false));
-                }
-                
-                if (desktopForm) {
-                    desktopForm.addEventListener('submit', (e) => handlePasswordReset(e, true));
-                }
-                
-            } catch (error) {
-                console.error('Erro ao inicializar página:', error);
-                showError('Erro ao inicializar página. Recarregue a página.', false);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup form listeners
+            const mobileForm = document.getElementById('resetPasswordForm');
+            const desktopForm = document.getElementById('resetPasswordFormDesktop');
+            
+            if (mobileForm) {
+                mobileForm.addEventListener('submit', (e) => handlePasswordReset(e, false));
+            }
+            
+            if (desktopForm) {
+                desktopForm.addEventListener('submit', (e) => handlePasswordReset(e, true));
             }
         });
     </script>
 </body>
 </html>
+
+

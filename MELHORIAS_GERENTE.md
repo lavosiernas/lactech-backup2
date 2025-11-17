@@ -198,3 +198,5 @@ Conforme preferências do usuário:
 - Manter a paleta de cores existente
 - Priorizar experiência do usuário
 
+
+

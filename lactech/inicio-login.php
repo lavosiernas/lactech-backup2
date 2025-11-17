@@ -340,7 +340,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         <input type="checkbox" name="remember" class="w-4 h-4 text-forest-600 border-slate-300 rounded focus:ring-forest-500">
                         <span class="ml-2 text-sm text-slate-600">Lembrar de mim</span>
                     </label>
-                    <a href="solicitar-alteracao-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
+                    <a href="esqueceu-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                 </div>
 
                 <button type="submit" id="loginBtn" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
@@ -455,7 +455,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                             <input type="checkbox" name="remember" class="w-4 h-4 text-forest-600 border-slate-300 rounded focus:ring-forest-500">
                             <span class="ml-2 text-sm text-slate-600">Lembrar de mim</span>
                         </label>
-                        <a href="solicitar-alteracao-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
+                        <a href="esqueceu-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                     </div>
 
                     <button type="submit" id="loginBtnDesktop" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">

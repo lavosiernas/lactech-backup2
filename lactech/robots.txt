@@ -18,8 +18,7 @@ Disallow: /api/
 Disallow: /includes/
 Disallow: /backupbanco/
 Disallow: *.bat$
-Disallow: /reset-password.php
-Disallow: /solicitar-alteracao-senha.php
+Disallow: /esqueceu-senha.php
 Disallow: /acesso-bloqueado.php
 
 # Permitir acesso a recursos
