@@ -459,6 +459,7 @@ function renderMonthlyVolumeChart(chartData) {
     }
     createOrUpdateLineChart('monthlyProductionChart', labels, data, '#10B981');
 }
+
 async function renderWeeklyVolumeCharts() {
     try {
         console.log('📊 Carregando dados para gráfico semanal...');
@@ -528,6 +529,7 @@ async function renderWeeklyVolumeCharts() {
         createOrUpdateLineChart('dashboardWeeklyChart', labels7, data7, '#6366F1');
     }
 }
+
 async function renderQualityWeeklyChart() {
     try {
         console.log('📊 Carregando dados de qualidade dos últimos 7 dias...');
@@ -767,6 +769,7 @@ function renderVolumeTabChart(series) {
     if (data.length === 1) { labels.push(labels[0]); data.push(data[0]); }
     createOrUpdateLineChart('volumeTabChart', labels, data, '#0EA5E9');
 }
+
 async function loadVolumeRecordsTable() {
     const tbody = document.getElementById('volumeRecordsTable');
     if (!tbody) {
@@ -938,6 +941,7 @@ async function loadVolumeRecordsTable() {
         }
     }
 }
+
 // Função para visualizar detalhes de um registro
 async function viewVolumeDetails(id) {
     try {
@@ -1427,6 +1431,7 @@ async function loadVolumeData() {
         console.error('Erro na requisição de volume:', error);
     }
 }
+
 // ==================== QUALIDADE ====================
 async function loadQualityData() {
     console.log('📊 Carregando dados de qualidade...');
@@ -1539,6 +1544,7 @@ async function loadQualityRecordsTable() {
         if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros</td></tr>';
     }
 }
+
 // ==================== FUNÇÕES DE GESTÃO DE QUALIDADE ====================
 async function viewQualityDetails(id) {
     try {
@@ -1885,6 +1891,7 @@ function renderFinancialChart(series) {
         }
     });
 }
+
 async function loadFinancialRecordsTable() {
     try {
         // Reutilizar o endpoint raiz para listar (já implementado em api/volume.php para volume; aqui usamos o próprio financial endpoint recente)
@@ -2185,6 +2192,7 @@ function closeDeleteFinancialModal() {
         modal.remove();
     }
 }
+
 // Função para excluir registro financeiro
 async function deleteFinancialRecord(id) {
     try {
@@ -2214,6 +2222,7 @@ async function deleteFinancialRecord(id) {
         showErrorModal('Erro ao excluir registro');
     }
 }
+
 window.viewFinancialDetails = viewFinancialDetails;
 window.closeFinancialDetailsModal = closeFinancialDetailsModal;
 window.confirmDeleteFinancialRecord = confirmDeleteFinancialRecord;
@@ -2371,6 +2380,7 @@ async function toggleUserBlock(userId, newStatus) {
         showErrorModal('Erro ao bloquear/desbloquear usuário');
     }
 }
+
 async function deleteUser(userId, userName) {
     if (!confirm(`Tem certeza que deseja excluir o usuário "${userName}"?\n\nEsta ação não pode ser desfeita!`)) {
         return;
@@ -2451,6 +2461,36 @@ function showSalesOverlay() {
 }
 window.showSalesOverlay = showSalesOverlay;
 
+// Finance: exportar CSV
+async function exportFinancialReport() {
+    try {
+        const res = await fetch('./api/endpoints/financial.php');
+        const json = await res.json();
+        const rows = Array.isArray(json?.data?.recent_records) ? json.data.recent_records : [];
+        if (rows.length === 0) {
+            console.warn('Sem registros financeiros para exportar');
+            return;
+        }
+        const header = ['Data','Tipo','Descrição','Valor'];
+        const csvRows = [header.join(',')].concat(rows.map(r => {
+            const cols = [r.record_date, r.type, (r.description||'').replace(/"/g,'""'), Number(r.amount)||0];
+            return cols.map(c => typeof c === 'string' ? '"'+c+'"' : c).join(',');
+        }));
+        const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `financeiro_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('Erro ao exportar financeiro:', e);
+    }
+}
+window.exportFinancialReport = exportFinancialReport;
+
 // Quality: abrir modal
 function showQualityOverlay() {
     const modal = document.getElementById('qualityOverlay');
@@ -2477,6 +2517,34 @@ function showQualityOverlay() {
     }
 }
 window.showQualityOverlay = showQualityOverlay;
+
+async function exportQualityReport() {
+    try {
+        const res = await fetch('./api/quality.php?action=select');
+        const json = await res.json();
+        const rows = Array.isArray(json?.data) ? json.data : [];
+        if (rows.length === 0) {
+            console.warn('Sem registros de qualidade para exportar');
+            return;
+        }
+        const header = ['Data','Gordura','Proteína','CCS','Laboratório'];
+        const csvRows = [header.join(',')].concat(rows.map(r => {
+            const cols = [r.test_date, r.fat_content||'', r.protein_content||'', r.somatic_cells||'', (r.laboratory||'').replace(/"/g,'""')];
+            return cols.map(c => typeof c === 'string' ? '"'+c+'"' : c).join(',');
+        }));
+        const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `qualidade_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('Erro ao exportar qualidade:', e);
+    }
+}
 window.exportQualityReport = exportQualityReport;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2646,147 +2714,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Tratamento
-    const treatmentForm = document.getElementById('treatmentForm');
-    if (treatmentForm) {
-        treatmentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = treatmentForm.querySelector('button[type="submit"]');
-            const messageDiv = document.getElementById('treatmentMessage');
-            const originalText = submitBtn.innerHTML;
-
-            // Desabilitar botão e mostrar loading
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Registrando...';
-
-            // Esconder mensagem anterior
-            if (messageDiv) {
-                messageDiv.classList.add('hidden');
-            }
-
-            const formData = new FormData(treatmentForm);
-            const data = {
-                animal_id: formData.get('animal_id'),
-                record_date: formData.get('record_date'),
-                record_type: formData.get('record_type'),
-                description: formData.get('description') || '',
-                medication: formData.get('medication') || null,
-                dosage: formData.get('dosage') || null,
-                cost: formData.get('cost') ? parseFloat(formData.get('cost')) : null,
-                next_date: formData.get('next_date') || null,
-                veterinarian: formData.get('veterinarian') || null
-            };
-
-            try {
-                const response = await fetch('./api/health/create.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    if (messageDiv) {
-                        messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tratamento registrado com sucesso!';
-                        messageDiv.classList.remove('hidden');
-                    }
-
-                    treatmentForm.reset();
-
-                    setTimeout(() => {
-                        if (window.closeTreatmentOverlay) window.closeTreatmentOverlay();
-                        // Recarregar dados se necessário
-                        location.reload();
-                    }, 1500);
-                } else {
-                    throw new Error(result.error || 'Erro ao registrar tratamento');
-                }
-            } catch (err) {
-                console.error('Erro ao registrar tratamento:', err);
-                if (messageDiv) {
-                    messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
-                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (err.message || 'Erro ao registrar tratamento. Tente novamente.');
-                    messageDiv.classList.remove('hidden');
-                }
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
-        });
-    }
-
-    // Inseminação
-    const inseminationForm = document.getElementById('inseminationForm');
-    if (inseminationForm) {
-        inseminationForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = inseminationForm.querySelector('button[type="submit"]');
-            const messageDiv = document.getElementById('inseminationMessage');
-            const originalText = submitBtn.innerHTML;
-
-            // Desabilitar botão e mostrar loading
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Registrando...';
-
-            // Esconder mensagem anterior
-            if (messageDiv) {
-                messageDiv.classList.add('hidden');
-            }
-
-            const formData = new FormData(inseminationForm);
-            const data = {
-                record_type: 'insemination',
-                animal_id: formData.get('animal_id'),
-                insemination_date: formData.get('insemination_date'),
-                insemination_time: formData.get('insemination_time') || null,
-                bull_id: formData.get('bull_id') || null,
-                technician_name: formData.get('technician_name') || null,
-                semen_batch: formData.get('semen_batch') || null,
-                semen_straw_number: formData.get('semen_straw_number') || null,
-                insemination_method: formData.get('insemination_method') || 'IA',
-                cost: formData.get('cost') ? parseFloat(formData.get('cost')) : null,
-                notes: formData.get('notes') || null
-            };
-
-            try {
-                const response = await fetch('./api/reproduction/create.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    if (messageDiv) {
-                        messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Inseminação registrada com sucesso!';
-                        messageDiv.classList.remove('hidden');
-                    }
-
-                    inseminationForm.reset();
-
-                    setTimeout(() => {
-                        if (window.closeInseminationOverlay) window.closeInseminationOverlay();
-                        // Recarregar dados se necessário
-                        location.reload();
-                    }, 1500);
-                } else {
-                    throw new Error(result.error || 'Erro ao registrar inseminação');
-                }
-            } catch (err) {
-                console.error('Erro ao registrar inseminação:', err);
-                if (messageDiv) {
-                    messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
-                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (err.message || 'Erro ao registrar inseminação. Tente novamente.');
-                    messageDiv.classList.remove('hidden');
-                }
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
-        });
-    }
     // Qualidade
     const qualityForm = document.getElementById('qualityForm');
     if (qualityForm) {
@@ -3207,8 +3134,10 @@ async function loadVolumeRecordsCount() {
         countElement.textContent = 'Erro ao carregar quantidade';
     }
 }
+
 // Variável para controlar se já está processando exclusão
 let isDeletingVolume = false;
+
 // Confirmar exclusão de todos os registros
 async function confirmDeleteAllVolume(event) {
     // Prevenir múltiplas execuções
@@ -3631,663 +3560,6 @@ function closeSalesOverlay() {
 window.closeGeneralVolumeOverlay = closeGeneralVolumeOverlay;
 window.closeVolumeOverlay = closeVolumeOverlay;
 
-// ==================== MODAIS DE TRATAMENTO E INSEMINAÇÃO ====================
-
-// Abrir modal de tratamento
-function showTreatmentOverlay() {
-    const modal = document.getElementById('treatmentOverlay');
-    const form = document.getElementById('treatmentForm');
-    const messageDiv = document.getElementById('treatmentMessage');
-    
-    if (modal) {
-        // Resetar formulário e mensagens
-        if (form) {
-            form.reset();
-            // Definir data padrão como hoje
-            const dateInput = form.querySelector('input[name="record_date"]');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = getLocalDateString();
-            }
-        }
-        if (messageDiv) {
-            messageDiv.classList.add('hidden');
-            messageDiv.className = 'hidden p-4 rounded-xl border';
-        }
-        
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        populateTreatmentAnimalSelect();
-    }
-}
-window.showTreatmentOverlay = showTreatmentOverlay;
-
-// Fechar modal de tratamento
-function closeTreatmentOverlay() {
-    const modal = document.getElementById('treatmentOverlay');
-    const form = document.getElementById('treatmentForm');
-    const messageDiv = document.getElementById('treatmentMessage');
-    
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    // Limpar formulário e mensagens
-    if (form) {
-        form.reset();
-    }
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-        messageDiv.className = 'hidden p-4 rounded-xl border';
-    }
-}
-window.closeTreatmentOverlay = closeTreatmentOverlay;
-// Popular select de animais para inseminação (apenas fêmeas)
-async function populateInseminationAnimalSelect() {
-    const select = document.getElementById('inseminationAnimalSelect');
-    if (!select) return;
-    
-    select.innerHTML = '<option value="">Carregando vacas...</option>';
-    select.disabled = true;
-    
-    try {
-        const res = await fetch('./api/animals.php?action=select');
-        const json = await res.json();
-        const animals = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-        
-        // Filtrar apenas fêmeas
-        const females = animals.filter(a => a.gender === 'femea');
-        
-        select.innerHTML = ['<option value="">Selecione uma vaca</option>']
-            .concat(females.map(a => {
-                const number = a.animal_number || '';
-                const name = a.name ? ` - ${a.name}` : '';
-                return `<option value="${a.id}">${number}${name}</option>`;
-            }))
-            .join('');
-        
-        select.disabled = false;
-    } catch (e) {
-        console.error('Erro ao carregar vacas:', e);
-        select.innerHTML = '<option value="">Erro ao carregar vacas</option>';
-        select.disabled = false;
-    }
-}
-
-// Popular select de touros
-async function populateInseminationBullSelect() {
-    const select = document.getElementById('inseminationBullSelect');
-    if (!select) return;
-    
-    select.innerHTML = '<option value="">Carregando touros...</option>';
-    select.disabled = true;
-    
-    try {
-        const res = await fetch('./api/bulls.php?action=list');
-        const json = await res.json();
-        const bulls = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-        
-        select.innerHTML = ['<option value="">Selecione o touro (opcional)</option>']
-            .concat(bulls.map(b => {
-                const name = b.name || b.bull_number || '';
-                const number = b.bull_number ? ` (${b.bull_number})` : '';
-                return `<option value="${b.id}">${name}${number}</option>`;
-            }))
-            .join('');
-        
-        select.disabled = false;
-    } catch (e) {
-        console.error('Erro ao carregar touros:', e);
-        select.innerHTML = '<option value="">Erro ao carregar touros</option>';
-        select.disabled = false;
-    }
-}
-
-// ==================== GESTÃO DE ESTOQUE/INSUMOS ====================
-
-// Abrir modal de estoque (integrado no Mais Opções)
-function showStockOverlay() {
-    // Abrir o modal Mais Opções primeiro e depois abrir o submodal de estoque
-    if (typeof window.openMoreOptionsModal === 'function') {
-        window.openMoreOptionsModal();
-        setTimeout(() => {
-            if (typeof window.openSubModal === 'function') {
-                window.openSubModal('stock');
-            }
-        }, 300);
-    } else if (typeof window.openSubModal === 'function') {
-        window.openSubModal('stock');
-    }
-    
-    // Carregar dados iniciais
-    setTimeout(() => {
-        loadStockStats();
-        loadStockProducts();
-        switchStockTab('products');
-    }, 400);
-}
-window.showStockOverlay = showStockOverlay;
-
-// Fechar modal de estoque
-function closeStockOverlay() {
-    if (typeof window.closeSubModal === 'function') {
-        window.closeSubModal('stock');
-    }
-}
-window.closeStockOverlay = closeStockOverlay;
-
-// Trocar abas do estoque
-function switchStockTab(tabName) {
-    // Remover active de todas as abas
-    document.querySelectorAll('.stock-tab-button').forEach(btn => {
-        btn.classList.remove('border-orange-500', 'text-orange-600');
-        btn.classList.add('border-transparent', 'text-gray-600');
-    });
-    
-    // Esconder todos os conteúdos
-    document.getElementById('stockTabProductsContent')?.classList.add('hidden');
-    document.getElementById('stockTabMovementsContent')?.classList.add('hidden');
-    document.getElementById('stockTabAlertsContent')?.classList.add('hidden');
-    
-    // Ativar aba selecionada
-    const activeBtn = document.getElementById(`stockTab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
-    if (activeBtn) {
-        activeBtn.classList.remove('border-transparent', 'text-gray-600');
-        activeBtn.classList.add('border-orange-500', 'text-orange-600');
-    }
-    
-    // Mostrar conteúdo correspondente
-    const activeContent = document.getElementById(`stockTab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Content`);
-    if (activeContent) {
-        activeContent.classList.remove('hidden');
-    }
-    
-    // Carregar dados da aba
-    if (tabName === 'products') {
-        loadStockProducts();
-    } else if (tabName === 'movements') {
-        loadStockMovements();
-        populateMovementProductFilter();
-    } else if (tabName === 'alerts') {
-        loadStockAlerts();
-    }
-}
-window.switchStockTab = switchStockTab;
-
-// Carregar estatísticas de estoque
-async function loadStockStats() {
-    try {
-        const response = await fetch('./api/stock.php?action=stats');
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            document.getElementById('stockStatsTotalProducts').textContent = result.data.total_products || 0;
-            document.getElementById('stockStatsLowStock').textContent = result.data.low_stock_count || 0;
-            document.getElementById('stockStatsTotalValue').textContent = formatCurrency(result.data.total_value || 0);
-            document.getElementById('stockStatsRecentMovements').textContent = result.data.recent_movements || 0;
-        }
-    } catch (error) {
-        console.error('Erro ao carregar estatísticas de estoque:', error);
-    }
-}
-
-// Carregar produtos de estoque
-async function loadStockProducts(forceRefresh = false) {
-    const list = document.getElementById('stockProductsList');
-    if (!list) return;
-    
-    if (forceRefresh || list.innerHTML.includes('Carregando')) {
-        list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">Carregando produtos...</td></tr>';
-    }
-    
-    try {
-        const search = document.getElementById('stockSearchInput')?.value || '';
-        const type = document.getElementById('stockTypeFilter')?.value || '';
-        
-        const params = new URLSearchParams({ action: 'list_products' });
-        if (search) params.append('search', search);
-        if (type) params.append('type', type);
-        
-        const response = await fetch(`./api/stock.php?${params.toString()}`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            if (result.data.length === 0) {
-                list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">Nenhum produto encontrado</td></tr>';
-                return;
-            }
-            
-            list.innerHTML = result.data.map(product => {
-                const hasAlert = product.has_alert || product.current_stock <= product.min_stock;
-                const statusColor = hasAlert ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
-                const statusText = hasAlert ? 'Estoque Baixo' : 'Normal';
-                
-                const totalValue = product.cost_per_unit ? (product.current_stock * product.cost_per_unit) : 0;
-                
-                return `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="font-semibold text-gray-900">${escapeHtml(product.name)}</div>
-                            ${product.category ? `<div class="text-xs text-gray-500">${escapeHtml(product.category)}</div>` : ''}
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-700">
-                                ${getProductTypeLabel(product.type)}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="font-semibold text-gray-900">${formatNumber(product.current_stock)} ${escapeHtml(product.unit)}</div>
-                        </td>
-                        <td class="px-6 py-4 text-gray-600">${formatNumber(product.min_stock)} ${escapeHtml(product.unit)}</td>
-                        <td class="px-6 py-4 text-gray-600">${product.cost_per_unit ? formatCurrency(product.cost_per_unit) : '-'}</td>
-                        <td class="px-6 py-4 font-semibold text-gray-900">${totalValue > 0 ? formatCurrency(totalValue) : '-'}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
-                                ${statusText}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex gap-2">
-                                <button onclick="showAddMovementModal(${product.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Nova movimentação">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                                    </svg>
-                                </button>
-                                <button onclick="editProduct(${product.id})" class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-all" title="Editar">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            
-            // Recarregar estatísticas
-            loadStockStats();
-        } else {
-            list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Erro ao carregar produtos: ' + (result.error || 'Erro desconhecido') + '</td></tr>';
-        }
-    } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-        list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Erro ao carregar produtos</td></tr>';
-    }
-}
-window.loadStockProducts = loadStockProducts;
-
-// Função auxiliar para label do tipo de produto
-function getProductTypeLabel(type) {
-    const labels = {
-        'racao': 'Ração',
-        'medicamento': 'Medicamento',
-        'insumo': 'Insumo',
-        'outro': 'Outro'
-    };
-    return labels[type] || type;
-}
-// Carregar movimentações de estoque
-async function loadStockMovements() {
-    const list = document.getElementById('stockMovementsList');
-    if (!list) return;
-    
-    list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">Carregando movimentações...</td></tr>';
-    
-    try {
-        const productId = document.getElementById('movementProductFilter')?.value || '';
-        const movementType = document.getElementById('movementTypeFilter')?.value || '';
-        const dateFrom = document.getElementById('movementDateFrom')?.value || '';
-        const dateTo = document.getElementById('movementDateTo')?.value || '';
-        
-        const params = new URLSearchParams({ action: 'list_movements' });
-        if (productId) params.append('product_id', productId);
-        if (movementType) params.append('movement_type', movementType);
-        if (dateFrom) params.append('date_from', dateFrom);
-        if (dateTo) params.append('date_to', dateTo);
-        
-        const response = await fetch(`./api/stock.php?${params.toString()}`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            if (result.data.length === 0) {
-                list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">Nenhuma movimentação encontrada</td></tr>';
-                return;
-            }
-            
-            list.innerHTML = result.data.map(movement => {
-                const typeColors = {
-                    'entrada': 'bg-green-100 text-green-700',
-                    'saida': 'bg-red-100 text-red-700',
-                    'ajuste': 'bg-blue-100 text-blue-700',
-                    'transferencia': 'bg-gray-100 text-gray-700'
-                };
-                const typeLabels = {
-                    'entrada': 'Entrada',
-                    'saida': 'Saída',
-                    'ajuste': 'Ajuste',
-                    'transferencia': 'Transferência'
-                };
-                const typeColor = typeColors[movement.movement_type] || 'bg-gray-100 text-gray-700';
-                const typeLabel = typeLabels[movement.movement_type] || movement.movement_type;
-                
-                return `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 text-gray-900">${formatDate(movement.movement_date)}</td>
-                        <td class="px-6 py-4 font-semibold text-gray-900">${escapeHtml(movement.product_name)}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${typeColor}">
-                                ${typeLabel}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-900">${formatNumber(movement.quantity)} ${escapeHtml(movement.product_unit || '')}</td>
-                        <td class="px-6 py-4 text-gray-600">${movement.unit_price ? formatCurrency(movement.unit_price) : '-'}</td>
-                        <td class="px-6 py-4 font-semibold text-gray-900">${movement.total_cost ? formatCurrency(movement.total_cost) : '-'}</td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm">
-                                <span class="text-gray-500">${formatNumber(movement.stock_before)} → </span>
-                                <span class="font-semibold">${formatNumber(movement.stock_after)}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-gray-600 text-sm">${escapeHtml(movement.recorded_by_name || '-')}</td>
-                    </tr>
-                `;
-            }).join('');
-        } else {
-            list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Erro ao carregar movimentações</td></tr>';
-        }
-    } catch (error) {
-        console.error('Erro ao carregar movimentações:', error);
-        list.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-red-500">Erro ao carregar movimentações</td></tr>';
-    }
-}
-window.loadStockMovements = loadStockMovements;
-
-// Carregar alertas de estoque
-async function loadStockAlerts() {
-    const list = document.getElementById('stockAlertsList');
-    if (!list) return;
-    
-    list.innerHTML = '<div class="text-center py-8 text-gray-500">Carregando alertas...</div>';
-    
-    try {
-        const response = await fetch('./api/stock.php?action=list_alerts&unread_only=1');
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            const alerts = result.data;
-            
-            // Atualizar badge
-            const badge = document.getElementById('stockAlertsBadge');
-            if (badge) {
-                if (alerts.length > 0) {
-                    badge.textContent = alerts.length;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
-            
-            if (alerts.length === 0) {
-                list.innerHTML = '<div class="text-center py-8 text-gray-500">Nenhum alerta pendente</div>';
-                return;
-            }
-            
-            list.innerHTML = alerts.map(alert => {
-                const alertTypeColors = {
-                    'estoque_baixo': 'bg-yellow-50 border-yellow-200',
-                    'estoque_zerado': 'bg-red-50 border-red-200',
-                    'estoque_excesso': 'bg-blue-50 border-blue-200'
-                };
-                const alertTypeLabels = {
-                    'estoque_baixo': 'Estoque Baixo',
-                    'estoque_zerado': 'Estoque Zerado',
-                    'estoque_excesso': 'Estoque em Excesso'
-                };
-                const bgColor = alertTypeColors[alert.alert_type] || 'bg-gray-50 border-gray-200';
-                const label = alertTypeLabels[alert.alert_type] || alert.alert_type;
-                
-                return `
-                    <div class="bg-white rounded-xl border-2 ${bgColor} p-4 flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
-                                <h4 class="font-semibold text-gray-900">${escapeHtml(alert.product_name)}</h4>
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">${label}</span>
-                            </div>
-                            <p class="text-sm text-gray-600">
-                                Estoque atual: <span class="font-semibold">${formatNumber(alert.current_stock)} ${escapeHtml(alert.product_unit)}</span> | 
-                                Mínimo: <span class="font-semibold">${formatNumber(alert.min_stock)} ${escapeHtml(alert.product_unit)}</span>
-                            </p>
-                            <p class="text-xs text-gray-500 mt-1">${formatDate(alert.created_at)}</p>
-                        </div>
-                        <button onclick="markStockAlertRead(${alert.id})" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all text-sm">
-                            Marcar como lido
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar alertas:', error);
-        list.innerHTML = '<div class="text-center py-8 text-red-500">Erro ao carregar alertas</div>';
-    }
-}
-
-// Marcar alerta como lido
-async function markStockAlertRead(alertId) {
-    try {
-        const response = await fetch('./api/stock.php?action=mark_alert_read&id=' + alertId);
-        const result = await response.json();
-        
-        if (result.success) {
-            loadStockAlerts();
-            loadStockStats();
-        }
-    } catch (error) {
-        console.error('Erro ao marcar alerta como lido:', error);
-    }
-}
-window.markStockAlertRead = markStockAlertRead;
-// Mostrar modal de adicionar produto
-function showAddProductModal(productId = null) {
-    const modal = document.getElementById('addProductModal');
-    const form = document.getElementById('addProductForm');
-    const messageDiv = document.getElementById('addProductMessage');
-    const titleEl = document.getElementById('addProductModalTitle');
-    
-    if (!modal || !form) return;
-    
-    // Limpar formulário
-    form.reset();
-    document.getElementById('editProductId').value = productId || '';
-    
-    if (productId) {
-        if (titleEl) titleEl.textContent = 'Editar Produto';
-        loadProductForEdit(productId);
-    } else {
-        if (titleEl) titleEl.textContent = 'Adicionar Produto';
-    }
-    
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-    }
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-window.showAddProductModal = showAddProductModal;
-// Fechar modal de adicionar produto
-function closeAddProductModal() {
-    const modal = document.getElementById('addProductModal');
-    const form = document.getElementById('addProductForm');
-    const messageDiv = document.getElementById('addProductMessage');
-    
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    if (form) form.reset();
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-        messageDiv.innerHTML = '';
-    }
-}
-window.closeAddProductModal = closeAddProductModal;
-
-// Carregar produto para edição
-async function loadProductForEdit(productId) {
-    try {
-        const response = await fetch(`./api/stock.php?action=get_product&id=${productId}`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            const product = result.data;
-            const form = document.getElementById('addProductForm');
-            
-            form.querySelector('[name="name"]').value = product.name || '';
-            form.querySelector('[name="type"]').value = product.type || '';
-            form.querySelector('[name="unit"]').value = product.unit || 'unidade';
-            form.querySelector('[name="current_stock"]').value = product.current_stock || 0;
-            form.querySelector('[name="min_stock"]').value = product.min_stock || 0;
-            form.querySelector('[name="max_stock"]').value = product.max_stock || '';
-            form.querySelector('[name="cost_per_unit"]').value = product.cost_per_unit || '';
-            form.querySelector('[name="supplier"]').value = product.supplier || '';
-            form.querySelector('[name="category"]').value = product.category || '';
-            form.querySelector('[name="description"]').value = product.description || '';
-        }
-    } catch (error) {
-        console.error('Erro ao carregar produto:', error);
-    }
-}
-
-// Editar produto
-async function editProduct(productId) {
-    showAddProductModal(productId);
-}
-window.editProduct = editProduct;
-
-// Mostrar modal de adicionar movimentação
-function showAddMovementModal(productId = null) {
-    const modal = document.getElementById('addMovementModal');
-    const form = document.getElementById('addMovementForm');
-    const messageDiv = document.getElementById('addMovementMessage');
-    const productSelect = document.getElementById('movementProductSelect');
-    
-    if (!modal || !form) return;
-    
-    // Limpar formulário
-    form.reset();
-    
-    // Definir data padrão como hoje
-    const dateInput = form.querySelector('[name="movement_date"]');
-    if (dateInput) {
-        dateInput.value = getLocalDateString();
-    }
-    
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-    }
-    
-    // Popular select de produtos
-    populateMovementProductSelect().then(() => {
-        if (productId && productSelect) {
-            productSelect.value = productId;
-        }
-    });
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-window.showAddMovementModal = showAddMovementModal;
-
-// Fechar modal de adicionar movimentação
-function closeAddMovementModal() {
-    const modal = document.getElementById('addMovementModal');
-    const form = document.getElementById('addMovementForm');
-    const messageDiv = document.getElementById('addMovementMessage');
-    
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    if (form) form.reset();
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-        messageDiv.innerHTML = '';
-    }
-}
-window.closeAddMovementModal = closeAddMovementModal;
-
-// Popular select de produtos para movimentação
-async function populateMovementProductSelect() {
-    const select = document.getElementById('movementProductSelect');
-    if (!select) return;
-    
-    select.innerHTML = '<option value="">Carregando produtos...</option>';
-    select.disabled = true;
-    
-    try {
-        const response = await fetch('./api/stock.php?action=list_products');
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            select.innerHTML = ['<option value="">Selecione o produto</option>']
-                .concat(result.data.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${escapeHtml(p.unit)})</option>`))
-                .join('');
-        }
-        
-        select.disabled = false;
-    } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-        select.innerHTML = '<option value="">Erro ao carregar produtos</option>';
-        select.disabled = false;
-    }
-}
-
-// Popular filtro de produtos para movimentações
-async function populateMovementProductFilter() {
-    const select = document.getElementById('movementProductFilter');
-    if (!select) return;
-    
-    try {
-        const response = await fetch('./api/stock.php?action=list_products');
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            select.innerHTML = ['<option value="">Todos os produtos</option>']
-                .concat(result.data.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`))
-                .join('');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-    }
-}
-
-// Funções auxiliares
-function formatNumber(value) {
-    const num = parseFloat(value || 0);
-    return Number.isFinite(num) ? num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00';
-}
-
-function formatCurrency(value) {
-    const num = parseFloat(value || 0);
-    return Number.isFinite(num) ? 'R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'R$ 0,00';
-}
-
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR');
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 // ==================== FUNÇÕES PARA GESTÃO DE REBANHO ====================
 
 // Função para fechar submodal
@@ -4309,6 +3581,7 @@ window.closeSubModal = function(modalId) {
         }
     }
 };
+
 // Abrir modal de adicionar animal
 window.openAddAnimalModal = function() {
     console.log('Abrindo modal de adicionar animal');
@@ -4528,6 +3801,7 @@ window.showPedigreeModal = function(animalId) {
             }
         });
 };
+
 function displayPedigree(animalId, pedigree) {
     const content = document.getElementById('pedigreeContent');
     const title = document.getElementById('pedigreeTitle');
@@ -4701,6 +3975,7 @@ function displayPedigree(animalId, pedigree) {
             </div>
         `;
     }
+    
     // Buscar dados do animal principal
     fetch(`api/animals.php?action=get_by_id&id=${animalId}`)
         .then(res => res.json())
@@ -5019,6 +4294,7 @@ function displayPedigree(animalId, pedigree) {
                                 gap: 35px;
                             }
                         }
+                        
                         /* Desktop Grande / 4K - Responsividade Máxima */
                         @media (min-width: 1921px) {
                             .pedigree-tree {
@@ -5268,6 +4544,7 @@ function displayPedigree(animalId, pedigree) {
             content.innerHTML = '<div class="text-center py-12"><p class="text-red-600">Erro ao carregar dados do animal</p></div>';
         });
 }
+
 // Função para desenhar linhas de conexão precisas
 function drawPedigreeLines() {
     const tree = document.querySelector('.pedigree-tree');
@@ -5489,6 +4766,7 @@ function drawPedigreeLines() {
     
     tree.appendChild(svg);
 }
+
 window.editAnimalModal = function(animalId) {
     const modal = document.getElementById('editAnimalModal');
     const form = document.getElementById('editAnimalForm');
@@ -5786,6 +5064,7 @@ window.closePedigreeModal = function() {
         document.body.style.overflow = '';
     }
 };
+
 // Função para exibir informações do animal no pedigree
 window.showAnimalPedigreeInfo = function(animalId, hasData, event) {
     // Log para debug
@@ -5921,6 +5200,7 @@ window.showAnimalPedigreeInfo = function(animalId, hasData, event) {
         modal.classList.add('hidden');
         document.body.style.overflow = '';
     }
+    
     // Pequeno delay para garantir que fechou antes de abrir novo
     setTimeout(function() {
         // Se não tem ID ou dados, mostrar mensagem de vazio
@@ -6249,6 +5529,7 @@ window.closeViewAnimalModal = function() {
         modal.classList.add('hidden');
     }
 };
+
 // Sistema de busca e filtros para Gestão de Rebanho
 window.animalFiltersInitialized = false;
 
@@ -6384,6 +5665,35 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 window.closeQualityOverlay = closeQualityOverlay;
 window.closeSalesOverlay = closeSalesOverlay;
+
+// Volume: exportar CSV
+async function exportVolumeReport() {
+    try {
+        const res = await fetch('./api/volume.php?action=get_all');
+        const json = await res.json();
+        const rows = Array.isArray(json?.data) ? json.data : [];
+        if (rows.length === 0) {
+            console.warn('Sem registros de volume para exportar');
+            return;
+        }
+        const header = ['Data','Período','Volume','Animais','Média'];
+        const csvRows = [header.join(',')].concat(rows.map(r => {
+            const cols = [r.record_date, r.shift, Number(r.total_volume)||0, Number(r.total_animals)||0, Number(r.average_per_animal)||0];
+            return cols.join(',');
+        }));
+        const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `volume_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('Erro ao exportar volume:', e);
+    }
+}
 window.exportVolumeReport = exportVolumeReport;
 
 async function populateVolumeAnimalSelect() {
@@ -6548,6 +5858,7 @@ window.markAllNotificationsRead = async function markAllNotificationsRead() {
         console.error('Erro ao marcar como lidas', e);
     }
 };
+
 // Função para verificar e mostrar notificações push
 function checkAndShowPushNotifications(notifications) {
     // Verificar se a API de Notificações está disponível
@@ -6689,6 +6000,7 @@ function escapeHtml(s){
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
+
 // ==================== PERFIL DO USUÁRIO ====================
 let profileOriginalValues = {};
 let profileEditMode = false;
@@ -6864,6 +6176,7 @@ window.closeGoogleSettingsModal = function closeGoogleSettingsModal() {
         modal.classList.add('hidden');
     }
 };
+
 // FUNÇÃO DESATIVADA - Campos de senha sempre habilitados agora (sem necessidade de Google)
 function togglePasswordFields(isGoogleLinked) {
     // DESATIVADO: Sempre habilitar campos de senha (não precisa mais de Google vinculado)
@@ -7033,6 +6346,7 @@ window.linkGoogleAccount = async function linkGoogleAccount() {
 window.unlinkGoogleAccount = function unlinkGoogleAccount() {
     openUnlinkGoogleModal();
 };
+
 // Confirmar desvincular Google
 window.confirmUnlinkGoogle = async function confirmUnlinkGoogle() {
     closeUnlinkGoogleModal();
@@ -7174,6 +6488,7 @@ function setupProfileMasks() {
         farmCNPJEl.addEventListener('input', handleCNPJInput);
     }
 }
+
 /**
  * Handler para input de telefone
  */
@@ -7261,6 +6576,7 @@ function handleCNPJInput(e) {
     // Atualizar atributo value também
     e.target.setAttribute('value', formatted);
 }
+
 window.openProfileOverlay = function openProfileOverlay() {
     const modal = document.getElementById('profileOverlay');
     if (!modal) return;
@@ -7359,10 +6675,12 @@ window.openProfileOverlay = function openProfileOverlay() {
     // Adicionar listeners para detectar mudanças (só quando em modo edição)
     setupProfileChangeDetection();
 };
+
 window.toggleProfileEdit = function toggleProfileEdit() {
     profileEditMode = !profileEditMode;
     updateProfileEditMode();
 };
+
 function updateProfileEditMode() {
     const btn = document.getElementById('editProfileBtn');
     const inputs = document.querySelectorAll('.profile-input');
@@ -7559,6 +6877,7 @@ function setupProfileChangeDetection() {
         }
     });
 }
+
 window.cancelProfileChanges = function cancelProfileChanges() {
     // Log para debug
     console.log('Cancelando alterações. Valores originais:', profileOriginalValues);
@@ -7682,6 +7001,7 @@ window.cancelProfileChanges = function cancelProfileChanges() {
     
     // Não sair do modo edição ao cancelar - usuário pode continuar editando
 };
+
 let cameraStream = null;
 let isFaceCentered = false;
 let faceDetectionInterval = null;
@@ -7835,6 +7155,7 @@ window.openCamera = async function openCamera() {
         }
     }
 };
+
 window.closeCamera = function closeCamera() {
     // Limpar timers
     clearInterval(faceDetectionInterval);
@@ -7857,6 +7178,7 @@ window.closeCamera = function closeCamera() {
     isFaceCentered = false;
     isCapturing = false;
 };
+
 async function loadFaceApiModels() {
     if (faceApiModelsLoaded) return true;
     
@@ -7952,6 +7274,7 @@ function startFaceDetection() {
         updateFaceFrame(false);
     });
 }
+
 function startRealFaceDetection(video) {
     clearInterval(faceDetectionInterval);
     
@@ -8236,6 +7559,7 @@ window.switchCamera = async function switchCamera() {
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
     }
 };
+
 window.capturePhoto = async function capturePhoto() {
     const video = document.getElementById('cameraPreview');
     const canvas = document.getElementById('cameraCapture');
@@ -8427,6 +7751,7 @@ window.capturePhoto = async function capturePhoto() {
         }
     }, 'image/jpeg', 0.9); // Qualidade 90%
 };
+
 window.handleProfilePhotoUpload = async function handleProfilePhotoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -8641,6 +7966,7 @@ window.handleProfilePhotoUpload = async function handleProfilePhotoUpload(event)
         event.target.value = '';
     }
 };
+
 window.saveProfile = async function saveProfile() {
     console.log('💾 Função saveProfile chamada!');
     
@@ -8908,6 +8234,7 @@ window.saveProfile = async function saveProfile() {
                     }
                 });
             }
+            
             // Forçar atualização visual novamente após desabilitar usando requestAnimationFrame
             // Isso garante que o browser tenha processado o disabled antes de atualizar
             requestAnimationFrame(() => {
@@ -9132,6 +8459,7 @@ function showGoogleLinkedModal(message) {
         }
     });
 }
+
 function closeGoogleLinkedModal() {
     const modal = document.getElementById('googleLinkedModal');
     if (modal) {
@@ -9288,6 +8616,7 @@ window.closeDevicesModal = function closeDevicesModal() {
     modal.classList.add('hidden');
     document.body.style.overflow = 'auto';
 };
+
 async function loadDevicesList() {
     const devicesList = document.getElementById('devicesList');
     if (!devicesList) return;
@@ -9394,6 +8723,7 @@ function formatDateTime(dateString) {
         minute: '2-digit' 
     });
 }
+
 async function revokeDevice(deviceId) {
     // Mostrar modal de confirmação customizado
     const confirmed = await showConfirmModal('Encerrar Sessão', 'Tem certeza que deseja encerrar esta sessão? Esta ação não pode ser desfeita.');
@@ -9426,6 +8756,7 @@ async function revokeDevice(deviceId) {
         showErrorModal('Erro ao encerrar sessão. Tente novamente.');
     }
 }
+
 function showConfirmModal(title, message) {
     return new Promise((resolve) => {
         const modal = document.createElement('div');
@@ -9493,7 +8824,9 @@ function showConfirmModal(title, message) {
         };
     });
 }
+
 window.revokeDevice = revokeDevice;
+
 // ==================== CONTROLE DE NOVILHAS ====================
 
 // Carregar dashboard de novilhas quando o modal abrir
@@ -9553,137 +8886,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const heiferSearchInput = document.getElementById('heifer-search');
     if (heiferSearchInput) {
         heiferSearchInput.addEventListener('input', filterHeifersList);
-    }
-
-    // ==================== EVENT LISTENERS - GESTÃO DE ESTOQUE ====================
-    
-    // Formulário de adicionar/editar produto
-    const addProductForm = document.getElementById('addProductForm');
-    if (addProductForm) {
-        addProductForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(addProductForm);
-            const productId = document.getElementById('editProductId').value;
-            const messageDiv = document.getElementById('addProductMessage');
-            
-            const data = {};
-            formData.forEach((value, key) => {
-                if (value) data[key] = value;
-            });
-            
-            try {
-                const url = productId 
-                    ? './api/stock.php?action=update_product'
-                    : './api/stock.php?action=create_product';
-                
-                if (productId) {
-                    data.id = productId;
-                }
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (messageDiv) {
-                    messageDiv.classList.remove('hidden');
-                    if (result.success) {
-                        messageDiv.className = 'p-4 rounded-xl border border-green-200 bg-green-50 text-green-700';
-                        messageDiv.textContent = result.data?.message || 'Produto salvo com sucesso!';
-                        
-                        setTimeout(() => {
-                            closeAddProductModal();
-                            loadStockProducts(true);
-                            loadStockStats();
-                        }, 1500);
-                    } else {
-                        messageDiv.className = 'p-4 rounded-xl border border-red-200 bg-red-50 text-red-700';
-                        messageDiv.textContent = result.error || 'Erro ao salvar produto';
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao salvar produto:', error);
-                if (messageDiv) {
-                    messageDiv.classList.remove('hidden');
-                    messageDiv.className = 'p-4 rounded-xl border border-red-200 bg-red-50 text-red-700';
-                    messageDiv.textContent = 'Erro ao salvar produto. Tente novamente.';
-                }
-            }
-        });
-    }
-    
-    // Formulário de adicionar movimentação
-    const addMovementForm = document.getElementById('addMovementForm');
-    if (addMovementForm) {
-        addMovementForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(addMovementForm);
-            const messageDiv = document.getElementById('addMovementMessage');
-            
-            const data = {};
-            formData.forEach((value, key) => {
-                if (value) data[key] = value;
-            });
-            
-            try {
-                const response = await fetch('./api/stock.php?action=create_movement', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (messageDiv) {
-                    messageDiv.classList.remove('hidden');
-                    if (result.success) {
-                        messageDiv.className = 'p-4 rounded-xl border border-green-200 bg-green-50 text-green-700';
-                        messageDiv.textContent = result.data?.message || 'Movimentação registrada com sucesso!';
-                        
-                        setTimeout(() => {
-                            closeAddMovementModal();
-                            loadStockMovements();
-                            loadStockProducts(true);
-                            loadStockStats();
-                            loadStockAlerts();
-                        }, 1500);
-                    } else {
-                        messageDiv.className = 'p-4 rounded-xl border border-red-200 bg-red-50 text-red-700';
-                        messageDiv.textContent = result.error || 'Erro ao registrar movimentação';
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao registrar movimentação:', error);
-                if (messageDiv) {
-                    messageDiv.classList.remove('hidden');
-                    messageDiv.className = 'p-4 rounded-xl border border-red-200 bg-red-50 text-red-700';
-                    messageDiv.textContent = 'Erro ao registrar movimentação. Tente novamente.';
-                }
-            }
-        });
-    }
-    
-    // Busca e filtros de produtos
-    const stockSearchInput = document.getElementById('stockSearchInput');
-    if (stockSearchInput) {
-        stockSearchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                loadStockProducts(true);
-            }
-        });
-    }
-    
-    const stockTypeFilter = document.getElementById('stockTypeFilter');
-    if (stockTypeFilter) {
-        stockTypeFilter.addEventListener('change', function() {
-            loadStockProducts(true);
-        });
     }
 });
 
@@ -9872,6 +9074,7 @@ window.openHeiferCostForm = function() {
         calculateHeiferCostTotal();
     }
 };
+
 // Alias para compatibilidade
 window.showAddHeiferCostForm = window.openHeiferCostForm;
 
@@ -9912,6 +9115,7 @@ async function populateHeiferSelect(selectId) {
         console.error('Erro ao carregar novilhas:', error);
     }
 }
+
 // Atualizar tipos de alimento baseado na categoria
 async function updateHeiferFoodTypes() {
     const categorySelect = document.getElementById('heifer-cost-category');
@@ -9955,6 +9159,7 @@ function calculateHeiferCostTotal() {
         totalInput.value = total.toFixed(2);
     }
 }
+
 // Submeter formulário de custo
 async function handleHeiferCostSubmit(e) {
     e.preventDefault();
@@ -10129,6 +9334,7 @@ async function handleHeiferConsumptionSubmit(e) {
         }
     }
 }
+
 // Ver detalhes da novilha
 window.viewHeiferDetails = async function(animalId) {
     console.log('Carregando detalhes da novilha:', animalId);
