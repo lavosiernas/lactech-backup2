@@ -80,6 +80,9 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
     
     <!-- Preload de recursos críticos -->
     <link rel="preload" href="assets/css/style.css" as="style">
+    
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         .error-message {
             background-color: #fef2f2;
@@ -343,6 +346,16 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                     <a href="esqueceu-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                 </div>
 
+                <!-- Cloudflare Turnstile Widget -->
+                <?php if (defined('TURNSTILE_SITE_KEY') && !empty(TURNSTILE_SITE_KEY)): ?>
+                <div class="cf-turnstile" 
+                     data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>" 
+                     data-theme="light" 
+                     data-callback="onTurnstileSuccess"
+                     data-error-callback="onTurnstileError"
+                     id="turnstile-widget"></div>
+                <?php endif; ?>
+
                 <button type="submit" id="loginBtn" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
                     <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
                     <span id="loginText">Entrar</span>
@@ -395,16 +408,16 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         </div>
 
         <!-- Right Side - Form -->
-        <div class="flex-1 flex items-center justify-center p-8">
-            <div class="w-full max-w-md">
-                <!-- Botão Voltar -->
-                <a href="index.php" class="inline-flex items-center text-slate-600 hover:text-slate-900 mb-6 transition-colors">
+        <div class="flex-1 flex items-center justify-center p-8 relative">
+            <!-- Botão Voltar - Canto superior direito -->
+            <a href="index.php" class="absolute top-8 right-8 inline-flex items-center text-slate-600 hover:text-slate-900 transition-colors">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     <span class="text-sm font-medium">Voltar</span>
                 </a>
-                
+            
+            <div class="w-full max-w-md">
                 <!-- Logo acima do bem-vindo -->
                 <div class="text-center mb-8">
                     <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4" loading="lazy" width="64" height="64">
@@ -458,6 +471,16 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         <a href="esqueceu-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                     </div>
 
+                    <!-- Cloudflare Turnstile Widget -->
+                    <?php if (defined('TURNSTILE_SITE_KEY') && !empty(TURNSTILE_SITE_KEY)): ?>
+                    <div class="cf-turnstile" 
+                         data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>" 
+                         data-theme="light" 
+                         data-callback="onTurnstileSuccessDesktop"
+                         data-error-callback="onTurnstileErrorDesktop"
+                         id="turnstile-widget-desktop"></div>
+                    <?php endif; ?>
+
                     <button type="submit" id="loginBtnDesktop" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
                         <span class="loading-spinner" id="loadingSpinnerDesktop" style="display: none;"></span>
                         <span id="loginTextDesktop">Entrar</span>
@@ -498,6 +521,32 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
 
         // Global variables for authentication state
         let isAuthenticating = false;
+        
+        // Variáveis para armazenar tokens do Turnstile
+        let turnstileToken = '';
+        let turnstileTokenDesktop = '';
+        
+        // Callbacks do Turnstile para mobile
+        function onTurnstileSuccess(token) {
+            turnstileToken = token;
+            console.log('✅ Turnstile verificado (mobile)');
+        }
+        
+        function onTurnstileError(error) {
+            turnstileToken = '';
+            console.error('❌ Erro no Turnstile (mobile):', error);
+        }
+        
+        // Callbacks do Turnstile para desktop
+        function onTurnstileSuccessDesktop(token) {
+            turnstileTokenDesktop = token;
+            console.log('✅ Turnstile verificado (desktop)');
+        }
+        
+        function onTurnstileErrorDesktop(error) {
+            turnstileTokenDesktop = '';
+            console.error('❌ Erro no Turnstile (desktop):', error);
+        }
 
         // Sistema MySQL - Conexão direta com banco de dados
 
@@ -592,16 +641,21 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         }
 
         // Authenticate user with direct database login
-        async function authenticateUser(email, password) {
+        async function authenticateUser(email, password, turnstileToken = '') {
             try {
                 console.log('🔐 Tentando login MySQL:', email);
+                
+                const requestBody = { email, password };
+                if (turnstileToken) {
+                    requestBody.turnstile_token = turnstileToken;
+                }
                 
                 const response = await fetch('api/login.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 const data = await response.json();
@@ -695,16 +749,65 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 return;
             }
             
+            // Verificar se o Turnstile está configurado e obter o token
+            const currentToken = isDesktop ? turnstileTokenDesktop : turnstileToken;
+            const turnstileWidgetId = isDesktop ? 'turnstile-widget-desktop' : 'turnstile-widget';
+            const turnstileWidget = document.getElementById(turnstileWidgetId);
+            let tokenToSend = currentToken;
+            
+            // Se o widget existe e está visível, verificar se precisa do token
+            if (turnstileWidget) {
+                const siteKey = turnstileWidget.getAttribute('data-sitekey');
+                
+                // Se o Turnstile está configurado mas não temos token, verificar se foi resolvido
+                if (siteKey && !tokenToSend) {
+                    // Tentar obter o token diretamente do widget
+                    if (window.turnstile) {
+                        const widgetElement = turnstileWidget.querySelector('.cf-turnstile');
+                        if (widgetElement) {
+                            const widgetId = widgetElement.getAttribute('data-widget-id');
+                            if (widgetId) {
+                                tokenToSend = window.turnstile.getResponse(widgetId);
+                            }
+                        }
+                    }
+                    
+                    // Se ainda não tiver token, mostrar erro
+                    if (!tokenToSend) {
+                        showError('Por favor, complete a verificação de segurança.', isDesktop);
+                        return;
+                    }
+                }
+            }
+            
             // Hide previous messages and show loading
             hideMessages(isDesktop);
             setLoadingState(true, isDesktop);
             
             try {
                 // Attempt authentication
-                const userData = await authenticateUser(email, password);
+                const userData = await authenticateUser(email, password, tokenToSend);
                 
                 // Store session data
                 storeUserSession(userData, remember);
+                
+                // Reset Turnstile após login bem-sucedido
+                if (turnstileWidget && window.turnstile) {
+                    const widgetElement = turnstileWidget.querySelector('.cf-turnstile');
+                    if (widgetElement) {
+                        const widgetId = widgetElement.getAttribute('data-widget-id');
+                        if (widgetId) {
+                            window.turnstile.reset(widgetId);
+                        }
+                    }
+                }
+                
+                // Limpar tokens
+                if (isDesktop) {
+                    turnstileTokenDesktop = '';
+                } else {
+                    turnstileToken = '';
+                }
                 
                 // Show success message
                 showSuccess('Login realizado com sucesso! Redirecionando...', isDesktop);
@@ -720,6 +823,24 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 console.error('Login error:', error);
                 setLoadingState(false, isDesktop);
                 
+                // Reset Turnstile em caso de erro
+                if (turnstileWidget && window.turnstile) {
+                    const widgetElement = turnstileWidget.querySelector('.cf-turnstile');
+                    if (widgetElement) {
+                        const widgetId = widgetElement.getAttribute('data-widget-id');
+                        if (widgetId) {
+                            window.turnstile.reset(widgetId);
+                        }
+                    }
+                }
+                
+                // Limpar tokens
+                if (isDesktop) {
+                    turnstileTokenDesktop = '';
+                } else {
+                    turnstileToken = '';
+                }
+                
                 // Show specific error messages
                 if (error.message.includes('Invalid login credentials')) {
                     showError('Email ou senha incorretos. Tente novamente.', isDesktop);
@@ -730,6 +851,8 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         handleLogin(form, isDesktop);
                     }, 2000);
                     return;
+                } else if (error.message.includes('verificação') || error.message.includes('Turnstile')) {
+                    showError(error.message, isDesktop);
                 } else {
                     showError(error.message || 'Erro no servidor. Tente novamente em alguns minutos.', isDesktop);
                 }

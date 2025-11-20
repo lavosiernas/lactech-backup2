@@ -3758,6 +3758,26 @@ $v = time();
                     <button onclick="saveProfile()" class="px-5 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm">Salvar Alterações</button>
                 </div>
             </div>
+
+            <!-- Footer de Proteção -->
+            <div class="border-t border-gray-200 bg-gray-50">
+                <div class="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-medium text-gray-600">Protegido por:</span>
+                            <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+                                <img src="./assets/video/cloudflare_icon_130969-removebg-preview.png" alt="Cloudflare" class="w-5 h-5 object-contain">
+                                <span class="text-xs font-medium">Cloudflare</span>
+                            </a>
+                            <span class="text-gray-400">|</span>
+                            <div class="flex items-center space-x-2 text-gray-600">
+                                <img src="./safenode/assets/img/logos (5).png" alt="SafeNode" class="w-5 h-5 object-contain">
+                                <span class="text-xs font-medium">SafeNode</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
