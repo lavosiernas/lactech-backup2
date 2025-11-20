@@ -232,9 +232,12 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
+        /* Alpine.js x-cloak */
+        [x-cloak] { display: none !important; }
+
     </style>
 </head>
-<body class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex selection:bg-blue-500/30">
+<body x-data="{ notificationsOpen: false }" class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex selection:bg-blue-500/30">
 
     <!-- Sidebar -->
     <aside class="w-72 bg-black border-r border-white/10 flex flex-col h-full z-50 hidden md:flex">
@@ -301,7 +304,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
     </aside>
 
     <!-- Main Content -->
-    <main x-data="{ notificationsOpen: false }" class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
         <!-- Header -->
         <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
                 <div class="flex items-center gap-4 md:hidden">
@@ -790,46 +793,6 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
 
             <!-- Lista de Notificações -->
             <div class="flex-1 overflow-y-auto p-4 space-y-3">
-                <!-- Exemplo de Notificações -->
-                <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                            <i data-lucide="shield-alert" class="w-5 h-5 text-red-400"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-white">Ameaça Detectada</p>
-                            <p class="text-xs text-zinc-400 mt-1">Tentativa de SQL Injection bloqueada de 192.168.1.100</p>
-                            <p class="text-xs text-zinc-500 mt-2">Há 5 minutos</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-white">Tráfego Alto</p>
-                            <p class="text-xs text-zinc-400 mt-1">Pico de requisições detectado: 1,234/min</p>
-                            <p class="text-xs text-zinc-500 mt-2">Há 15 minutos</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                            <i data-lucide="check-circle" class="w-5 h-5 text-blue-400"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-white">Sistema Atualizado</p>
-                            <p class="text-xs text-zinc-400 mt-1">Regras de firewall sincronizadas com sucesso</p>
-                            <p class="text-xs text-zinc-500 mt-2">Há 1 hora</p>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Mensagem quando não há notificações -->
                 <div class="text-center py-12 text-zinc-500">
                     <i data-lucide="bell-off" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
