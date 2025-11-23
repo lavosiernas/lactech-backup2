@@ -77,3 +77,6 @@ echo "<hr>";
 echo "<p><strong>Se você vê esta mensagem, o PHP está funcionando!</strong></p>";
 echo "<p>Acesse este arquivo: safenode.cloud/test.php</p>";
 
+
+
+

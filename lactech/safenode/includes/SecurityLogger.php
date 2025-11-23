@@ -6,22 +6,24 @@
 
 class SecurityLogger {
     private $db;
+    private static $countryColumnReady = false;
     
     public function __construct($database) {
         $this->db = $database;
+        $this->ensureCountryColumn();
     }
     
     /**
      * Registra um evento de segurança
      */
-    public function log($ipAddress, $requestUri, $requestMethod, $actionTaken, $threatType = null, $threatScore = 0, $userAgent = null, $referer = null, $siteId = null, $responseTime = null) {
+    public function log($ipAddress, $requestUri, $requestMethod, $actionTaken, $threatType = null, $threatScore = 0, $userAgent = null, $referer = null, $siteId = null, $responseTime = null, $countryCode = null) {
         if (!$this->db) return false;
         
         try {
             // Verificar se a coluna response_time existe
-            $columns = "ip_address, request_uri, request_method, action_taken, threat_type, threat_score, user_agent, referer, site_id, created_at";
-            $values = "?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()";
-            $params = [$ipAddress, $requestUri, $requestMethod, $actionTaken, $threatType, $threatScore, $userAgent, $referer, $siteId];
+            $columns = "ip_address, request_uri, request_method, action_taken, threat_type, threat_score, user_agent, referer, site_id, country_code, created_at";
+            $values = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()";
+            $params = [$ipAddress, $requestUri, $requestMethod, $actionTaken, $threatType, $threatScore, $userAgent, $referer, $siteId, $countryCode];
             
             if ($responseTime !== null) {
                 try {
@@ -51,10 +53,34 @@ class SecurityLogger {
                 $stmt->execute($params);
             }
             
-            return $this->db->lastInsertId();
+            $logId = $this->db->lastInsertId();
+
+            // Atualizar/incorporar em incidente, se for ameaça relevante
+            if ($actionTaken === 'blocked' && !empty($threatType)) {
+                $this->updateIncident($ipAddress, $threatType, $threatScore, $siteId);
+            }
+
+            return $logId;
         } catch (PDOException $e) {
             error_log("SafeNode SecurityLogger Error: " . $e->getMessage());
             return false;
+        }
+    }
+    
+    private function ensureCountryColumn() {
+        if (self::$countryColumnReady || !$this->db) {
+            return;
+        }
+        try {
+            $this->db->query("SELECT country_code FROM safenode_security_logs LIMIT 1");
+            self::$countryColumnReady = true;
+        } catch (PDOException $e) {
+            try {
+                $this->db->exec("ALTER TABLE safenode_security_logs ADD COLUMN country_code CHAR(2) DEFAULT NULL AFTER site_id");
+            } catch (PDOException $alterErr) {
+                error_log("SafeNode Geo Column Error: " . $alterErr->getMessage());
+            }
+            self::$countryColumnReady = true;
         }
     }
     
@@ -152,6 +178,64 @@ class SecurityLogger {
         } catch (PDOException $e) {
             error_log("SafeNode Latency Calculation Error: " . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Atualiza ou cria um incidente agregado a partir de um log bloqueado.
+     */
+    private function updateIncident(string $ipAddress, ?string $threatType, int $threatScore, ?int $siteId = null): void
+    {
+        if (!$this->db) return;
+
+        $threatType = $threatType ?: 'unknown';
+        $nowWindowMinutes = 10; // janela para agrupar eventos em um mesmo incidente
+
+        try {
+            // Procurar incidente aberto recente para esse IP + tipo
+            $stmt = $this->db->prepare("
+                SELECT id, total_events, critical_events, highest_score
+                FROM safenode_incidents
+                WHERE ip_address = ?
+                  AND threat_type = ?
+                  AND status = 'open'
+                  AND last_seen >= DATE_SUB(NOW(), INTERVAL ? MINUTE)
+                ORDER BY last_seen DESC
+                LIMIT 1
+            ");
+            $stmt->execute([$ipAddress, $threatType, $nowWindowMinutes]);
+            $incident = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $isCritical = $threatScore >= 80;
+
+            if ($incident) {
+                $update = $this->db->prepare("
+                    UPDATE safenode_incidents
+                    SET 
+                        total_events = total_events + 1,
+                        critical_events = critical_events + ?,
+                        highest_score = GREATEST(highest_score, ?),
+                        last_seen = NOW()
+                    WHERE id = ?
+                ");
+                $update->execute([$isCritical ? 1 : 0, $threatScore, $incident['id']]);
+            } else {
+                $insert = $this->db->prepare("
+                    INSERT INTO safenode_incidents 
+                        (ip_address, threat_type, site_id, status, first_seen, last_seen, total_events, critical_events, highest_score)
+                    VALUES 
+                        (?, ?, ?, 'open', NOW(), NOW(), 1, ?, ?)
+                ");
+                $insert->execute([
+                    $ipAddress,
+                    $threatType,
+                    $siteId,
+                    $isCritical ? 1 : 0,
+                    $threatScore
+                ]);
+            }
+        } catch (PDOException $e) {
+            error_log("SafeNode Incident Update Error: " . $e->getMessage());
         }
     }
 }

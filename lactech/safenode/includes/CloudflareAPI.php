@@ -1,7 +1,7 @@
 <?php
 /**
  * SafeNode - Cloudflare API Integration
- * Integração com API do Cloudflare para regras de firewall
+ * Integração com API do Cloudflare para regras de firewall e DNS
  */
 
 class CloudflareAPI {
@@ -17,6 +17,13 @@ class CloudflareAPI {
             ?? null;
     }
     
+    /**
+     * Verifica o token e retorna detalhes do usuário/conta
+     */
+    public function verifyToken() {
+        return $this->makeRequest('user/tokens/verify', 'GET');
+    }
+
     /**
      * Cria uma regra de firewall no Cloudflare
      */
@@ -60,6 +67,85 @@ class CloudflareAPI {
         
         return $this->makeRequest("zones/$zoneId/firewall/rules", 'GET');
     }
+
+    /**
+     * Obtém detalhes da Zona (Site)
+     */
+    public function getZoneDetails($zoneId) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+        return $this->makeRequest("zones/$zoneId", 'GET');
+    }
+
+    /**
+     * Lista registros DNS
+     */
+    public function listDNSRecords($zoneId, $type = null, $name = null, $page = 1, $perPage = 50) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+
+        $query = [
+            'page' => $page,
+            'per_page' => $perPage
+        ];
+
+        if ($type) $query['type'] = $type;
+        if ($name) $query['name'] = $name;
+
+        $queryString = http_build_query($query);
+        return $this->makeRequest("zones/$zoneId/dns_records?$queryString", 'GET');
+    }
+
+    /**
+     * Cria um registro DNS
+     */
+    public function createDNSRecord($zoneId, $type, $name, $content, $ttl = 1, $proxied = true) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+
+        $data = [
+            'type' => $type,
+            'name' => $name,
+            'content' => $content,
+            'ttl' => (int)$ttl,
+            'proxied' => (bool)$proxied
+        ];
+
+        return $this->makeRequest("zones/$zoneId/dns_records", 'POST', $data);
+    }
+
+    /**
+     * Atualiza um registro DNS
+     */
+    public function updateDNSRecord($zoneId, $recordId, $type, $name, $content, $ttl = 1, $proxied = true) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+
+        $data = [
+            'type' => $type,
+            'name' => $name,
+            'content' => $content,
+            'ttl' => (int)$ttl,
+            'proxied' => (bool)$proxied
+        ];
+
+        return $this->makeRequest("zones/$zoneId/dns_records/$recordId", 'PUT', $data);
+    }
+
+    /**
+     * Remove um registro DNS
+     */
+    public function deleteDNSRecord($zoneId, $recordId) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+
+        return $this->makeRequest("zones/$zoneId/dns_records/$recordId", 'DELETE');
+    }
     
     /**
      * Faz requisição à API do Cloudflare
@@ -76,7 +162,7 @@ class CloudflareAPI {
             ],
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_TIMEOUT => 10
+            CURLOPT_TIMEOUT => 30
         ]);
         
         if ($data && in_array($method, ['POST', 'PUT', 'PATCH'])) {
@@ -102,4 +188,3 @@ class CloudflareAPI {
         ];
     }
 }
-

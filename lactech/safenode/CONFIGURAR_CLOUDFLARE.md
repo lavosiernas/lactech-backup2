@@ -84,3 +84,6 @@ Após configurar, quando o SafeNode detectar uma ameaça:
 - Verifique se o token tem permissão para a zona específica
 - Verifique se o site está ativo no SafeNode
 
+
+
+

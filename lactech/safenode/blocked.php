@@ -61,7 +61,7 @@ if ($db) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPs Bloqueados - SafeNode</title>
+    <title>IPs Bloqueados | SafeNode</title>
     <link rel="icon" type="image/png" href="assets/img/logos (6).png">
     <link rel="shortcut icon" type="image/png" href="assets/img/logos (6).png">
     <link rel="apple-touch-icon" href="assets/img/logos (6).png">

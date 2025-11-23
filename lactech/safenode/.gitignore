@@ -1,0 +1,25 @@
+# Google OAuth Credentials
+database/client_secret_*.json
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+error_log
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+

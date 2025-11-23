@@ -93,3 +93,6 @@ Não é necessária configuração adicional. O sistema funciona automaticamente
 - Isso é normal durante desenvolvimento
 - Em produção, o `.htaccess` bloqueia acesso direto quando logado
 
+
+
+

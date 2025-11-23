@@ -6,6 +6,10 @@
 
 session_start();
 
+// SEGURANÇA: Carregar helpers e aplicar headers
+require_once __DIR__ . '/includes/SecurityHelpers.php';
+SecurityHeaders::apply();
+
 // Verificar se está logado
 if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !== true) {
     header('Location: login.php');
@@ -14,8 +18,49 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/Settings.php';
+require_once __DIR__ . '/includes/Alert.php';
 
 $db = getSafeNodeDatabase();
+$currentSiteId = $_SESSION['view_site_id'] ?? 0;
+$selectedSite = null;
+$dashboardFlash = $_SESSION['safenode_dashboard_message'] ?? '';
+$dashboardFlashType = $_SESSION['safenode_dashboard_message_type'] ?? 'success';
+unset($_SESSION['safenode_dashboard_message'], $_SESSION['safenode_dashboard_message_type']);
+
+if ($db && $currentSiteId > 0) {
+    try {
+        // SEGURANÇA: Verificar que o site pertence ao usuário logado
+        $userId = $_SESSION['safenode_user_id'] ?? null;
+        $stmt = $db->prepare("SELECT * FROM safenode_sites WHERE id = ? AND user_id = ?");
+        $stmt->execute([$currentSiteId, $userId]);
+        $selectedSite = $stmt->fetch();
+    } catch (PDOException $e) {
+        $selectedSite = null;
+    }
+}
+
+if ($db && $currentSiteId > 0 && $selectedSite && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_under_attack'])) {
+    $newLevel = $selectedSite['security_level'] === 'under_attack' ? 'high' : 'under_attack';
+    try {
+        $stmt = $db->prepare("UPDATE safenode_sites SET security_level = ? WHERE id = ?");
+        $stmt->execute([$newLevel, $currentSiteId]);
+        $_SESSION['safenode_dashboard_message'] = $newLevel === 'under_attack'
+            ? 'Modo “Sob Ataque” ativado para este site.'
+            : 'Modo “Sob Ataque” desativado.';
+        $_SESSION['safenode_dashboard_message_type'] = $newLevel === 'under_attack' ? 'warning' : 'success';
+    } catch (PDOException $e) {
+        $_SESSION['safenode_dashboard_message'] = 'Não foi possível atualizar o modo de proteção.';
+        $_SESSION['safenode_dashboard_message_type'] = 'error';
+    }
+    header('Location: dashboard.php');
+    exit;
+}
+
+// Contexto do Site
+$siteFilter = $currentSiteId > 0 ? " AND site_id = $currentSiteId " : "";
+$siteFilterWhere = $currentSiteId > 0 ? " WHERE site_id = $currentSiteId " : "";
+$siteFilterAnd = $currentSiteId > 0 ? " AND site_id = $currentSiteId " : "";
 
 // Buscar estatísticas gerais
 $stats = [
@@ -31,12 +76,27 @@ $stats = [
         'rate_limit' => 0
     ]
 ];
+$topCountries = [];
 
 if ($db) {
     try {
-        // Estatísticas do dia
-        $stmt = $db->query("SELECT * FROM v_safenode_today_stats");
+        // Estatísticas do dia (Recalculadas dinamicamente para suportar filtro)
+        // Evitando usar a view global se tiver filtro
+        $sqlToday = "SELECT 
+            COUNT(*) as total_requests,
+            SUM(CASE WHEN action_taken = 'blocked' THEN 1 ELSE 0 END) as blocked_requests,
+            SUM(CASE WHEN action_taken = 'allowed' THEN 1 ELSE 0 END) as allowed_requests,
+            COUNT(DISTINCT ip_address) as unique_ips,
+            SUM(CASE WHEN threat_type = 'sql_injection' THEN 1 ELSE 0 END) as sql_injection_count,
+            SUM(CASE WHEN threat_type = 'xss' THEN 1 ELSE 0 END) as xss_count,
+            SUM(CASE WHEN threat_type = 'brute_force' THEN 1 ELSE 0 END) as brute_force_count,
+            SUM(CASE WHEN threat_type = 'rate_limit' THEN 1 ELSE 0 END) as rate_limit_count
+            FROM safenode_security_logs 
+            WHERE DATE(created_at) = CURDATE() $siteFilterAnd";
+            
+        $stmt = $db->query($sqlToday);
         $todayStats = $stmt->fetch();
+        
         if ($todayStats) {
             $stats['total_requests_today'] = $todayStats['total_requests'] ?? 0;
             $stats['blocked_today'] = $todayStats['blocked_requests'] ?? 0;
@@ -54,7 +114,7 @@ if ($db) {
             SUM(CASE WHEN action_taken = 'blocked' THEN 1 ELSE 0 END) as blocked_requests,
             COUNT(DISTINCT ip_address) as unique_ips
             FROM safenode_security_logs 
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)");
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) $siteFilterAnd");
         $last24hStats = $stmt->fetch();
         
         // Estatísticas de ontem para comparação
@@ -63,7 +123,7 @@ if ($db) {
             SUM(CASE WHEN action_taken = 'blocked' THEN 1 ELSE 0 END) as blocked_requests,
             COUNT(DISTINCT ip_address) as unique_ips
             FROM safenode_security_logs 
-            WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)");
+            WHERE DATE(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) $siteFilterAnd");
         $yesterdayStats = $stmt->fetch();
         
         // Calcular mudanças percentuais
@@ -75,27 +135,69 @@ if ($db) {
         // Calcular latência global (P99)
         require_once __DIR__ . '/includes/SecurityLogger.php';
         $securityLogger = new SecurityLogger($db);
+        // TODO: Update calculateLatency to accept siteId
         $latencyData = $securityLogger->calculateLatency(null, 3600); // Última hora
         $globalLatency = $latencyData ? $latencyData['p99'] : null;
         $avgLatency = $latencyData ? $latencyData['avg'] : null;
         
-        // IPs bloqueados ativos
+        // IPs bloqueados ativos (Global ou Filtrado?)
+        // Bloqueios são geralmente globais, mas podemos filtrar se o bloqueio foi originado de um site específico
+        // A tabela blocked_ips não tem site_id nativamente no schema original, assumindo global por enquanto
+        // Se quiser filtrar, precisaria adicionar site_id em blocked_ips
         $stmt = $db->query("SELECT COUNT(*) as total FROM v_safenode_active_blocks");
         $activeBlocks = $stmt->fetch();
         $stats['active_blocks'] = $activeBlocks['total'] ?? 0;
         
-        // Verificar se há sites configurados
-        $stmt = $db->query("SELECT COUNT(*) as total FROM safenode_sites WHERE is_active = 1");
+        // Verificar se há sites configurados do usuário logado
+        $userId = $_SESSION['safenode_user_id'] ?? null;
+        $stmt = $db->prepare("SELECT COUNT(*) as total FROM safenode_sites WHERE is_active = 1 AND user_id = ?");
+        $stmt->execute([$userId]);
         $sitesResult = $stmt->fetch();
         $hasSites = ($sitesResult['total'] ?? 0) > 0;
         
         // Últimos logs
-        $stmt = $db->query("SELECT * FROM safenode_security_logs ORDER BY created_at DESC LIMIT 10");
+        $stmt = $db->query("SELECT * FROM safenode_security_logs WHERE 1=1 $siteFilterAnd ORDER BY created_at DESC LIMIT 10");
         $recentLogs = $stmt->fetchAll();
         
         // Top IPs bloqueados
-        $stmt = $db->query("SELECT * FROM v_safenode_top_blocked_ips LIMIT 5");
-        $topBlockedIPs = $stmt->fetchAll();
+        // Recalculando view para filtrar
+        $sqlTopIPs = "SELECT ip_address, count(0) AS block_count, max(created_at) AS last_blocked, 
+                      substring_index(group_concat(distinct threat_type order by threat_type ASC separator ','),',',10) AS threat_types 
+                      FROM safenode_security_logs 
+                      WHERE action_taken = 'blocked' 
+                      AND created_at >= current_timestamp() - interval 7 day 
+                      $siteFilterAnd
+                      GROUP BY ip_address 
+                      ORDER BY count(0) DESC LIMIT 5";
+        $stmt = $db->query($sqlTopIPs);
+$topBlockedIPs = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT 
+            COALESCE(country_code, '??') as country_code,
+            COUNT(*) as total_requests,
+            SUM(CASE WHEN action_taken = 'blocked' THEN 1 ELSE 0 END) as blocked_requests
+            FROM safenode_security_logs
+            WHERE country_code IS NOT NULL $siteFilterAnd
+              AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            GROUP BY country_code
+            ORDER BY total_requests DESC
+            LIMIT 5");
+        $stmt->execute();
+        $topCountries = $stmt->fetchAll();
+
+        // Incidentes recentes
+        $stmt = $db->query("SELECT i.*, s.domain AS site_domain 
+                            FROM safenode_incidents i
+                            LEFT JOIN safenode_sites s ON s.id = i.site_id
+                            WHERE 1=1 " . ($currentSiteId > 0 ? " AND i.site_id = $currentSiteId " : "") . "
+                            ORDER BY i.last_seen DESC
+                            LIMIT 5");
+        $recentIncidents = $stmt->fetchAll();
+
+        // Alertas recentes (Alertas geralmente não tem site_id na tabela base, ver schema)
+        // Assumindo global
+        $stmt = $db->query("SELECT * FROM safenode_alerts ORDER BY created_at DESC LIMIT 5");
+        $recentAlerts = $stmt->fetchAll();
         
         // Dados para gráfico de linha (últimas 24 horas por hora)
         $stmt = $db->query("SELECT 
@@ -103,7 +205,7 @@ if ($db) {
             COUNT(*) as requests,
             SUM(CASE WHEN action_taken = 'blocked' THEN 1 ELSE 0 END) as blocked
             FROM safenode_security_logs 
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) $siteFilterAnd
             GROUP BY HOUR(created_at)
             ORDER BY hour");
         $hourlyData = $stmt->fetchAll();
@@ -122,9 +224,14 @@ if ($db) {
             }
         }
         
+        // Checar se é necessário enviar alerta de volume de ameaças
+        SafeNodeAlert::checkThreshold($db);
+
     } catch (PDOException $e) {
         $recentLogs = [];
         $topBlockedIPs = [];
+        $recentIncidents = [];
+        $recentAlerts = [];
         $yesterdayStats = ['total_requests' => 0, 'blocked_requests' => 0, 'unique_ips' => 0];
         $hourlyStats = [];
         error_log("SafeNode Stats Error: " . $e->getMessage());
@@ -132,6 +239,8 @@ if ($db) {
 } else {
     $recentLogs = [];
     $topBlockedIPs = [];
+    $recentIncidents = [];
+    $recentAlerts = [];
     $yesterdayStats = ['total_requests' => 0, 'blocked_requests' => 0, 'unique_ips' => 0];
     $hourlyStats = [];
     $hasSites = false;
@@ -239,76 +348,15 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
 </head>
 <body x-data="{ notificationsOpen: false }" class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex selection:bg-blue-500/30">
 
-    <!-- Sidebar -->
-    <aside class="w-72 bg-black border-r border-white/10 flex flex-col h-full z-50 hidden md:flex">
-        <!-- Logo -->
-        <div class="h-16 flex items-center px-6 border-b border-white/5">
-            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='index.php'">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-blue-500/20 blur-lg rounded-full group-hover:bg-blue-500/40 transition-all"></div>
-                    <img src="assets/img/logos (6).png" alt="SafeNode" class="h-8 w-auto relative z-10">
-                </div>
-                <span class="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors">SafeNode</span>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-            <div class="px-3 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Principal</div>
-            
-            <a href="dashboard.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                Dashboard
-            </a>
-            
-            <a href="sites.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white transition-all group">
-                <i data-lucide="globe" class="w-5 h-5 group-hover:text-blue-400 transition-colors"></i>
-                Sites
-            </a>
-
-            <a href="logs.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white transition-all group">
-                <i data-lucide="shield-alert" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i>
-                Logs de Segurança
-            </a>
-
-            <a href="blocked.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white transition-all group">
-                <i data-lucide="ban" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i>
-                IPs Bloqueados
-            </a>
-
-            <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sistema</div>
-
-            <a href="settings.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-white transition-all group">
-                <i data-lucide="settings" class="w-5 h-5 group-hover:text-zinc-300 transition-colors"></i>
-                Configurações
-            </a>
-        </nav>
-
-        <!-- User Profile (Bottom) -->
-        <div class="p-4 border-t border-white/5 bg-zinc-900/30">
-            <button onclick="window.location.href='profile.php'" class="w-full flex items-center gap-3 hover:bg-white/5 rounded-lg p-2 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                    <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
-                </div>
-                <div class="flex-1 min-w-0 text-left">
-                    <p class="text-sm font-medium text-white truncate"><?php echo htmlspecialchars($_SESSION['safenode_username'] ?? 'Admin'); ?></p>
-                    <p class="text-xs text-zinc-500 truncate">Ver perfil</p>
-                </div>
-                <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors"></i>
-            </button>
-            <button onclick="window.location.href='login.php?logout=1'" class="w-full mt-2 p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all text-left flex items-center gap-2" title="Sair">
-                <i data-lucide="log-out" class="w-4 h-4"></i>
-                <span class="text-sm">Sair</span>
-            </button>
-        </div>
-    </aside>
+    <!-- Sidebar com Seletor de Site -->
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
         <!-- Header -->
         <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
                 <div class="flex items-center gap-4 md:hidden">
-                <button class="text-zinc-400 hover:text-white">
+                <button class="text-zinc-400 hover:text-white" data-sidebar-toggle>
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
                 <span class="font-bold text-lg text-white">SafeNode</span>
@@ -321,8 +369,19 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                 </div>
                 <div class="h-4 w-px bg-white/10"></div>
                 <div class="text-xs text-zinc-500 font-mono">
-                    UPDATED: <span id="lastUpdate" class="text-zinc-300"><?php echo date('H:i:s'); ?></span>
+                    <?php echo htmlspecialchars($_SESSION['view_site_name'] ?? 'Visão Global'); ?>
                 </div>
+                <?php if ($currentSiteId > 0 && $selectedSite): ?>
+                <div class="h-4 w-px bg-white/10"></div>
+                <form method="POST">
+                    <input type="hidden" name="toggle_under_attack" value="1">
+                    <?php $underAttack = $selectedSite['security_level'] === 'under_attack'; ?>
+                    <button type="submit" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all <?php echo $underAttack ? 'bg-red-500/10 text-red-300 border-red-500/30 hover:bg-red-500/20' : 'bg-zinc-900/60 text-zinc-300 border-white/10 hover:border-white/30'; ?>">
+                        <span class="w-2 h-2 rounded-full <?php echo $underAttack ? 'bg-red-400 animate-pulse' : 'bg-zinc-500'; ?>"></span>
+                        <?php echo $underAttack ? 'Sob Ataque ATIVO' : 'Sob Ataque DESLIGADO'; ?>
+                    </button>
+                </form>
+                <?php endif; ?>
             </div>
 
             <div class="flex items-center gap-4">
@@ -347,6 +406,14 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-6 md:p-8 z-10 scroll-smooth">
             <div class="max-w-7xl mx-auto space-y-8">
+                <?php if (!empty($dashboardFlash)): ?>
+                <div class="rounded-xl p-4 <?php echo $dashboardFlashType === 'warning' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-200' : ($dashboardFlashType === 'error' ? 'bg-red-500/10 border border-red-500/30 text-red-200' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-200'); ?>">
+                    <div class="flex items-center gap-2 text-sm font-semibold">
+                        <i data-lucide="<?php echo $dashboardFlashType === 'error' ? 'alert-triangle' : ($dashboardFlashType === 'warning' ? 'shield' : 'check-circle'); ?>" class="w-4 h-4"></i>
+                        <span><?php echo htmlspecialchars($dashboardFlash); ?></span>
+                    </div>
+                </div>
+                <?php endif; ?>
                 
                 <!-- Banner de Configuração (se não houver sites) -->
                 <?php if (!$hasSites): ?>
@@ -380,8 +447,10 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                 <!-- Welcome & Actions -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
                     <div>
-                        <h1 class="text-2xl font-bold text-white tracking-tight mb-1">Visão Geral</h1>
-                        <p class="text-zinc-400 text-sm">Monitoramento e análise de segurança em tempo real.</p>
+                        <h1 class="text-2xl font-bold text-white tracking-tight mb-1">
+                            <?php echo $currentSiteId > 0 ? 'Visão Geral: ' . htmlspecialchars($_SESSION['view_site_name']) : 'Visão Geral Global'; ?>
+                        </h1>
+                        <p class="text-zinc-400 text-sm">Monitoramento de visitas e segurança em tempo real.</p>
                     </div>
                     <div class="flex gap-3 relative">
                         <?php if (!$hasSites): ?>
@@ -389,7 +458,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                         <?php endif; ?>
                         <a href="logs.php" class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-zinc-200 transition-all shadow-lg shadow-white/5 relative <?php echo !$hasSites ? 'opacity-40 blur-sm z-0 pointer-events-none cursor-not-allowed' : 'z-10'; ?>">
                             <i data-lucide="file-text" class="w-4 h-4"></i>
-                            Relatório
+                            Logs
                         </a>
                     </div>
                 </div>
@@ -397,17 +466,17 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                 <!-- Novos Stats (Preview Style) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Total de Requisições -->
-                    <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 transition-colors group <?php echo !$hasSites ? 'opacity-40 blur-sm relative' : ''; ?>">
+                    <a href="logs.php" class="block p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors group <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm relative' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
                         <div class="flex justify-between items-start mb-2 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">
-                            <div class="text-xs text-zinc-500 uppercase font-medium">Total de Requisições</div>
-                            <span class="text-[10px] text-green-400 bg-green-900/20 px-1.5 py-0.5 rounded border border-green-900/30 flex items-center gap-1">
+                            <div class="text-xs text-zinc-500 uppercase font-medium">Visitas / Requisições</div>
+                            <span class="text-[10px] text-green-400 bg-green-900/20 px-1.5 py-0.5 rounded border border-green-900/30 flex items-center gap-1" data-stat="requests-change">
                                 <i data-lucide="arrow-up-right" class="w-3 h-3"></i> <?php echo abs($requestsChange); ?>%
                             </span>
                         </div>
-                        <div class="text-2xl font-bold text-white group-hover:text-green-400 transition-colors relative <?php echo !$hasSites ? 'z-0' : ''; ?>">
+                        <div class="text-2xl font-bold text-white group-hover:text-green-400 transition-colors relative <?php echo !$hasSites ? 'z-0' : ''; ?>" data-stat="total-requests">
                             <?php 
                             if ($requests24h >= 1000000) {
                                 echo number_format($requests24h / 1000000, 1) . 'M';
@@ -418,10 +487,10 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             }
                             ?>
                         </div>
-                        <div class="text-xs text-zinc-600 mt-1 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">Últimas 24 horas</div>
-                    </div>
+                        <div class="text-xs text-zinc-600 mt-1 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">Últimas 24 horas · clique para ver detalhes</div>
+                    </a>
                     
-                    <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 transition-colors group <?php echo !$hasSites ? 'opacity-40 blur-sm relative' : ''; ?>">
+                    <a href="logs.php?<?php echo http_build_query(['action' => 'blocked']); ?>" class="block p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors group <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm relative' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
@@ -431,7 +500,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                                 <i data-lucide="shield-alert" class="w-3 h-3"></i> <?php echo number_format($blocked24h); ?>
                             </span>
                         </div>
-                        <div class="text-2xl font-bold text-white group-hover:text-red-400 transition-colors relative <?php echo !$hasSites ? 'z-0' : ''; ?>">
+                        <div class="text-2xl font-bold text-white group-hover:text-red-400 transition-colors relative <?php echo !$hasSites ? 'z-0' : ''; ?>" data-stat="blocked-threats">
                             <?php 
                             if ($blocked24h >= 1000000) {
                                 echo number_format($blocked24h / 1000000, 1) . 'M';
@@ -442,11 +511,11 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             }
                             ?>
                         </div>
-                        <div class="text-xs text-zinc-600 mt-1 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">Bloqueado automaticamente por IA</div>
-                    </div>
+                        <div class="text-xs text-zinc-600 mt-1 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">Bloqueado automaticamente por IA · clique para ver logs</div>
+                    </a>
                     
                     <?php if ($hasSites): ?>
-                    <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 transition-colors group">
+                    <a href="logs.php" class="block p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors group">
                         <div class="flex justify-between items-start mb-2">
                             <div class="text-xs text-zinc-500 uppercase font-medium">Latência Global</div>
                             <?php if ($globalLatency !== null && $avgLatency !== null): 
@@ -461,11 +530,11 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             </span>
                             <?php endif; ?>
                         </div>
-                        <div class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                        <div class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors" data-stat="latency">
                             <?php echo $globalLatency !== null ? number_format($globalLatency, 0) . 'ms' : '--ms'; ?>
                         </div>
-                        <div class="text-xs text-zinc-600 mt-1">Tempo de Resposta P99</div>
-                    </div>
+                        <div class="text-xs text-zinc-600 mt-1">Tempo de Resposta P99 · clique para ver requisições recentes</div>
+                    </a>
                     <?php else: ?>
                     <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 transition-colors group opacity-40 blur-sm relative">
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
@@ -501,7 +570,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                         </div>
                         <div class="relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
                             <h3 class="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-1">Visitantes Únicos</h3>
-                            <p class="text-2xl font-bold text-white font-mono"><?php echo number_format($stats['unique_ips_today']); ?></p>
+                            <p class="text-2xl font-bold text-white font-mono" data-stat="unique-visitors"><?php echo number_format($stats['unique_ips_today']); ?></p>
                         </div>
                     </div>
 
@@ -519,10 +588,45 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                         </div>
                         <div class="relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
                             <h3 class="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-1">Regras Ativas</h3>
-                            <p class="text-2xl font-bold text-white font-mono"><?php echo number_format($stats['active_blocks']); ?></p>
+                            <p class="text-2xl font-bold text-white font-mono" data-stat="active-blocks"><?php echo number_format($stats['active_blocks']); ?></p>
                             <p class="text-xs text-zinc-500 mt-1">IPs na lista negra</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Top Countries -->
+                <div class="glass-card rounded-xl p-6 <?php echo empty($topCountries) ? 'opacity-70' : ''; ?>">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Top Países (7 dias)</h3>
+                            <p class="text-xs text-zinc-500">Tráfego classificado por país de origem<?php echo $currentSiteId > 0 ? ' · site selecionado' : ' · todos os sites'; ?></p>
+                        </div>
+                    </div>
+                    <?php if (empty($topCountries)): ?>
+                        <p class="text-sm text-zinc-500 py-4 text-center">Sem dados suficientes para exibir.</p>
+                    <?php else: ?>
+                        <div class="space-y-4" data-stat="top-countries">
+                            <?php foreach ($topCountries as $country): 
+                                $code = strtoupper($country['country_code'] ?? '??');
+                                $blocked = (int)($country['blocked_requests'] ?? 0);
+                                $total = (int)($country['total_requests'] ?? 0);
+                                $blockedPercent = $total > 0 ? round(($blocked / $total) * 100) : 0;
+                            ?>
+                            <div>
+                                <div class="flex items-center justify-between text-sm mb-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-white"><?php echo $code; ?></span>
+                                        <span class="text-xs text-zinc-500"><?php echo $blocked > 0 ? "{$blockedPercent}% bloqueado" : "Seguro"; ?></span>
+                                    </div>
+                                    <div class="text-xs text-zinc-400 font-mono"><?php echo number_format($total); ?> req</div>
+                                </div>
+                                <div class="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                                    <div class="h-full bg-blue-500" style="width: <?php echo min(100, $total > 0 ? ($total / max(1, $topCountries[0]['total_requests'])) * 100 : 0); ?>%"></div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Charts Area -->
@@ -534,7 +638,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                         <?php endif; ?>
                         <div class="flex items-center justify-between mb-6 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
                             <div>
-                                <h3 class="font-bold text-white text-lg">Análise de Tráfego Global</h3>
+                                <h3 class="font-bold text-white text-lg">Análise de Tráfego</h3>
                                 <p class="text-sm text-zinc-500">Últimas 24 horas</p>
                             </div>
                             <div class="flex gap-4 text-xs font-medium">
@@ -602,7 +706,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                     </div>
                 </div>
 
-                <!-- Mapa de Tráfego e Registro de Eventos (Preview Style) -->
+                <!-- Mapa de Tráfego, Registro de Eventos e Incidentes -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Mapa de Tráfego em Tempo Real -->
                     <div class="lg:col-span-2 rounded-xl bg-[#050505] border border-zinc-800/50 relative overflow-hidden flex flex-col <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
@@ -650,7 +754,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                         <div class="p-3 border-b border-zinc-800/50 bg-zinc-900/30 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
                             <span class="text-xs font-medium text-zinc-400">Registro de Eventos</span>
                         </div>
-                        <div class="flex-1 p-3 space-y-3 overflow-y-auto font-mono text-[10px] max-h-[400px] relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
+                        <div class="flex-1 p-3 space-y-3 overflow-y-auto font-mono text-[10px] max-h-[400px] relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>" data-stat="event-logs">
                             <?php 
                             $eventLogs = array_slice($recentLogs, 0, 5);
                             if (empty($eventLogs)): ?>
@@ -690,6 +794,118 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                                 <?php 
                                     $i++;
                                 endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incidentes Recentes e Top IPs -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Incidentes Recentes -->
+                    <div class="lg:col-span-2 glass-card rounded-xl overflow-hidden">
+                        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-white text-lg">Incidentes Recentes</h3>
+                                <p class="text-xs text-zinc-500 mt-1">Agrupamento de múltiplos eventos por IP/tipo</p>
+                            </div>
+                            <a href="incidents.php" class="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1">
+                                Ver todos
+                                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                            </a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-zinc-900/50 text-zinc-400 font-medium uppercase text-xs tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4">Status</th>
+                                        <th class="px-6 py-4">IP</th>
+                                        <th class="px-6 py-4">Tipo</th>
+                                        <th class="px-6 py-4">Site</th>
+                                        <th class="px-6 py-4">Eventos</th>
+                                        <th class="px-6 py-4">Críticos</th>
+                                        <th class="px-6 py-4">Último</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5" data-stat="recent-incidents">
+                                    <?php if (empty($recentIncidents)): ?>
+                                        <tr>
+                                            <td colspan="7" class="px-6 py-6 text-center text-xs text-zinc-500">
+                                                Nenhum incidente recente.
+                                            </td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php foreach ($recentIncidents as $incident): ?>
+                                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                                <td class="px-6 py-4">
+                                                    <?php if ($incident['status'] === 'open'): ?>
+                                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mr-1 animate-pulse"></span>
+                                                            Aberto
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-400 border border-white/5">
+                                                            Resolvido
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-xs font-semibold text-white font-mono"><?php echo htmlspecialchars($incident['ip_address']); ?></span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-white/5">
+                                                        <?php echo strtoupper(str_replace('_', ' ', htmlspecialchars($incident['threat_type'] ?? 'unknown'))); ?>
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-[11px] text-zinc-400 font-mono"><?php echo htmlspecialchars($incident['site_domain'] ?? '-'); ?></span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-sm text-zinc-200 font-semibold"><?php echo (int)$incident['total_events']; ?></span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-sm <?php echo $incident['critical_events'] > 0 ? 'text-red-400 font-semibold' : 'text-zinc-400'; ?>">
+                                                        <?php echo (int)$incident['critical_events']; ?>
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="text-[11px] text-zinc-400 font-mono">
+                                                        <?php echo date('d/m H:i', strtotime($incident['last_seen'])); ?>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top IPs Bloqueados -->
+                    <div class="glass-card rounded-xl overflow-hidden">
+                        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                            <h3 class="font-bold text-white text-lg">Top IPs Bloqueados</h3>
+                            <span class="text-xs text-zinc-500">Últimos 7 dias</span>
+                        </div>
+                        <div class="p-4 space-y-3" data-stat="top-blocked-ips">
+                            <?php if (empty($topBlockedIPs)): ?>
+                                <p class="text-xs text-zinc-500 text-center py-4">Nenhum IP bloqueado recentemente.</p>
+                            <?php else: ?>
+                                <?php foreach ($topBlockedIPs as $ip): ?>
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-mono text-white"><?php echo htmlspecialchars($ip['ip_address']); ?></p>
+                                            <p class="text-[11px] text-zinc-500">
+                                                <?php echo htmlspecialchars($ip['threat_types']); ?>
+                                            </p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-semibold text-red-400"><?php echo (int)$ip['block_count']; ?>x</p>
+                                            <p class="text-[11px] text-zinc-500">
+                                                <?php echo date('d/m H:i', strtotime($ip['last_blocked'])); ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -826,13 +1042,444 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         Chart.defaults.color = '#71717a';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
         
+        // Variáveis globais para os gráficos
+        let activityChart = null;
+        let threatsChart = null;
+        
+        // Função para formatar números
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'k';
+            }
+            return num.toString();
+        }
+        
+        // Função para atualizar a dashboard em tempo real
+        async function updateDashboardStats() {
+            try {
+                const response = await fetch('api/dashboard-stats.php', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    // Se a resposta não for OK, não fazer nada (evitar logs excessivos)
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                if (!result || !result.success) {
+                    // Silenciosamente falhar se não houver sucesso
+                    return;
+                }
+                
+                const data = result.data;
+                
+                // Atualizar card de Requisições/Visitas
+                const requests24h = data.last24h.total_requests;
+                const requestsChange = data.changes.requests;
+                const requestsCard = document.querySelector('[data-stat="total-requests"]');
+                const requestsChangeBadge = document.querySelector('[data-stat="requests-change"]');
+                if (requestsCard) {
+                    requestsCard.textContent = formatNumber(requests24h);
+                }
+                if (requestsChangeBadge) {
+                    requestsChangeBadge.innerHTML = `<i data-lucide="arrow-up-right" class="w-3 h-3"></i> ${Math.abs(requestsChange)}%`;
+                    lucide.createIcons();
+                }
+                
+                // Atualizar card de Ameaças Mitigadas
+                const blocked24h = data.last24h.blocked;
+                const blockedCard = document.querySelector('[data-stat="blocked-threats"]');
+                if (blockedCard) {
+                    blockedCard.textContent = formatNumber(blocked24h);
+                }
+                
+                // Atualizar card de Latência
+                const latencyCard = document.querySelector('[data-stat="latency"]');
+                if (latencyCard) {
+                    if (data.latency.global !== null) {
+                        latencyCard.textContent = Math.round(data.latency.global) + 'ms';
+                    } else {
+                        latencyCard.textContent = '--ms';
+                    }
+                }
+                
+                // Atualizar card de Visitantes Únicos
+                const uniqueIpsToday = data.today.unique_ips;
+                const uniqueIpsElement = document.querySelector('[data-stat="unique-visitors"]');
+                if (uniqueIpsElement) {
+                    uniqueIpsElement.textContent = uniqueIpsToday.toLocaleString();
+                }
+                
+                // Atualizar gráfico de atividade
+                if (activityChart && data.hourly_stats) {
+                    const hours = Object.keys(data.hourly_stats);
+                    const hourlyData = Object.values(data.hourly_stats);
+                    
+                    activityChart.data.labels = hours.map(h => h + ':00');
+                    activityChart.data.datasets[0].data = hourlyData.map(d => d.requests);
+                    activityChart.data.datasets[1].data = hourlyData.map(d => d.blocked);
+                    activityChart.update('none'); // Atualizar sem animação para performance
+                }
+                
+                // Atualizar gráfico de ameaças
+                if (threatsChart && data.today.threats) {
+                    threatsChart.data.datasets[0].data = [
+                        data.today.threats.sql_injection,
+                        data.today.threats.xss,
+                        data.today.threats.brute_force,
+                        data.today.threats.rate_limit,
+                        Math.max(0, data.today.blocked - (
+                            data.today.threats.sql_injection +
+                            data.today.threats.xss +
+                            data.today.threats.brute_force +
+                            data.today.threats.rate_limit
+                        ))
+                    ];
+                    // Atualizar texto central do gráfico
+                    const centerText = document.querySelector('#threatsChart').parentElement.querySelector('.absolute span.text-3xl');
+                    if (centerText) {
+                        centerText.textContent = data.today.blocked.toLocaleString();
+                    }
+                    threatsChart.update('none');
+                }
+                
+                // Atualizar card de Regras Ativas
+                const activeBlocksElement = document.querySelector('[data-stat="active-blocks"]');
+                if (activeBlocksElement) {
+                    activeBlocksElement.textContent = data.active_blocks.toLocaleString();
+                }
+                
+                // Atualizar logs recentes (tabela de atividade recente)
+                if (data.recent_logs && data.recent_logs.length > 0) {
+                    updateRecentLogs(data.recent_logs);
+                }
+                
+                // Atualizar Top Países
+                if (data.top_countries) {
+                    updateTopCountries(data.top_countries);
+                }
+                
+                // Atualizar Incidentes Recentes
+                if (data.recent_incidents) {
+                    updateRecentIncidents(data.recent_incidents);
+                }
+                
+                // Atualizar Top IPs Bloqueados
+                if (data.top_blocked_ips) {
+                    updateTopBlockedIPs(data.top_blocked_ips);
+                }
+                
+                // Atualizar Registro de Eventos
+                if (data.event_logs) {
+                    updateEventLogs(data.event_logs);
+                }
+                
+                // Atualizar ícones do Lucide
+                lucide.createIcons();
+                
+            } catch (error) {
+                // Silenciosamente ignorar erros de rede/timeout
+                // Apenas logar em modo debug
+                if (window.DEBUG_MODE) {
+                    console.error('Erro ao atualizar dashboard:', error);
+                }
+            }
+        }
+        
+        // Função para atualizar a tabela de logs recentes
+        function updateRecentLogs(logs) {
+            const tbody = document.querySelector('.glass-card table tbody');
+            if (!tbody) return;
+            
+            // Limpar logs antigos (manter apenas os últimos 5 visíveis)
+            const existingRows = tbody.querySelectorAll('tr');
+            existingRows.forEach(row => {
+                if (!row.querySelector('.sticky-row')) {
+                    row.remove();
+                }
+            });
+            
+            // Adicionar novos logs no topo
+            logs.slice(0, 5).forEach(log => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-white/[0.02] transition-colors';
+                
+                const threatNames = {
+                    'sql_injection': 'Injeção SQL',
+                    'xss': 'XSS',
+                    'brute_force': 'Força Bruta',
+                    'rate_limit': 'Rate Limit',
+                    'path_traversal': 'Path Traversal',
+                    'command_injection': 'Command Injection',
+                    'ddos': 'Ataque DDoS L7'
+                };
+                
+                const isBlocked = log.action_taken === 'blocked';
+                const displayText = isBlocked && log.threat_type 
+                    ? threatNames[log.threat_type] || log.threat_type
+                    : log.ip_address;
+                
+                const time = new Date(log.created_at).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded bg-zinc-900 border border-white/5">
+                                <i data-lucide="monitor" class="w-4 h-4 text-zinc-500"></i>
+                            </div>
+                            <div class="font-mono text-zinc-300">${log.ip_address}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-zinc-400 truncate max-w-[250px] font-mono text-xs" title="${log.request_uri}">
+                            ${log.request_uri}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        ${isBlocked ? `
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                Bloqueado
+                            </span>
+                        ` : `
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Permitido
+                            </span>
+                        `}
+                    </td>
+                    <td class="px-6 py-4 text-right text-zinc-500 font-mono text-xs">
+                        ${time}
+                    </td>
+                `;
+                
+                tbody.insertBefore(row, tbody.firstChild);
+            });
+            
+            lucide.createIcons();
+        }
+        
+        // Função para atualizar Top Países
+        function updateTopCountries(countries) {
+            const container = document.querySelector('[data-stat="top-countries"]');
+            if (!container) return;
+            
+            if (!countries || countries.length === 0) {
+                container.innerHTML = '<p class="text-sm text-zinc-500 py-4 text-center">Sem dados suficientes para exibir.</p>';
+                return;
+            }
+            
+            const maxRequests = Math.max(...countries.map(c => c.total_requests));
+            
+            let html = '';
+            countries.forEach(country => {
+                const width = maxRequests > 0 ? (country.total_requests / maxRequests) * 100 : 0;
+                html += `
+                    <div>
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold text-white">${country.country_code}</span>
+                                <span class="text-xs text-zinc-500">${country.blocked_percent > 0 ? country.blocked_percent + '% bloqueado' : 'Seguro'}</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-mono">${country.total_requests.toLocaleString()} req</div>
+                        </div>
+                        <div class="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500" style="width: ${Math.min(100, width)}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Função para atualizar Incidentes Recentes
+        function updateRecentIncidents(incidents) {
+            const tbody = document.querySelector('[data-stat="recent-incidents"]');
+            if (!tbody) return;
+            
+            if (!incidents || incidents.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-6 text-center text-xs text-zinc-500">
+                            Nenhum incidente recente.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            incidents.forEach(incident => {
+                const isOpen = incident.status === 'open';
+                const lastSeen = new Date(incident.last_seen).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                html += `
+                    <tr class="hover:bg-white/[0.02] transition-colors">
+                        <td class="px-6 py-4">
+                            ${isOpen ? `
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 mr-1 animate-pulse"></span>
+                                    Aberto
+                                </span>
+                            ` : `
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-400 border border-white/5">
+                                    Resolvido
+                                </span>
+                            `}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-semibold text-white font-mono">${incident.ip_address}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-white/5">
+                                ${incident.threat_type.replace(/_/g, ' ').toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-[11px] text-zinc-400 font-mono">${incident.site_domain}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-zinc-200 font-semibold">${incident.total_events}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm ${incident.critical_events > 0 ? 'text-red-400 font-semibold' : 'text-zinc-400'}">
+                                ${incident.critical_events}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-[11px] text-zinc-400 font-mono">${lastSeen}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Função para atualizar Top IPs Bloqueados
+        function updateTopBlockedIPs(ips) {
+            const container = document.querySelector('[data-stat="top-blocked-ips"]');
+            if (!container) return;
+            
+            if (!ips || ips.length === 0) {
+                container.innerHTML = '<p class="text-xs text-zinc-500 text-center py-4">Nenhum IP bloqueado recentemente.</p>';
+                return;
+            }
+            
+            let html = '';
+            ips.forEach(ip => {
+                const lastBlocked = new Date(ip.last_blocked).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                html += `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-mono text-white">${ip.ip_address}</p>
+                            <p class="text-[11px] text-zinc-500">${ip.threat_types || ''}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-red-400">${ip.block_count}x</p>
+                            <p class="text-[11px] text-zinc-500">${lastBlocked}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Função para atualizar Registro de Eventos
+        function updateEventLogs(logs) {
+            const container = document.querySelector('[data-stat="event-logs"]');
+            if (!container) return;
+            
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<div class="text-zinc-500 text-center py-4">Nenhum evento recente</div>';
+                return;
+            }
+            
+            const threatNames = {
+                'sql_injection': 'Injeção SQL',
+                'xss': 'XSS',
+                'brute_force': 'Força Bruta',
+                'rate_limit': 'Rate Limit',
+                'path_traversal': 'Path Traversal',
+                'command_injection': 'Command Injection',
+                'ddos': 'Ataque DDoS L7'
+            };
+            
+            const opacity = ['opacity-50', 'opacity-70', '', 'opacity-80', ''];
+            
+            let html = '';
+            logs.forEach((log, i) => {
+                const time = new Date(log.created_at).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                const actionText = log.show_mitigated 
+                    ? 'MITIGADO' 
+                    : (log.action_taken === 'blocked' ? 'BLOQUEAR' : 'PERMITIR');
+                
+                const actionClass = log.show_mitigated 
+                    ? 'text-red-500 font-bold' 
+                    : (log.action_taken === 'blocked' ? 'text-red-500' : 'text-green-500');
+                
+                const displayText = log.action_taken === 'blocked' && log.threat_type
+                    ? threatNames[log.threat_type] || log.threat_type.replace(/_/g, ' ')
+                    : log.ip_address;
+                
+                const textClass = log.show_mitigated ? 'text-white' : 'text-zinc-400';
+                const borderClass = log.show_mitigated ? 'border-l-2 border-red-500 pl-2 bg-red-500/5 py-1' : '';
+                
+                html += `
+                    <div class="flex gap-2 ${opacity[i] || ''} ${borderClass}">
+                        <span class="text-zinc-500">${time}</span>
+                        <span class="${actionClass}">${actionText}</span>
+                        <span class="${textClass}">${displayText}</span>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Iniciar polling a cada 3 segundos
+        setInterval(updateDashboardStats, 3000);
+        
+        // Atualizar imediatamente quando a página carregar
+        setTimeout(updateDashboardStats, 1000);
+        
         // Activity Chart
         const activityCtx = document.getElementById('activityChart');
         if (activityCtx) {
             const hourlyData = <?php echo json_encode(array_values($hourlyStats)); ?>;
             const hours = <?php echo json_encode(array_keys($hourlyStats)); ?>;
             
-            new Chart(activityCtx, {
+            activityChart = new Chart(activityCtx, {
                 type: 'line',
                 data: {
                     labels: hours.map(h => h + ':00'),
@@ -899,7 +1546,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         // Threats Chart Enhanced
         const threatsCtx = document.getElementById('threatsChart');
         if (threatsCtx) {
-            new Chart(threatsCtx, {
+            threatsChart = new Chart(threatsCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['SQL Injection', 'XSS', 'Brute Force', 'Rate Limit', 'Outros'],
@@ -972,7 +1619,134 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
             }
         `;
         document.head.appendChild(style);
+        
+        // Modal de Atualização do Sistema
+        (function() {
+            const updateModal = document.getElementById('update-modal');
+            const shouldShowModal = <?php echo isset($_SESSION['show_update_modal']) && $_SESSION['show_update_modal'] ? 'true' : 'false'; ?>;
+            
+            // Verificar se o modal deve ser mostrado (via sessão PHP)
+            if (shouldShowModal && updateModal) {
+                // Mostrar modal após um pequeno delay
+                setTimeout(() => {
+                    updateModal.classList.remove('hidden');
+                    updateModal.classList.add('flex');
+                    // Reinicializar ícones do Lucide
+                    lucide.createIcons();
+                }, 1000);
+            }
+            
+            // Fechar modal
+            const closeModal = () => {
+                if (updateModal) {
+                    updateModal.classList.add('hidden');
+                    updateModal.classList.remove('flex');
+                    // Remover flag da sessão via AJAX
+                    fetch('api/close-update-modal.php').catch(() => {});
+                }
+            };
+            
+            // Botão de fechar
+            const closeBtn = document.getElementById('update-modal-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+            
+            // Botão "Entendi"
+            const understoodBtn = document.getElementById('update-modal-understood');
+            if (understoodBtn) {
+                understoodBtn.addEventListener('click', closeModal);
+            }
+            
+            // Botão "Ver Atualizações"
+            const seeUpdatesBtn = document.getElementById('update-modal-see-updates');
+            if (seeUpdatesBtn) {
+                seeUpdatesBtn.addEventListener('click', () => {
+                    closeModal();
+                    window.location.href = 'updates.php';
+                });
+            }
+            
+            // Fechar ao clicar no backdrop
+            if (updateModal) {
+                updateModal.addEventListener('click', (e) => {
+                    if (e.target === updateModal) {
+                        closeModal();
+                    }
+                });
+            }
+        })();
     </script>
+    
+    <!-- Modal de Atualização do Sistema -->
+    <div id="update-modal" 
+         class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm"
+         x-data="{ open: false }"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="w-full max-w-lg mx-4 rounded-2xl bg-zinc-950 border border-white/10 p-6 shadow-2xl relative overflow-hidden"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95">
+            
+            <!-- Decorative Background -->
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-transparent pointer-events-none"></div>
+            
+            <!-- Close Button -->
+            <button id="update-modal-close" class="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all z-10">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="relative z-10">
+                <!-- Header -->
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+                        <i data-lucide="sparkles" class="w-8 h-8 text-blue-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Sistema Atualizado! 🎉</h2>
+                    <p class="text-zinc-400 text-sm">O SafeNode recebeu novas funcionalidades e melhorias</p>
+                </div>
+                
+                <!-- Content -->
+                <div class="mb-6">
+                    <p class="text-zinc-300 text-sm text-center mb-4">
+                        Estamos sempre trabalhando para melhorar sua experiência. A nova versão inclui:
+                    </p>
+                    <ul class="space-y-2 text-sm text-zinc-400">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Dashboard em tempo real com atualizações automáticas</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Novos recursos de segurança e melhorias de performance</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                            <span>Interface mais intuitiva e responsiva</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="update-modal-understood" class="flex-1 px-4 py-3 rounded-xl bg-zinc-900 text-zinc-300 hover:bg-zinc-800 font-semibold transition-all text-sm">
+                        Entendi
+                    </button>
+                    <button id="update-modal-see-updates" class="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Ver Atualizações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
-

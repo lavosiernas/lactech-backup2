@@ -97,3 +97,6 @@ Após integrar, todas as requisições serão:
 
 O SafeNode adiciona ~1-5ms de latência por requisição, dependendo da análise necessária.
 
+
+
+

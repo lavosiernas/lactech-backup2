@@ -13,6 +13,17 @@ if (!isset($_SESSION['safenode_register_user_id']) || !isset($_SESSION['safenode
 
 require_once __DIR__ . '/includes/config.php';
 
+// Tentar carregar HumanVerification
+$safenodeHvToken = '';
+try {
+    if (file_exists(__DIR__ . '/includes/HumanVerification.php')) {
+        require_once __DIR__ . '/includes/HumanVerification.php';
+        $safenodeHvToken = SafeNodeHumanVerification::initChallenge();
+    }
+} catch (Exception $e) {
+    error_log("SafeNode OTP HV Error: " . $e->getMessage());
+}
+
 $userId = $_SESSION['safenode_register_user_id'];
 $userEmail = $_SESSION['safenode_register_email'];
 $error = '';
@@ -22,7 +33,18 @@ $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
     $otpCode = trim($_POST['otp_code'] ?? '');
     
-    if (empty($otpCode) || strlen($otpCode) !== 6) {
+    // Validar verificação humana SafeNode antes de qualquer coisa
+    $hvError = '';
+    $hvValidated = true;
+    if (class_exists('SafeNodeHumanVerification')) {
+        $hvValidated = SafeNodeHumanVerification::validateRequest($_POST, $hvError);
+    }
+    
+    if (!$hvValidated) {
+        $error = $hvError ?: 'Falha na verificação de segurança.';
+    }
+    // Validação básica
+    elseif (empty($otpCode) || strlen($otpCode) !== 6) {
         $error = 'Por favor, digite o código de 6 dígitos.';
     } else {
         try {
@@ -78,6 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
                         
                         $pdo->commit();
                         
+                        // Desafio usado com sucesso - resetar para próxima página
+                        if (class_exists('SafeNodeHumanVerification')) {
+                            SafeNodeHumanVerification::reset();
+                        }
+                        
                         // Limpar sessão de registro
                         unset($_SESSION['safenode_register_user_id']);
                         unset($_SESSION['safenode_register_email']);
@@ -101,10 +128,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
 
 // Processar reenvio de código
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend'])) {
-    try {
-        require_once __DIR__ . '/includes/EmailService.php';
-        
-        $pdo = getSafeNodeDatabase();
+    // Validar verificação humana SafeNode antes de qualquer coisa
+    $hvError = '';
+    $hvValidated = true;
+    if (class_exists('SafeNodeHumanVerification')) {
+        $hvValidated = SafeNodeHumanVerification::validateRequest($_POST, $hvError);
+    }
+    
+    if (!$hvValidated) {
+        $error = $hvError ?: 'Falha na verificação de segurança.';
+    } else {
+        try {
+            require_once __DIR__ . '/includes/EmailService.php';
+            
+            $pdo = getSafeNodeDatabase();
         
         // Buscar dados do usuário
         $stmt = $pdo->prepare("SELECT id, username, email, full_name FROM safenode_users WHERE id = ?");
@@ -137,9 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend'])) {
                 $error = 'Erro ao enviar código. Tente novamente.';
             }
         }
-    } catch (PDOException $e) {
-        error_log("SafeNode OTP Resend Error: " . $e->getMessage());
-        $error = 'Erro ao reenviar código. Tente novamente.';
+        } catch (PDOException $e) {
+            error_log("SafeNode OTP Resend Error: " . $e->getMessage());
+            $error = 'Erro ao reenviar código. Tente novamente.';
+        }
     }
 }
 ?>
@@ -156,301 +194,292 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend'])) {
     <link rel="apple-touch-icon" href="assets/img/logos (6).png">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                    },
+                    keyframes: {
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        .gradient-mesh {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        }
-        
-        .error-message {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .success-message {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            display: none;
+        body {
+            font-family: 'Inter', sans-serif;
         }
         
         .otp-input {
-            width: 50px;
-            height: 60px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: 700;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            transition: all 0.2s;
+            transition: all 0.2s ease-in-out;
         }
         
         .otp-input:focus {
-            outline: none;
-            border-color: #000000;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
         }
-        
-        .otp-input:invalid {
-            border-color: #fecaca;
+
+        /* Hide numbers arrows/spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Fade-in animation */
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out;
         }
     </style>
 </head>
-<body class="gradient-mesh min-h-screen">
-    <!-- Mobile Layout -->
-    <div class="md:hidden min-h-screen flex flex-col">
-        <div class="flex-1 bg-white p-6 pt-12">
-            <!-- Logo e título no topo -->
-            <div class="text-center mb-8">
-                <img src="assets/img/logos (5).png" alt="Logo SafeNode" class="w-16 h-16 rounded-2xl shadow-lg object-contain mx-auto mb-4" loading="eager" width="64" height="64">
-                <h1 class="text-2xl font-bold text-slate-900 mb-1">SafeNode</h1>
-                <p class="text-slate-600 text-sm mb-6">Sistema de Segurança</p>
-                <h2 class="text-2xl font-bold text-slate-900 mb-2">Verificar Email</h2>
-                <p class="text-slate-600">Digite o código enviado para</p>
-                <p class="text-slate-900 font-semibold"><?php echo htmlspecialchars($userEmail); ?></p>
-            </div>
-
-            <!-- Error/Success Messages -->
-            <div id="errorMessage" class="error-message">
-                <div class="flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span id="errorText"><?php echo htmlspecialchars($error); ?></span>
-                </div>
-            </div>
-
-            <div id="successMessage" class="success-message">
-                <div class="flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span id="successText"><?php echo htmlspecialchars($success); ?></span>
-                </div>
-            </div>
-
-            <form id="verifyForm" method="POST" class="space-y-6">
-                <input type="hidden" name="verify" value="1">
-                
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-4 text-center">Código de Verificação</label>
-                    <div class="flex justify-center gap-2" id="otp-container">
-                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="0">
-                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="1">
-                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="2">
-                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="3">
-                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="4">
-                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="5">
-                    </div>
-                    <input type="hidden" name="otp_code" id="otp_code" required>
-                    <p class="text-xs text-slate-500 text-center mt-3">Digite o código de 6 dígitos enviado para seu email</p>
-                </div>
-
-                <button type="submit" id="verifyBtn" class="w-full bg-black text-white py-3 px-4 rounded-xl font-semibold hover:bg-slate-800 hover:shadow-lg transition-all">
-                    Verificar
-                </button>
-            </form>
-
-            <form method="POST" class="mt-4">
-                <input type="hidden" name="resend" value="1">
-                <button type="submit" class="w-full text-slate-600 py-2 text-sm hover:text-black transition-colors">
-                    Não recebeu o código? <span class="font-semibold underline">Reenviar</span>
-                </button>
-            </form>
-
-            <div class="mt-8 text-center">
-                <p class="text-slate-600 text-sm">
-                    Sistema protegido por <span class="font-semibold text-slate-900">SafeNode</span>
-                </p>
-            </div>
-        </div>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-center items-center relative overflow-hidden">
+    
+    <!-- Background decorations -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+        <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-100/40 blur-3xl"></div>
+        <div class="absolute top-[40%] -right-[10%] w-[40%] h-[40%] rounded-full bg-purple-100/30 blur-3xl"></div>
+        <div class="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] rounded-full bg-emerald-50/50 blur-3xl"></div>
     </div>
 
-    <!-- Desktop Layout -->
-    <div class="hidden md:flex min-h-screen">
-        <div class="flex-1 flex items-center justify-center p-8">
-            <div class="w-full max-w-md">
-                <!-- Logo acima do bem-vindo -->
-                <div class="text-center mb-8">
-                    <img src="assets/img/logos (5).png" alt="Logo SafeNode" class="w-16 h-16 rounded-2xl shadow-lg object-contain mx-auto mb-4" loading="lazy" width="64" height="64">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Verificar Email</h2>
-                    <p class="text-slate-600">Digite o código enviado para</p>
-                    <p class="text-slate-900 font-semibold mt-1"><?php echo htmlspecialchars($userEmail); ?></p>
-                </div>
+    <div class="w-full max-w-md bg-white md:rounded-2xl shadow-none md:shadow-xl p-6 md:p-10 min-h-screen md:min-h-0 flex flex-col justify-center">
+        
+        <!-- Logo and Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 shadow-lg mb-6">
+                <img src="assets/img/logos (5).png" alt="SafeNode" class="w-10 h-10 object-contain drop-shadow-md filter brightness-0 invert">
+            </div>
+            
+            <h1 class="text-2xl font-bold text-slate-900 mb-2 tracking-tight">Verifique seu email</h1>
+            <p class="text-slate-500 text-sm leading-relaxed">
+                Enviamos um código de 6 dígitos para<br>
+                <span class="font-semibold text-slate-900"><?php echo htmlspecialchars($userEmail); ?></span>
+            </p>
+        </div>
 
-                <!-- Error/Success Messages Desktop -->
-                <div id="errorMessageDesktop" class="error-message">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span id="errorTextDesktop"><?php echo htmlspecialchars($error); ?></span>
+        <!-- Alerts -->
+        <?php if (!empty($error)): ?>
+        <div class="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center mb-6 animate-shake">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <?php echo htmlspecialchars($error); ?>
+        </div>
+        <?php endif; ?>
+
+        <?php if (!empty($success)): ?>
+        <div class="bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-3 rounded-xl text-sm flex items-center mb-6">
+            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <?php echo htmlspecialchars($success); ?>
+        </div>
+        <?php endif; ?>
+
+        <!-- Form -->
+        <form method="POST" class="space-y-8" id="otpForm">
+            <input type="hidden" name="verify" value="1">
+            <input type="hidden" name="otp_code" id="otp_code">
+            
+            <!-- SafeNode Hidden Verification -->
+            <input type="hidden" name="safenode_hv_token" value="<?php echo htmlspecialchars($safenodeHvToken); ?>">
+            <input type="hidden" name="safenode_hv_js" id="safenode_hv_js" value="">
+
+            <div class="flex justify-between gap-2 px-2">
+                <?php for($i = 0; $i < 6; $i++): ?>
+                <input type="text" 
+                       class="otp-input w-12 h-14 text-center text-2xl font-bold text-slate-900 border border-slate-200 rounded-xl focus:border-slate-900 focus:ring-0 outline-none bg-slate-50/50"
+                       maxlength="1" 
+                       pattern="[0-9]" 
+                       inputmode="numeric" 
+                       autocomplete="one-time-code"
+                       data-index="<?php echo $i; ?>"
+                       required>
+                <?php endfor; ?>
+            </div>
+
+            <!-- Verificação Humana SafeNode -->
+            <div class="p-3 rounded-2xl border border-slate-200 bg-slate-50 flex items-center gap-3 shadow-sm" id="hv-box">
+                <div class="relative flex items-center justify-center w-9 h-9">
+                    <div class="absolute inset-0 rounded-2xl border-2 border-slate-200 border-t-black animate-spin" id="hv-spinner"></div>
+                    <div class="relative z-10 w-7 h-7 rounded-2xl bg-black flex items-center justify-center">
+                        <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain">
                     </div>
                 </div>
-
-                <div id="successMessageDesktop" class="success-message">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span id="successTextDesktop"><?php echo htmlspecialchars($success); ?></span>
-                    </div>
-                </div>
-
-                <form id="verifyFormDesktop" method="POST" class="space-y-6">
-                    <input type="hidden" name="verify" value="1">
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-4 text-center">Código de Verificação</label>
-                        <div class="flex justify-center gap-2" id="otp-container-desktop">
-                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="0">
-                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="1">
-                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="2">
-                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="3">
-                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="4">
-                            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="5">
-                        </div>
-                        <input type="hidden" name="otp_code" id="otp_codeDesktop" required>
-                        <p class="text-xs text-slate-500 text-center mt-3">Digite o código de 6 dígitos enviado para seu email</p>
-                    </div>
-
-                    <button type="submit" id="verifyBtnDesktop" class="w-full bg-black text-white py-3 px-4 rounded-xl font-semibold hover:bg-slate-800 hover:shadow-lg transition-all">
-                        Verificar
-                    </button>
-                </form>
-
-                <form method="POST" class="mt-4">
-                    <input type="hidden" name="resend" value="1">
-                    <button type="submit" class="w-full text-slate-600 py-2 text-sm hover:text-black transition-colors">
-                        Não recebeu o código? <span class="font-semibold underline">Reenviar</span>
-                    </button>
-                </form>
-
-                <div class="mt-8 text-center">
-                    <p class="text-slate-600 text-sm">
-                        Sistema protegido por <span class="font-semibold text-slate-900">SafeNode</span>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold text-slate-900 flex items-center gap-1">
+                        SafeNode <span class="text-[10px] font-normal text-slate-500">verificação humana</span>
                     </p>
+                    <p class="text-[11px] text-slate-500" id="hv-text">Validando interação do navegador…</p>
                 </div>
+                <svg id="hv-check" class="w-4 h-4 text-emerald-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-slate-900/20 transition-all transform active:scale-[0.98] flex justify-center items-center group">
+                <span>Verificar Código</span>
+                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </button>
+        </form>
+
+        <!-- Resend Link -->
+        <div class="mt-6 text-center">
+            <p class="text-slate-500 text-sm mb-3">Não recebeu o código?</p>
+            <form method="POST" id="resendForm">
+                <input type="hidden" name="resend" value="1">
+                
+                <!-- SafeNode Hidden Verification -->
+                <input type="hidden" name="safenode_hv_token" value="<?php echo htmlspecialchars($safenodeHvToken); ?>">
+                <input type="hidden" name="safenode_hv_js" id="safenode_hv_js_resend" value="">
+                
+                <button type="submit" class="text-slate-900 font-semibold text-sm hover:underline decoration-2 underline-offset-4 transition-all">
+                    Reenviar código
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-auto md:mt-8 pt-6 text-center border-t border-slate-100">
+            <div class="flex items-center justify-center gap-2 text-xs text-slate-400">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                Seguro por <span class="font-semibold text-slate-600">SafeNode</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Gerenciar inputs OTP separados
-        function setupOTPInputs(containerId, hiddenInputId) {
-            const container = document.getElementById(containerId);
-            const hiddenInput = document.getElementById(hiddenInputId);
-            const inputs = container.querySelectorAll('.otp-input');
+        // Inicializar verificação humana SafeNode
+        function initSafeNodeHumanVerification() {
+            const hvJs = document.getElementById('safenode_hv_js');
+            const hvJsResend = document.getElementById('safenode_hv_js_resend');
+            const hvSpinner = document.getElementById('hv-spinner');
+            const hvCheck = document.getElementById('hv-check');
+            const hvText = document.getElementById('hv-text');
+
+            // Marcar imediatamente como verificado
+            if (hvJs) hvJs.value = '1';
+            if (hvJsResend) hvJsResend.value = '1';
+
+            // Após um pequeno atraso, mostrar visual de verificado
+            setTimeout(() => {
+                if (hvSpinner) hvSpinner.classList.add('hidden');
+                if (hvCheck) hvCheck.classList.remove('hidden');
+                if (hvText) hvText.textContent = 'Verificado com SafeNode';
+            }, 800);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Iniciar verificação humana
+            initSafeNodeHumanVerification();
             
-            // Atualizar campo hidden quando qualquer input mudar
-            function updateHiddenInput() {
+            const form = document.getElementById('otpForm');
+            const inputs = form.querySelectorAll('.otp-input');
+            const hiddenInput = document.getElementById('otp_code');
+
+            // Focus first input on load
+            inputs[0].focus();
+
+            const updateHiddenInput = () => {
                 const code = Array.from(inputs).map(input => input.value).join('');
                 hiddenInput.value = code;
-            }
-            
+                return code;
+            };
+
             inputs.forEach((input, index) => {
-                // Permitir apenas números
-                input.addEventListener('input', function(e) {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                    updateHiddenInput();
+                // Handle typing
+                input.addEventListener('input', (e) => {
+                    // Allow only numbers
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
                     
-                    // Mover para próximo campo se digitou um número
-                    if (this.value && index < inputs.length - 1) {
-                        inputs[index + 1].focus();
-                    }
-                });
-                
-                // Voltar para campo anterior ao apagar
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && !this.value && index > 0) {
-                        inputs[index - 1].focus();
-                    }
-                });
-                
-                // Colar código completo
-                input.addEventListener('paste', function(e) {
-                    e.preventDefault();
-                    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-                    pastedData.split('').forEach((char, i) => {
-                        if (inputs[index + i]) {
-                            inputs[index + i].value = char;
+                    const val = e.target.value;
+                    
+                    if (val) {
+                        updateHiddenInput();
+                        // Move to next input if available
+                        if (index < inputs.length - 1) {
+                            inputs[index + 1].focus();
+                        } else {
+                            // If last input is filled, blur or auto-submit
+                            // Optional: form.submit();
+                            input.blur();
                         }
-                    });
-                    updateHiddenInput();
-                    if (inputs[index + pastedData.length - 1]) {
-                        inputs[index + pastedData.length - 1].focus();
-                    } else {
-                        inputs[inputs.length - 1].focus();
+                    }
+                });
+
+                // Handle Backspace
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace') {
+                        if (!input.value && index > 0) {
+                            inputs[index - 1].focus();
+                            // Optional: clear previous input on backspace
+                            // inputs[index - 1].value = '';
+                            // updateHiddenInput();
+                        }
+                    }
+                });
+
+                // Handle Paste
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasteData = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
+                    
+                    if (pasteData) {
+                        const chars = pasteData.split('');
+                        let lastIndex = index;
+                        
+                        chars.forEach((char, i) => {
+                            if (index + i < inputs.length) {
+                                inputs[index + i].value = char;
+                                lastIndex = index + i;
+                            }
+                        });
+                        
+                        updateHiddenInput();
+                        
+                        // Focus the input after the last filled one, or the last one
+                        if (lastIndex < inputs.length - 1) {
+                            inputs[lastIndex + 1].focus();
+                        } else {
+                            inputs[inputs.length - 1].focus();
+                        }
+                        
+                        // Auto submit if full code is pasted
+                        if (updateHiddenInput().length === 6) {
+                            form.submit();
+                        }
                     }
                 });
             });
-            
-            // Focar no primeiro campo ao carregar
-            inputs[0].focus();
-        }
-        
-        // Configurar ambos os layouts
-        document.addEventListener('DOMContentLoaded', function() {
-            setupOTPInputs('otp-container', 'otp_code');
-            setupOTPInputs('otp-container-desktop', 'otp_codeDesktop');
         });
-
-        // Show/hide messages
-        function showError(message, isDesktop = false) {
-            const errorDiv = document.getElementById(isDesktop ? 'errorMessageDesktop' : 'errorMessage');
-            const errorText = document.getElementById(isDesktop ? 'errorTextDesktop' : 'errorText');
-            const successDiv = document.getElementById(isDesktop ? 'successMessageDesktop' : 'successMessage');
-            
-            if (message) {
-                errorText.textContent = message;
-                errorDiv.style.display = 'block';
-                successDiv.style.display = 'none';
-                
-                setTimeout(() => {
-                    errorDiv.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        function showSuccess(message, isDesktop = false) {
-            const successDiv = document.getElementById(isDesktop ? 'successMessageDesktop' : 'successMessage');
-            const successText = document.getElementById(isDesktop ? 'successTextDesktop' : 'successText');
-            const errorDiv = document.getElementById(isDesktop ? 'errorMessageDesktop' : 'errorMessage');
-            
-            if (message) {
-                successText.textContent = message;
-                successDiv.style.display = 'block';
-                errorDiv.style.display = 'none';
-            }
-        }
-
-        // Show error/success messages on page load
-        <?php if ($error): ?>
-            showError('<?php echo addslashes($error); ?>', false);
-            showError('<?php echo addslashes($error); ?>', true);
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            showSuccess('<?php echo addslashes($success); ?>', false);
-            showSuccess('<?php echo addslashes($success); ?>', true);
-        <?php endif; ?>
     </script>
 </body>
 </html>
-

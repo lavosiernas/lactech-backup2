@@ -5,6 +5,10 @@
 
 session_start();
 
+// SEGURANÇA: Carregar helpers e aplicar headers
+require_once __DIR__ . '/includes/SecurityHelpers.php';
+SecurityHeaders::apply();
+
 // Verificar se está logado
 if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !== true) {
     header('Location: login.php');
@@ -15,6 +19,10 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
 
 $db = getSafeNodeDatabase();
+
+// Contexto do Site
+$currentSiteId = $_SESSION['view_site_id'] ?? 0;
+$siteFilterWhere = $currentSiteId > 0 ? " site_id = $currentSiteId " : " 1=1 ";
 
 // Filtros
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
@@ -30,7 +38,7 @@ $filters = [
 ];
 
 // Construir query
-$where = [];
+$where = [$siteFilterWhere]; // Adiciona filtro de site base
 $params = [];
 
 if (!empty($filters['ip'])) {
@@ -58,7 +66,36 @@ if (!empty($filters['date_to'])) {
     $params[] = $filters['date_to'];
 }
 
-$whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+$whereClause = 'WHERE ' . implode(' AND ', $where);
+
+// Exportação CSV
+if ($db && isset($_GET['export']) && $_GET['export'] === 'csv') {
+    try {
+        $sql = "SELECT created_at, ip_address, request_uri, request_method, threat_type, threat_score, action_taken, user_agent 
+                FROM safenode_security_logs $whereClause 
+                ORDER BY created_at DESC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="safenode_logs_' . date('Ymd_His') . '.csv"');
+
+        $output = fopen('php://output', 'w');
+        if (!empty($rows)) {
+            fputcsv($output, array_keys($rows[0]));
+            foreach ($rows as $row) {
+                fputcsv($output, $row);
+            }
+        } else {
+            fputcsv($output, ['Nenhum registro para os filtros atuais']);
+        }
+        fclose($output);
+        exit;
+    } catch (PDOException $e) {
+        error_log("SafeNode Logs CSV Export Error: " . $e->getMessage());
+    }
+}
 
 // Total de registros
 $totalLogs = 0;
@@ -91,7 +128,7 @@ $actions = ['blocked', 'allowed', 'rate_limited', 'logged'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logs - SafeNode</title>
+    <title>Logs | SafeNode</title>
     <link rel="icon" type="image/png" href="assets/img/logos (6).png">
     <link rel="shortcut icon" type="image/png" href="assets/img/logos (6).png">
     <link rel="apple-touch-icon" href="assets/img/logos (6).png">
@@ -114,15 +151,35 @@ $actions = ['blocked', 'allowed', 'rate_limited', 'logged'];
 
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
         <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
-            <div>
+            <div class="flex items-center gap-4 md:hidden">
+                <button class="text-zinc-400 hover:text-white" data-sidebar-toggle>
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <span class="font-bold text-lg text-white">SafeNode</span>
+            </div>
+            <div class="hidden md:block">
                 <h2 class="text-xl font-bold text-white tracking-tight">Logs de Segurança</h2>
-                <p class="text-xs text-zinc-400 mt-0.5"><?php echo number_format($totalLogs); ?> registros encontrados</p>
+                <p class="text-xs text-zinc-400 mt-0.5">
+                    <?php echo $currentSiteId > 0 ? htmlspecialchars($_SESSION['view_site_name']) . ' • ' : 'Visão Global • '; ?>
+                    <?php echo number_format($totalLogs); ?> registros encontrados
+                </p>
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-8 z-10">
             <div class="max-w-7xl mx-auto space-y-6">
             <div class="glass-card rounded-xl p-6 mb-6">
-                <h3 class="text-lg font-bold text-white mb-6 tracking-tight">Filtros</h3>
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white tracking-tight">Filtros</h3>
+                        <p class="text-xs text-zinc-500 mt-1">Refine os eventos e exporte para análise externa</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="?<?php echo http_build_query(array_merge($filters, ['export' => 'csv'])); ?>" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 text-zinc-300 border border-white/10 hover:bg-zinc-800 hover:text-white text-xs font-semibold transition-all">
+                            <i data-lucide="download" class="w-3 h-3"></i>
+                            Exportar CSV
+                        </a>
+                    </div>
+                </div>
                 <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-zinc-300 mb-2">IP Address</label>

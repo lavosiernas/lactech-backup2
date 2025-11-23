@@ -2,6 +2,7 @@
 /**
  * SafeNode - Threat Detector
  * Sistema de detecção de ameaças em tempo real
+ * Baseado em padrões OWASP CRS (Core Rule Set) simplificados para PHP
  */
 
 class ThreatDetector {
@@ -12,20 +13,20 @@ class ThreatDetector {
     
     public function __construct($database) {
         $this->db = $database;
-        $this->loadThreatPatterns();
+        $this->loadDefaultPatterns(); // Carrega padrões robustos primeiro
+        $this->loadDbPatterns(); // Sobrescreve/adiciona do banco se houver
     }
     
     /**
-     * Carrega padrões de ameaça do banco de dados
+     * Carrega padrões do banco de dados (opcional)
      */
-    private function loadThreatPatterns() {
+    private function loadDbPatterns() {
         if (!$this->db) return;
         
         try {
             $stmt = $this->db->query("SELECT pattern, threat_type, severity FROM safenode_threat_patterns WHERE is_active = 1");
             $patterns = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            $this->threatPatterns = [];
             foreach ($patterns as $pattern) {
                 $this->threatPatterns[$pattern['threat_type']][] = [
                     'pattern' => $pattern['pattern'],
@@ -33,52 +34,75 @@ class ThreatDetector {
                 ];
             }
         } catch (PDOException $e) {
-            error_log("SafeNode ThreatDetector Error: " . $e->getMessage());
-            $this->loadDefaultPatterns();
+            // Silently fail to defaults
         }
     }
     
     /**
-     * Carrega padrões padrão se o banco não tiver
+     * Define padrões de ameaça avançados (OWASP Inspired)
      */
     private function loadDefaultPatterns() {
         $this->threatPatterns = [
             'sql_injection' => [
-                ['pattern' => '/(\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\b.*\b(from|into|where|table|database)\b)/i', 'severity' => 80],
-                ['pattern' => '/(\b(or|and)\s+\d+\s*=\s*\d+)/i', 'severity' => 70],
+                // Tautologies & Logic
                 ['pattern' => '/(\b(or|and)\s+[\'"]?\d+[\'"]?\s*=\s*[\'"]?\d+)/i', 'severity' => 70],
-                ['pattern' => '/(\b(union|select).*from.*information_schema)/i', 'severity' => 90],
-                ['pattern' => '/(\b(union|select).*from.*users)/i', 'severity' => 85],
                 ['pattern' => '/(\'\s*(or|and)\s*[\'"]?\d+[\'"]?\s*=\s*[\'"]?\d+)/i', 'severity' => 75],
-                ['pattern' => '/(;\s*(drop|delete|truncate|alter))/i', 'severity' => 85],
+                ['pattern' => '/(--[^\r\n]*)|(\#[^\r\n]*)/', 'severity' => 80], // Comments
+                ['pattern' => '/(\/\*.*\*\/)/', 'severity' => 80], // Inline comments
+
+                // Union Based
+                ['pattern' => '/(\bunion\s+(all\s+)?(select|insert|update|delete)\b)/i', 'severity' => 90],
+                
+                // Schema Information
+                ['pattern' => '/(information_schema|table_schema|table_name)/i', 'severity' => 85],
+                
+                // Dangerous Functions
+                ['pattern' => '/(\b(load_file|benchmark|sleep|pg_sleep|waitfor\s+delay)\b)/i', 'severity' => 85],
+                ['pattern' => '/(char\s*\(\s*\d)/i', 'severity' => 60], // char(x) obfuscation
+                ['pattern' => '/(concat\s*\()/i', 'severity' => 60],
+                
+                // Stacked Queries
+                ['pattern' => '/(;\s*(drop|delete|truncate|alter|create)\s+\b)/i', 'severity' => 90],
             ],
             'xss' => [
-                ['pattern' => '/(<script[^>]*>.*?<\/script>)/is', 'severity' => 80],
-                ['pattern' => '/(javascript:)/i', 'severity' => 70],
-                ['pattern' => '/(on\w+\s*=\s*[\'"][^\'"]*[\'"])/i', 'severity' => 75],
-                ['pattern' => '/(<iframe[^>]*>)/i', 'severity' => 70],
-                ['pattern' => '/(<img[^>]*onerror)/i', 'severity' => 75],
-                ['pattern' => '/(eval\s*\()/i', 'severity' => 80],
-                ['pattern' => '/(expression\s*\()/i', 'severity' => 70],
+                // Script tags
+                ['pattern' => '/(<script[^>]*>.*?<\/script>)/is', 'severity' => 90],
+                ['pattern' => '/(<script)/i', 'severity' => 80],
+                
+                // Event Handlers
+                ['pattern' => '/(\bon\w+\s*=\s*[\'"][^\'"]*[\'"])/i', 'severity' => 75],
+                ['pattern' => '/(javascript:)/i', 'severity' => 75],
+                ['pattern' => '/(vbscript:)/i', 'severity' => 75],
+                ['pattern' => '/(data:text\/html)/i', 'severity' => 80],
+                
+                // Dangerous Tags
+                ['pattern' => '/(<(iframe|object|embed|applet|meta|base|form)[^>]*>)/i', 'severity' => 70],
+                ['pattern' => '/(<img[^>]+onerror)/i', 'severity' => 80],
+                ['pattern' => '/(<svg[^>]+onload)/i', 'severity' => 80],
+            ],
+            'rce_php' => [
+                // PHP Injection / Wrappers
+                ['pattern' => '/(php:\/\/filter|php:\/\/input|file:\/\/)/i', 'severity' => 90],
+                ['pattern' => '/(eval\s*\(|assert\s*\(|passthru\s*\(|exec\s*\(|system\s*\(|shell_exec\s*\(|popen\s*\(|proc_open\s*\()/i', 'severity' => 95],
+                ['pattern' => '/(base64_decode\s*\()/i', 'severity' => 60], // Suspicious if in params
+                ['pattern' => '/(GLOBALS|REQUEST)/', 'severity' => 50],
             ],
             'path_traversal' => [
-                ['pattern' => '/(\.\.\/|\.\.\\\\)/i', 'severity' => 60],
-                ['pattern' => '/(\/etc\/passwd|\/etc\/shadow)/i', 'severity' => 80],
-                ['pattern' => '/(\/proc\/self\/environ)/i', 'severity' => 70],
-                ['pattern' => '/(\.\.%2f|\.\.%5c)/i', 'severity' => 65],
-                ['pattern' => '/(\.\.%252f|\.\.%255c)/i', 'severity' => 65],
+                ['pattern' => '/(\.\.\/|\.\.\\\\)/', 'severity' => 70],
+                ['pattern' => '/(\/etc\/passwd|\/etc\/shadow|\/etc\/hosts|\/windows\/win.ini)/i', 'severity' => 90],
+                ['pattern' => '/(\/proc\/self\/environ)/i', 'severity' => 80],
+                ['pattern' => '/(\.\.%2f|\.\.%5c)/i', 'severity' => 70], // Encoded
             ],
             'command_injection' => [
-                ['pattern' => '/(;\s*(rm|ls|cat|pwd|whoami|id|uname|ps|kill))/i', 'severity' => 75],
-                ['pattern' => '/(\|\s*(rm|ls|cat|pwd|whoami|id|uname|ps|kill))/i', 'severity' => 75],
-                ['pattern' => '/(`[^`]*`)/i', 'severity' => 70],
-                ['pattern' => '/(\$\([^)]*\))/i', 'severity' => 70],
-                ['pattern' => '/(\b(ping|nc|netcat|curl|wget)\b)/i', 'severity' => 60],
+                // Shell operators followed by commands
+                ['pattern' => '/([;&|`]\s*(ping|nslookup|whoami|uname|id|ls|cat|wget|curl|nc|netcat|bash|sh)\b)/i', 'severity' => 85],
+                ['pattern' => '/(\$\(.*\))/i', 'severity' => 80], // $(cmd)
             ],
-            'brute_force' => [
-                // Detectado por padrão de requisições, não por conteúdo
-                ['pattern' => '/(login|admin|password|auth)/i', 'severity' => 30],
-            ],
+            'user_agent' => [
+                // Bad Bots
+                ['pattern' => '/(acunetix|sqlmap|nikto|metasploit|nessus|nmap|havij|dirbuster)/i', 'severity' => 100],
+                ['pattern' => '/(python-requests|curl|wget|libwww-perl)/i', 'severity' => 40], // Low severity, legit sometimes
+            ]
         ];
     }
     
@@ -89,22 +113,27 @@ class ThreatDetector {
         $this->threatScore = 0;
         $this->detectedThreats = [];
         
-        // Combinar todos os dados da requisição para análise
-        $dataToAnalyze = strtolower($requestUri . ' ' . $requestMethod . ' ' . implode(' ', $headers) . ' ' . $body);
+        // 1. Analisar URI (decode first to catch encoded attacks)
+        $decodedUri = urldecode($requestUri);
+        $this->scanData($requestUri, 'uri');
+        if ($decodedUri !== $requestUri) {
+            $this->scanData($decodedUri, 'uri_decoded');
+        }
         
-        // Verificar cada tipo de ameaça
-        foreach ($this->threatPatterns as $threatType => $patterns) {
-            foreach ($patterns as $patternData) {
-                if (preg_match($patternData['pattern'], $dataToAnalyze)) {
-                    $this->threatScore += $patternData['severity'];
-                    $this->detectedThreats[] = [
-                        'type' => $threatType,
-                        'severity' => $patternData['severity'],
-                        'pattern' => $patternData['pattern']
-                    ];
-                    
-                    // Não contar o mesmo padrão múltiplas vezes
-                    break;
+        // 2. Analisar Body
+        if (!empty($body)) {
+            $this->scanData($body, 'body');
+        }
+        
+        // 3. Analisar Headers Específicos
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        if (!empty($userAgent)) {
+            // Checar User-Agent contra regras específicas
+            if (isset($this->threatPatterns['user_agent'])) {
+                foreach ($this->threatPatterns['user_agent'] as $patternData) {
+                    if (preg_match($patternData['pattern'], $userAgent)) {
+                        $this->addThreat('bad_bot', $patternData['severity'], 'User-Agent malicioso');
+                    }
                 }
             }
         }
@@ -117,6 +146,36 @@ class ThreatDetector {
             'threat_score' => $this->threatScore,
             'threat_type' => !empty($this->detectedThreats) ? $this->detectedThreats[0]['type'] : null,
             'detected_threats' => $this->detectedThreats
+        ];
+    }
+
+    /**
+     * Helper para scanear string
+     */
+    private function scanData($data, $context) {
+        foreach ($this->threatPatterns as $threatType => $patterns) {
+            if ($threatType === 'user_agent') continue; // Already handled
+            
+            foreach ($patterns as $patternData) {
+                try {
+                    if (preg_match($patternData['pattern'], $data)) {
+                        $this->addThreat($threatType, $patternData['severity'], $patternData['pattern']);
+                        // Se achou uma ameaça grave deste tipo, pula para o próximo tipo
+                        if ($patternData['severity'] >= 80) break; 
+                    }
+                } catch (Exception $e) {
+                    // Ignore regex errors
+                }
+            }
+        }
+    }
+
+    private function addThreat($type, $severity, $pattern) {
+        $this->threatScore += $severity;
+        $this->detectedThreats[] = [
+            'type' => $type,
+            'severity' => $severity,
+            'pattern' => $pattern
         ];
     }
     
@@ -175,4 +234,3 @@ class ThreatDetector {
         }
     }
 }
-

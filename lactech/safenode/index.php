@@ -294,6 +294,102 @@
         .animate-marquee:hover {
             animation-play-state: paused;
         }
+        
+        /* Logo Carousel - Desktop */
+        .logos-carousel-infinite {
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+            mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+        
+        .logos-track {
+            display: flex;
+            gap: 3rem;
+            width: fit-content;
+            animation: scroll-logos 30s linear infinite;
+            opacity: 0.4;
+            will-change: transform;
+        }
+        
+        .logos-track:hover {
+            animation-play-state: paused;
+            opacity: 0.7;
+        }
+        
+        .logo-item {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-item > div {
+            cursor: pointer;
+        }
+        
+        .logo-item > div:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        @keyframes scroll-logos {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(calc(-100% / 2));
+            }
+        }
+        
+        /* Logo Carousel - Mobile */
+        .logos-carousel-infinite-mobile {
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+            mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+        
+        .logos-track-mobile {
+            display: flex;
+            gap: 1.5rem;
+            width: fit-content;
+            animation: scroll-logos-mobile 25s linear infinite;
+            opacity: 0.4;
+            will-change: transform;
+        }
+        
+        .logos-track-mobile:hover {
+            animation-play-state: paused;
+            opacity: 0.7;
+        }
+        
+        .logo-item-mobile {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-item-mobile > div {
+            cursor: pointer;
+        }
+        
+        .logo-item-mobile > div:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        @keyframes scroll-logos-mobile {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(calc(-100% / 2));
+            }
+        }
     </style>
 </head>
 <body class="bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
@@ -410,8 +506,75 @@
                 </a>
             </div>
 
-            <!-- Improved Dashboard Preview with "Live Threat Map" concept -->
-            <div class="mt-24 relative max-w-6xl mx-auto">
+            <!-- Dashboard Preview (mobile simplificado + desktop completo) -->
+            <!-- Mobile: versão compacta em coluna única -->
+            <div class="mt-16 max-w-md mx-auto w-full md:hidden">
+                <div class="relative rounded-3xl border border-zinc-800 bg-black/90 backdrop-blur-xl shadow-2xl overflow-hidden p-4 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                            <span class="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">Conectado</span>
+                        </div>
+                        <span class="text-[10px] text-zinc-500 font-mono">safenode.cloud</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 text-left">
+                        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                            <p class="text-[10px] text-zinc-500 mb-1">TOTAL DE REQUISIÇÕES</p>
+                            <p class="text-xl font-bold">2.4M</p>
+                            <p class="text-[10px] text-zinc-500 mt-1">Últimas 24h</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                            <p class="text-[10px] text-zinc-500 mb-1">AMEAÇAS MITIGADAS</p>
+                            <p class="text-xl font-bold text-red-400">14.2k</p>
+                            <p class="text-[10px] text-zinc-500 mt-1">Bloqueado por IA</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                            <p class="text-[10px] text-zinc-500 mb-1">LATÊNCIA GLOBAL</p>
+                            <p class="text-xl font-bold">34ms</p>
+                            <p class="text-[10px] text-zinc-500 mt-1">P99</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="rounded-xl bg-[#050505] border border-zinc-800/60 p-3">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-[11px] text-zinc-300">Mapa de Tráfego</span>
+                                <span class="text-[10px] text-zinc-500">1H</span>
+                            </div>
+                            <div class="relative h-32 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:20px_20px] rounded-lg flex items-center justify-center overflow-hidden">
+                                <div class="relative">
+                                    <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                                        <i data-lucide="server" class="w-4 h-4 text-green-500"></i>
+                                    </div>
+                                    <div class="absolute inset-0 -m-4 border border-green-500/10 rounded-full animate-[ping_3s_linear_infinite]"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rounded-xl bg-zinc-950 border border-zinc-800/60 p-3">
+                            <p class="text-[11px] text-zinc-300 mb-2">Registro de Eventos</p>
+                            <div class="space-y-1 font-mono text-[10px] max-h-24 overflow-hidden">
+                                <div class="flex gap-2 opacity-60">
+                                    <span class="text-zinc-500">10:42:01</span>
+                                    <span class="text-emerald-400">PERMITIR</span>
+                                    <span class="text-zinc-400">192.168.1.42</span>
+                                </div>
+                                <div class="flex gap-2 opacity-60">
+                                    <span class="text-zinc-500">10:42:05</span>
+                                    <span class="text-red-400">BLOQUEAR</span>
+                                    <span class="text-zinc-400">Injeção SQL</span>
+                                </div>
+                                <div class="flex gap-2 border-l-2 border-red-500 pl-2 bg-red-500/5">
+                                    <span class="text-zinc-500">10:42:12</span>
+                                    <span class="text-red-500 font-bold">MITIGADO</span>
+                                    <span class="text-white">Ataque DDoS L7</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop: preview completo -->
+            <div class="mt-24 relative max-w-6xl mx-auto hidden md:block">
                 <div class="absolute -inset-1 bg-gradient-to-r from-zinc-700 via-zinc-500 to-zinc-700 rounded-2xl blur opacity-20 animate-pulse-slow"></div>
                 <div class="relative rounded-2xl border border-zinc-800 bg-black/90 backdrop-blur-xl shadow-2xl overflow-hidden">
                     <!-- Window Controls -->
@@ -595,47 +758,163 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p class="text-center text-xs text-zinc-500 mb-10 font-semibold uppercase tracking-[0.2em]">Confiado por empresas inovadoras</p>
             
-            <div class="relative">
-                <div class="flex gap-12 items-center justify-center flex-wrap md:flex-nowrap opacity-40 hover:opacity-70 transition-opacity duration-500">
-                    <!-- Logo 1 -->
-                    <div class="flex justify-center items-center group cursor-pointer">
-                        <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm group-hover:border-zinc-700 group-hover:bg-zinc-900/40 transition-all duration-300">
-                            <span class="text-2xl font-bold text-white tracking-tight">ACME</span>
+            <div class="relative overflow-hidden">
+                <!-- Desktop Carousel -->
+                <div class="hidden md:block">
+                    <div class="logos-carousel-infinite">
+                        <div class="logos-track">
+                            <!-- Primeira série de logos -->
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">ACME</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Globex</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Soylent</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Lactech</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Umbrella</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Nordpetro</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Denfy</span>
+                                </div>
+                            </div>
+                            <!-- Duplicar para scroll infinito -->
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">ACME</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Globex</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Soylent</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Lactech</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Umbrella</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Nordpetro</span>
+                                </div>
+                            </div>
+                            <div class="logo-item">
+                                <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-2xl font-bold text-white tracking-tight">Denfy</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Logo 2 -->
-                    <div class="flex justify-center items-center group cursor-pointer">
-                        <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm group-hover:border-zinc-700 group-hover:bg-zinc-900/40 transition-all duration-300">
-                            <span class="text-2xl font-bold text-white tracking-tight">Globex</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Logo 3 -->
-                    <div class="flex justify-center items-center group cursor-pointer">
-                        <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm group-hover:border-zinc-700 group-hover:bg-zinc-900/40 transition-all duration-300">
-                            <span class="text-2xl font-bold text-white tracking-tight">Soylent</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Logo 4 -->
-                    <div class="flex justify-center items-center group cursor-pointer">
-                        <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm group-hover:border-zinc-700 group-hover:bg-zinc-900/40 transition-all duration-300">
-                            <span class="text-2xl font-bold text-white tracking-tight">Lactech</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Logo 5 -->
-                    <div class="hidden lg:flex justify-center items-center group cursor-pointer">
-                        <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm group-hover:border-zinc-700 group-hover:bg-zinc-900/40 transition-all duration-300">
-                            <span class="text-2xl font-bold text-white tracking-tight">Umbrella</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Logo 6 -->
-                    <div class="hidden lg:flex justify-center items-center group cursor-pointer">
-                        <div class="px-8 py-4 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm group-hover:border-zinc-700 group-hover:bg-zinc-900/40 transition-all duration-300">
-                            <span class="text-2xl font-bold text-white tracking-tight">Nordpetro</span>
+                </div>
+                
+                <!-- Mobile Carousel -->
+                <div class="md:hidden">
+                    <div class="logos-carousel-infinite-mobile">
+                        <div class="logos-track-mobile">
+                            <!-- Primeira série de logos (mobile) -->
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">ACME</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Globex</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Soylent</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Lactech</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Umbrella</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Nordpetro</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Denfy</span>
+                                </div>
+                            </div>
+                            <!-- Duplicar para scroll infinito (mobile) -->
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">ACME</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Globex</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Soylent</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Lactech</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Umbrella</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Nordpetro</span>
+                                </div>
+                            </div>
+                            <div class="logo-item-mobile">
+                                <div class="px-6 py-3 rounded-xl border border-zinc-800/50 bg-zinc-900/20 backdrop-blur-sm transition-all duration-300">
+                                    <span class="text-xl font-bold text-white tracking-tight">Denfy</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1064,7 +1343,7 @@
                 Junte-se a milhares de desenvolvedores que confiam no <span class="flex items-center gap-2"><img src="assets/img/logos (6).png" alt="SafeNode" class="h-6 w-auto">SafeNode</span>.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="#" class="px-8 py-4 bg-white text-black rounded-full font-bold hover:bg-zinc-200 transition-all transform hover:scale-105">Criar Conta Grátis</a>
+                <a href="register.php" class="px-8 py-4 bg-white text-black rounded-full font-bold hover:bg-zinc-200 transition-all transform hover:scale-105">Criar Conta Grátis</a>
                 <a href="#" class="px-8 py-4 bg-transparent border border-zinc-700 text-white rounded-full font-medium hover:bg-zinc-900 transition-all">Falar com Especialista</a>
             </div>
         </div>
@@ -1239,6 +1518,7 @@
                         <a href="#" class="hover:text-zinc-400 transition-colors">Termos</a>
                         <a href="#" class="hover:text-zinc-400 transition-colors">Cookies</a>
                         <a href="#" class="hover:text-zinc-400 transition-colors">Segurança</a>
+                        <a href="admin-emails.php" class="hover:text-zinc-400 transition-colors opacity-50 hover:opacity-100">Admin</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-zinc-600">

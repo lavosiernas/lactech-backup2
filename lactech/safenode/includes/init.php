@@ -1,7 +1,7 @@
 <?php
 /**
  * SafeNode - Inicialização
- * Carrega Router e proteção de URLs quando logado
+ * Carrega Router, proteção de URLs e Lógica de Seleção de Site
  */
 
 // Iniciar sessão apenas se não estiver ativa
@@ -9,9 +9,49 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Verificar se está logado e inicializar Router
+require_once __DIR__ . '/config.php';
+
+// Lógica de Troca de Site (Contexto)
 if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true) {
+    
+    // Se o usuário clicou em um site para visualizar
+    if (isset($_GET['view_site'])) {
+        $siteId = intval($_GET['view_site']);
+        
+        if ($siteId === 0) {
+            // 0 = Visão Global
+            $_SESSION['view_site_id'] = 0;
+            $_SESSION['view_site_name'] = 'Visão Global';
+        } else {
+            // Verificar se o site existe
+            $db = getSafeNodeDatabase();
+            if ($db) {
+                // SEGURANÇA: Verificar que o site pertence ao usuário logado
+                $userId = $_SESSION['safenode_user_id'] ?? null;
+                $stmt = $db->prepare("SELECT id, domain, display_name FROM safenode_sites WHERE id = ? AND user_id = ?");
+                $stmt->execute([$siteId, $userId]);
+                $site = $stmt->fetch();
+                
+                if ($site) {
+                    $_SESSION['view_site_id'] = $site['id'];
+                    $_SESSION['view_site_name'] = $site['display_name'] ?: $site['domain'];
+                }
+            }
+        }
+        
+        // Redirecionar para limpar a URL (remove o ?view_site=X)
+        $redirectUrl = strtok($_SERVER["REQUEST_URI"], '?');
+        header("Location: $redirectUrl");
+        exit;
+    }
+
+    // Definir padrão se não existir
+    if (!isset($_SESSION['view_site_id'])) {
+        $_SESSION['view_site_id'] = 0; // 0 = Global
+        $_SESSION['view_site_name'] = 'Visão Global';
+    }
+
+    // Inicializar Router
     require_once __DIR__ . '/Router.php';
     SafeNodeRouter::init();
 }
-
