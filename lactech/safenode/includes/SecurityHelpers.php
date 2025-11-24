@@ -227,10 +227,12 @@ class InputValidator {
      * Validar senha forte
      */
     public static function strongPassword(string $password): bool {
-        // Mínimo 8 caracteres, pelo menos 1 letra, 1 número
+        // Mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e caracteres especiais
         return strlen($password) >= 8 
-            && preg_match('/[a-zA-Z]/', $password) === 1 
-            && preg_match('/[0-9]/', $password) === 1;
+            && preg_match('/[A-Z]/', $password) === 1  // Pelo menos 1 maiúscula
+            && preg_match('/[a-z]/', $password) === 1  // Pelo menos 1 minúscula
+            && preg_match('/[0-9]/', $password) === 1  // Pelo menos 1 número
+            && preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password) === 1; // Pelo menos 1 caractere especial
     }
 }
 

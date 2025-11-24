@@ -421,7 +421,7 @@ $categoryMeta = [
                                         <div class="w-12 h-12 rounded-xl <?php echo $colorClass['bg']; ?> border <?php echo $colorClass['border']; ?> flex items-center justify-center flex-shrink-0">
                                             <i data-lucide="<?php echo htmlspecialchars($meta['icon']); ?>" class="w-6 h-6 <?php echo $colorClass['text']; ?>"></i>
                                         </div>
-                                <div>
+                                <div class="flex-1">
                                             <div class="flex items-center gap-2 mb-2">
                                                 <h3 class="text-lg font-bold text-white"><?php echo htmlspecialchars($meta['label']); ?></h3>
                                                 <span class="modern-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg <?php echo $colorClass['bg']; ?> border <?php echo $colorClass['border']; ?> text-xs font-bold <?php echo $colorClass['text']; ?>">
@@ -432,7 +432,52 @@ $categoryMeta = [
                                             <p class="text-sm text-zinc-400 font-medium"><?php echo htmlspecialchars($meta['description']); ?></p>
                                         </div>
                                 </div>
+                                <?php if ($category === 'asaas'): ?>
+                                    <button type="button" onclick="document.getElementById('asaas-guide').classList.toggle('hidden')" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all text-sm font-medium">
+                                        <i data-lucide="help-circle" class="w-4 h-4"></i>
+                                        Como obter?
+                                    </button>
+                                <?php endif; ?>
                             </div>
+                            
+                            <?php if ($category === 'asaas'): ?>
+                                <div id="asaas-guide" class="hidden mb-6 p-6 rounded-xl bg-zinc-900/50 border border-emerald-500/20 animate-fade-in">
+                                    <div class="flex items-start gap-4 mb-4">
+                                        <div class="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                                            <i data-lucide="info" class="w-5 h-5 text-emerald-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-base font-bold text-white mb-2">Como obter a API Key da Asaas</h4>
+                                            <ol class="space-y-3 text-sm text-zinc-300">
+                                                <li class="flex items-start gap-2">
+                                                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs">1</span>
+                                                    <span>Acesse sua conta Asaas e vá em <strong class="text-white">API > Integrações</strong></span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs">2</span>
+                                                    <span>Clique na aba <strong class="text-white">"Chaves de API"</strong> no topo da página</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs">3</span>
+                                                    <span>Clique em <strong class="text-white">"Criar nova chave"</strong> ou use uma existente</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs">4</span>
+                                                    <span><strong class="text-white">Copie a chave</strong> (ela começa com <code class="px-1.5 py-0.5 rounded bg-zinc-800 text-emerald-300 font-mono text-xs">$aact_...</code>)</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs">5</span>
+                                                    <span>Cole a chave no campo abaixo e salve</span>
+                                                </li>
+                                            </ol>
+                                            <div class="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2">
+                                                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+                                                <p class="text-xs text-amber-300"><strong>Importante:</strong> A chave só é mostrada uma vez! Salve em local seguro. Use <strong>Sandbox</strong> para testes antes de ativar em produção.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                             
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <?php foreach ($settings[$category] as $key => $setting): ?>
@@ -459,8 +504,8 @@ $categoryMeta = [
                                                     </div>
                                             <?php else: ?>
                                                     <div class="relative">
-                                                        <i data-lucide="<?php echo ($key === 'cloudflare_api_token') ? 'lock' : 'edit-2'; ?>" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
-                                                        <input <?php echo ($key === 'cloudflare_api_token') ? 'type="password" autocomplete="off"' : 'type="text"'; ?> name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($setting['setting_value']); ?>" class="form-input w-full pl-10 pr-4 py-2.5 rounded-xl text-white text-sm font-medium">
+                                                        <i data-lucide="<?php echo ($key === 'cloudflare_api_token' || $key === 'asaas_api_key') ? 'lock' : 'edit-2'; ?>" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
+                                                        <input <?php echo ($key === 'cloudflare_api_token' || $key === 'asaas_api_key') ? 'type="password" autocomplete="off"' : 'type="text"'; ?> name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($setting['setting_value']); ?>" class="form-input w-full pl-10 pr-4 py-2.5 rounded-xl text-white text-sm font-medium" placeholder="<?php echo ($key === 'asaas_api_key') ? 'Cole sua API Key aqui (ex: $aact_...)' : ''; ?>">
                                                     </div>
                                             <?php endif; ?>
                                             

@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         } elseif (!InputValidator::email($email)) {
             $error = 'Email inválido';
         } elseif (!InputValidator::strongPassword($password)) {
-            $error = 'Senha deve ter no mínimo 8 caracteres, com letras e números';
+            $error = 'Senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e símbolos';
         } elseif ($password !== $confirmPassword) {
             $error = 'As senhas não coincidem';
         }
@@ -62,38 +62,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         $error = 'Por favor, preencha todos os campos obrigatórios.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Por favor, insira um email válido.';
-    } elseif (strlen($password) < 6) {
-        $error = 'A senha deve ter no mínimo 6 caracteres.';
+    } elseif (strlen($password) < 8) {
+        $error = 'A senha deve ter no mínimo 8 caracteres.';
+    } elseif (!preg_match('/[A-Z]/', $password)) {
+        $error = 'A senha deve conter pelo menos uma letra maiúscula.';
+    } elseif (!preg_match('/[a-z]/', $password)) {
+        $error = 'A senha deve conter pelo menos uma letra minúscula.';
+    } elseif (!preg_match('/[0-9]/', $password)) {
+        $error = 'A senha deve conter pelo menos um número.';
+    } elseif (!preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password)) {
+        $error = 'A senha deve conter pelo menos um caractere especial (!@#$%^&*).';
     } elseif ($password !== $confirmPassword) {
         $error = 'As senhas não coincidem.';
     } elseif (strlen($username) < 3) {
         $error = 'O usuário deve ter no mínimo 3 caracteres.';
     } else {
+        // Verificar números repetidos na senha
+        preg_match_all('/[0-9]/', $password, $matches);
+        if (count($matches[0]) > 1) {
+            $numberArray = $matches[0];
+            $uniqueNumbers = array_unique($numberArray);
+            if (count($uniqueNumbers) < count($numberArray)) {
+                $error = 'A senha não pode conter números repetidos.';
+            }
+        }
+        
+        // Verificar se senha é igual ao username (case insensitive)
+        if (!$error && strtolower($password) === strtolower($username)) {
+            $error = 'A senha não pode ser igual ao nome de usuário.';
+        }
+    }
+    
+    if (!$error) {
         try {
             $pdo = getSafeNodeDatabase();
             
             if (!$pdo) {
                 $error = 'Erro ao conectar ao banco de dados. Tente novamente.';
             } else {
-                // Verificar se usuário já existe
-                $stmt = $pdo->prepare("SELECT id FROM safenode_users WHERE username = ? OR email = ?");
-                $stmt->execute([$username, $email]);
+                // Verificar se email já existe (username pode ser duplicado)
+                $stmt = $pdo->prepare("SELECT id FROM safenode_users WHERE email = ?");
+                $stmt->execute([$email]);
                 
                 if ($stmt->fetch()) {
-                    $error = 'Usuário ou email já cadastrado.';
+                    $error = 'Este email ja esta vinculado a uma conta';
                 } else {
-                    // Criar hash da senha
+                    // NÃO criar usuário ainda - apenas salvar dados temporariamente na sessão
+                    // Criar hash da senha para salvar temporariamente
                     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                     
-                    // Inserir usuário (inativo até verificar email)
-                    $stmt = $pdo->prepare("
-                        INSERT INTO safenode_users (username, email, password_hash, full_name, role, is_active, email_verified) 
-                        VALUES (?, ?, ?, ?, 'user', 0, 0)
-                    ");
+                    // Salvar dados temporários na sessão (será criado no banco apenas após verificar OTP)
+                    $_SESSION['safenode_register_data'] = [
+                        'username' => $username,
+                        'email' => $email,
+                        'password_hash' => $passwordHash,
+                        'full_name' => $fullName ?: null
+                    ];
                     
-                    $stmt->execute([$username, $email, $passwordHash, $fullName ?: null]);
-                    $userId = $pdo->lastInsertId();
-                    $userEmail = $email;
+                    // Verificar se há plano selecionado
+                    $selectedPlan = $_GET['plan'] ?? null;
+                    if ($selectedPlan) {
+                        $_SESSION['safenode_register_plan'] = $selectedPlan;
+                    }
                     
                     // Gerar código OTP de 6 dígitos
                     $otpCode = str_pad(strval(rand(100000, 999999)), 6, '0', STR_PAD_LEFT);
@@ -101,12 +131,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     // Expira em 10 minutos
                     $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
                     
-                    // Salvar código OTP no banco
+                    // Salvar código OTP no banco (sem user_id ainda, usaremos email como identificador)
                     $stmt = $pdo->prepare("
                         INSERT INTO safenode_otp_codes (user_id, email, otp_code, action, expires_at) 
-                        VALUES (?, ?, ?, 'email_verification', ?)
+                        VALUES (NULL, ?, ?, 'email_verification', ?)
                     ");
-                    $stmt->execute([$userId, $email, $otpCode, $expiresAt]);
+                    $stmt->execute([$email, $otpCode, $expiresAt]);
                     
                     // Enviar email com código OTP
                     $emailService = SafeNodeEmailService::getInstance();
@@ -116,23 +146,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         // Desafio usado com sucesso - resetar para próxima página
                         SafeNodeHumanVerification::reset();
                         
-                        // Verificar se há plano selecionado
-                        $selectedPlan = $_GET['plan'] ?? null;
-                        if ($selectedPlan) {
-                            $_SESSION['safenode_register_user_id'] = $userId;
-                            $_SESSION['safenode_register_email'] = $email;
-                            $_SESSION['safenode_register_plan'] = $selectedPlan;
-                        }
-                        
                         // Redirecionar para página de verificação
-                        $_SESSION['safenode_register_user_id'] = $userId;
-                        $_SESSION['safenode_register_email'] = $email;
                         header('Location: verify-otp.php');
                         exit;
                     } else {
-                        // Se falhar ao enviar email, deletar usuário criado
-                        $stmt = $pdo->prepare("DELETE FROM safenode_users WHERE id = ?");
-                        $stmt->execute([$userId]);
+                        // Se falhar ao enviar email, limpar dados temporários
+                        unset($_SESSION['safenode_register_data'], $_SESSION['safenode_register_plan']);
                         
                         $error = 'Erro ao enviar código de verificação. Tente novamente.';
                     }
@@ -147,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="md:h-full bg-white">
+<html lang="pt-BR" class="h-full bg-white">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -188,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         }
     </style>
 </head>
-<body class="min-h-screen md:h-full flex flex-col md:flex-row md:overflow-hidden bg-white">
+<body class="min-h-screen flex flex-col md:flex-row bg-white">
     
     <!-- Left Side: Image & Branding (Desktop Only) -->
     <div class="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-black text-white overflow-hidden">
@@ -225,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     </div>
 
     <!-- Right Side: Register Form -->
-    <div class="w-full md:w-1/2 lg:w-[45%] flex flex-col md:justify-center overflow-y-auto">
+    <div class="w-full md:w-1/2 lg:w-[45%] flex flex-col overflow-y-auto md:h-screen">
         <div class="w-full max-w-md mx-auto px-6 py-8 md:py-12 md:px-10 lg:px-12">
             
             <!-- Header (Mobile Logo) -->
@@ -240,16 +259,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             </div>
 
             <?php if(!empty($error)): ?>
-                <div class="mb-4 md:mb-6 p-3 md:p-4 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 md:gap-3 animate-fade-in">
-                    <i data-lucide="alert-circle" class="w-4 h-4 md:w-5 md:h-5 text-red-600 shrink-0 mt-0.5"></i>
-                    <p class="text-xs md:text-sm text-red-600 font-medium"><?php echo htmlspecialchars($error); ?></p>
+                <div class="mb-4 md:mb-6 p-4 md:p-5 rounded-xl bg-red-500 border-2 border-red-600 shadow-lg shadow-red-500/20 flex items-start gap-3 md:gap-4 animate-fade-in">
+                    <div class="flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full bg-red-600 flex items-center justify-center">
+                        <i data-lucide="alert-circle" class="w-4 h-4 md:w-5 md:h-5 text-white"></i>
+                    </div>
+                    <p class="text-sm md:text-base text-white font-bold leading-relaxed"><?php echo htmlspecialchars($error); ?></p>
                 </div>
             <?php endif; ?>
             
             <?php if(isset($_SESSION['google_error'])): ?>
-                <div class="mb-4 md:mb-6 p-3 md:p-4 rounded-lg bg-red-50 border border-red-100 flex items-start gap-2 md:gap-3 animate-fade-in">
-                    <i data-lucide="alert-circle" class="w-4 h-4 md:w-5 md:h-5 text-red-600 shrink-0 mt-0.5"></i>
-                    <p class="text-xs md:text-sm text-red-600 font-medium"><?php echo htmlspecialchars($_SESSION['google_error']); unset($_SESSION['google_error']); ?></p>
+                <div class="mb-4 md:mb-6 p-4 md:p-5 rounded-xl bg-red-500 border-2 border-red-600 shadow-lg shadow-red-500/20 flex items-start gap-3 md:gap-4 animate-fade-in">
+                    <div class="flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full bg-red-600 flex items-center justify-center">
+                        <i data-lucide="alert-circle" class="w-4 h-4 md:w-5 md:h-5 text-white"></i>
+                    </div>
+                    <p class="text-sm md:text-base text-white font-bold leading-relaxed"><?php echo htmlspecialchars($_SESSION['google_error']); unset($_SESSION['google_error']); ?></p>
                 </div>
             <?php endif; ?>
             
@@ -297,7 +320,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     <div class="relative">
                         <input type="password" name="password" id="password" required 
                             class="block w-full px-3 md:px-4 py-2.5 md:py-3 pr-10 md:pr-12 rounded-lg border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all text-sm"
-                            placeholder="Mínimo 6 caracteres">
+                            placeholder="Digite sua senha"
+                            oninput="checkPasswordStrength(this.value)">
                         <button 
                             type="button" 
                             onclick="togglePasswordVisibility('password', 'eyeIconPassword')" 
@@ -309,7 +333,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                             </svg>
                         </button>
                     </div>
-                    <p class="text-xs text-slate-500">Mínimo de 6 caracteres</p>
+                    
+                    <!-- Password Strength Indicator -->
+                    <div id="passwordStrength" class="hidden">
+                        <!-- Progress Bar -->
+                        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-2">
+                            <div id="strengthBar" class="h-full transition-all duration-300 rounded-full" style="width: 0%"></div>
+                        </div>
+                        
+                        <!-- Strength Text -->
+                        <div class="flex items-center gap-2 mb-2">
+                            <span id="strengthText" class="text-xs font-medium"></span>
+                            <i id="strengthIcon" class="w-4 h-4"></i>
+                        </div>
+                        
+                        <!-- Requirements List -->
+                        <ul id="passwordRequirements" class="space-y-1.5 text-xs">
+                            <li id="req-length" class="flex items-center gap-2 text-slate-500">
+                                <i class="w-3 h-3"></i>
+                                <span>Mínimo 8 caracteres</span>
+                            </li>
+                            <li id="req-uppercase" class="flex items-center gap-2 text-slate-500">
+                                <i class="w-3 h-3"></i>
+                                <span>Uma letra maiúscula</span>
+                            </li>
+                            <li id="req-lowercase" class="flex items-center gap-2 text-slate-500">
+                                <i class="w-3 h-3"></i>
+                                <span>Uma letra minúscula</span>
+                            </li>
+                            <li id="req-number" class="flex items-center gap-2 text-slate-500">
+                                <i class="w-3 h-3"></i>
+                                <span>Um número (sem repetir)</span>
+                            </li>
+                            <li id="req-special" class="flex items-center gap-2 text-slate-500">
+                                <i class="w-3 h-3"></i>
+                                <span>Um caractere especial (!@#$%^&*)</span>
+                            </li>
+                            <li id="req-username" class="flex items-center gap-2 text-slate-500">
+                                <i class="w-3 h-3"></i>
+                                <span>Diferente do nome de usuário</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Confirmar Senha -->
@@ -420,13 +485,181 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             }, 800);
         }
 
+        // Password Strength Checker
+        function checkPasswordStrength(password) {
+            const strengthDiv = document.getElementById('passwordStrength');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            const strengthIcon = document.getElementById('strengthIcon');
+            const passwordInput = document.getElementById('password');
+            
+            if (!password) {
+                strengthDiv.classList.add('hidden');
+                passwordInput.classList.remove('border-red-500');
+                return;
+            }
+            
+            strengthDiv.classList.remove('hidden');
+            
+            // Get username for comparison
+            const username = document.getElementById('username')?.value || '';
+            
+            // Check requirements
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+            
+            // Check for repeated numbers
+            const numbers = password.match(/[0-9]/g) || [];
+            const hasRepeatedNumbers = numbers.length > 1 && new Set(numbers).size < numbers.length;
+            const validNumber = hasNumber && !hasRepeatedNumbers;
+            
+            // Check if password equals username (case insensitive)
+            const equalsUsername = username && password.toLowerCase() === username.toLowerCase();
+            const notEqualsUsername = !equalsUsername;
+            
+            // Update requirement icons (red if not met)
+            updateRequirement('req-length', hasLength);
+            updateRequirement('req-uppercase', hasUppercase);
+            updateRequirement('req-lowercase', hasLowercase);
+            updateRequirement('req-number', validNumber);
+            updateRequirement('req-special', hasSpecial);
+            updateRequirement('req-username', notEqualsUsername);
+            
+            // Check if ALL requirements are met
+            const allRequirementsMet = hasLength && hasUppercase && hasLowercase && validNumber && hasSpecial && notEqualsUsername;
+            
+            // Update password input border color
+            if (allRequirementsMet) {
+                passwordInput.classList.remove('border-red-500');
+                passwordInput.classList.add('border-emerald-500');
+            } else {
+                passwordInput.classList.remove('border-emerald-500');
+                passwordInput.classList.add('border-red-500');
+            }
+            
+            // Determine strength level - só fica forte se TODOS os requisitos forem atendidos
+            let strength = 'Fraca';
+            let color = 'bg-red-500';
+            let textColor = 'text-red-600';
+            let icon = '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
+            let percentage = 0;
+            
+            if (allRequirementsMet) {
+                strength = 'Forte';
+                color = 'bg-emerald-500';
+                textColor = 'text-emerald-600';
+                icon = '<i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>';
+                percentage = 100;
+            } else {
+                // Count how many requirements are met
+                let metCount = 0;
+                if (hasLength) metCount++;
+                if (hasUppercase) metCount++;
+                if (hasLowercase) metCount++;
+                if (validNumber) metCount++;
+                if (hasSpecial) metCount++;
+                if (notEqualsUsername) metCount++;
+                
+                percentage = (metCount / 6) * 60; // Max 60% if not all met
+                
+                if (equalsUsername) {
+                    strength = 'Não pode ser igual ao usuário';
+                    percentage = 0;
+                } else if (hasRepeatedNumbers) {
+                    strength = 'Não pode ter números repetidos';
+                    percentage = Math.min(percentage, 30);
+                } else {
+                    strength = 'Falta requisito';
+                }
+            }
+            
+            // Update UI
+            strengthBar.className = `h-full transition-all duration-300 rounded-full ${color}`;
+            strengthBar.style.width = percentage + '%';
+            strengthText.className = `text-xs font-bold ${textColor}`;
+            strengthText.textContent = `Força: ${strength}`;
+            strengthIcon.innerHTML = icon;
+            
+            // Reinitialize Lucide icons for new icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+        
+        function updateRequirement(id, met) {
+            const req = document.getElementById(id);
+            const icon = req.querySelector('i');
+            
+            if (met) {
+                req.classList.remove('text-red-600', 'text-slate-500');
+                req.classList.add('text-emerald-600');
+                icon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            } else {
+                req.classList.remove('text-emerald-600', 'text-slate-500');
+                req.classList.add('text-red-600');
+                icon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Iniciar verificação humana
             initSafeNodeHumanVerification();
             
+            // Re-validate password when username changes
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            if (usernameInput && passwordInput) {
+                usernameInput.addEventListener('input', function() {
+                    if (passwordInput.value) {
+                        checkPasswordStrength(passwordInput.value);
+                    }
+                });
+            }
+            
             // Register button loading state
             const form = document.getElementById('registerForm');
-            form.addEventListener('submit', function() {
+            form.addEventListener('submit', function(e) {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+                const username = document.getElementById('username').value;
+                
+                // Validate password strength
+                const hasLength = password.length >= 8;
+                const hasUppercase = /[A-Z]/.test(password);
+                const hasLowercase = /[a-z]/.test(password);
+                const hasNumber = /[0-9]/.test(password);
+                const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+                
+                // Check for repeated numbers
+                const numbers = password.match(/[0-9]/g) || [];
+                const hasRepeatedNumbers = numbers.length > 1 && new Set(numbers).size < numbers.length;
+                
+                // Check if password equals username
+                const equalsUsername = username && password.toLowerCase() === username.toLowerCase();
+                
+                if (!hasLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecial || hasRepeatedNumbers || equalsUsername) {
+                    e.preventDefault();
+                    let errorMsg = 'Por favor, crie uma senha mais forte:\n';
+                    if (!hasLength) errorMsg += '• Mínimo 8 caracteres\n';
+                    if (!hasUppercase) errorMsg += '• Uma letra maiúscula\n';
+                    if (!hasLowercase) errorMsg += '• Uma letra minúscula\n';
+                    if (!hasNumber) errorMsg += '• Um número\n';
+                    if (hasRepeatedNumbers) errorMsg += '• Não pode ter números repetidos\n';
+                    if (!hasSpecial) errorMsg += '• Um caractere especial\n';
+                    if (equalsUsername) errorMsg += '• Não pode ser igual ao nome de usuário\n';
+                    alert(errorMsg);
+                    return false;
+                }
+                
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    alert('As senhas não coincidem.');
+                    return false;
+                }
+                
                 const btn = document.getElementById('registerBtn');
                 const spinner = document.getElementById('loadingSpinner');
                 const text = document.getElementById('registerText');

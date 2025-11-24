@@ -1254,7 +1254,7 @@
                     <?php if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true): ?>
                         <a href="checkout.php?plan=hobby" class="w-full py-3 rounded-full border border-zinc-700 text-white font-medium hover:bg-zinc-800 transition-colors text-center">Ativar Plano</a>
                     <?php else: ?>
-                        <a href="register.php" class="w-full py-3 rounded-full border border-zinc-700 text-white font-medium hover:bg-zinc-800 transition-colors text-center">Começar</a>
+                    <a href="register.php" class="w-full py-3 rounded-full border border-zinc-700 text-white font-medium hover:bg-zinc-800 transition-colors text-center">Começar</a>
                     <?php endif; ?>
                 </div>
 

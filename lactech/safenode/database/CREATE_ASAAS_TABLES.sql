@@ -40,3 +40,4 @@ CREATE TABLE IF NOT EXISTS `safenode_asaas_customers` (
   CONSTRAINT `fk_asaas_customers_user` FOREIGN KEY (`user_id`) REFERENCES `safenode_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+

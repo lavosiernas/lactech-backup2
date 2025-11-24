@@ -44,12 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     if (!CSRFProtection::validate()) {
         $error = 'Token de segurança inválido. Recarregue a página e tente novamente.';
     } else {
-        $username = XSSProtection::sanitize($_POST['username'] ?? '');
+        $email = XSSProtection::sanitize($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
     }
     
     if (!$error) {
-        $username = trim($username);
+        $email = trim($email);
         $password = $password;
 
     // Configurações de rate limit de login
@@ -75,8 +75,10 @@ $clientCountry    = (function () {
         $error = $hvError ?: 'Falha na verificação de segurança.';
     }
     // Validação básica de campos
-    elseif (empty($username) || empty($password)) {
+    elseif (empty($email) || empty($password)) {
         $error = 'Por favor, preencha todos os campos.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Por favor, insira um email válido.';
     } else {
         try {
             $pdo = getSafeNodeDatabase();
@@ -119,13 +121,13 @@ $clientCountry    = (function () {
                     }
                 }
 
-                // Buscar usuário
-                $stmt = $pdo->prepare("SELECT id, username, email, password_hash, full_name, role, is_active, email_verified FROM safenode_users WHERE username = ? OR email = ?");
-                $stmt->execute([$username, $username]);
+                // Buscar usuário apenas por email
+                $stmt = $pdo->prepare("SELECT id, username, email, password_hash, full_name, role, is_active, email_verified FROM safenode_users WHERE email = ?");
+                $stmt->execute([$email]);
                 $user = $stmt->fetch();
                 
                 if (!$user) {
-                    $error = 'Usuário não encontrado. Verifique o nome de usuário ou email.';
+                    $error = 'Email não encontrado. Verifique seu email e tente novamente.';
                 } else {
                     // Limpar possíveis espaços no hash
                     $passwordHash = trim($user['password_hash']);
@@ -133,7 +135,7 @@ $clientCountry    = (function () {
                     // Debug detalhado (apenas em desenvolvimento)
                     if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
                         error_log("SafeNode Login Debug:");
-                        error_log("  Username: $username");
+                        error_log("  Email: $email");
                         error_log("  Hash length: " . strlen($passwordHash));
                         error_log("  Hash preview: " . substr($passwordHash, 0, 30) . "...");
                         error_log("  Password length: " . strlen($password));
@@ -142,7 +144,7 @@ $clientCountry    = (function () {
                     if (!password_verify($password, $passwordHash)) {
                         // Log do erro para debug (apenas em desenvolvimento)
                         if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
-                            error_log("SafeNode Login: Senha incorreta para usuário: $username");
+                            error_log("SafeNode Login: Senha incorreta para email: $email");
                             error_log("Hash no banco: " . substr($passwordHash, 0, 30) . "...");
                             error_log("Tentando verificar novamente com hash limpo...");
                         }
@@ -315,16 +317,20 @@ $clientCountry    = (function () {
             </div>
 
             <?php if(!empty($error)): ?>
-                <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-100 flex items-start gap-3 animate-fade-in">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 shrink-0 mt-0.5"></i>
-                    <p class="text-sm text-red-600 font-medium"><?php echo htmlspecialchars($error); ?></p>
+                <div class="mb-6 p-5 rounded-xl bg-red-500 border-2 border-red-600 shadow-lg shadow-red-500/20 flex items-start gap-4 animate-fade-in">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-red-600 flex items-center justify-center">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <p class="text-base text-white font-bold leading-relaxed"><?php echo htmlspecialchars($error); ?></p>
                 </div>
             <?php endif; ?>
             
             <?php if(isset($_SESSION['google_error'])): ?>
-                <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-100 flex items-start gap-3 animate-fade-in">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 shrink-0 mt-0.5"></i>
-                    <p class="text-sm text-red-600 font-medium"><?php echo htmlspecialchars($_SESSION['google_error']); unset($_SESSION['google_error']); ?></p>
+                <div class="mb-6 p-5 rounded-xl bg-red-500 border-2 border-red-600 shadow-lg shadow-red-500/20 flex items-start gap-4 animate-fade-in">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-red-600 flex items-center justify-center">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <p class="text-base text-white font-bold leading-relaxed"><?php echo htmlspecialchars($_SESSION['google_error']); unset($_SESSION['google_error']); ?></p>
                 </div>
             <?php endif; ?>
             
@@ -346,13 +352,13 @@ $clientCountry    = (function () {
                 <input type="hidden" name="login" value="1">
                 <?php echo csrf_field(); ?>
                 
-                <!-- Email/Username -->
+                <!-- Email -->
                 <div class="space-y-1.5">
-                    <label for="username" class="block text-sm font-medium text-slate-700">Email ou Usuário</label>
-                    <input type="text" name="username" id="username" required 
+                    <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" name="email" id="email" required 
                         class="block w-full px-4 py-3 rounded-lg border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all text-sm"
                         placeholder="exemplo@email.com"
-                        value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+                        value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
                 </div>
 
                 <!-- Password -->
