@@ -107,6 +107,9 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
             <i data-lucide="ban" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i> IPs Bloqueados
         </a>
         <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sistema</div>
+        <a href="<?php echo getSafeNodeUrl('payments'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'payments' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="credit-card" class="w-5 h-5 group-hover:text-emerald-400 transition-colors"></i> Pagamentos
+        </a>
         <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'settings' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="settings" class="w-5 h-5 group-hover:text-zinc-300 transition-colors"></i> Configurações
         </a>

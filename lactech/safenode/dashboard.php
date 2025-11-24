@@ -327,23 +327,92 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #52525b; }
 
-        /* Glass Components */
+        /* Glass Components Melhorados */
         .glass-panel {
             background: rgba(24, 24, 27, 0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .glass-card {
-            background: linear-gradient(180deg, rgba(39, 39, 42, 0.4) 0%, rgba(24, 24, 27, 0.4) 100%);
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.5) 0%, rgba(24, 24, 27, 0.5) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.7) 0%, rgba(24, 24, 27, 0.7) 100%);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Grid Pattern */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Badge Moderno */
+        .modern-badge {
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .modern-badge:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* Stat Card Hover */
+        .stat-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Tabela Melhorada */
+        .table-row {
+            transition: all 0.2s;
+        }
+        .table-row:hover {
+            background: rgba(255, 255, 255, 0.03) !important;
+            transform: translateX(2px);
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Depth Shadow */
+        .depth-shadow {
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Status Pulse */
+        .status-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* Alpine.js x-cloak */
         [x-cloak] { display: none !important; }
-
     </style>
 </head>
 <body x-data="{ notificationsOpen: false }" class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex selection:bg-blue-500/30">
@@ -356,19 +425,20 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         <!-- Header -->
         <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
                 <div class="flex items-center gap-4 md:hidden">
-                <button class="text-zinc-400 hover:text-white" data-sidebar-toggle>
+                <button class="text-zinc-400 hover:text-white transition-colors" data-sidebar-toggle>
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
                 <span class="font-bold text-lg text-white">SafeNode</span>
             </div>
 
-            <div class="hidden md:flex items-center gap-4">
-                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/50 border border-white/5 text-xs font-medium <?php echo $hasSites ? 'text-zinc-400' : 'text-amber-400'; ?>">
-                    <span class="w-2 h-2 rounded-full <?php echo $hasSites ? 'bg-emerald-500' : 'bg-amber-500'; ?> animate-pulse"></span>
+            <div class="hidden md:flex items-center gap-3">
+                <div class="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg modern-badge text-xs font-bold <?php echo $hasSites ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'; ?>">
+                    <span class="w-2 h-2 rounded-full <?php echo $hasSites ? 'bg-emerald-500' : 'bg-amber-500'; ?> status-pulse shadow-lg"></span>
                     Sistema <?php echo $hasSites ? 'Ativo' : 'Inativo'; ?>
                 </div>
                 <div class="h-4 w-px bg-white/10"></div>
-                <div class="text-xs text-zinc-500 font-mono">
+                <div class="text-xs text-zinc-400 font-mono font-semibold">
                     <?php echo htmlspecialchars($_SESSION['view_site_name'] ?? 'Visão Global'); ?>
                 </div>
                 <?php if ($currentSiteId > 0 && $selectedSite): ?>
@@ -376,29 +446,29 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                 <form method="POST">
                     <input type="hidden" name="toggle_under_attack" value="1">
                     <?php $underAttack = $selectedSite['security_level'] === 'under_attack'; ?>
-                    <button type="submit" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all <?php echo $underAttack ? 'bg-red-500/10 text-red-300 border-red-500/30 hover:bg-red-500/20' : 'bg-zinc-900/60 text-zinc-300 border-white/10 hover:border-white/30'; ?>">
-                        <span class="w-2 h-2 rounded-full <?php echo $underAttack ? 'bg-red-400 animate-pulse' : 'bg-zinc-500'; ?>"></span>
+                    <button type="submit" class="modern-badge inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg transition-all <?php echo $underAttack ? 'bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/25' : 'bg-zinc-900/60 text-zinc-300 border-white/10 hover:border-white/20'; ?>">
+                        <span class="w-2 h-2 rounded-full <?php echo $underAttack ? 'bg-red-400 status-pulse shadow-lg shadow-red-400/50' : 'bg-zinc-500'; ?>"></span>
                         <?php echo $underAttack ? 'Sob Ataque ATIVO' : 'Sob Ataque DESLIGADO'; ?>
                     </button>
                 </form>
                 <?php endif; ?>
             </div>
 
-            <div class="flex items-center gap-4">
-                <button onclick="location.reload()" class="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all" title="Atualizar">
+            <div class="flex items-center gap-3">
+                <button onclick="location.reload()" class="p-2.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all border border-transparent hover:border-white/10" title="Atualizar">
                     <i data-lucide="refresh-cw" class="w-5 h-5"></i>
                 </button>
                 <div class="relative">
-                    <button @click="notificationsOpen = !notificationsOpen" class="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all relative">
+                    <button @click="notificationsOpen = !notificationsOpen" class="p-2.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all relative border border-transparent hover:border-white/10">
                         <i data-lucide="bell" class="w-5 h-5"></i>
-                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-black animate-pulse"></span>
+                        <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black status-pulse shadow-lg shadow-red-500/50"></span>
                     </button>
                 </div>
-                <button onclick="window.location.href='profile.php'" class="hidden md:flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+                <button onclick="window.location.href='profile.php'" class="hidden md:flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all border border-transparent hover:border-white/10">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-black text-xs shadow-lg border-2 border-white/10">
                         <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
                     </div>
-                    <span class="text-sm font-medium hidden lg:block"><?php echo htmlspecialchars($_SESSION['safenode_username'] ?? 'Admin'); ?></span>
+                    <span class="text-sm font-bold hidden lg:block"><?php echo htmlspecialchars($_SESSION['safenode_username'] ?? 'Admin'); ?></span>
                 </button>
             </div>
         </header>
@@ -407,20 +477,29 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         <div class="flex-1 overflow-y-auto p-6 md:p-8 z-10 scroll-smooth">
             <div class="max-w-7xl mx-auto space-y-8">
                 <?php if (!empty($dashboardFlash)): ?>
-                <div class="rounded-xl p-4 <?php echo $dashboardFlashType === 'warning' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-200' : ($dashboardFlashType === 'error' ? 'bg-red-500/10 border border-red-500/30 text-red-200' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-200'); ?>">
-                    <div class="flex items-center gap-2 text-sm font-semibold">
-                        <i data-lucide="<?php echo $dashboardFlashType === 'error' ? 'alert-triangle' : ($dashboardFlashType === 'warning' ? 'shield' : 'check-circle'); ?>" class="w-4 h-4"></i>
-                        <span><?php echo htmlspecialchars($dashboardFlash); ?></span>
+                <div class="rounded-xl p-4 <?php echo $dashboardFlashType === 'warning' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-200' : ($dashboardFlashType === 'error' ? 'bg-red-500/10 border border-red-500/30 text-red-200' : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-200'); ?> flex items-center gap-3 animate-fade-in shadow-lg">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 rounded-lg <?php echo $dashboardFlashType === 'warning' ? 'bg-amber-500/20 border border-amber-500/30' : ($dashboardFlashType === 'error' ? 'bg-red-500/20 border border-red-500/30' : 'bg-emerald-500/20 border border-emerald-500/30'); ?> flex items-center justify-center">
+                            <i data-lucide="<?php echo $dashboardFlashType === 'error' ? 'alert-triangle' : ($dashboardFlashType === 'warning' ? 'shield' : 'check-circle'); ?>" class="w-5 h-5"></i>
                     </div>
+                    </div>
+                    <p class="flex-1 font-bold"><?php echo htmlspecialchars($dashboardFlash); ?></p>
                 </div>
                 <?php endif; ?>
                 
-                <!-- Banner de Configuração (se não houver sites) -->
+                <!-- Banner de Configuração (se não houver sites) - Redesign -->
                 <?php if (!$hasSites): ?>
-                <div class="rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-6 animate-fade-in">
+                <div class="rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 p-6 animate-fade-in relative overflow-hidden depth-shadow">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                    
+                    <!-- Decoração de fundo -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
                     <div class="flex items-start gap-4">
                         <div class="flex-shrink-0">
-                            <div class="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                                <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
                                 <i data-lucide="alert-circle" class="w-6 h-6 text-amber-400"></i>
                             </div>
                         </div>
@@ -428,55 +507,69 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
                                 Configure seu primeiro site
                             </h3>
-                            <p class="text-zinc-400 text-sm mb-4">
+                                <p class="text-zinc-400 text-sm mb-4 font-medium">
                                 Para ativar todas as funcionalidades do SafeNode, você precisa configurar pelo menos um site. 
                                 Configure seu site agora para começar a monitorar e proteger seu tráfego.
                             </p>
-                            <a href="sites.php" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-semibold transition-all shadow-lg shadow-amber-500/20">
+                                <a href="sites.php" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-amber-500/30">
                                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                                 Configurar Site Agora
                             </a>
                         </div>
-                        <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 text-zinc-400 hover:text-white transition-colors">
+                            <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
+                        </div>
                     </div>
                 </div>
                 <?php endif; ?>
                 
-                <!-- Welcome & Actions -->
+                <!-- Welcome & Actions - Redesign -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
+                    <div class="flex items-center gap-3">
+                        <div class="w-0.5 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
                     <div>
                         <h1 class="text-2xl font-bold text-white tracking-tight mb-1">
                             <?php echo $currentSiteId > 0 ? 'Visão Geral: ' . htmlspecialchars($_SESSION['view_site_name']) : 'Visão Geral Global'; ?>
                         </h1>
-                        <p class="text-zinc-400 text-sm">Monitoramento de visitas e segurança em tempo real.</p>
+                            <p class="text-zinc-400 text-sm font-medium">Monitoramento de visitas e segurança em tempo real.</p>
+                        </div>
                     </div>
                     <div class="flex gap-3 relative">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 -m-2 bg-zinc-900/50 rounded-lg z-20 pointer-events-none"></div>
                         <?php endif; ?>
-                        <a href="logs.php" class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-zinc-200 transition-all shadow-lg shadow-white/5 relative <?php echo !$hasSites ? 'opacity-40 blur-sm z-0 pointer-events-none cursor-not-allowed' : 'z-10'; ?>">
+                        <a href="logs.php" class="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-xl text-sm font-bold hover:bg-zinc-200 transition-all shadow-lg shadow-white/10 relative <?php echo !$hasSites ? 'opacity-40 blur-sm z-0 pointer-events-none cursor-not-allowed' : 'z-10'; ?>">
                             <i data-lucide="file-text" class="w-4 h-4"></i>
                             Logs
                         </a>
                     </div>
                 </div>
 
-                <!-- Novos Stats (Preview Style) -->
+                <!-- Novos Stats (Preview Style) - Redesign -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Total de Requisições -->
-                    <a href="logs.php" class="block p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors group <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm relative' : ''; ?>">
+                    <a href="logs.php" class="block p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-emerald-500/30 hover:bg-zinc-900/60 transition-all stat-card-hover group relative overflow-hidden <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
-                        <div class="flex justify-between items-start mb-2 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">
-                            <div class="text-xs text-zinc-500 uppercase font-medium">Visitas / Requisições</div>
-                            <span class="text-[10px] text-green-400 bg-green-900/20 px-1.5 py-0.5 rounded border border-green-900/30 flex items-center gap-1" data-stat="requests-change">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-10"></div>
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                                        <i data-lucide="activity" class="w-5 h-5 text-emerald-400"></i>
+                                    </div>
+                                    <div class="text-xs text-zinc-400 uppercase font-bold">Visitas / Requisições</div>
+                                </div>
+                                <span class="modern-badge text-[10px] text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded-lg border border-emerald-900/30 flex items-center gap-1 font-bold" data-stat="requests-change">
                                 <i data-lucide="arrow-up-right" class="w-3 h-3"></i> <?php echo abs($requestsChange); ?>%
                             </span>
                         </div>
-                        <div class="text-2xl font-bold text-white group-hover:text-green-400 transition-colors relative <?php echo !$hasSites ? 'z-0' : ''; ?>" data-stat="total-requests">
+                            <div class="text-3xl font-black text-white group-hover:text-emerald-400 transition-colors mb-2" data-stat="total-requests">
                             <?php 
                             if ($requests24h >= 1000000) {
                                 echo number_format($requests24h / 1000000, 1) . 'M';
@@ -487,20 +580,31 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             }
                             ?>
                         </div>
-                        <div class="text-xs text-zinc-600 mt-1 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">Últimas 24 horas · clique para ver detalhes</div>
+                            <div class="text-xs text-zinc-500 mt-1 font-medium">Últimas 24 horas · clique para ver detalhes</div>
+                        </div>
                     </a>
                     
-                    <a href="logs.php?<?php echo http_build_query(['action' => 'blocked']); ?>" class="block p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors group <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm relative' : ''; ?>">
+                    <a href="logs.php?<?php echo http_build_query(['action' => 'blocked']); ?>" class="block p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-red-500/30 hover:bg-zinc-900/60 transition-all stat-card-hover group relative overflow-hidden <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
-                        <div class="flex justify-between items-start mb-2 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">
-                            <div class="text-xs text-zinc-500 uppercase font-medium">Ameaças Mitigadas</div>
-                            <span class="text-[10px] text-red-400 bg-red-900/20 px-1.5 py-0.5 rounded border border-red-900/30 flex items-center gap-1">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-10"></div>
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                                        <i data-lucide="shield-alert" class="w-5 h-5 text-red-400"></i>
+                                    </div>
+                                    <div class="text-xs text-zinc-400 uppercase font-bold">Ameaças Mitigadas</div>
+                                </div>
+                                <span class="modern-badge text-[10px] text-red-400 bg-red-900/20 px-2 py-1 rounded-lg border border-red-900/30 flex items-center gap-1 font-bold">
                                 <i data-lucide="shield-alert" class="w-3 h-3"></i> <?php echo number_format($blocked24h); ?>
                             </span>
                         </div>
-                        <div class="text-2xl font-bold text-white group-hover:text-red-400 transition-colors relative <?php echo !$hasSites ? 'z-0' : ''; ?>" data-stat="blocked-threats">
+                            <div class="text-3xl font-black text-white group-hover:text-red-400 transition-colors mb-2" data-stat="blocked-threats">
                             <?php 
                             if ($blocked24h >= 1000000) {
                                 echo number_format($blocked24h / 1000000, 1) . 'M';
@@ -511,32 +615,44 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             }
                             ?>
                         </div>
-                        <div class="text-xs text-zinc-600 mt-1 relative <?php echo !$hasSites ? 'z-0' : ''; ?>">Bloqueado automaticamente por IA · clique para ver logs</div>
+                            <div class="text-xs text-zinc-500 mt-1 font-medium">Bloqueado automaticamente por IA · clique para ver logs</div>
+                        </div>
                     </a>
                     
                     <?php if ($hasSites): ?>
-                    <a href="logs.php" class="block p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors group">
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="text-xs text-zinc-500 uppercase font-medium">Latência Global</div>
+                    <a href="logs.php" class="block p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-blue-500/30 hover:bg-zinc-900/60 transition-all stat-card-hover group relative overflow-hidden">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-10"></div>
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                                        <i data-lucide="zap" class="w-5 h-5 text-blue-400"></i>
+                                    </div>
+                                    <div class="text-xs text-zinc-400 uppercase font-bold">Latência Global</div>
+                                </div>
                             <?php if ($globalLatency !== null && $avgLatency !== null): 
                                 $latencyChange = $avgLatency < ($globalLatency * 0.9) ? -round(($globalLatency - $avgLatency) / $globalLatency * 100) : 0;
                             ?>
-                            <span class="text-[10px] <?php echo $latencyChange < 0 ? 'text-green-400' : 'text-blue-400'; ?> bg-<?php echo $latencyChange < 0 ? 'green' : 'blue'; ?>-900/20 px-1.5 py-0.5 rounded border border-<?php echo $latencyChange < 0 ? 'green' : 'blue'; ?>-900/30 flex items-center gap-1">
+                                <span class="modern-badge text-[10px] <?php echo $latencyChange < 0 ? 'text-green-400 bg-green-900/20 border-green-900/30' : 'text-blue-400 bg-blue-900/20 border-blue-900/30'; ?> px-2 py-1 rounded-lg border flex items-center gap-1 font-bold">
                                 <i data-lucide="zap" class="w-3 h-3"></i> <?php echo $latencyChange < 0 ? $latencyChange . 'ms' : '--ms'; ?>
                             </span>
                             <?php else: ?>
-                            <span class="text-[10px] text-blue-400 bg-blue-900/20 px-1.5 py-0.5 rounded border border-blue-900/30 flex items-center gap-1">
+                                <span class="modern-badge text-[10px] text-blue-400 bg-blue-900/20 px-2 py-1 rounded-lg border border-blue-900/30 flex items-center gap-1 font-bold">
                                 <i data-lucide="zap" class="w-3 h-3"></i> --
                             </span>
                             <?php endif; ?>
                         </div>
-                        <div class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors" data-stat="latency">
+                            <div class="text-3xl font-black text-white group-hover:text-blue-400 transition-colors mb-2" data-stat="latency">
                             <?php echo $globalLatency !== null ? number_format($globalLatency, 0) . 'ms' : '--ms'; ?>
                         </div>
-                        <div class="text-xs text-zinc-600 mt-1">Tempo de Resposta P99 · clique para ver requisições recentes</div>
+                            <div class="text-xs text-zinc-500 mt-1 font-medium">Tempo de Resposta P99 · clique para ver requisições recentes</div>
+                        </div>
                     </a>
                     <?php else: ?>
-                    <div class="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 transition-colors group opacity-40 blur-sm relative">
+                    <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 transition-colors group opacity-40 blur-sm relative">
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <div class="flex justify-between items-start mb-2 relative z-0">
                             <div class="text-xs text-zinc-500 uppercase font-medium">Latência Global</div>
@@ -550,60 +666,88 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                     <?php endif; ?>
                 </div>
 
-                <!-- Stats Grid (Cards Adicionais) -->
+                <!-- Stats Grid (Cards Adicionais) - Redesign -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Unique IPs -->
-                    <div class="glass-card p-6 rounded-xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300 animate-slide-up <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.3s;">
+                    <div class="glass-card p-6 rounded-xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300 animate-fade-in stat-card-hover <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.1s;">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-10"></div>
+                        <!-- Decoração de fundo -->
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all"></div>
                         <div class="flex justify-between items-start mb-4 relative z-10">
-                            <div class="p-2.5 bg-purple-500/10 rounded-lg text-purple-400 border border-purple-500/20">
-                                <i data-lucide="globe" class="w-5 h-5"></i>
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
+                                <i data-lucide="globe" class="w-6 h-6 text-purple-400"></i>
                             </div>
                             <?php if ($ipsChange != 0): ?>
-                                <span class="text-xs font-bold px-2 py-1 rounded-full border <?php echo $ipsChange > 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-zinc-800 text-zinc-400 border-zinc-700'; ?>">
+                                <span class="modern-badge text-xs font-bold px-3 py-1.5 rounded-lg border <?php echo $ipsChange > 0 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-zinc-800/60 text-zinc-400 border-white/10'; ?>">
                                     <?php echo $ipsChange > 0 ? '+' : ''; ?><?php echo $ipsChange; ?>%
                                 </span>
                             <?php endif; ?>
                         </div>
-                        <div class="relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                            <h3 class="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-1">Visitantes Únicos</h3>
-                            <p class="text-2xl font-bold text-white font-mono" data-stat="unique-visitors"><?php echo number_format($stats['unique_ips_today']); ?></p>
+                        <div class="relative z-10">
+                            <h3 class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-2">Visitantes Únicos</h3>
+                            <p class="text-3xl font-black text-white font-mono mb-1" data-stat="unique-visitors"><?php echo number_format($stats['unique_ips_today']); ?></p>
+                            <p class="text-xs text-zinc-500 font-medium">IPs únicos hoje</p>
                         </div>
                     </div>
 
                     <!-- Active Rules -->
-                    <div class="glass-card p-6 rounded-xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-300 animate-slide-up <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.4s;">
+                    <div class="glass-card p-6 rounded-xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-300 animate-fade-in stat-card-hover <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.2s;">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-10"></div>
+                        <!-- Decoração de fundo -->
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all"></div>
-                        <div class="flex justify-between items-start mb-4 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                            <div class="p-2.5 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
-                                <i data-lucide="lock" class="w-5 h-5"></i>
+                        <div class="flex justify-between items-start mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                                <i data-lucide="lock" class="w-6 h-6 text-amber-400"></i>
                             </div>
-                            <span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Ativo</span>
+                            <span class="modern-badge text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5 inline mr-1"></i>
+                                Ativo
+                            </span>
                         </div>
-                        <div class="relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                            <h3 class="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-1">Regras Ativas</h3>
-                            <p class="text-2xl font-bold text-white font-mono" data-stat="active-blocks"><?php echo number_format($stats['active_blocks']); ?></p>
-                            <p class="text-xs text-zinc-500 mt-1">IPs na lista negra</p>
+                        <div class="relative z-10">
+                            <h3 class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-2">Regras Ativas</h3>
+                            <p class="text-3xl font-black text-white font-mono mb-1" data-stat="active-blocks"><?php echo number_format($stats['active_blocks']); ?></p>
+                            <p class="text-xs text-zinc-500 font-medium">IPs na lista negra</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Top Countries -->
-                <div class="glass-card rounded-xl p-6 <?php echo empty($topCountries) ? 'opacity-70' : ''; ?>">
+                <!-- Top Countries - Redesign -->
+                <div class="glass-card rounded-xl p-6 relative overflow-hidden animate-fade-in depth-shadow <?php echo empty($topCountries) ? 'opacity-70' : ''; ?>" style="animation-delay: 0.3s">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                    
+                    <!-- Decoração de fundo -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
                     <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                                    <i data-lucide="map" class="w-6 h-6 text-blue-400"></i>
+                                </div>
                         <div>
                             <h3 class="font-bold text-white text-lg">Top Países (7 dias)</h3>
-                            <p class="text-xs text-zinc-500">Tráfego classificado por país de origem<?php echo $currentSiteId > 0 ? ' · site selecionado' : ' · todos os sites'; ?></p>
+                                    <p class="text-xs text-zinc-400 mt-0.5 font-medium">Tráfego classificado por país de origem<?php echo $currentSiteId > 0 ? ' · site selecionado' : ' · todos os sites'; ?></p>
+                                </div>
                         </div>
                     </div>
                     <?php if (empty($topCountries)): ?>
-                        <p class="text-sm text-zinc-500 py-4 text-center">Sem dados suficientes para exibir.</p>
+                            <div class="text-center py-8">
+                                <div class="w-16 h-16 bg-zinc-900/60 rounded-xl border border-white/5 flex items-center justify-center mx-auto mb-4">
+                                    <i data-lucide="map" class="w-8 h-8 text-zinc-500"></i>
+                                </div>
+                                <p class="text-sm text-zinc-400 font-bold mb-1">Sem dados suficientes</p>
+                                <p class="text-xs text-zinc-500 font-medium">Os dados aparecerão aqui quando houver tráfego</p>
+                            </div>
                     <?php else: ?>
                         <div class="space-y-4" data-stat="top-countries">
                             <?php foreach ($topCountries as $country): 
@@ -612,42 +756,57 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                                 $total = (int)($country['total_requests'] ?? 0);
                                 $blockedPercent = $total > 0 ? round(($blocked / $total) * 100) : 0;
                             ?>
-                            <div>
-                                <div class="flex items-center justify-between text-sm mb-1">
+                                <div class="p-3 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-blue-500/30 transition-all">
+                                    <div class="flex items-center justify-between text-sm mb-2">
                                     <div class="flex items-center gap-2">
-                                        <span class="font-semibold text-white"><?php echo $code; ?></span>
-                                        <span class="text-xs text-zinc-500"><?php echo $blocked > 0 ? "{$blockedPercent}% bloqueado" : "Seguro"; ?></span>
+                                            <i data-lucide="flag" class="w-4 h-4 text-blue-400"></i>
+                                            <span class="font-bold text-white"><?php echo $code; ?></span>
+                                            <span class="modern-badge text-xs px-2 py-0.5 rounded-lg <?php echo $blocked > 0 ? 'bg-red-500/15 text-red-400 border-red-500/30' : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'; ?> font-bold">
+                                                <?php echo $blocked > 0 ? "{$blockedPercent}% bloqueado" : "Seguro"; ?>
+                                            </span>
                                     </div>
-                                    <div class="text-xs text-zinc-400 font-mono"><?php echo number_format($total); ?> req</div>
+                                        <div class="text-xs text-zinc-400 font-mono font-bold"><?php echo number_format($total); ?> req</div>
                                 </div>
-                                <div class="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
-                                    <div class="h-full bg-blue-500" style="width: <?php echo min(100, $total > 0 ? ($total / max(1, $topCountries[0]['total_requests'])) * 100 : 0); ?>%"></div>
+                                    <div class="w-full h-2 bg-zinc-900 rounded-full overflow-hidden border border-white/5">
+                                        <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg" style="width: <?php echo min(100, $total > 0 ? ($total / max(1, $topCountries[0]['total_requests'])) * 100 : 0); ?>%"></div>
                                 </div>
                             </div>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+                    </div>
                 </div>
 
-                <!-- Charts Area -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up" style="animation-delay: 0.5s;">
+                <!-- Charts Area - Redesign -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in" style="animation-delay: 0.4s;">
                     <!-- Traffic Chart with World Map -->
-                    <div class="lg:col-span-2 glass-card p-6 rounded-xl relative overflow-hidden <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
+                    <div class="lg:col-span-2 glass-card p-6 rounded-xl relative overflow-hidden depth-shadow <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-20 pointer-events-none"></div>
                         <?php endif; ?>
-                        <div class="flex items-center justify-between mb-6 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+                        
+                        <div class="flex items-center justify-between mb-6 relative z-10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                                    <i data-lucide="trending-up" class="w-5 h-5 text-blue-400"></i>
+                                </div>
                             <div>
                                 <h3 class="font-bold text-white text-lg">Análise de Tráfego</h3>
-                                <p class="text-sm text-zinc-500">Últimas 24 horas</p>
+                                    <p class="text-sm text-zinc-400 mt-0.5 font-medium">Últimas 24 horas</p>
                             </div>
-                            <div class="flex gap-4 text-xs font-medium">
+                            </div>
+                            <div class="flex gap-4 text-xs font-bold">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"></span>
                                     <span class="text-zinc-400">Total</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span>
                                     <span class="text-zinc-400">Bloqueado</span>
                                 </div>
                             </div>
@@ -667,14 +826,25 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                         </div>
                     </div>
 
-                    <!-- Threats Donut Enhanced -->
-                    <div class="glass-card p-6 rounded-xl flex flex-col relative overflow-hidden <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
+                    <!-- Threats Donut Enhanced - Redesign -->
+                    <div class="glass-card p-6 rounded-xl flex flex-col relative overflow-hidden depth-shadow <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-20 pointer-events-none"></div>
                         <?php endif; ?>
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <!-- Decoração de fundo -->
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br from-red-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
-                        <h3 class="font-bold text-white text-lg mb-1 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">Tipos de Ameaça</h3>
-                        <p class="text-sm text-zinc-500 mb-6 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">Distribuição por categoria</p>
+                        <div class="flex items-center gap-3 mb-4 relative z-10">
+                            <div class="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                                <i data-lucide="shield-alert" class="w-5 h-5 text-red-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-lg">Tipos de Ameaça</h3>
+                                <p class="text-xs text-zinc-400 mt-0.5 font-medium">Distribuição por categoria</p>
+                            </div>
+                        </div>
                         
                         <div class="flex-1 relative min-h-[200px] flex items-center justify-center <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
                             <canvas id="threatsChart"></canvas>
@@ -685,80 +855,107 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             </div>
                         </div>
                         <!-- Legend -->
-                        <div class="grid grid-cols-2 gap-2 mt-4 text-xs relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                                <span class="text-zinc-400">SQL</span>
+                        <div class="grid grid-cols-2 gap-2 mt-4 text-xs relative z-10">
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/30 border border-white/5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span>
+                                <span class="text-zinc-400 font-bold">SQL</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-                                <span class="text-zinc-400">XSS</span>
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/30 border border-white/5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-lg shadow-orange-500/50"></span>
+                                <span class="text-zinc-400 font-bold">XSS</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                                <span class="text-zinc-400">Brute</span>
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/30 border border-white/5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-lg shadow-amber-500/50"></span>
+                                <span class="text-zinc-400 font-bold">Brute</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                                <span class="text-zinc-400">Rate</span>
+                            <div class="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/30 border border-white/5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-lg shadow-green-500/50"></span>
+                                <span class="text-zinc-400 font-bold">Rate</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Mapa de Tráfego, Registro de Eventos e Incidentes -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Mapa de Tráfego, Registro de Eventos e Incidentes - Redesign -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in" style="animation-delay: 0.5s">
                     <!-- Mapa de Tráfego em Tempo Real -->
-                    <div class="lg:col-span-2 rounded-xl bg-[#050505] border border-zinc-800/50 relative overflow-hidden flex flex-col <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
+                    <div class="lg:col-span-2 rounded-xl bg-[#050505] border border-zinc-800/50 relative overflow-hidden flex flex-col depth-shadow <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-20 pointer-events-none"></div>
                         <?php endif; ?>
-                        <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                        <div class="absolute inset-0 grid-pattern opacity-30"></div>
                         
-                        <div class="p-4 border-b border-zinc-800/50 flex justify-between items-center relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?> bg-black/20 backdrop-blur-sm">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                <span class="text-xs font-medium text-zinc-300">Mapa de Tráfego em Tempo Real</span>
+                        <div class="p-4 border-b border-zinc-800/50 flex justify-between items-center relative z-10 bg-black/20 backdrop-blur-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-green-500/15 border border-green-500/30 flex items-center justify-center">
+                                    <i data-lucide="network" class="w-5 h-5 text-green-400"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-zinc-300">Mapa de Tráfego em Tempo Real</span>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <div class="w-2 h-2 rounded-full bg-green-500 status-pulse shadow-lg shadow-green-500/50"></div>
+                                        <span class="text-[10px] text-zinc-500 font-medium">Ativo</span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="flex gap-2">
-                                <span class="text-[10px] px-2 py-1 rounded bg-zinc-800 text-zinc-400">1H</span>
-                                <span class="text-[10px] px-2 py-1 rounded bg-zinc-900 text-zinc-600 hover:text-zinc-400 cursor-pointer">24H</span>
+                                <span class="modern-badge text-[10px] px-3 py-1.5 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30 font-bold">1H</span>
+                                <span class="text-[10px] px-3 py-1.5 rounded-lg bg-zinc-900/60 text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/60 cursor-pointer border border-white/5 transition-all font-bold">24H</span>
                             </div>
                         </div>
 
                         <div class="flex-1 relative flex items-center justify-center min-h-[300px]">
                             <!-- Central Node -->
-                            <div class="relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                                <div class="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.1)]">
-                                    <i data-lucide="server" class="w-6 h-6 text-green-500"></i>
+                            <div class="relative z-10">
+                                <div class="w-20 h-20 rounded-full bg-zinc-900 border-2 border-green-500/30 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+                                    <div class="w-14 h-14 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                                        <i data-lucide="server" class="w-8 h-8 text-green-400"></i>
+                                    </div>
                                 </div>
                                 <!-- Ripples -->
-                                <div class="absolute inset-0 -m-8 border border-green-500/10 rounded-full animate-[ping_3s_linear_infinite]"></div>
-                                <div class="absolute inset-0 -m-16 border border-green-500/5 rounded-full animate-[ping_3s_linear_infinite]" style="animation-delay: 1s"></div>
+                                <div class="absolute inset-0 -m-8 border-2 border-green-500/20 rounded-full animate-[ping_3s_linear_infinite]"></div>
+                                <div class="absolute inset-0 -m-16 border border-green-500/10 rounded-full animate-[ping_3s_linear_infinite]" style="animation-delay: 1s"></div>
+                                <div class="absolute inset-0 -m-24 border border-green-500/5 rounded-full animate-[ping_3s_linear_infinite]" style="animation-delay: 2s"></div>
                             </div>
 
                             <!-- Incoming Traffic Particles -->
-                            <div class="absolute inset-0 overflow-hidden">
-                                <div class="absolute top-1/4 left-10 w-1 h-1 bg-white rounded-full animate-[traffic-flow_2s_linear_infinite]"></div>
-                                <div class="absolute bottom-1/3 right-10 w-1 h-1 bg-white rounded-full animate-[traffic-flow_3s_linear_infinite_reverse]"></div>
-                                <div class="absolute top-10 right-1/3 w-1 h-1 bg-red-500 rounded-full animate-[traffic-blocked_2s_linear_infinite]"></div>
+                            <div class="absolute inset-0 overflow-hidden z-0">
+                                <div class="absolute top-1/4 left-10 w-2 h-2 bg-white rounded-full shadow-lg shadow-white/50 animate-[traffic-flow_2s_linear_infinite]"></div>
+                                <div class="absolute bottom-1/3 right-10 w-2 h-2 bg-white rounded-full shadow-lg shadow-white/50 animate-[traffic-flow_3s_linear_infinite_reverse]"></div>
+                                <div class="absolute top-10 right-1/3 w-2 h-2 bg-red-500 rounded-full shadow-lg shadow-red-500/50 animate-[traffic-blocked_2s_linear_infinite]"></div>
+                                <div class="absolute top-1/2 left-1/4 w-1.5 h-1.5 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50 animate-[traffic-flow_2.5s_linear_infinite]"></div>
+                                <div class="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-purple-500 rounded-full shadow-lg shadow-purple-500/50 animate-[traffic-flow_3.5s_linear_infinite_reverse]"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Registro de Eventos -->
-                    <div class="lg:col-span-1 rounded-xl bg-zinc-950 border border-zinc-800/50 flex flex-col overflow-hidden relative <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
+                    <!-- Registro de Eventos - Redesign -->
+                    <div class="lg:col-span-1 rounded-xl bg-zinc-950 border border-zinc-800/50 flex flex-col overflow-hidden relative depth-shadow <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-20 pointer-events-none"></div>
                         <?php endif; ?>
-                        <div class="p-3 border-b border-zinc-800/50 bg-zinc-900/30 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                            <span class="text-xs font-medium text-zinc-400">Registro de Eventos</span>
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <div class="p-4 border-b border-zinc-800/50 bg-zinc-900/30 relative z-10">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
+                                    <i data-lucide="activity" class="w-4 h-4 text-purple-400"></i>
                         </div>
-                        <div class="flex-1 p-3 space-y-3 overflow-y-auto font-mono text-[10px] max-h-[400px] relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>" data-stat="event-logs">
+                                <span class="text-xs font-bold text-zinc-300">Registro de Eventos</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 p-4 space-y-2 overflow-y-auto font-mono text-[10px] max-h-[400px] relative z-10" data-stat="event-logs">
                             <?php 
                             $eventLogs = array_slice($recentLogs, 0, 5);
                             if (empty($eventLogs)): ?>
-                                <div class="text-zinc-500 text-center py-4">Nenhum evento recente</div>
+                                <div class="text-center py-8">
+                                    <div class="w-12 h-12 bg-zinc-900/60 rounded-xl border border-white/5 flex items-center justify-center mx-auto mb-4">
+                                        <i data-lucide="activity" class="w-6 h-6 text-zinc-500"></i>
+                                    </div>
+                                    <p class="text-xs text-zinc-400 font-bold mb-1">Nenhum evento recente</p>
+                                    <p class="text-[10px] text-zinc-500 font-medium">Os eventos aparecerão aqui</p>
+                                </div>
                             <?php else: ?>
                                 <?php 
                                 $opacity = ['opacity-50', 'opacity-70', '', 'opacity-80', ''];
@@ -767,12 +964,15 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                                     $isCritical = ($log['threat_score'] ?? 0) >= 70 || stripos($log['threat_type'] ?? '', 'ddos') !== false;
                                     $showMitigated = $isCritical && $log['action_taken'] === 'blocked';
                                 ?>
-                                    <div class="flex gap-2 <?php echo $opacity[$i] ?? ''; ?> <?php echo $showMitigated ? 'border-l-2 border-red-500 pl-2 bg-red-500/5 py-1' : ''; ?>">
-                                        <span class="text-zinc-500"><?php echo date('H:i:s', strtotime($log['created_at'])); ?></span>
-                                        <span class="<?php echo $showMitigated ? 'text-red-500 font-bold' : ($log['action_taken'] === 'blocked' ? 'text-red-500' : 'text-green-500'); ?>">
+                                    <div class="flex gap-2 p-2 rounded-lg bg-zinc-900/30 border border-white/5 hover:border-<?php echo $showMitigated ? 'red' : ($log['action_taken'] === 'blocked' ? 'red' : 'green'); ?>-500/30 transition-all <?php echo $opacity[$i] ?? ''; ?> <?php echo $showMitigated ? 'bg-red-500/5' : ''; ?>">
+                                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                                            <i data-lucide="clock" class="w-3 h-3 text-zinc-500"></i>
+                                            <span class="text-zinc-500 font-bold"><?php echo date('H:i:s', strtotime($log['created_at'])); ?></span>
+                                        </div>
+                                        <span class="modern-badge px-2 py-0.5 rounded-lg text-[9px] font-bold <?php echo $showMitigated ? 'bg-red-500/15 text-red-400 border-red-500/30' : ($log['action_taken'] === 'blocked' ? 'bg-red-500/15 text-red-400 border-red-500/30' : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'); ?>">
                                             <?php echo $showMitigated ? 'MITIGADO' : ($log['action_taken'] === 'blocked' ? 'BLOQUEAR' : 'PERMITIR'); ?>
                                         </span>
-                                        <span class="<?php echo $showMitigated ? 'text-white' : 'text-zinc-400'; ?>">
+                                        <span class="<?php echo $showMitigated ? 'text-white font-bold' : 'text-zinc-400 font-medium'; ?> truncate">
                                             <?php 
                                             if ($log['action_taken'] === 'blocked' && !empty($log['threat_type'])) {
                                                 $threatNames = [
@@ -799,23 +999,34 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                     </div>
                 </div>
 
-                <!-- Incidentes Recentes e Top IPs -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Incidentes Recentes e Top IPs - Redesign -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in" style="animation-delay: 0.6s">
                     <!-- Incidentes Recentes -->
-                    <div class="lg:col-span-2 glass-card rounded-xl overflow-hidden">
-                        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                    <div class="lg:col-span-2 glass-card rounded-xl overflow-hidden relative depth-shadow">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-orange-500/5 rounded-full blur-3xl"></div>
+                        
+                        <div class="p-6 border-b border-white/5 bg-zinc-900/30 flex items-center justify-between relative z-10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center">
+                                    <i data-lucide="alert-triangle" class="w-6 h-6 text-orange-400"></i>
+                                </div>
                             <div>
                                 <h3 class="font-bold text-white text-lg">Incidentes Recentes</h3>
-                                <p class="text-xs text-zinc-500 mt-1">Agrupamento de múltiplos eventos por IP/tipo</p>
+                                    <p class="text-xs text-zinc-400 mt-0.5 font-medium">Agrupamento de múltiplos eventos por IP/tipo</p>
                             </div>
-                            <a href="incidents.php" class="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1">
+                            </div>
+                            <a href="incidents.php" class="modern-badge text-xs text-blue-400 hover:text-blue-300 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/30 hover:bg-blue-500/25 transition-all">
                                 Ver todos
-                                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                             </a>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto relative z-10">
                             <table class="w-full text-sm text-left">
-                                <thead class="bg-zinc-900/50 text-zinc-400 font-medium uppercase text-xs tracking-wider">
+                                <thead class="bg-zinc-900/50 text-zinc-400 font-bold uppercase text-xs tracking-wider border-b border-white/5">
                                     <tr>
                                         <th class="px-6 py-4">Status</th>
                                         <th class="px-6 py-4">IP</th>
@@ -829,48 +1040,70 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                                 <tbody class="divide-y divide-white/5" data-stat="recent-incidents">
                                     <?php if (empty($recentIncidents)): ?>
                                         <tr>
-                                            <td colspan="7" class="px-6 py-6 text-center text-xs text-zinc-500">
-                                                Nenhum incidente recente.
+                                            <td colspan="7" class="px-6 py-8 text-center">
+                                                <div class="flex flex-col items-center gap-3">
+                                                    <div class="w-12 h-12 bg-zinc-900/60 rounded-xl border border-white/5 flex items-center justify-center">
+                                                        <i data-lucide="shield" class="w-6 h-6 text-emerald-400"></i>
+                                                    </div>
+                                                    <p class="text-xs text-zinc-400 font-bold">Nenhum incidente recente</p>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($recentIncidents as $incident): ?>
-                                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                            <tr class="table-row group">
                                                 <td class="px-6 py-4">
                                                     <?php if ($incident['status'] === 'open'): ?>
-                                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">
-                                                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mr-1 animate-pulse"></span>
+                                                        <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+                                                            <span class="w-2 h-2 rounded-full bg-red-400 status-pulse shadow-lg shadow-red-400/50"></span>
                                                             Aberto
                                                         </span>
                                                     <?php else: ?>
-                                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-400 border border-white/5">
+                                                        <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold bg-zinc-800/60 text-zinc-400 border border-white/10">
+                                                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                                                             Resolvido
                                                         </span>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td class="px-6 py-4">
-                                                    <span class="text-xs font-semibold text-white font-mono"><?php echo htmlspecialchars($incident['ip_address']); ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="network" class="w-4 h-4 text-zinc-500"></i>
+                                                        <span class="text-xs font-bold text-white font-mono"><?php echo htmlspecialchars($incident['ip_address']); ?></span>
+                                                    </div>
                                                 </td>
                                                 <td class="px-6 py-4">
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-white/5">
+                                                    <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold bg-zinc-800/60 text-zinc-300 border border-white/10">
+                                                        <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
                                                         <?php echo strtoupper(str_replace('_', ' ', htmlspecialchars($incident['threat_type'] ?? 'unknown'))); ?>
                                                     </span>
                                                 </td>
                                                 <td class="px-6 py-4">
-                                                    <span class="text-[11px] text-zinc-400 font-mono"><?php echo htmlspecialchars($incident['site_domain'] ?? '-'); ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="globe" class="w-4 h-4 text-zinc-500"></i>
+                                                        <span class="text-[11px] text-zinc-400 font-mono font-medium"><?php echo htmlspecialchars($incident['site_domain'] ?? '-'); ?></span>
+                                                    </div>
                                                 </td>
                                                 <td class="px-6 py-4">
-                                                    <span class="text-sm text-zinc-200 font-semibold"><?php echo (int)$incident['total_events']; ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i>
+                                                        <span class="text-sm text-zinc-200 font-bold"><?php echo (int)$incident['total_events']; ?></span>
+                                                    </div>
                                                 </td>
                                                 <td class="px-6 py-4">
-                                                    <span class="text-sm <?php echo $incident['critical_events'] > 0 ? 'text-red-400 font-semibold' : 'text-zinc-400'; ?>">
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="alert-triangle" class="w-4 h-4 <?php echo $incident['critical_events'] > 0 ? 'text-red-400' : 'text-zinc-500'; ?>"></i>
+                                                        <span class="text-sm <?php echo $incident['critical_events'] > 0 ? 'text-red-400 font-bold' : 'text-zinc-400 font-semibold'; ?>">
                                                         <?php echo (int)$incident['critical_events']; ?>
                                                     </span>
+                                                    </div>
                                                 </td>
                                                 <td class="px-6 py-4">
-                                                    <span class="text-[11px] text-zinc-400 font-mono">
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="clock" class="w-4 h-4 text-zinc-500"></i>
+                                                        <span class="text-[11px] text-zinc-400 font-mono font-semibold">
                                                         <?php echo date('d/m H:i', strtotime($incident['last_seen'])); ?>
                                                     </span>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -880,29 +1113,54 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                         </div>
                     </div>
 
-                    <!-- Top IPs Bloqueados -->
-                    <div class="glass-card rounded-xl overflow-hidden">
-                        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                    <!-- Top IPs Bloqueados - Redesign -->
+                    <div class="glass-card rounded-xl overflow-hidden relative depth-shadow">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-red-500/5 rounded-full blur-3xl"></div>
+                        
+                        <div class="p-6 border-b border-white/5 bg-zinc-900/30 flex items-center justify-between relative z-10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                                    <i data-lucide="shield-x" class="w-6 h-6 text-red-400"></i>
+                                </div>
+                                <div>
                             <h3 class="font-bold text-white text-lg">Top IPs Bloqueados</h3>
-                            <span class="text-xs text-zinc-500">Últimos 7 dias</span>
+                                    <p class="text-xs text-zinc-400 mt-0.5 font-medium">Últimos 7 dias</p>
                         </div>
-                        <div class="p-4 space-y-3" data-stat="top-blocked-ips">
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-3 relative z-10" data-stat="top-blocked-ips">
                             <?php if (empty($topBlockedIPs)): ?>
-                                <p class="text-xs text-zinc-500 text-center py-4">Nenhum IP bloqueado recentemente.</p>
+                                <div class="text-center py-8">
+                                    <div class="w-12 h-12 bg-zinc-900/60 rounded-xl border border-white/5 flex items-center justify-center mx-auto mb-4">
+                                        <i data-lucide="shield-check" class="w-6 h-6 text-emerald-400"></i>
+                                    </div>
+                                    <p class="text-xs text-zinc-400 font-bold mb-1">Nenhum IP bloqueado</p>
+                                    <p class="text-[10px] text-zinc-500 font-medium">Os bloqueios aparecerão aqui</p>
+                                </div>
                             <?php else: ?>
                                 <?php foreach ($topBlockedIPs as $ip): ?>
+                                    <div class="p-3 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-red-500/30 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <i data-lucide="network" class="w-4 h-4 text-red-400"></i>
+                                                <p class="text-sm font-mono text-white font-bold"><?php echo htmlspecialchars($ip['ip_address']); ?></p>
+                                            </div>
+                                            <p class="text-sm font-bold text-red-400"><?php echo (int)$ip['block_count']; ?>x</p>
+                                        </div>
                                     <div class="flex items-center justify-between">
-                                        <div>
-                                            <p class="text-sm font-mono text-white"><?php echo htmlspecialchars($ip['ip_address']); ?></p>
-                                            <p class="text-[11px] text-zinc-500">
+                                            <p class="text-[11px] text-zinc-500 font-medium">
                                                 <?php echo htmlspecialchars($ip['threat_types']); ?>
                                             </p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-sm font-semibold text-red-400"><?php echo (int)$ip['block_count']; ?>x</p>
-                                            <p class="text-[11px] text-zinc-500">
+                                            <div class="flex items-center gap-1.5">
+                                                <i data-lucide="clock" class="w-3 h-3 text-zinc-500"></i>
+                                                <p class="text-[11px] text-zinc-500 font-medium">
                                                 <?php echo date('d/m H:i', strtotime($ip['last_blocked'])); ?>
                                             </p>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -911,21 +1169,35 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                     </div>
                 </div>
 
-                <!-- Recent Logs -->
-                <div class="glass-card rounded-xl overflow-hidden animate-slide-up relative <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.6s;">
+                <!-- Recent Logs - Redesign -->
+                <div class="glass-card rounded-xl overflow-hidden animate-fade-in relative depth-shadow <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.7s">
                     <?php if (!$hasSites): ?>
-                    <div class="absolute inset-0 bg-zinc-900/50 rounded-xl  z-20 pointer-events-none"></div>
+                    <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-20 pointer-events-none"></div>
                     <?php endif; ?>
-                    <div class="p-6 border-b border-white/5 flex items-center justify-between relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                    
+                    <!-- Decoração de fundo -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="p-6 border-b border-white/5 bg-zinc-900/30 flex items-center justify-between relative z-10">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                                <i data-lucide="file-text" class="w-6 h-6 text-blue-400"></i>
+                            </div>
+                            <div>
                         <h3 class="font-bold text-white text-lg">Atividade Recente</h3>
-                        <a href="logs.php" class="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors flex items-center gap-1">
+                                <p class="text-xs text-zinc-400 mt-0.5 font-medium">Últimas requisições registradas</p>
+                            </div>
+                        </div>
+                        <a href="logs.php" class="modern-badge text-sm text-blue-400 hover:text-blue-300 font-bold transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/30 hover:bg-blue-500/25">
                             Ver histórico
-                            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                         </a>
                     </div>
-                    <div class="overflow-x-auto relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
+                    <div class="overflow-x-auto relative z-10">
                         <table class="w-full text-sm text-left">
-                            <thead class="bg-zinc-900/50 text-zinc-400 font-medium uppercase text-xs tracking-wider">
+                            <thead class="bg-zinc-900/50 text-zinc-400 font-bold uppercase text-xs tracking-wider border-b border-white/5">
                                 <tr>
                                     <th class="px-6 py-4">IP / Origem</th>
                                     <th class="px-6 py-4">Request URI</th>
@@ -936,41 +1208,55 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             <tbody class="divide-y divide-white/5">
                                 <?php if (empty($recentLogs)): ?>
                                     <tr>
-                                        <td colspan="4" class="px-6 py-8 text-center text-zinc-500">
-                                            Nenhuma atividade registrada recentemente.
+                                        <td colspan="4" class="px-6 py-12 text-center">
+                                            <div class="flex flex-col items-center gap-3">
+                                                <div class="w-12 h-12 bg-zinc-900/60 rounded-xl border border-white/5 flex items-center justify-center">
+                                                    <i data-lucide="file-text" class="w-6 h-6 text-zinc-500"></i>
+                                                </div>
+                                                <p class="text-xs text-zinc-400 font-bold">Nenhuma atividade registrada</p>
+                                                <p class="text-[10px] text-zinc-500 font-medium">Os logs aparecerão aqui</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($recentLogs as $log): ?>
-                                        <tr class="hover:bg-white/[0.02] transition-colors">
+                                        <tr class="table-row group">
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center gap-3">
-                                                    <div class="p-2 rounded bg-zinc-900 border border-white/5">
+                                                    <div class="w-10 h-10 rounded-lg bg-zinc-900/60 border border-white/5 flex items-center justify-center">
                                                         <i data-lucide="monitor" class="w-4 h-4 text-zinc-500"></i>
                                                     </div>
-                                                    <div class="font-mono text-zinc-300"><?php echo htmlspecialchars($log['ip_address']); ?></div>
+                                                    <div class="font-mono text-zinc-300 font-bold"><?php echo htmlspecialchars($log['ip_address']); ?></div>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <div class="text-zinc-400 truncate max-w-[250px] font-mono text-xs" title="<?php echo htmlspecialchars($log['request_uri']); ?>">
+                                                <div class="flex items-center gap-2 max-w-[250px]">
+                                                    <i data-lucide="link" class="w-4 h-4 text-zinc-500 flex-shrink-0"></i>
+                                                    <div class="text-zinc-400 truncate font-mono text-xs font-medium" title="<?php echo htmlspecialchars($log['request_uri']); ?>">
                                                     <?php echo htmlspecialchars($log['request_uri']); ?>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4">
                                                 <?php if ($log['action_taken'] === 'blocked'): ?>
-                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
-                                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                                    <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+                                                        <span class="w-2 h-2 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span>
                                                         Bloqueado
                                                     </span>
                                                 <?php else: ?>
-                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                                        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
                                                         Permitido
                                                     </span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td class="px-6 py-4 text-right text-zinc-500 font-mono text-xs">
+                                            <td class="px-6 py-4 text-right">
+                                                <div class="flex items-center justify-end gap-2">
+                                                    <i data-lucide="clock" class="w-4 h-4 text-zinc-500"></i>
+                                                    <span class="text-zinc-500 font-mono text-xs font-semibold">
                                                 <?php echo date('H:i:s', strtotime($log['created_at'])); ?>
+                                                    </span>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -984,7 +1270,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         </div>
     </main>
 
-    <!-- Modal Lateral de Notificações -->
+    <!-- Modal Lateral de Notificações - Redesign -->
     <div x-show="notificationsOpen" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="translate-x-full opacity-0"
@@ -993,14 +1279,25 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
          x-transition:leave-start="translate-x-0 opacity-100"
          x-transition:leave-end="translate-x-full opacity-0"
          @click.away="notificationsOpen = false"
-         class="fixed right-0 top-0 h-full w-96 bg-black/95 backdrop-blur-xl border-l border-white/10 z-50 shadow-2xl"
+         class="fixed right-0 top-0 h-full w-96 bg-black/95 backdrop-blur-xl border-l border-white/10 z-50 shadow-2xl relative overflow-hidden"
          x-cloak>
-        <div class="flex flex-col h-full">
+        <!-- Grid pattern -->
+        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+        
+        <!-- Decoração de fundo -->
+        <div class="absolute top-0 left-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+        
+        <div class="flex flex-col h-full relative z-10">
             <!-- Header do Modal -->
-            <div class="p-6 border-b border-white/10 flex items-center justify-between">
+            <div class="p-6 border-b border-white/10 flex items-center justify-between bg-zinc-900/30">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                        <i data-lucide="bell" class="w-5 h-5 text-blue-400"></i>
+                    </div>
                 <div>
                     <h3 class="text-lg font-bold text-white">Notificações</h3>
-                    <p class="text-xs text-zinc-400 mt-0.5">Alertas e eventos recentes</p>
+                        <p class="text-xs text-zinc-400 mt-0.5 font-medium">Alertas e eventos recentes</p>
+                    </div>
                 </div>
                 <button @click="notificationsOpen = false" class="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -1010,15 +1307,18 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
             <!-- Lista de Notificações -->
             <div class="flex-1 overflow-y-auto p-4 space-y-3">
                 <!-- Mensagem quando não há notificações -->
-                <div class="text-center py-12 text-zinc-500">
-                    <i data-lucide="bell-off" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
-                    <p class="text-sm">Nenhuma notificação nova</p>
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-zinc-900/60 rounded-xl border border-white/5 flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="bell-off" class="w-8 h-8 text-zinc-500"></i>
+                    </div>
+                    <p class="text-sm text-zinc-400 font-bold mb-1">Nenhuma notificação nova</p>
+                    <p class="text-xs text-zinc-500 font-medium">Você será notificado quando houver novos eventos</p>
                 </div>
             </div>
 
             <!-- Footer -->
-            <div class="p-4 border-t border-white/10">
-                <button class="w-full px-4 py-2 text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors">
+            <div class="p-4 border-t border-white/10 bg-zinc-900/30">
+                <button class="w-full px-4 py-2.5 text-sm text-blue-400 hover:text-blue-300 font-bold transition-colors rounded-lg hover:bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/30">
                     Ver todas as notificações
                 </button>
             </div>
@@ -1678,9 +1978,9 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         })();
     </script>
     
-    <!-- Modal de Atualização do Sistema -->
+    <!-- Modal de Atualização do Sistema - Redesign -->
     <div id="update-modal" 
-         class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm"
+         class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-md"
          x-data="{ open: false }"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -1688,7 +1988,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0">
-        <div class="w-full max-w-lg mx-4 rounded-2xl bg-zinc-950 border border-white/10 p-6 shadow-2xl relative overflow-hidden"
+        <div class="w-full max-w-lg mx-4 rounded-2xl bg-zinc-950 border border-white/10 p-6 shadow-2xl relative overflow-hidden depth-shadow animate-scale-in"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
@@ -1696,8 +1996,14 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95">
             
+            <!-- Grid pattern -->
+            <div class="absolute inset-0 grid-pattern opacity-20"></div>
+            
             <!-- Decorative Background -->
             <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-transparent pointer-events-none"></div>
+            
+            <!-- Decoração de fundo -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
             
             <!-- Close Button -->
             <button id="update-modal-close" class="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all z-10">
@@ -1707,40 +2013,46 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
             <div class="relative z-10">
                 <!-- Header -->
                 <div class="text-center mb-6">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-blue-500/15 border border-blue-500/30 mb-4">
                         <i data-lucide="sparkles" class="w-8 h-8 text-blue-400"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-white mb-2">Sistema Atualizado! 🎉</h2>
-                    <p class="text-zinc-400 text-sm">O SafeNode recebeu novas funcionalidades e melhorias</p>
+                    <p class="text-zinc-400 text-sm font-medium">O SafeNode recebeu novas funcionalidades e melhorias</p>
                 </div>
                 
                 <!-- Content -->
                 <div class="mb-6">
-                    <p class="text-zinc-300 text-sm text-center mb-4">
+                    <p class="text-zinc-300 text-sm text-center mb-4 font-medium">
                         Estamos sempre trabalhando para melhorar sua experiência. A nova versão inclui:
                     </p>
-                    <ul class="space-y-2 text-sm text-zinc-400">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
-                            <span>Dashboard em tempo real com atualizações automáticas</span>
+                    <ul class="space-y-3 text-sm text-zinc-400">
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-zinc-900/30 border border-white/5">
+                            <div class="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+                            </div>
+                            <span class="font-medium">Dashboard em tempo real com atualizações automáticas</span>
                         </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
-                            <span>Novos recursos de segurança e melhorias de performance</span>
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-zinc-900/30 border border-white/5">
+                            <div class="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+                            </div>
+                            <span class="font-medium">Novos recursos de segurança e melhorias de performance</span>
                         </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
-                            <span>Interface mais intuitiva e responsiva</span>
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-zinc-900/30 border border-white/5">
+                            <div class="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+                            </div>
+                            <span class="font-medium">Interface mais intuitiva e responsiva</span>
                         </li>
                     </ul>
                 </div>
                 
                 <!-- Actions -->
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <button id="update-modal-understood" class="flex-1 px-4 py-3 rounded-xl bg-zinc-900 text-zinc-300 hover:bg-zinc-800 font-semibold transition-all text-sm">
+                    <button id="update-modal-understood" class="flex-1 px-5 py-3 rounded-xl bg-zinc-900/80 text-zinc-300 hover:bg-zinc-800 hover:border-white/10 border border-white/10 font-bold transition-all text-sm">
                         Entendi
                     </button>
-                    <button id="update-modal-see-updates" class="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 text-sm">
+                    <button id="update-modal-see-updates" class="btn-primary flex-1 px-5 py-3 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-2 text-sm">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
                         Ver Atualizações
                     </button>

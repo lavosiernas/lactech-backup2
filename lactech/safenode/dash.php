@@ -344,14 +344,31 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         /* Alpine.js x-cloak */
         [x-cloak] { display: none !important; }
 
-        /* Melhorias de Hover States */
+        /* Melhorias de Hover States - Mais Impactantes */
         .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
         .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.1);
-            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.2);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 51, 234, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .card-hover:hover::before {
+            opacity: 1;
         }
 
         /* Animação de contador */
@@ -361,6 +378,130 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
         }
         .count-animate {
             animation: countUp 0.5s ease-out;
+        }
+
+        /* Hero Metric - Visual Destacado */
+        .hero-metric {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.15), inset 0 0 20px rgba(239, 68, 68, 0.05);
+        }
+        .hero-metric:hover {
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 60px rgba(239, 68, 68, 0.25), inset 0 0 30px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Gradientes sutis nos cards */
+        .metric-card-gradient-1 {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+        }
+        .metric-card-gradient-2 {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.02) 100%);
+        }
+
+        /* Badge de status animado */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px currentColor; }
+            50% { box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+        }
+        .status-badge-pulse {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        /* Linha de separação visual melhorada */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 2rem 0;
+        }
+
+        /* Mini gráfico de tendência */
+        .sparkline {
+            height: 40px;
+            width: 100%;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .card-hover:hover .sparkline {
+            opacity: 1;
+        }
+
+        /* Melhorias gerais de design */
+        .metric-card {
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.5) 0%, rgba(24, 24, 27, 0.5) 100%);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .metric-card:hover {
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.7) 0%, rgba(24, 24, 27, 0.7) 100%);
+        }
+
+        /* Efeito de shimmer nos cards */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .shimmer-effect {
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+            background-size: 1000px 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        /* Bordas suaves e modernas */
+        .card-border-glow {
+            position: relative;
+        }
+        .card-border-glow::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent, rgba(255, 255, 255, 0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .card-border-glow:hover::after {
+            opacity: 1;
+        }
+
+        /* Melhorias tipográficas */
+        .metric-value {
+            font-feature-settings: 'tnum';
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+
+        /* Efeito de profundidade */
+        .depth-shadow {
+            box-shadow: 
+                0 1px 2px 0 rgba(0, 0, 0, 0.3),
+                0 4px 8px 0 rgba(0, 0, 0, 0.2),
+                0 8px 16px 0 rgba(0, 0, 0, 0.1);
+        }
+        .depth-shadow:hover {
+            box-shadow: 
+                0 2px 4px 0 rgba(0, 0, 0, 0.4),
+                0 8px 16px 0 rgba(0, 0, 0, 0.3),
+                0 16px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        /* Badge moderno */
+        .modern-badge {
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Grid pattern sutil */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
     </style>
@@ -463,23 +604,35 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                 </div>
                 <?php endif; ?>
                 
-                <!-- Welcome & Actions -->
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
+                <!-- Header Melhorado -->
+                <div class="mb-6 animate-fade-in">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                     <div>
-                        <h1 class="text-2xl font-bold text-white tracking-tight mb-1">
-                            <?php echo $currentSiteId > 0 ? 'Visão Geral: ' . htmlspecialchars($_SESSION['view_site_name']) : 'Visão Geral Global'; ?>
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-0.5 h-5 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                                <h1 class="text-2xl font-bold text-white tracking-tight">
+                                    <?php echo $currentSiteId > 0 ? 'Visão Geral' : 'Visão Geral Global'; ?>
                         </h1>
-                        <p class="text-zinc-400 text-sm">Monitoramento de visitas e segurança em tempo real.</p>
+                            </div>
+                            <?php if ($currentSiteId > 0): ?>
+                            <p class="text-zinc-400 text-sm ml-3 font-medium"><?php echo htmlspecialchars($_SESSION['view_site_name']); ?></p>
+                            <?php endif; ?>
+                            <p class="text-zinc-500 text-xs ml-3 mt-0.5">Monitoramento de visitas e segurança em tempo real</p>
                     </div>
                     <div class="flex gap-3 relative">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 -m-2 bg-zinc-900/50 rounded-lg z-20 pointer-events-none"></div>
                         <?php endif; ?>
-                        <a href="logs.php" class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-zinc-200 transition-all shadow-lg shadow-white/5 relative <?php echo !$hasSites ? 'opacity-40 blur-sm z-0 pointer-events-none cursor-not-allowed' : 'z-10'; ?>">
+                            <a href="logs.php" class="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-zinc-200 transition-all shadow-lg shadow-white/10 hover:shadow-xl relative <?php echo !$hasSites ? 'opacity-40 blur-sm z-0 pointer-events-none cursor-not-allowed' : 'z-10'; ?>">
                             <i data-lucide="file-text" class="w-4 h-4"></i>
                             Logs
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                         </a>
                     </div>
+                </div>
+
+                    <!-- Divider Visual -->
+                    <div class="section-divider"></div>
                 </div>
 
                 <!-- Widget de Insights Automatizados -->
@@ -559,47 +712,78 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                     }
                 ?>
                 <?php if (!empty($insights)): ?>
-                <div class="rounded-xl bg-zinc-900/60 border border-white/10 p-4 animate-fade-in">
-                    <div class="flex items-start gap-3">
-                        <div class="flex-shrink-0 mt-0.5">
-                            <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                                <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
+                <div class="rounded-xl bg-gradient-to-br from-blue-500/10 via-zinc-900/80 to-purple-500/10 border border-blue-500/25 p-4 mb-6 animate-fade-in relative overflow-hidden depth-shadow">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-30"></div>
+                    
+                    <!-- Efeitos de fundo -->
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/8 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/8 rounded-full blur-2xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/25 to-purple-500/25 border border-blue-500/40 flex items-center justify-center depth-shadow">
+                                <i data-lucide="sparkles" class="w-4.5 h-4.5 text-blue-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white">💡 Insights do Dia</h3>
+                                <p class="text-[10px] text-zinc-400 font-medium">Análise automática dos dados</p>
                             </div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-sm font-semibold text-white mb-2">💡 Insights do Dia</h3>
-                            <div class="space-y-2">
-                                <?php foreach (array_slice($insights, 0, 3) as $insight): ?>
-                                <div class="flex items-start gap-2 text-xs">
-                                    <i data-lucide="<?php echo $insight['icon']; ?>" class="w-3.5 h-3.5 text-<?php echo $insight['color']; ?>-400 mt-0.5 flex-shrink-0"></i>
-                                    <span class="text-zinc-300"><?php echo htmlspecialchars($insight['text']); ?></span>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <?php foreach (array_slice($insights, 0, 3) as $insight): ?>
+                            <div class="p-3.5 rounded-xl bg-zinc-900/60 border border-<?php echo $insight['color']; ?>-500/25 hover:border-<?php echo $insight['color']; ?>-500/45 transition-all duration-300 hover:bg-zinc-900/70 depth-shadow group">
+                                <div class="flex items-start gap-2.5">
+                                    <div class="p-2 bg-<?php echo $insight['color']; ?>-500/20 rounded-lg border border-<?php echo $insight['color']; ?>-500/35 flex-shrink-0 group-hover:bg-<?php echo $insight['color']; ?>-500/25 transition-all">
+                                        <i data-lucide="<?php echo $insight['icon']; ?>" class="w-4 h-4 text-<?php echo $insight['color']; ?>-400"></i>
+                                    </div>
+                                    <p class="text-xs text-zinc-200 font-medium leading-relaxed pt-0.5"><?php echo htmlspecialchars($insight['text']); ?></p>
                                 </div>
-                                <?php endforeach; ?>
                             </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
                 <?php endif; ?>
                 <?php endif; ?>
 
-                <!-- Novos Stats (Preview Style) - Melhorado -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Stats Cards - Design Melhorado -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <!-- Total de Requisições -->
-                    <a href="logs.php" class="block p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700/70 hover:bg-zinc-900/70 transition-all duration-300 group card-hover relative overflow-hidden <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm' : ''; ?>">
+                    <a href="logs.php" class="group relative overflow-hidden rounded-xl metric-card border border-zinc-800/50 hover:border-emerald-500/40 card-hover card-border-glow p-5 depth-shadow <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
-                        <!-- Efeito de brilho no hover -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-green-500/0 via-green-500/0 to-green-500/0 group-hover:from-green-500/5 group-hover:via-green-500/0 group-hover:to-green-500/0 transition-all duration-300 pointer-events-none"></div>
                         
-                        <div class="flex justify-between items-start mb-3 relative z-10">
-                            <div class="text-xs text-zinc-400 uppercase font-semibold tracking-wider">Visitas / Requisições</div>
-                            <span class="text-[10px] <?php echo $requestsChange >= 0 ? 'text-green-400' : 'text-zinc-500'; ?> bg-<?php echo $requestsChange >= 0 ? 'green' : 'zinc'; ?>-900/30 px-2 py-1 rounded-full border border-<?php echo $requestsChange >= 0 ? 'green' : 'zinc'; ?>-900/40 flex items-center gap-1 font-medium" data-stat="requests-change">
-                                <i data-lucide="<?php echo $requestsChange >= 0 ? 'arrow-up-right' : 'arrow-down-right'; ?>" class="w-3 h-3"></i> 
-                                <?php echo abs($requestsChange); ?>% vs. ontem
+                        <!-- Grid pattern sutil -->
+                        <div class="absolute inset-0 grid-pattern opacity-50"></div>
+                        
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-28 h-28 bg-emerald-500/8 rounded-full blur-3xl group-hover:bg-emerald-500/12 transition-all duration-500"></div>
+                        
+                        <!-- Ícone decorativo -->
+                        <div class="absolute top-4 right-4 opacity-8 group-hover:opacity-15 transition-opacity duration-300">
+                            <i data-lucide="trending-up" class="w-14 h-14 text-emerald-400/60"></i>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <!-- Header do card -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2 bg-emerald-500/15 rounded-xl border border-emerald-500/25 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/35 transition-all depth-shadow">
+                                        <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-zinc-300 uppercase tracking-wider">Visitas</span>
+                                </div>
+                                <span class="text-[10px] <?php echo $requestsChange >= 0 ? 'text-emerald-400' : 'text-zinc-500'; ?> modern-badge px-2.5 py-1 rounded-full bg-<?php echo $requestsChange >= 0 ? 'emerald' : 'zinc'; ?>-900/50 flex items-center gap-1.5 font-bold" data-stat="requests-change">
+                                    <i data-lucide="<?php echo $requestsChange >= 0 ? 'arrow-up-right' : 'arrow-down-right'; ?>" class="w-3 h-3"></i> 
+                                    <?php echo abs($requestsChange); ?>%
                             </span>
                         </div>
-                        <div class="text-3xl font-bold text-white group-hover:text-green-400 transition-colors duration-300 relative z-10 mb-2" data-stat="total-requests">
+                            
+                            <!-- Valor principal -->
+                            <div class="mb-3">
+                                <div class="text-3xl font-black text-white group-hover:text-emerald-400 transition-colors duration-300 mb-1 metric-value" data-stat="total-requests">
                             <?php 
                             if ($requests24h >= 1000000) {
                                 echo number_format($requests24h / 1000000, 1) . 'M';
@@ -610,34 +794,73 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             }
                             ?>
                         </div>
-                        <div class="flex items-center justify-between text-xs relative z-10">
-                            <span class="text-zinc-500">Últimas 24 horas</span>
-                            <span class="text-zinc-600 group-hover:text-zinc-400 transition-colors">Clique para detalhes →</span>
+                                <p class="text-[11px] text-zinc-500 font-medium">últimas 24 horas</p>
+                            </div>
+                            
+                            <!-- Footer com shimmer -->
+                            <div class="flex items-center justify-between pt-3 border-t border-white/5 relative overflow-hidden rounded-b-xl">
+                                <div class="absolute inset-0 shimmer-effect opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-medium relative z-10">Requisições</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-zinc-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all relative z-10"></i>
+                            </div>
                         </div>
                     </a>
                     
-                    <!-- Hero Metric: Ameaças Mitigadas (Destacado) -->
-                    <a href="logs.php?<?php echo http_build_query(['action' => 'blocked']); ?>" class="block p-5 rounded-xl bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 border-2 border-red-500/20 hover:border-red-500/40 hover:bg-gradient-to-br hover:from-zinc-900/70 hover:to-zinc-900/60 transition-all duration-300 group card-hover relative overflow-hidden <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm' : ''; ?>">
+                    <!-- Hero Metric: Ameaças Mitigadas (Design Melhorado) -->
+                    <a href="logs.php?<?php echo http_build_query(['action' => 'blocked']); ?>" class="group relative overflow-hidden rounded-xl hero-metric p-5 card-hover card-border-glow depth-shadow <?php echo !$hasSites ? 'pointer-events-none opacity-40 blur-sm' : ''; ?>">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
-                        <!-- Efeito de brilho vermelho no hover -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-red-500/0 via-red-500/0 to-red-500/0 group-hover:from-red-500/10 group-hover:via-red-500/5 group-hover:to-red-500/0 transition-all duration-300 pointer-events-none"></div>
-                        <!-- Indicador de status crítico -->
-                        <div class="absolute top-4 right-4 w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
                         
-                        <div class="flex justify-between items-start mb-3 relative z-10">
-                            <div class="text-xs text-zinc-400 uppercase font-semibold tracking-wider">Ameaças Mitigadas</div>
-                            <?php 
-                            $blockedYesterday = $yesterdayStats['blocked_requests'] ?? 0;
-                            $blockedChangePct = $blockedYesterday > 0 ? round((($blocked24h - $blockedYesterday) / $blockedYesterday) * 100) : ($blocked24h > 0 ? 100 : 0);
-                            ?>
-                            <span class="text-[10px] <?php echo $blockedChangePct >= 0 ? 'text-red-400' : 'text-emerald-400'; ?> bg-<?php echo $blockedChangePct >= 0 ? 'red' : 'emerald'; ?>-900/30 px-2 py-1 rounded-full border border-<?php echo $blockedChangePct >= 0 ? 'red' : 'emerald'; ?>-900/40 flex items-center gap-1 font-medium">
-                                <i data-lucide="<?php echo $blockedChangePct >= 0 ? 'arrow-up-right' : 'arrow-down-right'; ?>" class="w-3 h-3"></i> 
-                                <?php echo abs($blockedChangePct); ?>% vs. ontem
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-40"></div>
+                        
+                        <!-- Efeitos de fundo animados -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-red-500/12 rounded-full blur-3xl animate-pulse"></div>
+                        <div class="absolute bottom-0 left-0 w-24 h-24 bg-red-500/6 rounded-full blur-2xl"></div>
+                        
+                        <!-- Gradiente de brilho -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-red-500/5"></div>
+                        
+                        <!-- Ícone decorativo -->
+                        <div class="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
+                            <i data-lucide="shield-alert" class="w-14 h-14 text-red-400/60"></i>
+                        </div>
+                        
+                        <!-- Indicador de status crítico pulsante -->
+                        <div class="absolute top-5 right-5 z-20">
+                            <div class="w-2.5 h-2.5 rounded-full bg-red-500 status-badge-pulse"></div>
+                            <div class="absolute inset-0 w-2.5 h-2.5 rounded-full bg-red-500/50 animate-ping"></div>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <!-- Badge de Hero -->
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full modern-badge bg-red-500/25 border border-red-500/40 mb-3 shadow-lg shadow-red-500/20">
+                                <i data-lucide="star" class="w-3 h-3 text-red-400"></i>
+                                <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider">Métrica Principal</span>
+                            </div>
+                            
+                            <!-- Header do card -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2 bg-red-500/20 rounded-xl border border-red-500/35 group-hover:bg-red-500/25 group-hover:border-red-500/45 transition-all depth-shadow">
+                                        <i data-lucide="shield-check" class="w-4 h-4 text-red-400"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-white uppercase tracking-wider">Ameaças Mitigadas</span>
+                                </div>
+                                <?php 
+                                $blockedYesterday = $yesterdayStats['blocked_requests'] ?? 0;
+                                $blockedChangePct = $blockedYesterday > 0 ? round((($blocked24h - $blockedYesterday) / $blockedYesterday) * 100) : ($blocked24h > 0 ? 100 : 0);
+                                ?>
+                                <span class="text-[10px] <?php echo $blockedChangePct >= 0 ? 'text-red-400' : 'text-emerald-400'; ?> modern-badge px-2.5 py-1 rounded-full bg-<?php echo $blockedChangePct >= 0 ? 'red' : 'emerald'; ?>-900/50 flex items-center gap-1.5 font-bold">
+                                    <i data-lucide="<?php echo $blockedChangePct >= 0 ? 'arrow-up-right' : 'arrow-down-right'; ?>" class="w-3 h-3"></i> 
+                                    <?php echo abs($blockedChangePct); ?>%
                             </span>
                         </div>
-                        <div class="text-4xl font-bold text-white group-hover:text-red-400 transition-colors duration-300 relative z-10 mb-2" data-stat="blocked-threats">
+                            
+                            <!-- Valor principal -->
+                            <div class="mb-3">
+                                <div class="text-3xl font-black text-white group-hover:text-red-400 transition-colors duration-300 mb-1 leading-tight metric-value" data-stat="blocked-threats">
                             <?php 
                             if ($blocked24h >= 1000000) {
                                 echo number_format($blocked24h / 1000000, 1) . 'M';
@@ -648,38 +871,70 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                             }
                             ?>
                         </div>
-                        <div class="flex items-center justify-between text-xs relative z-10">
-                            <span class="text-zinc-500">Bloqueado por IA</span>
-                            <span class="text-zinc-600 group-hover:text-zinc-400 transition-colors">Ver logs →</span>
+                                <p class="text-[11px] text-zinc-400 font-medium">bloqueadas automaticamente</p>
+                            </div>
+                            
+                            <!-- Footer com shimmer -->
+                            <div class="flex items-center justify-between pt-3 border-t border-red-500/25 relative overflow-hidden rounded-b-xl">
+                                <div class="absolute inset-0 shimmer-effect opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <span class="text-[10px] text-red-400/80 uppercase tracking-wider font-semibold relative z-10">Proteção IA Ativa</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-red-400/70 group-hover:text-red-400 group-hover:translate-x-1 transition-all relative z-10"></i>
+                            </div>
                         </div>
                     </a>
                     
                     <?php if ($hasSites): ?>
-                    <a href="logs.php" class="block p-5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700/70 hover:bg-zinc-900/70 transition-all duration-300 group card-hover relative overflow-hidden">
-                        <!-- Efeito de brilho azul no hover -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:via-blue-500/0 group-hover:to-blue-500/0 transition-all duration-300 pointer-events-none"></div>
+                    <a href="logs.php" class="group relative overflow-hidden rounded-xl metric-card border border-zinc-800/50 hover:border-blue-500/40 card-hover card-border-glow p-5 depth-shadow">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-50"></div>
                         
-                        <div class="flex justify-between items-start mb-3 relative z-10">
-                            <div class="text-xs text-zinc-400 uppercase font-semibold tracking-wider">Latência Global</div>
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-28 h-28 bg-blue-500/8 rounded-full blur-3xl group-hover:bg-blue-500/12 transition-all duration-500"></div>
+                        
+                        <!-- Ícone decorativo -->
+                        <div class="absolute top-4 right-4 opacity-8 group-hover:opacity-15 transition-opacity duration-300">
+                            <i data-lucide="zap" class="w-14 h-14 text-blue-400/60"></i>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <!-- Header do card -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2 bg-blue-500/15 rounded-xl border border-blue-500/25 group-hover:bg-blue-500/20 group-hover:border-blue-500/35 transition-all depth-shadow">
+                                        <i data-lucide="gauge" class="w-4 h-4 text-blue-400"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-zinc-300 uppercase tracking-wider">Latência</span>
+                                </div>
                             <?php if ($globalLatency !== null && $avgLatency !== null): 
                                 $latencyChange = $avgLatency < ($globalLatency * 0.9) ? -round(($globalLatency - $avgLatency) / $globalLatency * 100) : 0;
-                                $latencyStatus = $globalLatency < 100 ? 'excelente' : ($globalLatency < 200 ? 'boa' : 'alta');
+                                    $latencyStatus = $globalLatency < 100 ? 'excelente' : ($globalLatency < 200 ? 'boa' : 'alta');
+                                    $statusColor = $globalLatency < 100 ? 'emerald' : ($globalLatency < 200 ? 'blue' : 'amber');
                             ?>
-                            <span class="text-[10px] <?php echo $globalLatency < 100 ? 'text-emerald-400' : ($globalLatency < 200 ? 'text-blue-400' : 'text-amber-400'); ?> bg-<?php echo $globalLatency < 100 ? 'emerald' : ($globalLatency < 200 ? 'blue' : 'amber'); ?>-900/30 px-2 py-1 rounded-full border border-<?php echo $globalLatency < 100 ? 'emerald' : ($globalLatency < 200 ? 'blue' : 'amber'); ?>-900/40 flex items-center gap-1 font-medium">
-                                <i data-lucide="zap" class="w-3 h-3"></i> <?php echo ucfirst($latencyStatus); ?>
+                                <span class="text-[10px] text-<?php echo $statusColor; ?>-400 modern-badge px-2.5 py-1 rounded-full bg-<?php echo $statusColor; ?>-900/50 flex items-center gap-1.5 font-bold">
+                                    <i data-lucide="check-circle" class="w-3 h-3"></i> 
+                                    <?php echo ucfirst($latencyStatus); ?>
                             </span>
                             <?php else: ?>
-                            <span class="text-[10px] text-blue-400 bg-blue-900/30 px-2 py-1 rounded-full border border-blue-900/40 flex items-center gap-1 font-medium">
+                                <span class="text-[10px] text-blue-400 modern-badge px-2.5 py-1 rounded-full bg-blue-900/50 flex items-center gap-1.5 font-bold">
                                 <i data-lucide="zap" class="w-3 h-3"></i> --
                             </span>
                             <?php endif; ?>
                         </div>
-                        <div class="text-3xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300 relative z-10 mb-2" data-stat="latency">
+                            
+                            <!-- Valor principal -->
+                            <div class="mb-3">
+                                <div class="text-3xl font-black text-white group-hover:text-blue-400 transition-colors duration-300 mb-1 metric-value" data-stat="latency">
                             <?php echo $globalLatency !== null ? number_format($globalLatency, 0) . 'ms' : '--ms'; ?>
                         </div>
-                        <div class="flex items-center justify-between text-xs relative z-10">
-                            <span class="text-zinc-500">Tempo de Resposta P99</span>
-                            <span class="text-zinc-600 group-hover:text-zinc-400 transition-colors">Ver detalhes →</span>
+                                <p class="text-[11px] text-zinc-500 font-medium">tempo de resposta P99</p>
+                            </div>
+                            
+                            <!-- Footer com shimmer -->
+                            <div class="flex items-center justify-between pt-3 border-t border-white/5 relative overflow-hidden rounded-b-xl">
+                                <div class="absolute inset-0 shimmer-effect opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-medium relative z-10">Performance</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-zinc-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all relative z-10"></i>
+                            </div>
                         </div>
                     </a>
                     <?php else: ?>
@@ -697,51 +952,114 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                     <?php endif; ?>
                 </div>
 
-                <!-- Stats Grid (Cards Adicionais) - Melhorado -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Unique IPs -->
-                    <div class="glass-card p-6 rounded-xl relative overflow-hidden group hover:border-purple-500/40 transition-all duration-300 animate-slide-up card-hover <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.3s;">
+                <!-- Divider -->
+                <div class="section-divider my-8"></div>
+                
+                <!-- Stats Grid (Cards Adicionais) - Redesign Completo -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Unique IPs - Design Melhorado -->
+                    <div class="group relative overflow-hidden rounded-xl metric-card border border-zinc-800/50 hover:border-purple-500/40 card-hover card-border-glow p-5 depth-shadow animate-slide-up <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.3s;">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
-                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-300"></div>
-                        <div class="flex justify-between items-start mb-4 relative z-10">
-                            <div class="p-2.5 bg-purple-500/10 rounded-lg text-purple-400 border border-purple-500/20 group-hover:bg-purple-500/20 transition-all">
-                                <i data-lucide="globe" class="w-5 h-5"></i>
+                        
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-50"></div>
+                        
+                        <!-- Efeitos de fundo -->
+                        <div class="absolute -right-8 -top-8 w-32 h-32 bg-purple-500/8 rounded-full blur-3xl group-hover:bg-purple-500/12 transition-all duration-500"></div>
+                        
+                        <!-- Ícone decorativo -->
+                        <div class="absolute top-4 right-4 opacity-8 group-hover:opacity-15 transition-opacity duration-300">
+                            <i data-lucide="users" class="w-14 h-14 text-purple-400/60"></i>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <!-- Header -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2 bg-purple-500/15 rounded-xl border border-purple-500/25 group-hover:bg-purple-500/20 group-hover:border-purple-500/35 transition-all depth-shadow">
+                                        <i data-lucide="globe" class="w-4 h-4 text-purple-400"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Visitantes Únicos</h3>
+                                        <p class="text-[10px] text-zinc-500 font-medium">IPs únicos hoje</p>
+                                    </div>
                             </div>
                             <?php if ($ipsChange != 0): ?>
-                                <span class="text-xs font-bold px-2 py-1 rounded-full border <?php echo $ipsChange > 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-zinc-800/50 text-zinc-400 border-zinc-700'; ?> transition-all">
-                                    <?php echo $ipsChange > 0 ? '+' : ''; ?><?php echo $ipsChange; ?>% vs. ontem
+                                    <span class="text-[10px] font-bold px-2.5 py-1 rounded-full modern-badge <?php echo $ipsChange > 0 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40' : 'bg-zinc-800/60 text-zinc-400 border-zinc-700/50'; ?> transition-all">
+                                    <?php echo $ipsChange > 0 ? '+' : ''; ?><?php echo $ipsChange; ?>%
                                 </span>
-                            <?php else: ?>
-                                <span class="text-xs font-medium px-2 py-1 rounded-full border bg-zinc-800/50 text-zinc-500 border-zinc-700/50">
-                                    Sem alteração
-                                </span>
+                                <?php else: ?>
+                                    <span class="text-[10px] font-medium px-2 py-1 rounded-full modern-badge bg-zinc-800/60 text-zinc-500 border-zinc-700/50">
+                                        →
+                                    </span>
                             <?php endif; ?>
                         </div>
-                        <div class="relative z-10">
-                            <h3 class="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-2">Visitantes Únicos</h3>
-                            <p class="text-3xl font-bold text-white font-mono group-hover:text-purple-400 transition-colors duration-300" data-stat="unique-visitors"><?php echo number_format($stats['unique_ips_today']); ?></p>
-                            <p class="text-xs text-zinc-500 mt-2">IPs únicos hoje</p>
+                            
+                            <!-- Valor -->
+                            <div class="mb-3">
+                                <p class="text-3xl font-black text-white font-mono group-hover:text-purple-400 transition-colors duration-300 leading-none metric-value" data-stat="unique-visitors">
+                                    <?php echo number_format($stats['unique_ips_today']); ?>
+                                </p>
+                            </div>
+                            
+                            <!-- Mini indicador visual melhorado -->
+                            <div class="h-1.5 bg-zinc-800/80 rounded-full overflow-hidden border border-white/5">
+                                <div class="h-full bg-gradient-to-r from-purple-500 via-purple-600 to-purple-500 rounded-full shadow-lg shadow-purple-500/30" style="width: <?php echo min(100, ($stats['unique_ips_today'] / max(1, $stats['unique_ips_today'])) * 100); ?>%"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Active Rules -->
-                    <div class="glass-card p-6 rounded-xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-300 animate-slide-up <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.4s;">
+                    <!-- Active Rules - Design Melhorado -->
+                    <div class="group relative overflow-hidden rounded-xl metric-card border border-zinc-800/50 hover:border-amber-500/40 card-hover card-border-glow p-5 depth-shadow animate-slide-up <?php echo !$hasSites ? 'opacity-40 blur-sm' : ''; ?>" style="animation-delay: 0.4s;">
                         <?php if (!$hasSites): ?>
                         <div class="absolute inset-0 bg-zinc-900/50 rounded-xl z-10 pointer-events-none"></div>
                         <?php endif; ?>
-                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all"></div>
-                        <div class="flex justify-between items-start mb-4 relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                            <div class="p-2.5 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
-                                <i data-lucide="lock" class="w-5 h-5"></i>
+                        
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-50"></div>
+                        
+                        <!-- Efeitos de fundo -->
+                        <div class="absolute -right-8 -top-8 w-32 h-32 bg-amber-500/8 rounded-full blur-3xl group-hover:bg-amber-500/12 transition-all duration-500"></div>
+                        
+                        <!-- Ícone decorativo -->
+                        <div class="absolute top-4 right-4 opacity-8 group-hover:opacity-15 transition-opacity duration-300">
+                            <i data-lucide="shield" class="w-14 h-14 text-amber-400/60"></i>
                             </div>
-                            <span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Ativo</span>
+                        
+                        <div class="relative z-10">
+                            <!-- Header -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2 bg-amber-500/15 rounded-xl border border-amber-500/25 group-hover:bg-amber-500/20 group-hover:border-amber-500/35 transition-all depth-shadow relative">
+                                        <i data-lucide="lock" class="w-4 h-4 text-amber-400"></i>
+                                        <!-- Badge pulsante -->
+                                        <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping"></div>
+                                        <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full shadow-lg shadow-amber-400/50"></div>
                         </div>
-                        <div class="relative <?php echo !$hasSites ? 'z-0' : 'z-10'; ?>">
-                            <h3 class="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-1">Regras Ativas</h3>
-                            <p class="text-2xl font-bold text-white font-mono" data-stat="active-blocks"><?php echo number_format($stats['active_blocks']); ?></p>
-                            <p class="text-xs text-zinc-500 mt-1">IPs na lista negra</p>
+                                    <div>
+                                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Regras Ativas</h3>
+                                        <p class="text-[10px] text-zinc-500 font-medium">IPs na lista negra</p>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full modern-badge bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center gap-1.5 shadow-lg shadow-amber-500/20">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-lg shadow-amber-400/50"></span>
+                                    Ativo
+                                </span>
+                            </div>
+                            
+                            <!-- Valor -->
+                            <div class="mb-3">
+                                <p class="text-3xl font-black text-white font-mono group-hover:text-amber-400 transition-colors duration-300 leading-none metric-value" data-stat="active-blocks">
+                                    <?php echo number_format($stats['active_blocks']); ?>
+                                </p>
+                            </div>
+                            
+                            <!-- Mini indicador visual melhorado -->
+                            <div class="h-1.5 bg-zinc-800/80 rounded-full overflow-hidden border border-white/5">
+                                <div class="h-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 rounded-full animate-pulse shadow-lg shadow-amber-500/30" style="width: <?php echo min(100, ($stats['active_blocks'] > 0 ? 100 : 0)); ?>%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1207,6 +1525,44 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
             }
             return num.toString();
         }
+
+        // Função para animar contador
+        function animateCounter(element, newValue, oldValue) {
+            if (!element) return;
+            const duration = 500;
+            const startTime = Date.now();
+            const startValue = oldValue || 0;
+            const endValue = parseInt(newValue) || 0;
+            
+            function updateCounter() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                const currentValue = Math.round(startValue + (endValue - startValue) * easeOutQuart);
+                
+                // Manter formato original se tiver M ou k
+                const oldText = element.textContent;
+                if (oldText.includes('M') || oldText.includes('k')) {
+                    element.textContent = formatNumber(currentValue);
+                } else {
+                    element.textContent = currentValue.toLocaleString();
+                }
+                
+                // Adicionar classe de animação
+                element.classList.add('count-animate');
+                setTimeout(() => element.classList.remove('count-animate'), 500);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent = formatNumber(endValue);
+                }
+            }
+            
+            if (startValue !== endValue) {
+                updateCounter();
+            }
+        }
         
         // Função para atualizar a dashboard em tempo real
         async function updateDashboardStats() {
@@ -1233,40 +1589,56 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                 
                 const data = result.data;
                 
-                // Atualizar card de Requisições/Visitas
+                // Atualizar card de Requisições/Visitas com animação
                 const requests24h = data.last24h.total_requests;
                 const requestsChange = data.changes.requests;
                 const requestsCard = document.querySelector('[data-stat="total-requests"]');
                 const requestsChangeBadge = document.querySelector('[data-stat="requests-change"]');
                 if (requestsCard) {
-                    requestsCard.textContent = formatNumber(requests24h);
+                    const oldValue = parseInt(requestsCard.textContent.replace(/[kM]/g, '').replace(/,/g, '')) || 0;
+                    animateCounter(requestsCard, requests24h, oldValue);
                 }
                 if (requestsChangeBadge) {
-                    requestsChangeBadge.innerHTML = `<i data-lucide="arrow-up-right" class="w-3 h-3"></i> ${Math.abs(requestsChange)}%`;
+                    const arrowIcon = requestsChange >= 0 ? 'arrow-up-right' : 'arrow-down-right';
+                    const colorClass = requestsChange >= 0 ? 'text-green-400' : 'text-zinc-500';
+                    requestsChangeBadge.innerHTML = `<i data-lucide="${arrowIcon}" class="w-3 h-3"></i> ${Math.abs(requestsChange)}% vs. ontem`;
+                    requestsChangeBadge.className = `text-[10px] ${colorClass} bg-${requestsChange >= 0 ? 'green' : 'zinc'}-900/30 px-2 py-1 rounded-full border border-${requestsChange >= 0 ? 'green' : 'zinc'}-900/40 flex items-center gap-1 font-medium`;
                     lucide.createIcons();
                 }
                 
-                // Atualizar card de Ameaças Mitigadas
+                // Atualizar card de Ameaças Mitigadas com animação
                 const blocked24h = data.last24h.blocked;
                 const blockedCard = document.querySelector('[data-stat="blocked-threats"]');
                 if (blockedCard) {
-                    blockedCard.textContent = formatNumber(blocked24h);
+                    const oldValue = parseInt(blockedCard.textContent.replace(/[kM]/g, '').replace(/,/g, '')) || 0;
+                    animateCounter(blockedCard, blocked24h, oldValue);
                 }
                 
                 // Atualizar card de Latência
                 const latencyCard = document.querySelector('[data-stat="latency"]');
                 if (latencyCard) {
                     if (data.latency.global !== null) {
-                        latencyCard.textContent = Math.round(data.latency.global) + 'ms';
+                        const newLatency = Math.round(data.latency.global);
+                        const oldLatency = parseInt(latencyCard.textContent) || 0;
+                        if (oldLatency !== newLatency) {
+                            latencyCard.classList.add('count-animate');
+                            setTimeout(() => latencyCard.classList.remove('count-animate'), 500);
+                        }
+                        latencyCard.textContent = newLatency + 'ms';
                     } else {
                         latencyCard.textContent = '--ms';
                     }
                 }
                 
-                // Atualizar card de Visitantes Únicos
+                // Atualizar card de Visitantes Únicos com animação
                 const uniqueIpsToday = data.today.unique_ips;
                 const uniqueIpsElement = document.querySelector('[data-stat="unique-visitors"]');
                 if (uniqueIpsElement) {
+                    const oldValue = parseInt(uniqueIpsElement.textContent.replace(/,/g, '')) || 0;
+                    if (oldValue !== uniqueIpsToday) {
+                        uniqueIpsElement.classList.add('count-animate');
+                        setTimeout(() => uniqueIpsElement.classList.remove('count-animate'), 500);
+                    }
                     uniqueIpsElement.textContent = uniqueIpsToday.toLocaleString();
                 }
                 

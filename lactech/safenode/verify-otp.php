@@ -105,14 +105,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify'])) {
                             SafeNodeHumanVerification::reset();
                         }
                         
+                        // Verificar se há plano selecionado
+                        $selectedPlan = $_SESSION['safenode_register_plan'] ?? null;
+                        
+                        // Criar sessão de login automaticamente
+                        $_SESSION['safenode_logged_in'] = true;
+                        $_SESSION['safenode_username'] = $user['username'];
+                        $_SESSION['safenode_user_id'] = $user['id'];
+                        $_SESSION['safenode_user_email'] = $user['email'];
+                        $_SESSION['safenode_user_full_name'] = $user['full_name'];
+                        $_SESSION['safenode_user_role'] = $user['role'];
+                        
                         // Limpar sessão de registro
-                        unset($_SESSION['safenode_register_user_id']);
-                        unset($_SESSION['safenode_register_email']);
+                        unset($_SESSION['safenode_register_user_id'], $_SESSION['safenode_register_email'], $_SESSION['safenode_register_plan']);
                         
-                        $success = 'Email verificado com sucesso! Você pode fazer login agora.';
-                        
-                        // Redirecionar para login após 2 segundos
-                        header('Refresh: 2; url=login.php');
+                        // Redirecionar para checkout se houver plano, senão para dashboard
+                        if ($selectedPlan) {
+                            header('Location: checkout.php?plan=' . urlencode($selectedPlan));
+                        } else {
+                            header('Location: dashboard.php');
+                        }
+                        exit;
                     } catch (Exception $e) {
                         $pdo->rollBack();
                         throw $e;

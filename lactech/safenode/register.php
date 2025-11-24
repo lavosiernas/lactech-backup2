@@ -116,6 +116,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         // Desafio usado com sucesso - resetar para próxima página
                         SafeNodeHumanVerification::reset();
                         
+                        // Verificar se há plano selecionado
+                        $selectedPlan = $_GET['plan'] ?? null;
+                        if ($selectedPlan) {
+                            $_SESSION['safenode_register_user_id'] = $userId;
+                            $_SESSION['safenode_register_email'] = $email;
+                            $_SESSION['safenode_register_plan'] = $selectedPlan;
+                        }
+                        
                         // Redirecionar para página de verificação
                         $_SESSION['safenode_register_user_id'] = $userId;
                         $_SESSION['safenode_register_email'] = $email;
@@ -222,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             
             <!-- Header (Mobile Logo) -->
             <div class="md:hidden mb-6 flex items-center gap-2">
-                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-8 h-8">
+                <img src="assets/img/logos (5).png" alt="SafeNode" class="w-8 h-8">
                 <span class="text-xl font-bold text-slate-900">SafeNode</span>
             </div>
 

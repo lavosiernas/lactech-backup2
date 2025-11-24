@@ -490,7 +490,107 @@ foreach ($sites as $site) {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-        .glass-card { background: linear-gradient(180deg, rgba(39, 39, 42, 0.4) 0%, rgba(24, 24, 27, 0.4) 100%); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Glass Components Melhorados */
+        .glass-card { 
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.5) 0%, rgba(24, 24, 27, 0.5) 100%); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.7) 0%, rgba(24, 24, 27, 0.7) 100%);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Site Card Hover */
+        .site-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .site-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Form Inputs Melhorados */
+        .form-input {
+            background: rgba(39, 39, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            background: rgba(39, 39, 42, 0.8);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 20px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* Grid Pattern */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Badge Moderno */
+        .modern-badge {
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .modern-badge:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* Botões Melhorados */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Depth Shadow */
+        .depth-shadow {
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Metric Value Animation */
+        .metric-value {
+            transition: all 0.3s ease;
+        }
+
+        /* Scrollbar Customization for Rules */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 4px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
         
         /* Melhorar quebra de linha para chaves longas */
         #verify_token_dns, #verify_token_file {
@@ -553,103 +653,145 @@ foreach ($sites as $site) {
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
         <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
             <div class="flex items-center gap-4 md:hidden">
-                <button class="text-zinc-400 hover:text-white" data-sidebar-toggle>
+                <button class="text-zinc-400 hover:text-white transition-colors" data-sidebar-toggle>
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
                 <span class="font-bold text-lg text-white">SafeNode</span>
             </div>
-            <div class="hidden md:block">
+            <div class="hidden md:flex md:items-center md:gap-3">
+                <div class="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                <div>
                 <h2 class="text-xl font-bold text-white tracking-tight">Gerenciar Sites</h2>
                 <p class="text-xs text-zinc-400 mt-0.5">Configure e monitore seus domínios protegidos</p>
+                </div>
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-8 z-10">
             <div class="max-w-7xl mx-auto space-y-6">
             <?php if ($message): ?>
-                <div class="mb-6 p-4 rounded-xl <?php echo $messageType === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'; ?> font-semibold flex items-center gap-2">
+                <div class="mb-6 p-4 rounded-xl <?php echo $messageType === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'; ?> font-semibold flex items-center gap-3 animate-fade-in shadow-lg">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 rounded-lg <?php echo $messageType === 'success' ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-red-500/20 border border-red-500/30'; ?> flex items-center justify-center">
                     <i data-lucide="<?php echo $messageType === 'success' ? 'check-circle' : 'alert-circle'; ?>" class="w-5 h-5"></i>
-                    <?php echo htmlspecialchars($message); ?>
+                        </div>
+                    </div>
+                    <p class="flex-1"><?php echo htmlspecialchars($message); ?></p>
                 </div>
             <?php endif; ?>
 
-            <div class="glass-card rounded-xl p-6 mb-6">
+            <!-- Formulário de Adicionar Site - Redesign -->
+            <div class="glass-card rounded-xl p-6 mb-6 relative overflow-hidden animate-fade-in">
+                <!-- Grid pattern -->
+                <div class="absolute inset-0 grid-pattern opacity-30"></div>
+                
+                <!-- Decoração de fundo -->
+                <div class="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+                
+                <div class="relative z-10">
                 <div class="mb-6">
-                    <h3 class="text-xl font-bold text-white mb-2">Adicionar Novo Site</h3>
-                    <p class="text-sm text-zinc-400">Configure um novo domínio para proteção com SafeNode. O sistema irá monitorar e proteger automaticamente contra ameaças.</p>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Adicionar Novo Site</h3>
+                                <p class="text-sm text-zinc-400">Configure um novo domínio para proteção com SafeNode</p>
+                            </div>
+                        </div>
                 </div>
                 
                 <form method="POST" class="space-y-5">
                     <input type="hidden" name="add_site" value="1">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-zinc-300 mb-2">
+                                <label class="block text-sm font-bold text-zinc-300 mb-2">
                                 Domínio <span class="text-red-400">*</span>
                             </label>
-                            <input type="text" name="domain" required placeholder="exemplo.com" pattern="^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                            <p class="mt-1.5 text-xs text-zinc-500">Digite o domínio sem http:// ou https:// (ex: meusite.com.br)</p>
+                                <input type="text" name="domain" required placeholder="exemplo.com" pattern="^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$" class="form-input w-full px-4 py-2.5 rounded-xl text-white">
+                                <p class="mt-1.5 text-xs text-zinc-500 font-medium">Digite o domínio sem http:// ou https://</p>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-semibold text-zinc-300 mb-2">
+                                <label class="block text-sm font-bold text-zinc-300 mb-2">
                                 Nome de Exibição
                             </label>
-                            <input type="text" name="display_name" placeholder="Meu Site Principal" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                            <p class="mt-1.5 text-xs text-zinc-500">Nome amigável para identificar o site no painel</p>
+                                <input type="text" name="display_name" placeholder="Meu Site Principal" class="form-input w-full px-4 py-2.5 rounded-xl text-white">
+                                <p class="mt-1.5 text-xs text-zinc-500 font-medium">Nome amigável para identificar o site</p>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-zinc-300 mb-2">
+                                <label class="block text-sm font-bold text-zinc-300 mb-2">
                                 Cloudflare Zone ID
                             </label>
-                            <input type="text" name="cloudflare_zone_id" placeholder="abc123def456..." class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
-                            <p class="mt-1.5 text-xs text-zinc-500">Opcional: ID da zona no Cloudflare para sincronização automática</p>
+                                <input type="text" name="cloudflare_zone_id" placeholder="abc123def456..." class="form-input w-full px-4 py-2.5 rounded-xl text-white">
+                                <p class="mt-1.5 text-xs text-zinc-500 font-medium">Opcional: ID da zona no Cloudflare</p>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-semibold text-zinc-300 mb-2">
+                                <label class="block text-sm font-bold text-zinc-300 mb-2">
                                 Nível de Segurança
                             </label>
-                            <select name="security_level" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                                <select name="security_level" class="form-input w-full px-4 py-2.5 rounded-xl text-white">
                                 <option value="low">Baixo - Proteção básica</option>
                                 <option value="medium" selected>Médio - Proteção recomendada</option>
                                 <option value="high">Alto - Máxima proteção</option>
                                 <option value="under_attack">Sob Ataque - Modo de emergência</option>
                             </select>
-                            <p class="mt-1.5 text-xs text-zinc-500">Define o nível de rigor na detecção e bloqueio de ameaças</p>
+                                <p class="mt-1.5 text-xs text-zinc-500 font-medium">Define o nível de rigor na detecção</p>
                         </div>
                     </div>
                     
                     <div class="pt-4 border-t border-white/5">
-                        <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-4">
+                            <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/25 rounded-xl p-4 mb-4 relative overflow-hidden">
+                                <!-- Grid pattern -->
+                                <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                                <div class="relative z-10">
                             <div class="flex items-start gap-3">
-                                <i data-lucide="info" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                                        <div class="flex-shrink-0">
+                                            <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                                                <i data-lucide="info" class="w-4 h-4 text-blue-400"></i>
+                                            </div>
+                                        </div>
                                 <div>
-                                    <h4 class="text-sm font-semibold text-blue-400 mb-1">Como funciona?</h4>
-                                    <ul class="text-xs text-zinc-400 space-y-1">
-                                        <li>• O SafeNode monitora todas as requisições ao domínio configurado</li>
-                                        <li>• Detecta automaticamente ameaças como SQL Injection, XSS, Brute Force, etc.</li>
-                                        <li>• Bloqueia IPs maliciosos automaticamente conforme o nível de segurança</li>
-                                        <li>• Integra com Cloudflare para sincronização de bloqueios (se configurado)</li>
-                                        <li>• Gera logs detalhados de todas as atividades de segurança</li>
+                                            <h4 class="text-sm font-bold text-blue-400 mb-2">Como funciona?</h4>
+                                            <ul class="text-xs text-zinc-300 space-y-1.5 font-medium">
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-blue-400 mt-0.5">•</span>
+                                                    <span>Monitora todas as requisições ao domínio configurado</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-blue-400 mt-0.5">•</span>
+                                                    <span>Detecta automaticamente SQL Injection, XSS, Brute Force, etc.</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-blue-400 mt-0.5">•</span>
+                                                    <span>Bloqueia IPs maliciosos automaticamente</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-blue-400 mt-0.5">•</span>
+                                                    <span>Integra com Cloudflare (se configurado)</span>
+                                                </li>
                                     </ul>
+                                        </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="flex items-center gap-3">
-                            <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                                <button type="submit" class="btn-primary px-6 py-2.5 text-white rounded-xl font-bold transition-all flex items-center gap-2">
                                 <i data-lucide="plus" class="w-5 h-5"></i>
                                 Adicionar Site
                             </button>
-                            <button type="reset" class="px-6 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 font-semibold transition-all">
+                                <button type="reset" class="px-6 py-2.5 bg-zinc-800/80 text-zinc-300 rounded-xl hover:bg-zinc-700 hover:border-white/10 border border-white/5 font-semibold transition-all">
                                 Limpar
                             </button>
                         </div>
                     </div>
                 </form>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -669,35 +811,54 @@ foreach ($sites as $site) {
                         $stats = $siteStats[$site['id']] ?? ['total_requests' => 0, 'blocked' => 0, 'unique_ips' => 0, 'high_threats' => 0];
                         $blockPercentage = $stats['total_requests'] > 0 ? round(($stats['blocked'] / $stats['total_requests']) * 100, 1) : 0;
                         ?>
-                        <div class="glass-card rounded-xl p-6 hover:border-blue-500/30 transition-all flex flex-col gap-4">
-                            <div class="flex items-start justify-between mb-4">
+                        <!-- Card de Site - Redesign -->
+                        <div class="glass-card rounded-xl p-6 site-card flex flex-col gap-4 relative overflow-hidden animate-fade-in" style="animation-delay: <?php echo (array_search($site, $sites) * 0.1); ?>s">
+                            <!-- Grid pattern -->
+                            <div class="absolute inset-0 grid-pattern opacity-30"></div>
+                            
+                            <!-- Decoração de fundo -->
+                            <div class="absolute top-0 right-0 w-32 h-32 <?php echo $site['is_active'] ? 'bg-emerald-500/5' : 'bg-zinc-500/5'; ?> rounded-full blur-3xl"></div>
+                            
+                            <div class="relative z-10">
+                            <!-- Header do Card -->
+                            <div class="flex items-start justify-between mb-5">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="p-2 <?php echo $site['is_active'] ? 'bg-emerald-500/15 border-emerald-500/30' : 'bg-zinc-800/60 border-zinc-700/50'; ?> rounded-xl border flex items-center justify-center">
+                                            <i data-lucide="globe" class="w-5 h-5 <?php echo $site['is_active'] ? 'text-emerald-400' : 'text-zinc-500'; ?>"></i>
+                                        </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         <h3 class="text-lg font-bold text-white">
                                             <?php echo htmlspecialchars($site['display_name'] ?: $site['domain']); ?>
                                         </h3>
                                         <?php if ($site['is_active']): ?>
-                                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" title="Site Ativo"></span>
+                                                    <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" title="Site Ativo"></span>
                                         <?php else: ?>
-                                            <span class="w-2 h-2 bg-zinc-500 rounded-full" title="Site Inativo"></span>
+                                                    <span class="w-2.5 h-2.5 bg-zinc-500 rounded-full" title="Site Inativo"></span>
                                         <?php endif; ?>
                                     </div>
                                     <p class="text-sm text-zinc-400 font-mono"><?php echo htmlspecialchars($site['domain']); ?></p>
+                                        </div>
+                                    </div>
                                     
                                     <!-- Verification Status -->
                                     <?php if (!isset($site['verification_status']) || $site['verification_status'] !== 'verified'): ?>
-                                        <div class="mt-2 flex items-center gap-2">
-                                            <span class="text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                                        <div class="mt-3 flex items-center gap-2">
+                                            <span class="modern-badge text-xs text-amber-400 bg-amber-500/15 px-3 py-1.5 rounded-lg border border-amber-500/30 flex items-center gap-1.5">
+                                                <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
                                                 Não Verificado
                                             </span>
-                                            <button type="button" onclick="openVerifyModal(<?php echo htmlspecialchars(json_encode($site), ENT_QUOTES, 'UTF-8'); ?>)" class="text-xs text-blue-400 hover:underline cursor-pointer">
+                                            <button type="button" onclick="openVerifyModal(<?php echo htmlspecialchars(json_encode($site), ENT_QUOTES, 'UTF-8'); ?>)" class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer">
                                                 Verificar Agora
+                                                <i data-lucide="arrow-right" class="w-3 h-3"></i>
                                             </button>
                                         </div>
                                     <?php else: ?>
-                                        <div class="mt-2">
-                                            <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1 w-fit">
-                                                <i data-lucide="check" class="w-3 h-3"></i> Verificado
+                                        <div class="mt-3">
+                                            <span class="modern-badge text-xs text-emerald-400 bg-emerald-500/15 px-3 py-1.5 rounded-lg border border-emerald-500/30 flex items-center gap-1.5 w-fit shadow-lg shadow-emerald-500/20">
+                                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> 
+                                                Verificado
                                             </span>
                                         </div>
                                     <?php endif; ?>
@@ -733,20 +894,20 @@ foreach ($sites as $site) {
                             </div>
 
                             <!-- Status Badges -->
-                        <div class="flex flex-wrap gap-2 mb-4">
-                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg <?php 
-                                    echo $site['cloudflare_status'] === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
-                                        ($site['cloudflare_status'] === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-zinc-800 text-zinc-400 border border-white/5');
+                            <div class="flex flex-wrap gap-2 mb-5">
+                                <span class="modern-badge inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-lg <?php 
+                                    echo $site['cloudflare_status'] === 'active' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 
+                                        ($site['cloudflare_status'] === 'pending' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-zinc-800/60 text-zinc-400 border-zinc-700/50');
                                 ?>">
-                                    <i data-lucide="shield" class="w-3 h-3 mr-1"></i>
+                                    <i data-lucide="shield" class="w-3.5 h-3.5 mr-1.5"></i>
                                     Cloudflare: <?php echo ucfirst($site['cloudflare_status']); ?>
                                 </span>
-                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-lg <?php 
-                                    echo $site['security_level'] === 'high' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 
-                                        ($site['security_level'] === 'medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 
-                                        ($site['security_level'] === 'under_attack' ? 'bg-red-600/20 text-red-300 border border-red-500/30' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'));
+                                <span class="modern-badge inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-lg <?php 
+                                    echo $site['security_level'] === 'high' ? 'bg-red-500/15 text-red-400 border-red-500/30' : 
+                                        ($site['security_level'] === 'medium' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 
+                                        ($site['security_level'] === 'under_attack' ? 'bg-red-600/25 text-red-300 border-red-500/40' : 'bg-blue-500/15 text-blue-400 border-blue-500/30'));
                                 ?>">
-                                    <i data-lucide="lock" class="w-3 h-3 mr-1"></i>
+                                    <i data-lucide="lock" class="w-3.5 h-3.5 mr-1.5"></i>
                                     <?php 
                                         $levelNames = [
                                             'low' => 'Baixo',
@@ -759,32 +920,32 @@ foreach ($sites as $site) {
                                 </span>
                             </div>
 
-                            <!-- Estatísticas 24h -->
-                            <div class="mb-4 pt-4 border-t border-white/5">
-                            <div class="grid grid-cols-3 gap-3 mb-3 text-center">
-                                    <div>
-                                        <p class="text-xs text-zinc-500 mb-1">Requisições</p>
-                                        <p class="text-lg font-bold text-white"><?php echo number_format($stats['total_requests']); ?></p>
+                            <!-- Estatísticas 24h - Redesign -->
+                            <div class="mb-5 pt-5 border-t border-white/5">
+                                <div class="grid grid-cols-3 gap-4 mb-4">
+                                    <div class="text-center p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:border-blue-500/30 transition-all">
+                                        <p class="text-xs text-zinc-500 mb-1.5 font-medium uppercase tracking-wider">Requisições</p>
+                                        <p class="text-xl font-black text-white metric-value"><?php echo number_format($stats['total_requests']); ?></p>
                                     </div>
-                                    <div>
-                                        <p class="text-xs text-zinc-500 mb-1">Bloqueados</p>
-                                        <p class="text-lg font-bold text-red-400"><?php echo number_format($stats['blocked']); ?></p>
+                                    <div class="text-center p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:border-red-500/30 transition-all">
+                                        <p class="text-xs text-zinc-500 mb-1.5 font-medium uppercase tracking-wider">Bloqueados</p>
+                                        <p class="text-xl font-black text-red-400 metric-value"><?php echo number_format($stats['blocked']); ?></p>
                                     </div>
-                                    <div>
-                                        <p class="text-xs text-zinc-500 mb-1">IPs Únicos</p>
-                                        <p class="text-lg font-bold text-white"><?php echo number_format($stats['unique_ips']); ?></p>
+                                    <div class="text-center p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:border-purple-500/30 transition-all">
+                                        <p class="text-xs text-zinc-500 mb-1.5 font-medium uppercase tracking-wider">IPs Únicos</p>
+                                        <p class="text-xl font-black text-white metric-value"><?php echo number_format($stats['unique_ips']); ?></p>
                                     </div>
                                 </div>
                                 <?php if ($stats['total_requests'] > 0): ?>
-                                    <div class="mt-3 pt-3 border-t border-white/5">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="text-xs text-zinc-500">Taxa de Bloqueio</span>
-                                            <span class="text-xs font-semibold <?php echo $blockPercentage > 10 ? 'text-red-400' : ($blockPercentage > 5 ? 'text-amber-400' : 'text-emerald-400'); ?>">
+                                    <div class="mt-4 pt-4 border-t border-white/5">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Taxa de Bloqueio</span>
+                                            <span class="text-sm font-bold <?php echo $blockPercentage > 10 ? 'text-red-400' : ($blockPercentage > 5 ? 'text-amber-400' : 'text-emerald-400'); ?>">
                                                 <?php echo $blockPercentage; ?>%
                                             </span>
                                         </div>
-                                        <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                                            <div class="h-full <?php echo $blockPercentage > 10 ? 'bg-red-500' : ($blockPercentage > 5 ? 'bg-amber-500' : 'bg-emerald-500'); ?>" style="width: <?php echo min(100, $blockPercentage); ?>%"></div>
+                                        <div class="w-full h-2 bg-zinc-800/80 rounded-full overflow-hidden border border-white/5">
+                                            <div class="h-full bg-gradient-to-r <?php echo $blockPercentage > 10 ? 'from-red-500 to-red-600' : ($blockPercentage > 5 ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600'); ?> rounded-full shadow-lg shadow-<?php echo $blockPercentage > 10 ? 'red' : ($blockPercentage > 5 ? 'amber' : 'emerald'); ?>-500/30 transition-all" style="width: <?php echo min(100, $blockPercentage); ?>%"></div>
                                         </div>
                                     </div>
                                 <?php endif; ?>
@@ -796,69 +957,85 @@ foreach ($sites as $site) {
                                 <?php endif; ?>
                             </div>
 
-                            <!-- Features -->
-                            <div class="flex flex-wrap gap-2 mb-4">
+                            <!-- Features - Redesign -->
+                            <div class="flex flex-wrap gap-2 mb-5">
                                 <?php if ($site['auto_block']): ?>
-                                    <span class="inline-flex items-center px-2 py-1 text-xs bg-emerald-500/10 text-emerald-400 rounded-lg font-medium border border-emerald-500/20">
-                                        <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i>
+                                    <span class="modern-badge inline-flex items-center px-3 py-1.5 text-xs bg-emerald-500/15 text-emerald-400 rounded-lg font-bold border border-emerald-500/30">
+                                        <i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1.5"></i>
                                         Auto-Block
                                     </span>
                                 <?php endif; ?>
                                 <?php if ($site['rate_limit_enabled']): ?>
-                                    <span class="inline-flex items-center px-2 py-1 text-xs bg-blue-500/10 text-blue-400 rounded-lg font-medium border border-blue-500/20">
-                                        <i data-lucide="gauge" class="w-3 h-3 mr-1"></i>
+                                    <span class="modern-badge inline-flex items-center px-3 py-1.5 text-xs bg-blue-500/15 text-blue-400 rounded-lg font-bold border border-blue-500/30">
+                                        <i data-lucide="gauge" class="w-3.5 h-3.5 mr-1.5"></i>
                                         Rate Limit
                                     </span>
                                 <?php endif; ?>
                                 <?php if ($site['threat_detection_enabled']): ?>
-                                    <span class="inline-flex items-center px-2 py-1 text-xs bg-purple-500/10 text-purple-400 rounded-lg font-medium border border-purple-500/20">
-                                        <i data-lucide="radar" class="w-3 h-3 mr-1"></i>
+                                    <span class="modern-badge inline-flex items-center px-3 py-1.5 text-xs bg-purple-500/15 text-purple-400 rounded-lg font-bold border border-purple-500/30">
+                                        <i data-lucide="radar" class="w-3.5 h-3.5 mr-1.5"></i>
                                         Threat Detection
                                     </span>
                                 <?php endif; ?>
                             </div>
 
-                        <div class="mb-4">
-                            <form method="POST" class="inline-flex items-center gap-2 text-xs">
+                        <!-- Toggle Geo Allow Only - Redesign -->
+                        <div class="mb-5 pt-5 border-t border-white/5">
+                            <form method="POST" class="inline-flex items-center gap-3">
                                 <input type="hidden" name="toggle_geo_allow_only" value="1">
                                 <input type="hidden" name="site_id" value="<?php echo $site['id']; ?>">
                                 <?php $geoAllow = !empty($site['geo_allow_only']); ?>
-                                <button type="submit" class="px-3 py-1.5 rounded-full border transition-all <?php echo $geoAllow ? 'bg-blue-500/10 text-blue-300 border-blue-500/30' : 'bg-zinc-900/60 text-zinc-300 border-white/10'; ?>">
-                                    <span class="inline-flex w-2 h-2 rounded-full <?php echo $geoAllow ? 'bg-blue-400 animate-pulse' : 'bg-zinc-500'; ?>"></span>
-                                    Somente países autorizados: <?php echo $geoAllow ? 'ATIVO' : 'DESLIGADO'; ?>
+                                <div class="flex items-center gap-2">
+                                    <div class="p-2 bg-blue-500/15 rounded-lg border border-blue-500/25">
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-blue-400"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-white mb-0.5">Somente Países Autorizados</p>
+                                        <p class="text-[10px] text-zinc-500 font-medium">Permitir apenas países na lista</p>
+                                    </div>
+                                </div>
+                                <button type="submit" class="modern-badge px-4 py-2 rounded-xl border transition-all <?php echo $geoAllow ? 'bg-blue-500/15 text-blue-300 border-blue-500/40' : 'bg-zinc-900/60 text-zinc-300 border-white/10'; ?> flex items-center gap-2 hover:scale-105">
+                                    <span class="inline-flex w-2.5 h-2.5 rounded-full <?php echo $geoAllow ? 'bg-blue-400 animate-pulse shadow-lg shadow-blue-400/50' : 'bg-zinc-500'; ?>"></span>
+                                    <span class="font-bold text-xs"><?php echo $geoAllow ? 'ATIVO' : 'DESLIGADO'; ?></span>
                                 </button>
                             </form>
                         </div>
 
-                        <!-- Geo-Blocking -->
-                        <div class="mt-4 pt-4 border-t border-white/5 space-y-3">
-                            <div class="flex items-center justify-between">
+                        <!-- Geo-Blocking - Redesign -->
+                        <div class="mt-5 pt-5 border-t border-white/5 space-y-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="p-2 bg-blue-500/15 rounded-lg border border-blue-500/25">
+                                        <i data-lucide="globe" class="w-4 h-4 text-blue-400"></i>
+                                    </div>
                                 <div>
-                                    <h4 class="text-sm font-semibold text-white">Geo-Blocking</h4>
-                                    <p class="text-xs text-zinc-500">Bloqueie ou permita tráfego por país (código ISO, ex: BR, US).</p>
+                                        <h4 class="text-sm font-bold text-white">Geo-Blocking</h4>
+                                        <p class="text-xs text-zinc-500 font-medium">Bloqueie ou permita tráfego por país</p>
+                                    </div>
                                 </div>
                             </div>
                             <form method="POST" class="grid grid-cols-1 sm:grid-cols-12 gap-2">
                                 <input type="hidden" name="add_geo_rule" value="1">
                                 <input type="hidden" name="site_id" value="<?php echo $site['id']; ?>">
-                                <input type="text" name="country_code" maxlength="2" pattern="[A-Za-z]{2}" placeholder="BR" class="sm:col-span-4 px-3 py-2 rounded-lg bg-zinc-900/60 border border-white/10 text-white text-sm uppercase focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                <select name="geo_action" class="sm:col-span-4 px-3 py-2 rounded-lg bg-zinc-900/60 border border-white/10 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" name="country_code" maxlength="2" pattern="[A-Za-z]{2}" placeholder="BR" class="form-input sm:col-span-4 px-3 py-2.5 rounded-xl text-white text-sm uppercase font-medium" required>
+                                <select name="geo_action" class="form-input sm:col-span-4 px-3 py-2.5 rounded-xl text-white text-sm">
                                     <option value="block">Bloquear</option>
                                     <option value="allow">Permitir</option>
                                 </select>
-                                <button type="submit" class="sm:col-span-4 px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg hover:bg-zinc-700 text-sm font-semibold transition-all w-full">Adicionar</button>
+                                <button type="submit" class="sm:col-span-4 px-4 py-2.5 bg-zinc-800/80 text-zinc-200 rounded-xl hover:bg-zinc-700 hover:border-white/10 border border-white/5 text-sm font-bold transition-all w-full">Adicionar</button>
                             </form>
                             <div class="flex flex-wrap gap-2">
                                 <?php $geoRules = $siteGeoRules[$site['id']] ?? []; ?>
                                 <?php if (empty($geoRules)): ?>
-                                    <span class="text-xs text-zinc-500">Nenhuma regra configurada.</span>
+                                    <span class="text-xs text-zinc-500 font-medium">Nenhuma regra configurada.</span>
                                 <?php else: ?>
                                     <?php foreach ($geoRules as $rule): ?>
-                                        <form method="POST" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border <?php echo $rule['action'] === 'block' ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'; ?>">
+                                        <form method="POST" class="modern-badge inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border <?php echo $rule['action'] === 'block' ? 'bg-red-500/15 text-red-300 border-red-500/30' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'; ?> hover:scale-105 transition-all">
+                                            <i data-lucide="<?php echo $rule['action'] === 'block' ? 'x-circle' : 'check-circle'; ?>" class="w-3.5 h-3.5"></i>
                                             <span><?php echo htmlspecialchars($rule['country_code']); ?> · <?php echo $rule['action'] === 'block' ? 'Bloqueado' : 'Permitido'; ?></span>
                                             <input type="hidden" name="delete_geo_rule" value="1">
                                             <input type="hidden" name="rule_id" value="<?php echo $rule['id']; ?>">
-                                            <button type="submit" class="text-zinc-400 hover:text-white" title="Remover">
+                                            <button type="submit" class="text-zinc-400 hover:text-white transition-colors ml-1" title="Remover">
                                                 <i data-lucide="x" class="w-3 h-3"></i>
                                             </button>
                                         </form>
@@ -867,19 +1044,24 @@ foreach ($sites as $site) {
                             </div>
                         </div>
 
-                        <!-- Firewall Rules -->
-                        <div class="mt-4 pt-4 border-t border-white/5 space-y-3">
-                            <div class="flex items-center justify-between">
+                        <!-- Firewall Rules - Redesign -->
+                        <div class="mt-5 pt-5 border-t border-white/5 space-y-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="p-2 bg-purple-500/15 rounded-lg border border-purple-500/25">
+                                        <i data-lucide="shield" class="w-4 h-4 text-purple-400"></i>
+                                    </div>
                                 <div>
-                                    <h4 class="text-sm font-semibold text-white">Regras Personalizadas (Firewall)</h4>
-                                    <p class="text-xs text-zinc-500">Crie regras por caminho, IP, país ou User-Agent.</p>
+                                        <h4 class="text-sm font-bold text-white">Regras Personalizadas</h4>
+                                        <p class="text-xs text-zinc-500 font-medium">Crie regras por caminho, IP, país ou User-Agent</p>
+                                    </div>
                                 </div>
                             </div>
                             <form method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-2 items-center">
                                 <input type="hidden" name="add_fw_rule" value="1">
                                 <input type="hidden" name="site_id" value="<?php echo $site['id']; ?>">
                                 <div class="lg:col-span-3">
-                                    <select name="match_type" class="w-full px-3 py-2 rounded-lg bg-zinc-900/60 border border-white/10 text-white text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <select name="match_type" class="form-input w-full px-3 py-2.5 rounded-xl text-white text-xs font-medium">
                                         <option value="path_prefix">Path começa com</option>
                                         <option value="ip">IP igual</option>
                                         <option value="country">País (BR, US)</option>
@@ -887,40 +1069,46 @@ foreach ($sites as $site) {
                                     </select>
                                 </div>
                                 <div class="lg:col-span-4">
-                                    <input type="text" name="match_value" placeholder="/admin ou 1.2.3.4" class="w-full px-3 py-2 rounded-lg bg-zinc-900/60 border border-white/10 text-white text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                    <input type="text" name="match_value" placeholder="/admin ou 1.2.3.4" class="form-input w-full px-3 py-2.5 rounded-xl text-white text-xs font-medium" required>
                                 </div>
                                 <div class="lg:col-span-3 grid grid-cols-2 gap-2 w-full">
-                                    <select name="fw_action" class="col-span-1 px-3 py-2 rounded-lg bg-zinc-900/60 border border-white/10 text-white text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <select name="fw_action" class="form-input col-span-1 px-3 py-2.5 rounded-xl text-white text-xs font-medium">
                                         <option value="block">Bloquear</option>
                                         <option value="allow">Permitir</option>
                                         <option value="log">Somente logar</option>
                                     </select>
-                                    <input type="number" name="priority" value="0" class="col-span-1 px-2 py-2 rounded-lg bg-zinc-900/60 border border-white/10 text-white text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500" title="Prioridade (maior primeiro)">
+                                    <input type="number" name="priority" value="0" class="form-input col-span-1 px-2 py-2.5 rounded-xl text-white text-xs font-medium" title="Prioridade (maior primeiro)">
                                 </div>
                                 <div class="lg:col-span-2">
-                                    <button type="submit" class="w-full px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg hover:bg-zinc-700 text-xs font-semibold transition-all">Adicionar Regra</button>
+                                    <button type="submit" class="w-full px-4 py-2.5 bg-zinc-800/80 text-zinc-200 rounded-xl hover:bg-zinc-700 hover:border-white/10 border border-white/5 text-xs font-bold transition-all">Adicionar</button>
                                 </div>
                             </form>
-                            <div class="space-y-1 max-h-32 overflow-y-auto">
+                            <div class="space-y-2 max-h-40 overflow-y-auto">
                                 <?php $fwRules = $siteFirewallRules[$site['id']] ?? []; ?>
                                 <?php if (empty($fwRules)): ?>
-                                    <p class="text-xs text-zinc-500">Nenhuma regra configurada.</p>
+                                    <p class="text-xs text-zinc-500 font-medium">Nenhuma regra configurada.</p>
                                 <?php else: ?>
                                     <?php foreach ($fwRules as $rule): ?>
-                                        <form method="POST" class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-zinc-900/60 border border-white/5 text-xs gap-2">
-                                            <div class="flex flex-col gap-0.5">
-                                                <span class="text-zinc-300 font-medium">
+                                        <form method="POST" class="flex items-center justify-between px-4 py-2.5 rounded-xl bg-zinc-900/60 border border-white/5 hover:border-white/10 text-xs gap-3 transition-all group">
+                                            <div class="flex flex-col gap-1 flex-1">
+                                                <span class="text-zinc-200 font-bold">
                                                     <?php echo htmlspecialchars($rule['match_type'] . ' → ' . $rule['match_value']); ?>
                                                 </span>
-                                                <span class="text-[10px] text-zinc-500">
-                                                    Ação: <?php echo strtoupper($rule['action']); ?> · Prioridade: <?php echo (int)$rule['priority']; ?>
+                                                <div class="flex items-center gap-3">
+                                                    <span class="text-[10px] text-zinc-500 font-medium">
+                                                        Ação: <span class="text-<?php echo $rule['action'] === 'block' ? 'red' : ($rule['action'] === 'allow' ? 'emerald' : 'blue'); ?>-400 font-bold"><?php echo strtoupper($rule['action']); ?></span>
+                                                    </span>
+                                                    <span class="text-[10px] text-zinc-500 font-medium">·</span>
+                                                    <span class="text-[10px] text-zinc-500 font-medium">
+                                                        Prioridade: <span class="text-white font-bold"><?php echo (int)$rule['priority']; ?></span>
                                                 </span>
+                                                </div>
                                             </div>
                                             <div class="flex items-center gap-2">
                                                 <input type="hidden" name="delete_fw_rule" value="1">
                                                 <input type="hidden" name="rule_id" value="<?php echo $rule['id']; ?>">
-                                                <button type="submit" class="text-zinc-500 hover:text-red-400" title="Remover">
-                                                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                                <button type="submit" class="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="Remover">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                 </button>
                                             </div>
                                         </form>
@@ -929,9 +1117,9 @@ foreach ($sites as $site) {
                             </div>
                         </div>
 
-                            <!-- Actions -->
-                            <div class="flex gap-2 pt-4 border-t border-white/5">
-                                <form method="POST" class="inline" onsubmit="return confirm('Deseja realmente <?php echo $site['is_active'] ? 'desativar' : 'ativar'; ?> este site?');">
+                            <!-- Actions - Redesign -->
+                            <div class="flex gap-2 pt-5 border-t border-white/5">
+                                <form method="POST" class="inline flex-1" onsubmit="return confirm('Deseja realmente <?php echo $site['is_active'] ? 'desativar' : 'ativar'; ?> este site?');">
                                     <input type="hidden" name="site_id" value="<?php echo $site['id']; ?>">
                                     <input type="hidden" name="update_site" value="1">
                                     <input type="hidden" name="display_name" value="<?php echo htmlspecialchars($site['display_name'] ?? ''); ?>">
@@ -941,22 +1129,23 @@ foreach ($sites as $site) {
                                     <input type="hidden" name="rate_limit_enabled" value="<?php echo $site['rate_limit_enabled'] ? '1' : '0'; ?>">
                                     <input type="hidden" name="threat_detection_enabled" value="<?php echo $site['threat_detection_enabled'] ? '1' : '0'; ?>">
                                     <input type="hidden" name="is_active" value="<?php echo $site['is_active'] ? '0' : '1'; ?>">
-                                    <button type="submit" class="flex-1 px-3 py-2 <?php echo $site['is_active'] ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20'; ?> rounded-xl font-semibold text-sm transition-all">
-                                        <i data-lucide="<?php echo $site['is_active'] ? 'pause' : 'play'; ?>" class="w-4 h-4 inline mr-1"></i>
+                                    <button type="submit" class="w-full px-4 py-2.5 <?php echo $site['is_active'] ? 'bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 border-amber-500/30' : 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border-emerald-500/30'; ?> rounded-xl font-bold text-sm transition-all border hover:scale-105">
+                                        <i data-lucide="<?php echo $site['is_active'] ? 'pause' : 'play'; ?>" class="w-4 h-4 inline mr-1.5"></i>
                                         <?php echo $site['is_active'] ? 'Desativar' : 'Ativar'; ?>
                                     </button>
                                 </form>
-                                <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($site)); ?>)" class="flex-1 px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 font-semibold text-sm transition-all">
-                                    <i data-lucide="edit" class="w-4 h-4 inline mr-1"></i>
+                                <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($site)); ?>)" class="flex-1 px-4 py-2.5 bg-zinc-800/80 text-zinc-300 rounded-xl hover:bg-zinc-700 hover:border-white/10 border border-white/5 font-bold text-sm transition-all hover:scale-105">
+                                    <i data-lucide="edit" class="w-4 h-4 inline mr-1.5"></i>
                                     Editar
                                 </button>
                                 <form method="POST" class="inline" onsubmit="return confirm('Deseja realmente remover este site? Esta ação não pode ser desfeita.');">
                                     <input type="hidden" name="site_id" value="<?php echo $site['id']; ?>">
                                     <input type="hidden" name="delete_site" value="1">
-                                    <button type="submit" class="px-4 py-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 font-semibold text-sm transition-all border border-red-500/20">
+                                    <button type="submit" class="px-4 py-2.5 bg-red-500/15 text-red-400 rounded-xl hover:bg-red-500/25 font-bold text-sm transition-all border border-red-500/30 hover:scale-105">
                                         <i data-lucide="trash-2" class="w-4 h-4 inline"></i>
                                     </button>
                                 </form>
+                            </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -965,12 +1154,24 @@ foreach ($sites as $site) {
         </div>
     </main>
 
-    <!-- Verify Modal -->
-    <div id="verifyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="glass-card rounded-2xl p-4 sm:p-6 max-w-2xl w-full mx-auto my-4 border border-white/10">
-            <div class="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 class="text-lg sm:text-xl font-bold text-white">Verificar Domínio</h3>
-                <button onclick="closeVerifyModal()" class="text-zinc-400 hover:text-white transition-colors flex-shrink-0">
+    <!-- Verify Modal - Redesign -->
+    <div id="verifyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto">
+        <div class="glass-card rounded-2xl p-4 sm:p-6 max-w-2xl w-full mx-auto my-4 border border-white/10 relative overflow-hidden depth-shadow animate-fade-in">
+            <!-- Grid pattern -->
+            <div class="absolute inset-0 grid-pattern opacity-20"></div>
+            
+            <!-- Decoração de fundo -->
+            <div class="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-blue-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Verificar Domínio</h3>
+                    </div>
+                    <button onclick="closeVerifyModal()" class="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all flex-shrink-0">
                     <i data-lucide="x" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                 </button>
             </div>
@@ -979,24 +1180,35 @@ foreach ($sites as $site) {
                 <p class="text-xs sm:text-sm text-zinc-400 mb-4">Para provar que você possui <span id="verify_domain_name" class="text-white font-bold break-all"></span>, por favor adicione um dos seguintes registros:</p>
                 
                 <div class="space-y-3 sm:space-y-4">
-                    <!-- Método 1: DNS TXT -->
-                    <div class="bg-zinc-900/50 rounded-lg p-3 sm:p-4 border border-white/5">
-                        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
-                            <h4 class="text-xs sm:text-sm font-semibold text-white">Método 1: Registro DNS TXT</h4>
-                            <button onclick="copyVerificationToken('dns')" class="text-zinc-400 hover:text-blue-400 transition-colors flex items-center gap-1 text-xs flex-shrink-0" title="Copiar">
+                    <!-- Método 1: DNS TXT - Redesign -->
+                    <div class="bg-gradient-to-br from-zinc-900/80 to-zinc-900/60 rounded-xl p-4 border border-blue-500/20 relative overflow-hidden">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="p-1.5 bg-blue-500/15 rounded-lg border border-blue-500/25">
+                                        <i data-lucide="server" class="w-4 h-4 text-blue-400"></i>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-white">Método 1: Registro DNS TXT</h4>
+                                </div>
+                                <button onclick="copyVerificationToken('dns')" class="modern-badge text-zinc-300 hover:text-blue-400 bg-zinc-800/60 hover:bg-zinc-800/80 transition-all flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/5" title="Copiar">
                                 <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                                <span class="hidden sm:inline">Copiar</span>
+                                    <span class="hidden sm:inline font-semibold">Copiar</span>
                             </button>
                         </div>
-                        <div class="bg-black p-2.5 sm:p-3 rounded border border-white/10 overflow-x-auto">
-                            <code class="text-[9px] sm:text-xs font-mono block break-all leading-relaxed">
+                            <div class="bg-black/80 p-4 rounded-xl border border-white/10 overflow-x-auto">
+                                <code class="text-xs font-mono block break-all leading-relaxed">
                                 <span class="text-zinc-400 inline">safenode-verification=</span>
-                                <span id="verify_token_dns" class="text-blue-400 break-all inline word-break-all"></span>
+                                    <span id="verify_token_dns" class="text-blue-400 break-all inline word-break-all font-bold"></span>
                             </code>
                         </div>
-                        <div class="mt-2 p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                            <p class="text-xs text-blue-400 font-semibold mb-1.5 flex items-center gap-1.5">
+                            <div class="mt-3 p-3 bg-blue-500/10 border border-blue-500/25 rounded-xl">
+                                <p class="text-xs text-blue-400 font-bold mb-2 flex items-center gap-2">
+                                    <div class="w-5 h-5 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
                                 <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                                    </div>
                                 Onde adicionar? (Cloudflare)
                             </p>
                             <div class="text-xs text-zinc-400 space-y-2">
@@ -1021,18 +1233,28 @@ foreach ($sites as $site) {
                         </div>
                     </div>
 
-                    <!-- Método 2: Arquivo HTML -->
-                    <div class="bg-zinc-900/50 rounded-lg p-3 sm:p-4 border border-white/5">
-                        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
-                            <h4 class="text-xs sm:text-sm font-semibold text-white">Método 2: Arquivo HTML</h4>
-                            <button onclick="copyVerificationToken('file')" class="text-zinc-400 hover:text-blue-400 transition-colors flex items-center gap-1 text-xs flex-shrink-0" title="Copiar">
+                    <!-- Método 2: Arquivo HTML - Redesign -->
+                    <div class="bg-gradient-to-br from-zinc-900/80 to-zinc-900/60 rounded-xl p-4 border border-blue-500/20 relative overflow-hidden">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="p-1.5 bg-blue-500/15 rounded-lg border border-blue-500/25">
+                                        <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-white">Método 2: Arquivo HTML</h4>
+                                </div>
+                                <button onclick="copyVerificationToken('file')" class="modern-badge text-zinc-300 hover:text-blue-400 bg-zinc-800/60 hover:bg-zinc-800/80 transition-all flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/5" title="Copiar">
                                 <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                                <span class="hidden sm:inline">Copiar</span>
+                                    <span class="hidden sm:inline font-semibold">Copiar</span>
                             </button>
                         </div>
-                        <p class="text-xs text-zinc-400 mb-2">Crie um arquivo chamado <code class="text-blue-400 break-all inline">safenode-verification.txt</code> na raiz do seu site com o seguinte conteúdo:</p>
-                        <div class="bg-black p-2.5 sm:p-3 rounded border border-white/10 overflow-x-auto">
-                            <code id="verify_token_file" class="text-[9px] sm:text-xs font-mono text-blue-400 break-all block word-break-all whitespace-normal leading-relaxed"></code>
+                            <p class="text-xs text-zinc-400 mb-3 font-medium">Crie um arquivo chamado <code class="text-blue-400 break-all inline bg-black/50 px-1.5 py-0.5 rounded border border-blue-500/30">safenode-verification.txt</code> na raiz do seu site:</p>
+                            <div class="bg-black/80 p-4 rounded-xl border border-white/10 overflow-x-auto">
+                                <code id="verify_token_file" class="text-xs font-mono text-blue-400 break-all block word-break-all whitespace-normal leading-relaxed font-bold"></code>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1041,24 +1263,38 @@ foreach ($sites as $site) {
             <form method="POST">
                 <input type="hidden" name="verify_site" value="1">
                 <input type="hidden" name="site_id" id="verify_site_id">
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <button type="button" onclick="closeVerifyModal()" class="w-full sm:flex-1 px-4 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 font-semibold transition-all text-sm">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button type="button" onclick="closeVerifyModal()" class="w-full sm:flex-1 px-5 py-3 bg-zinc-800/80 text-zinc-300 rounded-xl hover:bg-zinc-700 hover:border-white/10 border border-white/5 font-bold transition-all text-sm">
                         Cancelar
                     </button>
-                    <button type="submit" class="w-full sm:flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold transition-all text-sm">
+                    <button type="submit" class="btn-primary w-full sm:flex-1 px-5 py-3 text-white rounded-xl font-bold transition-all text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
                         Verificar Agora
                     </button>
                 </div>
             </form>
+            </div>
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div id="siteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="glass-card rounded-2xl p-6 max-w-lg w-full mx-4 border border-white/10">
+    <!-- Edit Modal - Redesign -->
+    <div id="siteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 backdrop-blur-md">
+        <div class="glass-card rounded-2xl p-6 max-w-lg w-full mx-4 border border-white/10 relative overflow-hidden depth-shadow animate-fade-in">
+            <!-- Grid pattern -->
+            <div class="absolute inset-0 grid-pattern opacity-20"></div>
+            
+            <!-- Decoração de fundo -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10">
             <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center">
+                            <i data-lucide="edit" class="w-5 h-5 text-blue-400"></i>
+                        </div>
                 <h3 class="text-xl font-bold text-white">Editar Site</h3>
-                <button onclick="closeModal()" class="text-zinc-400 hover:text-white transition-colors">
+                    </div>
+                    <button onclick="closeModal()" class="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -1067,21 +1303,21 @@ foreach ($sites as $site) {
                 <input type="hidden" name="update_site" value="1">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-300 mb-2">Domínio</label>
-                        <input type="text" id="domain" disabled class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-zinc-400">
-                        <p class="mt-1.5 text-xs text-zinc-500">O domínio não pode ser alterado após criação</p>
+                            <label class="block text-sm font-bold text-zinc-300 mb-2">Domínio</label>
+                            <input type="text" id="domain" disabled class="form-input w-full px-4 py-2.5 rounded-xl text-zinc-400 opacity-60">
+                            <p class="mt-1.5 text-xs text-zinc-500 font-medium">O domínio não pode ser alterado após criação</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-300 mb-2">Nome de Exibição</label>
-                        <input type="text" name="display_name" id="display_name" placeholder="Meu Site" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            <label class="block text-sm font-bold text-zinc-300 mb-2">Nome de Exibição</label>
+                            <input type="text" name="display_name" id="display_name" placeholder="Meu Site" class="form-input w-full px-4 py-2.5 rounded-xl text-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-300 mb-2">Cloudflare Zone ID</label>
-                        <input type="text" name="cloudflare_zone_id" id="cloudflare_zone_id" placeholder="Opcional" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            <label class="block text-sm font-bold text-zinc-300 mb-2">Cloudflare Zone ID</label>
+                            <input type="text" name="cloudflare_zone_id" id="cloudflare_zone_id" placeholder="Opcional" class="form-input w-full px-4 py-2.5 rounded-xl text-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-zinc-300 mb-2">Nível de Segurança</label>
-                        <select name="security_level" id="security_level" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                            <label class="block text-sm font-bold text-zinc-300 mb-2">Nível de Segurança</label>
+                            <select name="security_level" id="security_level" class="form-input w-full px-4 py-2.5 rounded-xl text-white">
                             <option value="low">Baixo - Proteção básica</option>
                             <option value="medium">Médio - Proteção recomendada</option>
                             <option value="high">Alto - Máxima proteção</option>
@@ -1089,29 +1325,30 @@ foreach ($sites as $site) {
                         </select>
                     </div>
                     <div class="space-y-3 pt-2">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="auto_block" id="auto_block" class="w-4 h-4 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
-                            <label for="auto_block" class="text-sm font-medium text-zinc-300">Bloqueio Automático</label>
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:border-white/10 transition-all">
+                                <input type="checkbox" name="auto_block" id="auto_block" class="w-5 h-5 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
+                                <label for="auto_block" class="text-sm font-semibold text-zinc-300 cursor-pointer">Bloqueio Automático</label>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="rate_limit_enabled" id="rate_limit_enabled" class="w-4 h-4 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
-                            <label for="rate_limit_enabled" class="text-sm font-medium text-zinc-300">Rate Limiting</label>
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:border-white/10 transition-all">
+                                <input type="checkbox" name="rate_limit_enabled" id="rate_limit_enabled" class="w-5 h-5 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
+                                <label for="rate_limit_enabled" class="text-sm font-semibold text-zinc-300 cursor-pointer">Rate Limiting</label>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="threat_detection_enabled" id="threat_detection_enabled" class="w-4 h-4 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
-                            <label for="threat_detection_enabled" class="text-sm font-medium text-zinc-300">Detecção de Ameaças</label>
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:border-white/10 transition-all">
+                                <input type="checkbox" name="threat_detection_enabled" id="threat_detection_enabled" class="w-5 h-5 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
+                                <label for="threat_detection_enabled" class="text-sm font-semibold text-zinc-300 cursor-pointer">Detecção de Ameaças</label>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="is_active" id="is_active" class="w-4 h-4 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
-                            <label for="is_active" class="text-sm font-medium text-zinc-300">Site Ativo</label>
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/40 border border-white/5 hover:border-white/10 transition-all">
+                                <input type="checkbox" name="is_active" id="is_active" class="w-5 h-5 text-blue-600 bg-zinc-800 border-white/10 rounded focus:ring-blue-500">
+                                <label for="is_active" class="text-sm font-semibold text-zinc-300 cursor-pointer">Site Ativo</label>
                         </div>
                     </div>
                 </div>
-                <div class="flex gap-3 mt-6">
-                    <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 font-semibold transition-all">
+                    <div class="flex gap-3 mt-6 pt-5 border-t border-white/5">
+                        <button type="button" onclick="closeModal()" class="flex-1 px-5 py-3 bg-zinc-800/80 text-zinc-300 rounded-xl hover:bg-zinc-700 hover:border-white/10 border border-white/5 font-bold transition-all">
                         Cancelar
                     </button>
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold transition-all">
+                        <button type="submit" class="btn-primary flex-1 px-5 py-3 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
                         Salvar Alterações
                     </button>
                 </div>

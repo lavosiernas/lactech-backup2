@@ -305,7 +305,7 @@ $clientCountry    = (function () {
             
             <!-- Header (Mobile Logo) -->
             <div class="md:hidden mb-8 flex items-center gap-2">
-                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-8 h-8">
+                <img src="assets/img/logos (5).png" alt="SafeNode" class="w-8 h-8">
                 <span class="text-xl font-bold text-slate-900">SafeNode</span>
             </div>
 

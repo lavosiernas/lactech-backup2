@@ -134,7 +134,85 @@ if ($db && !isset($schemaError)) {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-        .glass-card { background: linear-gradient(180deg, rgba(39, 39, 42, 0.4) 0%, rgba(24, 24, 27, 0.4) 100%); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Glass Components Melhorados */
+        .glass-card { 
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.5) 0%, rgba(24, 24, 27, 0.5) 100%); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.7) 0%, rgba(24, 24, 27, 0.7) 100%);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Grid Pattern */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Badge Moderno */
+        .modern-badge {
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .modern-badge:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* Tabela Melhorada */
+        .table-row {
+            transition: all 0.2s;
+        }
+        .table-row:hover {
+            background: rgba(255, 255, 255, 0.03) !important;
+            transform: translateX(2px);
+        }
+
+        /* Filter Tabs */
+        .filter-tab {
+            transition: all 0.3s;
+        }
+        .filter-tab.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        }
+        .filter-tab:not(.active):hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Depth Shadow */
+        .depth-shadow {
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Status Pulse */
+        .status-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex">
@@ -142,72 +220,125 @@ if ($db && !isset($schemaError)) {
 
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
         <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
+            <div class="hidden md:flex md:items-center md:gap-3">
+                <div class="w-0.5 h-6 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></div>
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Incidentes de Segurança</h2>
+                    <p class="text-xs text-zinc-400 mt-0.5 font-medium">Agrupamento de múltiplos eventos em incidentes analisáveis</p>
+                </div>
+            </div>
             <div class="flex items-center gap-4 md:hidden">
-                <button class="text-zinc-400 hover:text-white" data-sidebar-toggle>
+                <button class="text-zinc-400 hover:text-white transition-colors" data-sidebar-toggle>
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
                 <span class="font-bold text-lg text-white">SafeNode</span>
-            </div>
-            <div class="hidden md:block">
-                <h2 class="text-xl font-bold text-white tracking-tight">Incidentes de Segurança</h2>
-                <p class="text-xs text-zinc-400 mt-0.5">Agrupamento de múltiplos eventos em incidentes analisáveis</p>
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-8 z-10">
             <div class="max-w-7xl mx-auto space-y-6">
                 
                 <?php if (isset($schemaError)): ?>
-                    <div class="glass-card rounded-xl p-8 border-2 border-red-500/30 bg-gradient-to-br from-red-950/20 to-red-900/10">
+                    <!-- Erro de Schema - Redesign -->
+                    <div class="glass-card rounded-xl p-8 border-2 border-red-500/30 bg-gradient-to-br from-red-950/20 to-red-900/10 relative overflow-hidden animate-fade-in depth-shadow">
+                        <!-- Grid pattern -->
+                        <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                        
+                        <!-- Decoração de fundo -->
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-red-500/10 rounded-full blur-3xl"></div>
+                        
+                        <div class="relative z-10">
                         <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <div class="w-12 h-12 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="alert-circle" class="w-6 h-6 text-red-400"></i>
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-xl font-bold text-white mb-2">❌ Erro de Banco de Dados</h3>
                                 <p class="text-sm text-red-300 mb-4 font-semibold"><?php echo htmlspecialchars($schemaError); ?></p>
-                                <div class="bg-zinc-900/50 rounded-lg p-4 border border-white/5 mb-4">
-                                    <p class="text-xs text-zinc-400 mb-2">
-                                        <strong class="text-white">Solução:</strong> Importe o arquivo <code class="px-2 py-1 bg-black/50 rounded text-yellow-300 font-mono">safend (1).sql</code> 
-                                        mais recente no phpMyAdmin da Hostinger para criar/atualizar a tabela <code class="px-2 py-1 bg-black/50 rounded text-blue-300 font-mono">safenode_incidents</code>.
+                                    <div class="bg-zinc-900/60 rounded-xl p-4 border border-white/10 mb-4">
+                                        <p class="text-xs text-zinc-400 mb-2 font-medium">
+                                            <strong class="text-white">Solução:</strong> Importe o arquivo <code class="px-2 py-1 bg-black/50 rounded text-yellow-300 font-mono font-bold">safend (1).sql</code> 
+                                            mais recente no phpMyAdmin da Hostinger para criar/atualizar a tabela <code class="px-2 py-1 bg-black/50 rounded text-blue-300 font-mono font-bold">safenode_incidents</code>.
                                     </p>
                                 </div>
                                 <div class="flex gap-3">
-                                    <a href="dashboard.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-all">
+                                        <a href="dashboard.php" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black font-bold text-sm hover:bg-zinc-200 transition-all shadow-lg">
                                         <i data-lucide="home" class="w-4 h-4"></i>
                                         Voltar ao Dashboard
                                     </a>
-                                    <a href="?retry=1" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 text-white font-semibold text-sm hover:bg-zinc-700 transition-all border border-white/10">
+                                        <a href="?retry=1" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-800/80 text-white font-bold text-sm hover:bg-zinc-700 hover:border-white/10 border border-white/10 transition-all">
                                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                                         Tentar Novamente
                                     </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 <?php else: ?>
                 
-                <div class="glass-card rounded-xl p-6 mb-6">
-                    <div class="flex items-center justify-between">
+                <!-- Visão de Incidentes - Redesign -->
+                <div class="glass-card rounded-xl p-6 mb-6 relative overflow-hidden animate-fade-in depth-shadow">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                    
+                    <!-- Decoração de fundo -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-orange-500/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center">
+                                    <i data-lucide="alert-triangle" class="w-6 h-6 text-orange-400"></i>
+                                </div>
                         <div>
                             <h3 class="text-lg font-bold text-white tracking-tight">Visão de Incidentes</h3>
-                            <p class="text-xs text-zinc-500 mt-1">Cada incidente representa uma sequência de ataques relacionados</p>
+                                    <p class="text-xs text-zinc-400 mt-1 font-medium">Cada incidente representa uma sequência de ataques relacionados</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="inline-flex rounded-xl bg-zinc-900 border border-white/10 p-1 text-xs">
-                            <a href="?status=open" class="px-3 py-1 rounded-lg <?php echo $statusFilter === 'open' ? 'bg-blue-600 text-white' : 'text-zinc-300 hover:bg-zinc-800'; ?> transition-all">Abertos</a>
-                            <a href="?status=resolved" class="px-3 py-1 rounded-lg <?php echo $statusFilter === 'resolved' ? 'bg-blue-600 text-white' : 'text-zinc-300 hover:bg-zinc-800'; ?> transition-all">Resolvidos</a>
-                            <a href="?status=all" class="px-3 py-1 rounded-lg <?php echo $statusFilter === 'all' ? 'bg-blue-600 text-white' : 'text-zinc-300 hover:bg-zinc-800'; ?> transition-all">Todos</a>
+                        <div class="inline-flex rounded-xl bg-zinc-900/60 border border-white/10 p-1 text-xs font-bold">
+                            <a href="?status=open" class="filter-tab px-4 py-2 rounded-lg <?php echo $statusFilter === 'open' ? 'active text-white' : 'text-zinc-300'; ?> transition-all">
+                                <i data-lucide="alert-circle" class="w-3.5 h-3.5 inline mr-1.5"></i>
+                                Abertos
+                            </a>
+                            <a href="?status=resolved" class="filter-tab px-4 py-2 rounded-lg <?php echo $statusFilter === 'resolved' ? 'active text-white' : 'text-zinc-300'; ?> transition-all">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5 inline mr-1.5"></i>
+                                Resolvidos
+                            </a>
+                            <a href="?status=all" class="filter-tab px-4 py-2 rounded-lg <?php echo $statusFilter === 'all' ? 'active text-white' : 'text-zinc-300'; ?> transition-all">
+                                <i data-lucide="layout-list" class="w-3.5 h-3.5 inline mr-1.5"></i>
+                                Todos
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <div class="glass-card rounded-xl overflow-hidden">
-                    <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                <!-- Lista de Incidentes - Redesign -->
+                <div class="glass-card rounded-xl overflow-hidden relative animate-fade-in depth-shadow" style="animation-delay: 0.1s">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                    
+                    <!-- Decoração de fundo -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-red-500/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="p-6 border-b border-white/5 bg-zinc-900/30 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                                    <i data-lucide="shield-alert" class="w-6 h-6 text-red-400"></i>
+                                </div>
+                                <div>
                         <h3 class="font-bold text-white text-lg">Lista de Incidentes</h3>
-                        <span class="text-xs text-zinc-400">Mostrando até 200 incidentes mais recentes</span>
+                                    <p class="text-xs text-zinc-400 mt-0.5 font-medium">Mostrando até 200 incidentes mais recentes</p>
+                                </div>
+                            </div>
+                            <span class="modern-badge px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+                                <?php echo count($incidents); ?> incidente(s)
+                            </span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left">
-                            <thead class="bg-zinc-900/50 text-zinc-400 font-medium uppercase text-xs tracking-wider">
+                                <thead class="bg-zinc-900/50 text-zinc-400 font-bold uppercase text-xs tracking-wider border-b border-white/5">
                                 <tr>
                                     <th class="px-6 py-4">Status</th>
                                     <th class="px-6 py-4">IP</th>
@@ -218,7 +349,7 @@ if ($db && !isset($schemaError)) {
                                     <th class="px-6 py-4">Maior Score</th>
                                     <th class="px-6 py-4">Primeiro</th>
                                     <th class="px-6 py-4">Último</th>
-                                    <th class="px-6 py-4">Ações</th>
+                                        <th class="px-6 py-4 text-right">Ações</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5">
@@ -226,69 +357,97 @@ if ($db && !isset($schemaError)) {
                                     <tr>
                                         <td colspan="10">
                                             <div class="p-12 text-center">
-                                                <div class="w-16 h-16 bg-zinc-900 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                    <i data-lucide="shield" class="w-8 h-8 text-zinc-500"></i>
+                                                    <div class="w-16 h-16 bg-zinc-900/60 rounded-xl border border-white/5 flex items-center justify-center mx-auto mb-4">
+                                                        <i data-lucide="shield" class="w-8 h-8 text-emerald-400"></i>
                                                 </div>
-                                                <p class="text-sm text-zinc-400 font-medium">Nenhum incidente encontrado</p>
-                                                <p class="text-xs text-zinc-500 mt-1">Quando o SafeNode detectar múltiplos eventos relacionados, eles aparecerão aqui.</p>
+                                                    <p class="text-sm text-zinc-300 font-bold mb-1">Nenhum incidente encontrado</p>
+                                                    <p class="text-xs text-zinc-500 font-medium">Quando o SafeNode detectar múltiplos eventos relacionados, eles aparecerão aqui.</p>
                                             </div>
                                         </td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($incidents as $incident): ?>
-                                        <tr class="hover:bg-white/[0.02] transition-colors">
+                                            <tr class="table-row group">
                                             <td class="px-6 py-4">
                                                 <?php if ($incident['status'] === 'open'): ?>
-                                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
-                                                        <span class="w-1.5 h-1.5 rounded-full bg-red-400 mr-1 animate-pulse"></span>
+                                                        <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+                                                            <span class="w-2 h-2 rounded-full bg-red-400 status-pulse shadow-lg shadow-red-400/50"></span>
                                                         Aberto
                                                     </span>
                                                 <?php else: ?>
-                                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400 border border-white/5">
+                                                        <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-zinc-800/60 text-zinc-400 border border-white/10">
+                                                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                                                         Resolvido
                                                     </span>
                                                 <?php endif; ?>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <span class="text-sm font-semibold text-white font-mono"><?php echo htmlspecialchars($incident['ip_address']); ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="network" class="w-4 h-4 text-zinc-500"></i>
+                                                        <span class="text-sm font-bold text-white font-mono"><?php echo htmlspecialchars($incident['ip_address']); ?></span>
+                                                    </div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-300 border border-white/5">
+                                                    <span class="modern-badge inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-zinc-800/60 text-zinc-300 border border-white/10">
+                                                        <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
                                                     <?php echo strtoupper(str_replace('_', ' ', htmlspecialchars($incident['threat_type'] ?? 'unknown'))); ?>
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <span class="text-xs text-zinc-400 font-mono"><?php echo htmlspecialchars($incident['site_domain'] ?? '-'); ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="globe" class="w-4 h-4 text-zinc-500"></i>
+                                                        <span class="text-xs text-zinc-400 font-mono font-medium"><?php echo htmlspecialchars($incident['site_domain'] ?? '-'); ?></span>
+                                                    </div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <span class="text-sm text-zinc-200 font-semibold"><?php echo (int)$incident['total_events']; ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i>
+                                                        <span class="text-sm text-zinc-200 font-bold"><?php echo (int)$incident['total_events']; ?></span>
+                                                    </div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <span class="text-sm <?php echo $incident['critical_events'] > 0 ? 'text-red-400 font-semibold' : 'text-zinc-400'; ?>">
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="alert-triangle" class="w-4 h-4 <?php echo $incident['critical_events'] > 0 ? 'text-red-400' : 'text-zinc-500'; ?>"></i>
+                                                        <span class="text-sm <?php echo $incident['critical_events'] > 0 ? 'text-red-400 font-bold' : 'text-zinc-400 font-semibold'; ?>">
                                                     <?php echo (int)$incident['critical_events']; ?>
                                                 </span>
+                                                    </div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <span class="text-sm text-zinc-200 font-mono"><?php echo (int)$incident['highest_score']; ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-12 h-1.5 bg-zinc-800 rounded-full overflow-hidden border border-white/5">
+                                                            <div class="h-full bg-gradient-to-r <?php 
+                                                                echo $incident['highest_score'] >= 70 ? 'from-red-500 to-red-600' : 
+                                                                    ($incident['highest_score'] >= 40 ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600');
+                                                            ?> rounded-full shadow-lg" style="width: <?php echo min(100, $incident['highest_score']); ?>%"></div>
+                                                        </div>
+                                                        <span class="text-sm text-zinc-200 font-mono font-bold"><?php echo (int)$incident['highest_score']; ?></span>
+                                                    </div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <span class="text-xs text-zinc-400 font-mono"><?php echo date('d/m/Y H:i:s', strtotime($incident['first_seen'])); ?></span>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <span class="text-xs text-zinc-400 font-mono"><?php echo date('d/m/Y H:i:s', strtotime($incident['last_seen'])); ?></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <i data-lucide="clock" class="w-4 h-4 text-zinc-500"></i>
+                                                        <span class="text-xs text-zinc-400 font-mono font-semibold"><?php echo date('d/m/Y H:i:s', strtotime($incident['first_seen'])); ?></span>
+                                                    </div>
                                             </td>
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center gap-2">
-                                                    <a href="logs.php?<?php echo http_build_query(['ip' => $incident['ip_address'], 'threat_type' => $incident['threat_type']]); ?>" class="text-blue-400 hover:text-blue-300 text-xs font-semibold">
+                                                        <i data-lucide="clock" class="w-4 h-4 text-zinc-500"></i>
+                                                        <span class="text-xs text-zinc-400 font-mono font-semibold"><?php echo date('d/m/Y H:i:s', strtotime($incident['last_seen'])); ?></span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 text-right">
+                                                    <a href="logs.php?<?php echo http_build_query(['ip' => $incident['ip_address'], 'threat_type' => $incident['threat_type']]); ?>" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/30 transition-all">
+                                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                                                         Ver logs
                                                     </a>
-                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
                 

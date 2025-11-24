@@ -1251,7 +1251,11 @@
                         <li class="flex items-center gap-3 text-sm text-zinc-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> CDN Global</li>
                         <li class="flex items-center gap-3 text-sm text-zinc-300"><i data-lucide="check" class="w-4 h-4 text-white"></i> SSL Gratuito</li>
                     </ul>
-                    <a href="register.php" class="w-full py-3 rounded-full border border-zinc-700 text-white font-medium hover:bg-zinc-800 transition-colors text-center">Começar</a>
+                    <?php if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true): ?>
+                        <a href="checkout.php?plan=hobby" class="w-full py-3 rounded-full border border-zinc-700 text-white font-medium hover:bg-zinc-800 transition-colors text-center">Ativar Plano</a>
+                    <?php else: ?>
+                        <a href="register.php" class="w-full py-3 rounded-full border border-zinc-700 text-white font-medium hover:bg-zinc-800 transition-colors text-center">Começar</a>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Pro (Featured) -->
@@ -1268,7 +1272,11 @@
                         <li class="flex items-center gap-3 text-sm text-white"><i data-lucide="check" class="w-4 h-4 text-white"></i> Otimização de Imagens</li>
                         <li class="flex items-center gap-3 text-sm text-white"><i data-lucide="check" class="w-4 h-4 text-white"></i> Analytics em Tempo Real</li>
                     </ul>
-                    <a href="register.php" class="w-full py-3 rounded-full bg-white text-black font-bold hover:bg-zinc-200 transition-colors text-center">Assinar Pro</a>
+                    <?php if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true): ?>
+                        <a href="checkout.php?plan=pro" class="w-full py-3 rounded-full bg-white text-black font-bold hover:bg-zinc-200 transition-colors text-center">Assinar Pro</a>
+                    <?php else: ?>
+                        <a href="register.php?plan=pro" class="w-full py-3 rounded-full bg-white text-black font-bold hover:bg-zinc-200 transition-colors text-center">Assinar Pro</a>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Enterprise -->

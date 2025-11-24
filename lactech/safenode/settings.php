@@ -149,6 +149,18 @@ $defaultSettings = [
         'description'   => 'API Token do Cloudflare',
         'category'      => 'cloudflare',
     ],
+    'asaas_api_key' => [
+        'setting_value' => '',
+        'setting_type'  => 'string',
+        'description'   => 'API Key da Asaas (Token de acesso)',
+        'category'      => 'asaas',
+    ],
+    'asaas_sandbox' => [
+        'setting_value' => '1',
+        'setting_type'  => 'boolean',
+        'description'   => 'Usar ambiente sandbox (testes)',
+        'category'      => 'asaas',
+    ],
 ];
 
 if ($db) {
@@ -193,7 +205,7 @@ if ($db) {
     }
 }
 
-$categories = ['general', 'rate_limit', 'detection', 'cloudflare'];
+$categories = ['general', 'rate_limit', 'detection', 'cloudflare', 'asaas'];
 
 // Metadados para apresentação das categorias na interface
 $categoryMeta = [
@@ -221,6 +233,12 @@ $categoryMeta = [
         'icon' => 'cloud',
         'color' => 'amber',
     ],
+    'asaas' => [
+        'label' => 'Asaas',
+        'description' => 'Configurações de pagamento e integração com Asaas.',
+        'icon' => 'credit-card',
+        'color' => 'emerald',
+    ],
 ];
 ?>
 <!DOCTYPE html>
@@ -243,7 +261,98 @@ $categoryMeta = [
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-        .glass-card { background: linear-gradient(180deg, rgba(39, 39, 42, 0.4) 0%, rgba(24, 24, 27, 0.4) 100%); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Glass Components Melhorados */
+        .glass-card { 
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.5) 0%, rgba(24, 24, 27, 0.5) 100%); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            background: linear-gradient(180deg, rgba(39, 39, 42, 0.7) 0%, rgba(24, 24, 27, 0.7) 100%);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Form Inputs Melhorados */
+        .form-input {
+            background: rgba(39, 39, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            background: rgba(39, 39, 42, 0.8);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 20px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* Grid Pattern */
+        .grid-pattern {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Badge Moderno */
+        .modern-badge {
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .modern-badge:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* Botões Melhorados */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Category Card */
+        .category-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Depth Shadow */
+        .depth-shadow {
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Setting Item */
+        .setting-item {
+            transition: all 0.3s;
+        }
+        .setting-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+            transform: translateX(4px);
+        }
     </style>
 </head>
 <body class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex">
@@ -251,16 +360,30 @@ $categoryMeta = [
 
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
         <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
+            <div class="hidden md:flex md:items-center md:gap-3">
+                <div class="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
             <div>
                 <h2 class="text-xl font-bold text-white tracking-tight">Configurações</h2>
-                <p class="text-xs text-zinc-400 mt-0.5">Gerencie as configurações do sistema</p>
+                    <p class="text-xs text-zinc-400 mt-0.5 font-medium">Gerencie as configurações do sistema</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 md:hidden">
+                <button class="text-zinc-400 hover:text-white transition-colors" data-sidebar-toggle>
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <span class="font-bold text-lg text-white">SafeNode</span>
             </div>
         </header>
         <div class="flex-1 overflow-y-auto p-6 md:p-8 z-10">
             <div class="max-w-7xl mx-auto space-y-6">
             <?php if ($message): ?>
-                <div class="mb-6 p-4 rounded-xl <?php echo $messageType === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'; ?> font-semibold">
-                    <?php echo htmlspecialchars($message); ?>
+                <div class="mb-6 p-4 rounded-xl <?php echo $messageType === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'; ?> font-semibold flex items-center gap-3 animate-fade-in shadow-lg">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 rounded-lg <?php echo $messageType === 'success' ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-red-500/20 border border-red-500/30'; ?> flex items-center justify-center">
+                            <i data-lucide="<?php echo $messageType === 'success' ? 'check-circle' : 'alert-circle'; ?>" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p class="flex-1"><?php echo htmlspecialchars($message); ?></p>
                 </div>
             <?php endif; ?>
 
@@ -275,60 +398,97 @@ $categoryMeta = [
                                 'color' => 'blue',
                             ];
                             $color = $meta['color'];
+                            // Mapeamento de classes de cor para Tailwind
+                            $colorClasses = [
+                                'blue' => ['bg' => 'bg-blue-500/15', 'border' => 'border-blue-500/30', 'text' => 'text-blue-400', 'hover' => 'hover:border-blue-500/30', 'bgDeco' => 'bg-blue-500/5'],
+                                'red' => ['bg' => 'bg-red-500/15', 'border' => 'border-red-500/30', 'text' => 'text-red-400', 'hover' => 'hover:border-red-500/30', 'bgDeco' => 'bg-red-500/5'],
+                                'emerald' => ['bg' => 'bg-emerald-500/15', 'border' => 'border-emerald-500/30', 'text' => 'text-emerald-400', 'hover' => 'hover:border-emerald-500/30', 'bgDeco' => 'bg-emerald-500/5'],
+                                'amber' => ['bg' => 'bg-amber-500/15', 'border' => 'border-amber-500/30', 'text' => 'text-amber-400', 'hover' => 'hover:border-amber-500/30', 'bgDeco' => 'bg-amber-500/5'],
+                            ];
+                            $colorClass = $colorClasses[$color] ?? $colorClasses['blue'];
                         ?>
-                        <div class="glass-card rounded-2xl p-6 border border-<?php echo $color; ?>-500/10 hover:border-<?php echo $color; ?>-500/30 transition-all duration-300">
+                        <!-- Category Card - Redesign -->
+                        <div class="glass-card rounded-2xl p-6 category-card relative overflow-hidden animate-fade-in depth-shadow" style="animation-delay: <?php echo array_search($category, $categories) * 0.1; ?>s">
+                            <!-- Grid pattern -->
+                            <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                            
+                            <!-- Decoração de fundo -->
+                            <div class="absolute top-0 right-0 w-40 h-40 <?php echo $colorClass['bgDeco']; ?> rounded-full blur-3xl"></div>
+                            
+                            <div class="relative z-10">
                             <div class="flex items-start justify-between mb-6">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-xl <?php echo $colorClass['bg']; ?> border <?php echo $colorClass['border']; ?> flex items-center justify-center flex-shrink-0">
+                                            <i data-lucide="<?php echo htmlspecialchars($meta['icon']); ?>" class="w-6 h-6 <?php echo $colorClass['text']; ?>"></i>
+                                        </div>
                                 <div>
-                                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-<?php echo $color; ?>-500/10 border border-<?php echo $color; ?>-500/30 text-xs font-medium text-<?php echo $color; ?>-300 mb-3">
-                                        <i data-lucide="<?php echo htmlspecialchars($meta['icon']); ?>" class="w-4 h-4"></i>
-                                        <span><?php echo htmlspecialchars($meta['label']); ?></span>
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <h3 class="text-lg font-bold text-white"><?php echo htmlspecialchars($meta['label']); ?></h3>
+                                                <span class="modern-badge inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg <?php echo $colorClass['bg']; ?> border <?php echo $colorClass['border']; ?> text-xs font-bold <?php echo $colorClass['text']; ?>">
+                                                    <i data-lucide="<?php echo htmlspecialchars($meta['icon']); ?>" class="w-3.5 h-3.5"></i>
+                                                    <?php echo count($settings[$category] ?? []); ?> config(s)
+                                                </span>
                                     </div>
-                                    <p class="text-xs text-zinc-500"><?php echo htmlspecialchars($meta['description']); ?></p>
+                                            <p class="text-sm text-zinc-400 font-medium"><?php echo htmlspecialchars($meta['description']); ?></p>
+                                        </div>
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <?php foreach ($settings[$category] as $key => $setting): ?>
                                     <?php if ($setting['is_editable']): ?>
-                                        <div class="space-y-1.5">
-                                            <div class="flex items-center justify-between gap-2">
-                                                <label class="block text-sm font-semibold text-zinc-200">
+                                            <div class="setting-item p-4 rounded-xl bg-zinc-900/30 border border-white/5 <?php echo $colorClass['hover']; ?> transition-all">
+                                                <div class="flex items-center justify-between gap-2 mb-3">
+                                                    <label class="block text-sm font-bold text-zinc-200">
                                                     <?php echo htmlspecialchars($setting['description']); ?>
                                                 </label>
-                                                <span class="text-[10px] px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-400 font-mono uppercase">
+                                                    <span class="modern-badge text-[10px] px-2.5 py-1 rounded-lg border <?php echo $colorClass['border']; ?> <?php echo $colorClass['bg']; ?> <?php echo $colorClass['text']; ?> font-mono uppercase font-bold">
                                                     <?php echo htmlspecialchars($setting['setting_type']); ?>
                                                 </span>
                                             </div>
                                             
                                             <?php if ($setting['setting_type'] === 'boolean'): ?>
-                                                <select name="<?php echo htmlspecialchars($key); ?>" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/60 text-white focus:ring-2 focus:ring-<?php echo $color; ?>-500 focus:border-<?php echo $color; ?>-500 transition-all text-sm">
+                                                    <select name="<?php echo htmlspecialchars($key); ?>" class="form-input w-full px-4 py-2.5 rounded-xl text-white text-sm font-medium">
                                                     <option value="1" <?php echo $setting['setting_value'] == '1' ? 'selected' : ''; ?>>Habilitado</option>
                                                     <option value="0" <?php echo $setting['setting_value'] == '0' ? 'selected' : ''; ?>>Desabilitado</option>
                                                 </select>
                                             <?php elseif ($setting['setting_type'] === 'integer'): ?>
-                                                <input type="number" name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($setting['setting_value']); ?>" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/60 text-white focus:ring-2 focus:ring-<?php echo $color; ?>-500 focus:border-<?php echo $color; ?>-500 transition-all text-sm">
+                                                    <div class="relative">
+                                                        <i data-lucide="hash" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
+                                                        <input type="number" name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($setting['setting_value']); ?>" class="form-input w-full pl-10 pr-4 py-2.5 rounded-xl text-white text-sm font-medium">
+                                                    </div>
                                             <?php else: ?>
-                                                <input type="text" name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($setting['setting_value']); ?>" class="w-full px-4 py-2.5 border border-white/10 rounded-xl bg-zinc-900/60 text-white focus:ring-2 focus:ring-<?php echo $color; ?>-500 focus:border-<?php echo $color; ?>-500 transition-all text-sm">
+                                                    <div class="relative">
+                                                        <i data-lucide="<?php echo ($key === 'cloudflare_api_token') ? 'lock' : 'edit-2'; ?>" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
+                                                        <input <?php echo ($key === 'cloudflare_api_token') ? 'type="password" autocomplete="off"' : 'type="text"'; ?> name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($setting['setting_value']); ?>" class="form-input w-full pl-10 pr-4 py-2.5 rounded-xl text-white text-sm font-medium">
+                                                    </div>
                                             <?php endif; ?>
                                             
-                                            <div class="flex items-center justify-between mt-1">
-                                                <span class="text-[11px] text-zinc-500 font-mono truncate">
+                                                <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                                                    <span class="text-[10px] text-zinc-500 font-mono truncate font-medium">
+                                                        <i data-lucide="key" class="w-3 h-3 inline mr-1"></i>
                                                     <?php echo htmlspecialchars($key); ?>
                                                 </span>
                                                 <?php if ($key === 'cloudflare_api_token' || $key === 'cloudflare_zone_id'): ?>
-                                                    <span class="text-[10px] text-slate-500 font-medium">Recomendado via .env</span>
+                                                        <span class="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                                                            <i data-lucide="info" class="w-3 h-3"></i>
+                                                            Recomendado via .env
+                                                        </span>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
+                                </div>
                             </div>
                         </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
 
-                <div class="flex justify-end gap-4">
-                    <button type="submit" name="save_settings" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold transition-all shadow-lg shadow-blue-500/20">
+                <!-- Botão Salvar - Redesign -->
+                <div class="flex justify-end gap-4 pt-6 border-t border-white/5">
+                    <button type="submit" name="save_settings" class="btn-primary px-8 py-3 text-white rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg">
+                        <i data-lucide="save" class="w-5 h-5"></i>
                         Salvar Configurações
                     </button>
                 </div>
