@@ -81,20 +81,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                     $messageType = "error";
                 } else {
                     // Username pode ser duplicado, então não precisa verificar
-                    // Atualizar username e nome completo
-                    $stmt = $db->prepare("UPDATE safenode_users SET username = ?, full_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-                    $stmt->execute([$newUsername, $newFullName, $userId]);
-                    
-                    // Atualizar sessão
-                    $_SESSION['safenode_username'] = $newUsername;
-                    $_SESSION['safenode_full_name'] = $newFullName;
-                    
-                    // Atualizar variável local para exibição
-                    $username = $newUsername;
-                    $userInitial = strtoupper(substr($username, 0, 1));
-                    
-                    $message = "Perfil atualizado com sucesso!";
-                    $messageType = "success";
+                        // Atualizar username e nome completo
+                        $stmt = $db->prepare("UPDATE safenode_users SET username = ?, full_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+                        $stmt->execute([$newUsername, $newFullName, $userId]);
+                        
+                        // Atualizar sessão
+                        $_SESSION['safenode_username'] = $newUsername;
+                        $_SESSION['safenode_full_name'] = $newFullName;
+                        
+                        // Atualizar variável local para exibição
+                        $username = $newUsername;
+                        $userInitial = strtoupper(substr($username, 0, 1));
+                        
+                        $message = "Perfil atualizado com sucesso!";
+                        $messageType = "success";
                 }
             } catch (PDOException $e) {
                 error_log("SafeNode Profile Update Error: " . $e->getMessage());

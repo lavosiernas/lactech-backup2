@@ -47,11 +47,15 @@ if ($currentSiteId > 0) {
 }
 
 // Função helper para preparar filtro de site
-$prepareSiteFilter = function($sql) use ($db, $currentSiteId) {
+$prepareSiteFilter = function($sql) use ($db, $currentSiteId, $userId) {
     $params = [];
     if ($currentSiteId > 0) {
         $sql .= " AND site_id = ?";
         $params[] = $currentSiteId;
+    } elseif ($userId) {
+        // Se não há site selecionado, filtrar apenas por sites do usuário
+        $sql .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+        $params[] = $userId;
     }
     try {
         if (!empty($params)) {
@@ -170,6 +174,9 @@ try {
         if ($currentSiteId > 0) {
             $sqlTopIPs .= " AND site_id = ?";
             $params[] = $currentSiteId;
+        } elseif ($userId) {
+            $sqlTopIPs .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params[] = $userId;
         }
         $sqlTopIPs .= " GROUP BY ip_address ORDER BY COUNT(*) DESC LIMIT 5";
         $stmt = !empty($params) ? $db->prepare($sqlTopIPs) : $db->query($sqlTopIPs);
@@ -196,6 +203,9 @@ try {
         if ($currentSiteId > 0) {
             $sqlCountries .= " AND site_id = ?";
             $params[] = $currentSiteId;
+        } elseif ($userId) {
+            $sqlCountries .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params[] = $userId;
         }
         $sqlCountries .= " GROUP BY country_code ORDER BY total_requests DESC LIMIT 5";
         $stmt = !empty($params) ? $db->prepare($sqlCountries) : $db->query($sqlCountries);
@@ -397,6 +407,16 @@ try {
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Exception $e) {
     http_response_code(500);
+    error_log("SafeNode Dashboard Stats API Error: " . $e->getMessage());
+    echo json_encode([
+        'success' => false, 
+        'error' => 'Erro ao processar requisição',
+        'debug' => (defined('DEBUG_MODE') && DEBUG_MODE) ? $e->getMessage() : null
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+?>
+
+
     error_log("SafeNode Dashboard Stats API Error: " . $e->getMessage());
     echo json_encode([
         'success' => false, 

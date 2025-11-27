@@ -81,9 +81,6 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
                         </a>
                     <?php endforeach; ?>
                     <div class="h-px bg-white/5 my-1"></div>
-                    <a href="sites.php" class="flex items-center gap-2 px-3 py-2 text-xs text-blue-400 hover:bg-blue-500/10 transition-colors">
-                        <i data-lucide="plus" class="w-3 h-3"></i> Adicionar Site
-                    </a>
                 </div>
             </div>
         </div>
@@ -94,25 +91,7 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
         <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'dashboard' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all">
             <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
         </a>
-        <a href="<?php echo getSafeNodeUrl('sites'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'sites' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="globe" class="w-5 h-5 group-hover:text-blue-400 transition-colors"></i> Sites
-        </a>
-        <a href="<?php echo getSafeNodeUrl('incidents'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'incidents' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="alert-triangle" class="w-5 h-5 group-hover:text-amber-400 transition-colors"></i> Incidentes
-        </a>
-        <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'logs' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="shield-alert" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i> Logs de Segurança
-        </a>
-        <a href="<?php echo getSafeNodeUrl('blocked'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'blocked' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="ban" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i> IPs Bloqueados
-        </a>
         <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sistema</div>
-        <a href="<?php echo getSafeNodeUrl('payments'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'payments' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="credit-card" class="w-5 h-5 group-hover:text-emerald-400 transition-colors"></i> Pagamentos
-        </a>
-        <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'settings' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="settings" class="w-5 h-5 group-hover:text-zinc-300 transition-colors"></i> Configurações
-        </a>
         <a href="<?php echo getSafeNodeUrl('updates'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'updates' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="sparkles" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Atualizações
         </a>

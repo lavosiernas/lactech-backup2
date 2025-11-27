@@ -148,10 +148,268 @@ class CloudflareAPI {
     }
     
     /**
+     * Obtém Analytics da zona (dados agregados - NÃO usa para criar logs individuais)
+     * NOTA: Esta API retorna dados agregados, não logs individuais reais
+     * Use apenas para estatísticas gerais, não para criar logs
+     */
+    public function getZoneAnalytics($zoneId, $since = null, $until = null) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+        
+        // Usar GraphQL Analytics API (dados agregados)
+        $query = [
+            'query' => '
+                query {
+                    viewer {
+                        zones(filter: {zoneTag: "' . $zoneId . '"}) {
+                            httpRequests1dGroups(
+                                limit: 10000
+                                filter: {
+                                    date_geq: "' . ($since ?? date('Y-m-d', strtotime('-7 days'))) . '"
+                                    date_leq: "' . ($until ?? date('Y-m-d')) . '"
+                                }
+                            ) {
+                                dimensions {
+                                    date
+                                }
+                                sum {
+                                    requests
+                                    pageViews
+                                    threats
+                                    countryMap {
+                                        clientCountryName
+                                        requests
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            '
+        ];
+        
+        return $this->makeGraphQLRequest($query);
+    }
+    
+    /**
+     * Obtém eventos de firewall (bloqueios) - DADOS REAIS
+     * IMPORTANTE: Retorna apenas eventos de SEGURANÇA (bloqueios, challenges)
+     * Não retorna todas as requisições normais
+     */
+    public function getFirewallEvents($zoneId, $since = null, $until = null) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+        
+        $since = $since ?? date('c', strtotime('-24 hours'));
+        $until = $until ?? date('c');
+        
+        // Usar Security Events API (dados reais de eventos de segurança)
+        $endpoint = "zones/$zoneId/security/events";
+        $params = http_build_query([
+            'since' => $since,
+            'until' => $until,
+            'per_page' => 1000
+        ]);
+        
+        return $this->makeRequest("$endpoint?$params", 'GET');
+    }
+    
+    /**
+     * Configura webhook para receber eventos
+     */
+    public function setupWebhook($zoneId, $webhookUrl, $secret = null) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+        
+        // Cloudflare não tem webhook nativo, mas podemos usar Notifications
+        // Ou configurar via Workers/Pages Functions
+        return ['success' => false, 'error' => 'Webhook setup requires Cloudflare Workers'];
+    }
+    
+    /**
+     * Faz requisição GraphQL à API do Cloudflare
+     */
+    private function makeGraphQLRequest($query) {
+        $url = 'https://api.cloudflare.com/client/v4/graphql';
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $this->apiToken,
+                'Content-Type: application/json'
+            ],
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($query),
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_TIMEOUT => 30
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($error) {
+            return ['success' => false, 'error' => $error];
+        }
+        
+        $decoded = json_decode($response, true);
+        
+        return [
+            'success' => $httpCode >= 200 && $httpCode < 300,
+            'http_code' => $httpCode,
+            'data' => $decoded
+        ];
+    }
+    
+    /**
      * Faz requisição à API do Cloudflare
      */
     private function makeRequest($endpoint, $method = 'GET', $data = null) {
-        $url = $this->apiUrl . '/' . $endpoint;
+        // Se endpoint já contém query string, usar direto
+        // Se não, construir URL
+        if (strpos($endpoint, '?') !== false) {
+            $url = $this->apiUrl . '/' . $endpoint;
+        } else {
+            $url = $this->apiUrl . '/' . $endpoint;
+            // Se for GET e tiver data, adicionar como query string
+            if ($method === 'GET' && $data && is_array($data)) {
+                $url .= '?' . http_build_query($data);
+            }
+        }
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $this->apiToken,
+                'Content-Type: application/json'
+            ],
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_TIMEOUT => 30
+        ]);
+        
+        if ($data && in_array($method, ['POST', 'PUT', 'PATCH'])) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        }
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($error) {
+            return ['success' => false, 'error' => $error];
+        }
+        
+        $decoded = json_decode($response, true);
+        
+        return [
+            'success' => $httpCode >= 200 && $httpCode < 300,
+            'http_code' => $httpCode,
+            'data' => $decoded,
+            'error' => $decoded['errors'] ?? null
+        ];
+    }
+}
+
+        return $this->makeGraphQLRequest($query);
+    }
+    
+    /**
+     * Obtém eventos de firewall (bloqueios) - DADOS REAIS
+     * IMPORTANTE: Retorna apenas eventos de SEGURANÇA (bloqueios, challenges)
+     * Não retorna todas as requisições normais
+     */
+    public function getFirewallEvents($zoneId, $since = null, $until = null) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+        
+        $since = $since ?? date('c', strtotime('-24 hours'));
+        $until = $until ?? date('c');
+        
+        // Usar Security Events API (dados reais de eventos de segurança)
+        $endpoint = "zones/$zoneId/security/events";
+        $params = http_build_query([
+            'since' => $since,
+            'until' => $until,
+            'per_page' => 1000
+        ]);
+        
+        return $this->makeRequest("$endpoint?$params", 'GET');
+    }
+    
+    /**
+     * Configura webhook para receber eventos
+     */
+    public function setupWebhook($zoneId, $webhookUrl, $secret = null) {
+        if (!$this->apiToken || !$zoneId) {
+            return ['success' => false, 'error' => 'API Token ou Zone ID não configurado'];
+        }
+        
+        // Cloudflare não tem webhook nativo, mas podemos usar Notifications
+        // Ou configurar via Workers/Pages Functions
+        return ['success' => false, 'error' => 'Webhook setup requires Cloudflare Workers'];
+    }
+    
+    /**
+     * Faz requisição GraphQL à API do Cloudflare
+     */
+    private function makeGraphQLRequest($query) {
+        $url = 'https://api.cloudflare.com/client/v4/graphql';
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $this->apiToken,
+                'Content-Type: application/json'
+            ],
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($query),
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_TIMEOUT => 30
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($error) {
+            return ['success' => false, 'error' => $error];
+        }
+        
+        $decoded = json_decode($response, true);
+        
+        return [
+            'success' => $httpCode >= 200 && $httpCode < 300,
+            'http_code' => $httpCode,
+            'data' => $decoded
+        ];
+    }
+    
+    /**
+     * Faz requisição à API do Cloudflare
+     */
+    private function makeRequest($endpoint, $method = 'GET', $data = null) {
+        // Se endpoint já contém query string, usar direto
+        // Se não, construir URL
+        if (strpos($endpoint, '?') !== false) {
+            $url = $this->apiUrl . '/' . $endpoint;
+        } else {
+            $url = $this->apiUrl . '/' . $endpoint;
+            // Se for GET e tiver data, adicionar como query string
+            if ($method === 'GET' && $data && is_array($data)) {
+                $url .= '?' . http_build_query($data);
+            }
+        }
         
         $ch = curl_init($url);
         curl_setopt_array($ch, [

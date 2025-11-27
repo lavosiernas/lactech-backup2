@@ -993,7 +993,7 @@ $ipsChange = $yesterdayStats['unique_ips'] > 0
                                 <?php else: ?>
                                     <span class="text-[10px] font-medium px-2 py-1 rounded-full modern-badge bg-zinc-800/60 text-zinc-500 border-zinc-700/50">
                                         →
-                                    </span>
+                                </span>
                             <?php endif; ?>
                         </div>
                             

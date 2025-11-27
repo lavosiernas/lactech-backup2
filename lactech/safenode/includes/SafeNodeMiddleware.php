@@ -44,8 +44,11 @@ class SafeNodeMiddleware {
         
         self::loadSiteSecurityLevel();
         
-        // Obter IP do cliente
+        // Obter IP do cliente (funciona com Cloudflare Proxy)
         $ipAddress = self::getClientIP();
+        
+        // Registrar requisição mesmo se proxy estiver ativo
+        // Isso garante que temos logs próprios
         
         // Carregar componentes
         require_once __DIR__ . '/IPBlocker.php';
@@ -186,9 +189,17 @@ class SafeNodeMiddleware {
     
     /**
      * Identifica o site baseado no domínio
+     * Funciona mesmo com Cloudflare Proxy (usa headers do Cloudflare)
      */
     private static function identifySite() {
+        // Quando Cloudflare Proxy está ativo, usar header CF-Connecting-IP e Host
         $domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+        
+        // Se Cloudflare está ativo, pode vir no header CF-Host
+        if (isset($_SERVER['HTTP_CF_HOST'])) {
+            $domain = $_SERVER['HTTP_CF_HOST'];
+        }
+        
         $domain = preg_replace('/^www\./', '', $domain);
         
         try {
@@ -473,6 +484,17 @@ class SafeNodeMiddleware {
                 $cloudflare = new CloudflareAPI();
                 $cloudflare->createFirewallRule(
                     $site['cloudflare_zone_id'],
+                    $ipAddress,
+                    'block',
+                    "SafeNode Auto-Block: $threatType"
+                );
+            }
+        } catch (Exception $e) {
+            error_log("SafeNode Cloudflare Integration Error: " . $e->getMessage());
+        }
+    }
+}
+
                     $ipAddress,
                     'block',
                     "SafeNode Auto-Block: $threatType"

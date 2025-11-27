@@ -674,3 +674,244 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 </body>
 </html>
 
+
+            <p class="mt-6 md:mt-8 text-center text-xs md:text-sm text-slate-600">
+                Já tem uma conta? 
+                <a href="login.php" class="font-semibold text-black hover:underline">Fazer login</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                `;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                `;
+            }
+        }
+
+        // SafeNode Verification Logic
+        // Inicializar verificação humana SafeNode
+        function initSafeNodeHumanVerification() {
+            const hvJs = document.getElementById('safenode_hv_js');
+            const hvSpinner = document.getElementById('hv-spinner');
+            const hvCheck = document.getElementById('hv-check');
+            const hvText = document.getElementById('hv-text');
+
+            // Marcar imediatamente como verificado
+            if (hvJs) {
+                hvJs.value = '1';
+            }
+
+            // Após um pequeno atraso, mostrar visual de verificado
+            setTimeout(() => {
+                if (hvSpinner) hvSpinner.classList.add('hidden');
+                if (hvCheck) hvCheck.classList.remove('hidden');
+                if (hvText) hvText.textContent = 'Verificado com SafeNode';
+            }, 800);
+        }
+
+        // Password Strength Checker
+        function checkPasswordStrength(password) {
+            const strengthDiv = document.getElementById('passwordStrength');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            const strengthIcon = document.getElementById('strengthIcon');
+            const passwordInput = document.getElementById('password');
+            
+            if (!password) {
+                strengthDiv.classList.add('hidden');
+                passwordInput.classList.remove('border-red-500');
+                return;
+            }
+            
+            strengthDiv.classList.remove('hidden');
+            
+            // Get username for comparison
+            const username = document.getElementById('username')?.value || '';
+            
+            // Check requirements
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+            
+            // Check for repeated numbers
+            const numbers = password.match(/[0-9]/g) || [];
+            const hasRepeatedNumbers = numbers.length > 1 && new Set(numbers).size < numbers.length;
+            const validNumber = hasNumber && !hasRepeatedNumbers;
+            
+            // Check if password equals username (case insensitive)
+            const equalsUsername = username && password.toLowerCase() === username.toLowerCase();
+            const notEqualsUsername = !equalsUsername;
+            
+            // Update requirement icons (red if not met)
+            updateRequirement('req-length', hasLength);
+            updateRequirement('req-uppercase', hasUppercase);
+            updateRequirement('req-lowercase', hasLowercase);
+            updateRequirement('req-number', validNumber);
+            updateRequirement('req-special', hasSpecial);
+            updateRequirement('req-username', notEqualsUsername);
+            
+            // Check if ALL requirements are met
+            const allRequirementsMet = hasLength && hasUppercase && hasLowercase && validNumber && hasSpecial && notEqualsUsername;
+            
+            // Update password input border color
+            if (allRequirementsMet) {
+                passwordInput.classList.remove('border-red-500');
+                passwordInput.classList.add('border-emerald-500');
+            } else {
+                passwordInput.classList.remove('border-emerald-500');
+                passwordInput.classList.add('border-red-500');
+            }
+            
+            // Determine strength level - só fica forte se TODOS os requisitos forem atendidos
+            let strength = 'Fraca';
+            let color = 'bg-red-500';
+            let textColor = 'text-red-600';
+            let icon = '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>';
+            let percentage = 0;
+            
+            if (allRequirementsMet) {
+                strength = 'Forte';
+                color = 'bg-emerald-500';
+                textColor = 'text-emerald-600';
+                icon = '<i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>';
+                percentage = 100;
+            } else {
+                // Count how many requirements are met
+                let metCount = 0;
+                if (hasLength) metCount++;
+                if (hasUppercase) metCount++;
+                if (hasLowercase) metCount++;
+                if (validNumber) metCount++;
+                if (hasSpecial) metCount++;
+                if (notEqualsUsername) metCount++;
+                
+                percentage = (metCount / 6) * 60; // Max 60% if not all met
+                
+                if (equalsUsername) {
+                    strength = 'Não pode ser igual ao usuário';
+                    percentage = 0;
+                } else if (hasRepeatedNumbers) {
+                    strength = 'Não pode ter números repetidos';
+                    percentage = Math.min(percentage, 30);
+                } else {
+                    strength = 'Falta requisito';
+                }
+            }
+            
+            // Update UI
+            strengthBar.className = `h-full transition-all duration-300 rounded-full ${color}`;
+            strengthBar.style.width = percentage + '%';
+            strengthText.className = `text-xs font-bold ${textColor}`;
+            strengthText.textContent = `Força: ${strength}`;
+            strengthIcon.innerHTML = icon;
+            
+            // Reinitialize Lucide icons for new icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+        
+        function updateRequirement(id, met) {
+            const req = document.getElementById(id);
+            const icon = req.querySelector('i');
+            
+            if (met) {
+                req.classList.remove('text-red-600', 'text-slate-500');
+                req.classList.add('text-emerald-600');
+                icon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            } else {
+                req.classList.remove('text-emerald-600', 'text-slate-500');
+                req.classList.add('text-red-600');
+                icon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-3 h-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Iniciar verificação humana
+            initSafeNodeHumanVerification();
+            
+            // Re-validate password when username changes
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            if (usernameInput && passwordInput) {
+                usernameInput.addEventListener('input', function() {
+                    if (passwordInput.value) {
+                        checkPasswordStrength(passwordInput.value);
+                    }
+                });
+            }
+            
+            // Register button loading state
+            const form = document.getElementById('registerForm');
+            form.addEventListener('submit', function(e) {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+                const username = document.getElementById('username').value;
+                
+                // Validate password strength
+                const hasLength = password.length >= 8;
+                const hasUppercase = /[A-Z]/.test(password);
+                const hasLowercase = /[a-z]/.test(password);
+                const hasNumber = /[0-9]/.test(password);
+                const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+                
+                // Check for repeated numbers
+                const numbers = password.match(/[0-9]/g) || [];
+                const hasRepeatedNumbers = numbers.length > 1 && new Set(numbers).size < numbers.length;
+                
+                // Check if password equals username
+                const equalsUsername = username && password.toLowerCase() === username.toLowerCase();
+                
+                if (!hasLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecial || hasRepeatedNumbers || equalsUsername) {
+                    e.preventDefault();
+                    let errorMsg = 'Por favor, crie uma senha mais forte:\n';
+                    if (!hasLength) errorMsg += '• Mínimo 8 caracteres\n';
+                    if (!hasUppercase) errorMsg += '• Uma letra maiúscula\n';
+                    if (!hasLowercase) errorMsg += '• Uma letra minúscula\n';
+                    if (!hasNumber) errorMsg += '• Um número\n';
+                    if (hasRepeatedNumbers) errorMsg += '• Não pode ter números repetidos\n';
+                    if (!hasSpecial) errorMsg += '• Um caractere especial\n';
+                    if (equalsUsername) errorMsg += '• Não pode ser igual ao nome de usuário\n';
+                    alert(errorMsg);
+                    return false;
+                }
+                
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    alert('As senhas não coincidem.');
+                    return false;
+                }
+                
+                const btn = document.getElementById('registerBtn');
+                const spinner = document.getElementById('loadingSpinner');
+                const text = document.getElementById('registerText');
+                
+                btn.disabled = true;
+                btn.classList.add('opacity-75');
+                spinner.classList.remove('hidden');
+                text.textContent = 'Criando conta...';
+            });
+        });
+    </script>
+</body>
+</html>
+
