@@ -140,7 +140,7 @@
                         transform 1s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         .reveal-right.active {
-            opacity: 1;
+                opacity: 1;
             transform: translateX(0);
         }
         
@@ -402,6 +402,119 @@
             filter: brightness(0.7) contrast(1.1) saturate(0.9);
         }
         
+        /* Nebula effect - Enhanced */
+        .nebula-effect {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .nebula-layer {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            mix-blend-mode: screen;
+            animation: nebula-drift 25s ease-in-out infinite;
+        }
+        
+        .nebula-layer-1 {
+            width: 1000px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(120, 180, 255, 0.7) 0%, rgba(100, 150, 255, 0.4) 30%, rgba(80, 120, 200, 0.2) 50%, transparent 75%);
+            top: -300px;
+            left: -300px;
+            animation-duration: 30s;
+            animation-delay: 0s;
+        }
+        
+        .nebula-layer-2 {
+            width: 900px;
+            height: 1000px;
+            background: radial-gradient(circle, rgba(180, 120, 255, 0.65) 0%, rgba(150, 100, 255, 0.4) 30%, rgba(120, 80, 200, 0.2) 50%, transparent 75%);
+            top: 20%;
+            right: -200px;
+            animation-duration: 35s;
+            animation-delay: -7s;
+        }
+        
+        .nebula-layer-3 {
+            width: 1100px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(255, 180, 120, 0.6) 0%, rgba(255, 150, 100, 0.35) 30%, rgba(220, 120, 80, 0.2) 50%, transparent 75%);
+            bottom: -150px;
+            left: 15%;
+            animation-duration: 40s;
+            animation-delay: -12s;
+        }
+        
+        .nebula-layer-4 {
+            width: 800px;
+            height: 900px;
+            background: radial-gradient(circle, rgba(120, 255, 220, 0.55) 0%, rgba(100, 255, 200, 0.3) 30%, rgba(80, 220, 180, 0.15) 50%, transparent 75%);
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-duration: 45s;
+            animation-delay: -18s;
+        }
+        
+        .nebula-layer-5 {
+            width: 700px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(200, 150, 255, 0.5) 0%, rgba(180, 120, 255, 0.3) 30%, rgba(150, 100, 220, 0.15) 50%, transparent 75%);
+            top: 10%;
+            left: 30%;
+            animation-duration: 38s;
+            animation-delay: -5s;
+        }
+        
+        @keyframes nebula-drift {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                opacity: 0.7;
+            }
+            20% {
+                transform: translate(40px, -30px) scale(1.15) rotate(5deg);
+                opacity: 0.85;
+            }
+            40% {
+                transform: translate(-30px, 40px) scale(0.95) rotate(-5deg);
+                opacity: 0.75;
+            }
+            60% {
+                transform: translate(35px, 25px) scale(1.1) rotate(3deg);
+                opacity: 0.8;
+            }
+            80% {
+                transform: translate(-25px, -35px) scale(1.05) rotate(-3deg);
+                opacity: 0.78;
+            }
+        }
+        
+        /* Subtle stars - refined */
+        .stars-layer {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(1.5px 1.5px at 15% 25%, rgba(255,255,255,0.9), transparent),
+                radial-gradient(1px 1px at 55% 65%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 75% 15%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1.5px 1.5px at 35% 75%, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 85% 45%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 25% 85%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1.5px 1.5px at 65% 35%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 45% 55%, rgba(255,255,255,0.5), transparent);
+            background-size: 100% 100%;
+            opacity: 0.4;
+            animation: stars-pulse 12s ease-in-out infinite;
+        }
+        
+        @keyframes stars-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.5; }
+        }
+        
         .hero-overlay {
             position: absolute;
             inset: 0;
@@ -412,24 +525,9 @@
                 rgba(0, 0, 0, 0.85) 80%,
                 rgba(0, 0, 0, 1) 100%
             );
+            z-index: 2;
         }
         
-        /* Particles */
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        
-        @keyframes particle-float {
-            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
-        }
         
         /* Nav states */
         nav {
@@ -612,29 +710,33 @@
         
         <!-- Backgrounds -->
         <div class="hero-image"></div>
+        
+        <!-- Nebula Effect -->
+        <div class="nebula-effect">
+            <div class="nebula-layer nebula-layer-1"></div>
+            <div class="nebula-layer nebula-layer-2"></div>
+            <div class="nebula-layer nebula-layer-3"></div>
+            <div class="nebula-layer nebula-layer-4"></div>
+            <div class="stars-layer"></div>
+        </div>
+        
         <div class="hero-overlay"></div>
         <div class="hero-gradient"></div>
         <div class="grid-bg"></div>
         
-        <!-- Floating particles -->
-        <div id="particles" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
         
         <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 w-full relative z-10">
             
-            <!-- Badge -->
-            <div class="mb-8 lg:mb-10 reveal">
-                <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full glass">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-[12px] tracking-[0.15em] uppercase text-white/60 font-medium">Software Studio</span>
-                </div>
-            </div>
-            
             <!-- Main Headline -->
             <div class="mb-12 lg:mb-16">
+                <div class="mb-8 reveal overflow-visible">
+                    <p class="text-[13px] sm:text-[14px] lg:text-[15px] tracking-[0.2em] uppercase text-white/40 font-medium leading-[1.5]">
+                        Kernel for Resilient Operating Nodes
+                    </p>
+                </div>
                 <h1 class="text-[12vw] sm:text-[10vw] lg:text-[8vw] xl:text-[110px] font-bold leading-[0.9] tracking-tightest">
-                    <span class="block reveal text-gradient-shine">Construímos</span>
-                    <span class="block reveal text-white/20" style="transition-delay: 100ms">software que</span>
-                    <span class="block reveal text-gradient" style="transition-delay: 200ms">resolve.</span>
+                    <span class="block reveal text-gradient-shine">Tecnologia que</span>
+                    <span class="block reveal text-white/20" style="transition-delay: 100ms">transforma.</span>
                 </h1>
             </div>
             
@@ -689,55 +791,86 @@
     </div>
     
     <!-- Products Section -->
-    <section id="produtos" class="py-28 lg:py-40 relative">
-        <div class="grid-bg opacity-50"></div>
+    <section id="produtos" class="py-32 lg:py-48 relative overflow-hidden">
+        <div class="grid-bg opacity-30"></div>
         <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 relative">
             
             <!-- Section Header -->
-            <div class="mb-16 lg:mb-24">
-                <div class="flex items-center gap-4 mb-6 reveal">
+            <div class="mb-20 lg:mb-32 text-center lg:text-left">
+                <div class="flex items-center justify-center lg:justify-start gap-4 mb-6 reveal">
                     <div class="w-12 h-px bg-gradient-to-r from-white/30 to-transparent"></div>
                     <span class="text-[11px] tracking-[0.2em] uppercase text-white/50 font-semibold">Produtos</span>
+                    <div class="w-12 h-px bg-gradient-to-l from-white/30 to-transparent"></div>
                 </div>
-                <h2 class="text-[36px] sm:text-[44px] lg:text-[60px] xl:text-[72px] font-bold leading-[1.05] tracking-tight">
+                <h2 class="text-[40px] sm:text-[48px] lg:text-[64px] xl:text-[80px] font-bold leading-[1.05] tracking-tight">
                     <span class="block reveal text-gradient">Dois produtos.</span>
                     <span class="block reveal text-white/20" style="transition-delay: 100ms">Mercados distintos.</span>
                 </h2>
+                <p class="mt-6 text-[16px] lg:text-[18px] text-white/40 max-w-2xl mx-auto lg:mx-0 reveal" style="transition-delay: 200ms">
+                    Soluções especializadas para diferentes necessidades. Tecnologia de ponta, simplicidade e eficiência em cada produto.
+                </p>
             </div>
             
             <!-- Products Grid -->
-            <div class="flex lg:grid lg:grid-cols-2 gap-6 overflow-x-auto lg:overflow-visible pb-6 lg:pb-0 -mx-6 lg:mx-0 px-6 lg:px-0 scrollbar-hide">
+            <div class="flex lg:grid lg:grid-cols-2 gap-8 overflow-x-auto lg:overflow-visible pb-6 lg:pb-0 -mx-6 lg:mx-0 px-6 lg:px-0 scrollbar-hide">
                 
                 <!-- SafeNode Card -->
                 <a href="#safenode" class="group block flex-shrink-0 w-[85vw] sm:w-[75vw] lg:w-auto reveal-scale">
-                    <div class="glass-card rounded-3xl p-8 lg:p-10 h-full card-3d">
+                    <div class="glass-card rounded-3xl p-10 lg:p-12 h-full card-3d border border-white/5 hover:border-white/10 transition-all duration-500">
                         <div class="card-shine"></div>
-                        <div class="flex flex-col h-full min-h-[420px] lg:min-h-[480px] relative z-10">
+                        <div class="flex flex-col h-full min-h-[480px] lg:min-h-[560px] relative z-10">
                             
-                            <!-- Icon -->
-                            <div class="card-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 flex items-center justify-center mb-8 transition-all duration-500">
-                                <svg class="w-6 h-6 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <!-- Icon & Badge -->
+                            <div class="flex items-start justify-between mb-8">
+                                <div class="card-icon w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 via-blue-400/10 to-transparent border border-blue-500/20 flex items-center justify-center transition-all duration-500 group-hover:border-blue-400/40">
+                                    <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                                 </svg>
+                                </div>
+                                <div class="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                    <span class="text-[10px] tracking-[0.15em] uppercase text-emerald-400 font-semibold">Enterprise</span>
+                                </div>
                             </div>
                             
                             <!-- Content -->
                             <div class="flex-grow">
-                                <div class="flex items-center gap-3 mb-4">
-                                    <span class="text-[10px] tracking-[0.2em] uppercase text-emerald-400/80 font-semibold">Segurança Web</span>
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400/50"></span>
+                                <div class="flex items-center gap-3 mb-5">
+                                    <span class="text-[11px] tracking-[0.2em] uppercase text-blue-400/90 font-bold">Segurança Web</span>
+                                    <span class="w-2 h-2 rounded-full bg-blue-400/60 animate-pulse"></span>
                                 </div>
-                                <h3 class="text-[32px] lg:text-[38px] font-bold mb-5 tracking-tight text-gradient">SafeNode</h3>
-                                <p class="text-[15px] lg:text-[16px] text-white/45 leading-[1.7] max-w-sm">
-                                    Plataforma completa de segurança web integrada com Cloudflare. Proteção contra ataques DDoS, firewall de aplicação web e bloqueio automático de IPs maliciosos.
+                                <h3 class="text-[36px] lg:text-[44px] font-bold mb-6 tracking-tight text-gradient group-hover:text-gradient-shine transition-all duration-500">SafeNode</h3>
+                                <p class="text-[16px] lg:text-[17px] text-white/50 leading-[1.75] mb-8">
+                                    Plataforma completa de segurança web integrada com Cloudflare. Proteção enterprise contra ataques DDoS, firewall de aplicação web, detecção de ameaças em tempo real e bloqueio automático de IPs maliciosos.
                                 </p>
+                                
+                                <!-- Key Features -->
+                                <div class="space-y-3 mb-8">
+                                    <div class="flex items-center gap-3 text-[14px] text-white/40">
+                                        <svg class="w-4 h-4 text-blue-400/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Integração nativa com Cloudflare</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-[14px] text-white/40">
+                                        <svg class="w-4 h-4 text-blue-400/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Bloqueio automático de ameaças</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-[14px] text-white/40">
+                                        <svg class="w-4 h-4 text-blue-400/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Dashboard de segurança em tempo real</span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Features tags -->
-                            <div class="flex flex-wrap gap-2 mb-8">
-                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/5 text-white/50 border border-white/5">DDoS Protection</span>
-                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/5 text-white/50 border border-white/5">WAF</span>
-                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/5 text-white/50 border border-white/5">Cloudflare</span>
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-400/80 border border-blue-500/20">DDoS Protection</span>
+                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-400/80 border border-blue-500/20">WAF</span>
+                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-400/80 border border-blue-500/20">Cloudflare</span>
                             </div>
                             
                             <!-- Footer -->
@@ -754,34 +887,61 @@
                 
                 <!-- LacTech Card -->
                 <a href="#lactech" class="group block flex-shrink-0 w-[85vw] sm:w-[75vw] lg:w-auto reveal-scale" style="transition-delay: 150ms">
-                    <div class="glass-card rounded-3xl p-8 lg:p-10 h-full card-3d">
+                    <div class="glass-card rounded-3xl p-10 lg:p-12 h-full card-3d border border-white/5 hover:border-white/10 transition-all duration-500">
                         <div class="card-shine"></div>
-                        <div class="flex flex-col h-full min-h-[420px] lg:min-h-[480px] relative z-10">
+                        <div class="flex flex-col h-full min-h-[480px] lg:min-h-[560px] relative z-10">
                             
-                            <!-- Icon -->
-                            <div class="card-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 flex items-center justify-center mb-8 transition-all duration-500">
-                                <svg class="w-6 h-6 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
-                                </svg>
+                            <!-- Icon & Badge -->
+                            <div class="flex items-start justify-between mb-8">
+                                <div class="card-icon w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-emerald-400/10 to-transparent border border-emerald-500/20 flex items-center justify-center transition-all duration-500 group-hover:border-emerald-400/40">
+                                    <svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+                                    </svg>
+                                </div>
+                                <div class="px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                                    <span class="text-[10px] tracking-[0.15em] uppercase text-blue-400 font-semibold">AgroTech</span>
+                                </div>
                             </div>
                             
                             <!-- Content -->
                             <div class="flex-grow">
-                                <div class="flex items-center gap-3 mb-4">
-                                    <span class="text-[10px] tracking-[0.2em] uppercase text-blue-400/80 font-semibold">Gestão Rural</span>
-                                    <span class="w-2 h-2 rounded-full bg-blue-400/50"></span>
+                                <div class="flex items-center gap-3 mb-5">
+                                    <span class="text-[11px] tracking-[0.2em] uppercase text-emerald-400/90 font-bold">Gestão Rural</span>
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400/60 animate-pulse"></span>
                                 </div>
-                                <h3 class="text-[32px] lg:text-[38px] font-bold mb-5 tracking-tight text-gradient">LacTech</h3>
-                                <p class="text-[15px] lg:text-[16px] text-white/45 leading-[1.7] max-w-sm">
-                                    Sistema completo de gestão para fazendas leiteiras. Controle de rebanho, produção de leite, monitoramento sanitário e relatórios inteligentes.
+                                <h3 class="text-[36px] lg:text-[44px] font-bold mb-6 tracking-tight text-gradient group-hover:text-gradient-shine transition-all duration-500">LacTech</h3>
+                                <p class="text-[16px] lg:text-[17px] text-white/50 leading-[1.75] mb-8">
+                                    Sistema completo de gestão para fazendas leiteiras. Controle de rebanho, produção de leite, monitoramento sanitário, gestão financeira e relatórios inteligentes para aumentar a produtividade.
                                 </p>
+                                
+                                <!-- Key Features -->
+                                <div class="space-y-3 mb-8">
+                                    <div class="flex items-center gap-3 text-[14px] text-white/40">
+                                        <svg class="w-4 h-4 text-emerald-400/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Gestão completa de rebanho</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-[14px] text-white/40">
+                                        <svg class="w-4 h-4 text-emerald-400/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Controle de produção e qualidade</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-[14px] text-white/40">
+                                        <svg class="w-4 h-4 text-emerald-400/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Relatórios e analytics avançados</span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Features tags -->
-                            <div class="flex flex-wrap gap-2 mb-8">
-                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/5 text-white/50 border border-white/5">Rebanho</span>
-                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/5 text-white/50 border border-white/5">Produção</span>
-                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-white/5 text-white/50 border border-white/5">Analytics</span>
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400/80 border border-emerald-500/20">Rebanho</span>
+                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400/80 border border-emerald-500/20">Produção</span>
+                                <span class="px-3 py-1.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400/80 border border-emerald-500/20">Analytics</span>
                             </div>
                             
                             <!-- Footer -->
@@ -802,57 +962,61 @@
     </section>
     
     <!-- SafeNode Detail -->
-    <section id="safenode" class="py-28 lg:py-40 border-t border-white/[0.05] relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px] pointer-events-none"></div>
+    <section id="safenode" class="py-32 lg:py-48 border-t border-white/[0.05] relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-[700px] h-[700px] bg-blue-500/8 rounded-full blur-[180px] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-400/5 rounded-full blur-[120px] pointer-events-none"></div>
         
         <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 relative">
             
-            <div class="grid lg:grid-cols-2 gap-16 lg:gap-24">
+            <div class="grid lg:grid-cols-2 gap-20 lg:gap-28">
                 
                 <!-- Left - Sticky -->
                 <div class="lg:sticky lg:top-32 lg:self-start">
-                    <span class="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-emerald-400/80 mb-5 font-semibold reveal">
-                        <span class="w-6 h-px bg-emerald-400/50"></span>
-                        01 / Segurança
-                    </span>
-                    <h2 class="text-[48px] lg:text-[64px] xl:text-[76px] font-bold mb-6 tracking-tight leading-[0.95] reveal">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6 reveal">
+                        <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                        <span class="text-[11px] tracking-[0.2em] uppercase text-blue-400/90 font-semibold">01 / Segurança</span>
+                    </div>
+                    <h2 class="text-[52px] lg:text-[72px] xl:text-[84px] font-bold mb-8 tracking-tight leading-[0.95] reveal">
                         <span class="text-gradient">SafeNode</span>
                     </h2>
-                    <p class="text-[17px] lg:text-[19px] text-white/50 leading-[1.7] mb-10 max-w-lg reveal" style="transition-delay: 100ms">
-                        Plataforma de segurança web integrada com Cloudflare. Proteção enterprise para suas aplicações com firewall inteligente e resposta automatizada.
+                    <p class="text-[18px] lg:text-[20px] text-white/50 leading-[1.75] mb-12 max-w-lg reveal" style="transition-delay: 100ms">
+                        Plataforma de segurança web integrada com Cloudflare. Proteção enterprise para suas aplicações com firewall inteligente, detecção de ameaças em tempo real e resposta automatizada a ataques.
                     </p>
-                    <a href="#contato" class="inline-flex items-center gap-3 text-[14px] font-semibold text-white/70 hover:text-white transition-all duration-300 group reveal" style="transition-delay: 200ms">
-                        <span class="btn-outline px-5 py-2.5 rounded-full relative z-10">
-                            <span class="relative z-10">Solicitar demo</span>
-                        </span>
-                        <span class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white/10 transition-all duration-300">
-                            <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                    <div class="flex flex-wrap items-center gap-4 mb-8 reveal" style="transition-delay: 150ms">
+                        <a href="#contato" class="btn-primary px-6 py-3 rounded-full text-[14px] font-semibold inline-flex items-center gap-2">
+                            <span>Solicitar demo</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                             </svg>
-                        </span>
-                    </a>
+                        </a>
+                        <a href="#produtos" class="btn-outline px-6 py-3 rounded-full text-[14px] font-semibold text-white/70 hover:text-white">
+                            Ver todos os produtos
+                        </a>
+                    </div>
                 </div>
                 
                 <!-- Right - Features -->
-                <div class="space-y-1 stagger-children" id="safenode-features">
+                <div class="space-y-2 stagger-children" id="safenode-features">
                     
                     <?php
                     $safenode_features = [
-                        ['num' => '01', 'title' => 'Integração Cloudflare', 'desc' => 'Sincronização automática para proteção DDoS, WAF e gestão de DNS com monitoramento em tempo real.'],
-                        ['num' => '02', 'title' => 'Bloqueio Automático', 'desc' => 'Sistema inteligente de detecção e bloqueio de IPs maliciosos com análise de padrões de ataque.'],
-                        ['num' => '03', 'title' => 'Dashboard de Segurança', 'desc' => 'Painel com métricas, logs de incidentes, alertas em tempo real e histórico completo de eventos.'],
-                        ['num' => '04', 'title' => 'Modo Sob Ataque', 'desc' => 'Proteção máxima durante ataques com níveis de segurança configuráveis e resposta adaptativa.'],
-                        ['num' => '05', 'title' => 'Multi-Site Management', 'desc' => 'Gerencie múltiplos sites em uma plataforma com visão global e configurações personalizadas.'],
+                        ['num' => '01', 'title' => 'Integração Cloudflare', 'desc' => 'Sincronização automática para proteção DDoS, WAF e gestão de DNS com monitoramento em tempo real de logs e eventos de segurança.'],
+                        ['num' => '02', 'title' => 'Bloqueio Automático de IPs', 'desc' => 'Sistema inteligente de detecção e bloqueio automático de IPs maliciosos. Análise de padrões de ataque e resposta imediata a ameaças.'],
+                        ['num' => '03', 'title' => 'Dashboard de Segurança', 'desc' => 'Painel completo com métricas de segurança, logs de incidentes, alertas em tempo real e histórico completo de eventos. Visualização clara de ameaças.'],
+                        ['num' => '04', 'title' => 'Modo Sob Ataque', 'desc' => 'Ativação manual ou automática do modo de proteção máxima durante ataques. Níveis de segurança configuráveis por site com resposta adaptativa.'],
+                        ['num' => '05', 'title' => 'Multi-Site Management', 'desc' => 'Gerencie múltiplos sites e domínios em uma única plataforma. Visão global ou individual por site com configurações personalizadas.'],
                     ];
                     
                     foreach($safenode_features as $feature):
                     ?>
-                    <div class="feature-item border-b border-white/[0.06] py-7 pl-0 rounded-lg transition-all duration-500">
-                        <div class="flex items-start gap-6">
-                            <span class="feature-number text-[12px] text-white/25 mt-1.5 font-bold transition-all duration-300 min-w-[24px]"><?= $feature['num'] ?></span>
+                    <div class="feature-item border border-white/[0.08] bg-white/[0.02] rounded-2xl p-6 hover:bg-white/[0.04] hover:border-blue-500/20 transition-all duration-500 reveal">
+                        <div class="flex items-start gap-5">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                <span class="text-[12px] text-blue-400 font-bold"><?= $feature['num'] ?></span>
+                            </div>
                             <div class="flex-1">
-                                <h4 class="text-[18px] lg:text-[20px] font-semibold mb-2.5 tracking-tight"><?= $feature['title'] ?></h4>
-                                <p class="text-[14px] lg:text-[15px] text-white/40 leading-[1.7]"><?= $feature['desc'] ?></p>
+                                <h4 class="text-[19px] lg:text-[21px] font-semibold mb-3 tracking-tight text-white"><?= $feature['title'] ?></h4>
+                                <p class="text-[15px] lg:text-[16px] text-white/45 leading-[1.7]"><?= $feature['desc'] ?></p>
                             </div>
                         </div>
                     </div>
@@ -866,57 +1030,61 @@
     </section>
     
     <!-- LacTech Detail -->
-    <section id="lactech" class="py-28 lg:py-40 border-t border-white/[0.05] relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none"></div>
+    <section id="lactech" class="py-32 lg:py-48 border-t border-white/[0.05] relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-[700px] h-[700px] bg-emerald-500/8 rounded-full blur-[180px] pointer-events-none"></div>
+        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-400/5 rounded-full blur-[120px] pointer-events-none"></div>
         
         <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 relative">
             
-            <div class="grid lg:grid-cols-2 gap-16 lg:gap-24">
+            <div class="grid lg:grid-cols-2 gap-20 lg:gap-28">
                 
                 <!-- Left - Sticky -->
                 <div class="lg:sticky lg:top-32 lg:self-start">
-                    <span class="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-blue-400/80 mb-5 font-semibold reveal">
-                        <span class="w-6 h-px bg-blue-400/50"></span>
-                        02 / Agro
-                    </span>
-                    <h2 class="text-[48px] lg:text-[64px] xl:text-[76px] font-bold mb-6 tracking-tight leading-[0.95] reveal">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6 reveal">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-[11px] tracking-[0.2em] uppercase text-emerald-400/90 font-semibold">02 / Agro</span>
+                    </div>
+                    <h2 class="text-[52px] lg:text-[72px] xl:text-[84px] font-bold mb-8 tracking-tight leading-[0.95] reveal">
                         <span class="text-gradient">LacTech</span>
                     </h2>
-                    <p class="text-[17px] lg:text-[19px] text-white/50 leading-[1.7] mb-10 max-w-lg reveal" style="transition-delay: 100ms">
-                        Sistema completo de gestão para fazendas leiteiras. Aumente a produtividade através de ferramentas inteligentes e análises precisas.
+                    <p class="text-[18px] lg:text-[20px] text-white/50 leading-[1.75] mb-12 max-w-lg reveal" style="transition-delay: 100ms">
+                        Sistema completo de gestão para fazendas leiteiras desenvolvido com tecnologia de ponta. Aumente a produtividade e eficiência através de ferramentas inteligentes e análises precisas do seu rebanho.
                     </p>
-                    <a href="#contato" class="inline-flex items-center gap-3 text-[14px] font-semibold text-white/70 hover:text-white transition-all duration-300 group reveal" style="transition-delay: 200ms">
-                        <span class="btn-outline px-5 py-2.5 rounded-full relative z-10">
-                            <span class="relative z-10">Solicitar demo</span>
-                        </span>
-                        <span class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white/10 transition-all duration-300">
-                            <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                    <div class="flex flex-wrap items-center gap-4 mb-8 reveal" style="transition-delay: 150ms">
+                        <a href="#contato" class="btn-primary px-6 py-3 rounded-full text-[14px] font-semibold inline-flex items-center gap-2">
+                            <span>Solicitar demo</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                             </svg>
-                        </span>
-                    </a>
+                        </a>
+                        <a href="#produtos" class="btn-outline px-6 py-3 rounded-full text-[14px] font-semibold text-white/70 hover:text-white">
+                            Ver todos os produtos
+                        </a>
+                    </div>
                 </div>
                 
                 <!-- Right - Features -->
-                <div class="space-y-1 stagger-children" id="lactech-features">
+                <div class="space-y-2 stagger-children" id="lactech-features">
                     
                     <?php
                     $lactech_features = [
-                        ['num' => '01', 'title' => 'Gestão de Rebanho', 'desc' => 'Cadastro detalhado com genealogia, histórico reprodutivo, eventos sanitários e rastreabilidade completa.'],
-                        ['num' => '02', 'title' => 'Controle de Produção', 'desc' => 'Registro de ordenhas, qualidade do leite, metas de produção e análise de produtividade por animal.'],
-                        ['num' => '03', 'title' => 'Monitoramento Sanitário', 'desc' => 'Controle de saúde animal com tratamentos, diagnósticos, prevenção e alertas automáticos.'],
-                        ['num' => '04', 'title' => 'Gestão Financeira', 'desc' => 'Custos operacionais, receitas, fluxo de caixa e análise de viabilidade econômica detalhada.'],
-                        ['num' => '05', 'title' => 'Relatórios Inteligentes', 'desc' => 'Dashboards personalizados, métricas em tempo real e insights para decisões estratégicas.'],
+                        ['num' => '01', 'title' => 'Gestão Completa de Rebanho', 'desc' => 'Cadastro detalhado de animais com genealogia, histórico reprodutivo, eventos sanitários, vacinações e controle de ciclo estral. Rastreabilidade completa de cada animal.'],
+                        ['num' => '02', 'title' => 'Controle de Produção de Leite', 'desc' => 'Registro diário de ordenhas com volume, qualidade do leite (gordura, proteína, CCS), acompanhamento de metas de produção e análise de produtividade por animal ou lote.'],
+                        ['num' => '03', 'title' => 'Monitoramento Sanitário', 'desc' => 'Controle de saúde animal com registro de tratamentos, diagnósticos, prevenção de doenças e alertas para vacinações e exames periódicos. Histórico médico completo.'],
+                        ['num' => '04', 'title' => 'Gestão Financeira Integrada', 'desc' => 'Controle completo de custos operacionais, receitas, fluxo de caixa, rentabilidade por animal e análise de viabilidade econômica. Relatórios financeiros detalhados.'],
+                        ['num' => '05', 'title' => 'Relatórios e Dashboards Inteligentes', 'desc' => 'Dashboards personalizados com métricas em tempo real, relatórios automáticos de produção, análises preditivas e insights para tomada de decisão estratégica.'],
                     ];
                     
                     foreach($lactech_features as $feature):
                     ?>
-                    <div class="feature-item border-b border-white/[0.06] py-7 pl-0 rounded-lg transition-all duration-500">
-                        <div class="flex items-start gap-6">
-                            <span class="feature-number text-[12px] text-white/25 mt-1.5 font-bold transition-all duration-300 min-w-[24px]"><?= $feature['num'] ?></span>
+                    <div class="feature-item border border-white/[0.08] bg-white/[0.02] rounded-2xl p-6 hover:bg-white/[0.04] hover:border-emerald-500/20 transition-all duration-500 reveal">
+                        <div class="flex items-start gap-5">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                <span class="text-[12px] text-emerald-400 font-bold"><?= $feature['num'] ?></span>
+                            </div>
                             <div class="flex-1">
-                                <h4 class="text-[18px] lg:text-[20px] font-semibold mb-2.5 tracking-tight"><?= $feature['title'] ?></h4>
-                                <p class="text-[14px] lg:text-[15px] text-white/40 leading-[1.7]"><?= $feature['desc'] ?></p>
+                                <h4 class="text-[19px] lg:text-[21px] font-semibold mb-3 tracking-tight text-white"><?= $feature['title'] ?></h4>
+                                <p class="text-[15px] lg:text-[16px] text-white/45 leading-[1.7]"><?= $feature['desc'] ?></p>
                             </div>
                         </div>
                     </div>
@@ -937,20 +1105,59 @@
             
             <div class="max-w-4xl">
                 
-                <div class="flex items-center gap-4 mb-10 reveal">
-                    <div class="w-12 h-px bg-gradient-to-r from-white/30 to-transparent"></div>
-                    <span class="text-[11px] tracking-[0.2em] uppercase text-white/50 font-semibold">Filosofia</span>
+                <div class="text-center lg:text-left mb-16">
+                    <div class="flex items-center justify-center lg:justify-start gap-4 mb-8 reveal">
+                        <div class="w-12 h-px bg-gradient-to-r from-white/30 to-transparent"></div>
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                            <span class="w-2 h-2 rounded-full bg-white/50 animate-pulse"></span>
+                            <span class="text-[11px] tracking-[0.2em] uppercase text-white/60 font-semibold">Filosofia</span>
+                        </div>
+                        <div class="w-12 h-px bg-gradient-to-l from-white/30 to-transparent"></div>
+                    </div>
+                    
+                    <h2 class="text-[40px] sm:text-[48px] lg:text-[64px] xl:text-[76px] font-bold leading-[1.1] tracking-tight mb-10">
+                        <span class="block reveal text-gradient">Acreditamos que software</span>
+                        <span class="block reveal text-white/20" style="transition-delay: 100ms">deve ser <span class="text-gradient">invisível.</span></span>
+                        <span class="block reveal text-gradient" style="transition-delay: 200ms">Deve simplesmente <span class="text-white/20">funcionar.</span></span>
+                    </h2>
+                    
+                    <p class="text-[18px] lg:text-[20px] text-white/50 leading-[1.75] max-w-3xl mx-auto lg:mx-0 reveal" style="transition-delay: 300ms">
+                        Não construímos features por construir. Cada linha de código existe para resolver um problema real. Essa obsessão por simplicidade e eficiência guia tudo que fazemos na KRON.
+                    </p>
                 </div>
                 
-                <h2 class="text-[32px] sm:text-[40px] lg:text-[56px] xl:text-[68px] font-bold leading-[1.1] tracking-tight mb-12">
-                    <span class="block reveal text-gradient">Acreditamos que software</span>
-                    <span class="block reveal text-white/20" style="transition-delay: 100ms">deve ser <span class="text-gradient">invisível.</span></span>
-                    <span class="block reveal text-gradient" style="transition-delay: 200ms">Deve simplesmente <span class="text-white/20">funcionar.</span></span>
-                </h2>
-                
-                <p class="text-[17px] lg:text-[19px] text-white/45 leading-[1.7] max-w-2xl reveal" style="transition-delay: 300ms">
-                    Não construímos features por construir. Cada linha de código existe para resolver um problema real. Essa obsessão por simplicidade guia tudo que fazemos na KRON.
-                </p>
+                <!-- Philosophy Principles -->
+                <div class="grid md:grid-cols-3 gap-6 mb-16">
+                    <div class="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-500 reveal" style="transition-delay: 400ms">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-[18px] font-semibold mb-2 text-white">Simplicidade</h3>
+                        <p class="text-[14px] text-white/45 leading-relaxed">Interfaces intuitivas que não precisam de manual. Software que funciona sem complicação.</p>
+                    </div>
+                    
+                    <div class="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-500 reveal" style="transition-delay: 500ms">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-[18px] font-semibold mb-2 text-white">Performance</h3>
+                        <p class="text-[14px] text-white/45 leading-relaxed">Código otimizado para velocidade e eficiência. Resultados que fazem a diferença.</p>
+                    </div>
+                    
+                    <div class="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all duration-500 reveal" style="transition-delay: 600ms">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-[18px] font-semibold mb-2 text-white">Confiabilidade</h3>
+                        <p class="text-[14px] text-white/45 leading-relaxed">Sistemas robustos e seguros. Você pode confiar que tudo vai funcionar quando precisar.</p>
+                    </div>
+                </div>
                 
             </div>
             
@@ -972,7 +1179,7 @@
                     <div class="flex items-baseline gap-1">
                         <span class="stat-number text-[48px] lg:text-[64px] font-bold tracking-tight text-gradient group-hover:text-gradient-shine transition-all duration-500" data-value="<?= $stat['value'] ?>"><?= $stat['value'] ?></span>
                         <span class="text-[28px] lg:text-[36px] font-bold text-white/40"><?= $stat['suffix'] ?></span>
-                    </div>
+                </div>
                     <p class="text-[13px] lg:text-[14px] text-white/40 mt-2 font-medium tracking-wide"><?= $stat['label'] ?></p>
                 </div>
                 <?php 
@@ -1014,7 +1221,7 @@
                     <span class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:border-white transition-all duration-500">
                         <svg class="w-6 h-6 text-white/50 group-hover:text-black group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-                        </svg>
+                    </svg>
                     </span>
                 </a>
                 
@@ -1128,7 +1335,7 @@
         let mouseX = 0, mouseY = 0;
         let glowX = 0, glowY = 0;
         
-        document.addEventListener('mousemove', (e) => {
+            document.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
             cursorGlow.style.opacity = '1';
@@ -1146,29 +1353,6 @@
             requestAnimationFrame(animateGlow);
         }
         animateGlow();
-        
-        // Floating particles
-        const particlesContainer = document.getElementById('particles');
-        
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.top = '100%';
-            particle.style.width = (Math.random() * 3 + 2) + 'px';
-            particle.style.height = particle.style.width;
-            particle.style.opacity = Math.random() * 0.5 + 0.2;
-            particle.style.animation = `particle-float ${Math.random() * 10 + 15}s linear forwards`;
-            particlesContainer.appendChild(particle);
-            
-            setTimeout(() => particle.remove(), 25000);
-        }
-        
-        // Create particles periodically
-        setInterval(createParticle, 2000);
-        for(let i = 0; i < 10; i++) {
-            setTimeout(createParticle, i * 500);
-        }
         
         // Header scroll effect
         const mainNav = document.getElementById('main-nav');
