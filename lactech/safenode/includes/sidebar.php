@@ -91,6 +91,22 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
         <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'dashboard' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all">
             <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
         </a>
+        <a href="<?php echo getSafeNodeUrl('sites'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'sites' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all">
+            <i data-lucide="globe" class="w-5 h-5"></i> Gerenciar Sites
+        </a>
+        <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Análises</div>
+        <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'behavior-analysis' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="brain" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Comportamental
+        </a>
+        <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'security-analytics' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="lightbulb" class="w-5 h-5 group-hover:text-amber-400 transition-colors"></i> Analytics
+        </a>
+        <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'suspicious-ips' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="alert-octagon" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i> IPs Suspeitos
+        </a>
+        <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'attacked-targets' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="target" class="w-5 h-5 group-hover:text-orange-400 transition-colors"></i> Alvos Atacados
+        </a>
         <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sistema</div>
         <a href="<?php echo getSafeNodeUrl('updates'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'updates' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="sparkles" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Atualizações

@@ -1,7 +1,8 @@
 <?php
 /**
  * SafeNode - Security Analytics
- * Análise avançada de padrões de segurança que a Cloudflare não mostra
+ * Análise avançada de padrões de segurança usando DADOS PRÓPRIOS
+ * Sistema independente - não depende da Cloudflare
  */
 
 class SecurityAnalytics {
@@ -15,19 +16,31 @@ class SecurityAnalytics {
      * Analisa padrões de ataque por horário
      * Retorna quais horários têm mais ataques
      */
-    public function getAttackPatternsByTime($siteId = null, $days = 30) {
-        if (!$this->db) return null;
+    public function getAttackPatternsByTime($siteId = null, $userId = null, $days = 30) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [$days];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params = [$siteId, $days];
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params = [$userId, $days];
+        }
         
         $sql = "
             SELECT 
                 HOUR(created_at) as hour,
                 COUNT(*) as attack_count,
                 COUNT(DISTINCT ip_address) as unique_attackers,
-                AVG(threat_score) as avg_threat_score,
+                COALESCE(AVG(threat_score), 0) as avg_threat_score,
+                COALESCE(MAX(threat_score), 0) as max_threat_score,
                 SUM(CASE WHEN threat_type = 'sql_injection' THEN 1 ELSE 0 END) as sql_attacks,
-                SUM(CASE WHEN threat_type = 'xss' THEN 1 ELSE 0 END) as xss_attacks
+                SUM(CASE WHEN threat_type = 'xss' THEN 1 ELSE 0 END) as xss_attacks,
+                SUM(CASE WHEN threat_type = 'brute_force' THEN 1 ELSE 0 END) as brute_force_attacks,
+                SUM(CASE WHEN threat_type = 'ddos' THEN 1 ELSE 0 END) as ddos_attacks
             FROM safenode_security_logs
             WHERE action_taken = 'blocked'
             AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -37,17 +50,26 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days]);
-        return $stmt->fetchAll();
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
     
     /**
      * Analisa padrões de ataque por dia da semana
      */
-    public function getAttackPatternsByDay($siteId = null, $days = 30) {
-        if (!$this->db) return null;
+    public function getAttackPatternsByDay($siteId = null, $userId = null, $days = 30) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [$days];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params = [$siteId, $days];
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params = [$userId, $days];
+        }
         
         $sql = "
             SELECT 
@@ -55,7 +77,8 @@ class SecurityAnalytics {
                 DAYOFWEEK(created_at) as day_number,
                 COUNT(*) as attack_count,
                 COUNT(DISTINCT ip_address) as unique_attackers,
-                AVG(threat_score) as avg_threat_score
+                COALESCE(AVG(threat_score), 0) as avg_threat_score,
+                COALESCE(MAX(threat_score), 0) as max_threat_score
             FROM safenode_security_logs
             WHERE action_taken = 'blocked'
             AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
@@ -65,17 +88,26 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days]);
-        return $stmt->fetchAll();
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
     
     /**
      * Identifica IPs com padrões suspeitos (múltiplos tipos de ataque)
      */
-    public function getSuspiciousIPs($siteId = null, $days = 7, $limit = 20) {
-        if (!$this->db) return null;
+    public function getSuspiciousIPs($siteId = null, $userId = null, $days = 7, $limit = 20) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [$days, $limit];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params = [$siteId, $days, $limit];
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params = [$userId, $days, $limit];
+        }
         
         $sql = "
             SELECT 
@@ -83,9 +115,9 @@ class SecurityAnalytics {
                 COUNT(*) as total_attacks,
                 COUNT(DISTINCT threat_type) as attack_types_count,
                 COUNT(DISTINCT DATE(created_at)) as active_days,
-                MAX(threat_score) as max_threat_score,
-                AVG(threat_score) as avg_threat_score,
-                GROUP_CONCAT(DISTINCT threat_type) as threat_types,
+                COALESCE(MAX(threat_score), 0) as max_threat_score,
+                COALESCE(AVG(threat_score), 0) as avg_threat_score,
+                SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT threat_type ORDER BY threat_type ASC SEPARATOR ','), ',', 10) as threat_types,
                 MIN(created_at) as first_seen,
                 MAX(created_at) as last_seen,
                 country_code
@@ -100,15 +132,15 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days, $limit]);
-        $ips = $stmt->fetchAll();
+        $stmt->execute($params);
+        $ips = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Calcular score de suspeição
         foreach ($ips as &$ip) {
             $ip['suspicion_score'] = $this->calculateSuspicionScore($ip);
         }
         
-        return $ips;
+        return $ips ?: [];
     }
     
     /**
@@ -135,22 +167,32 @@ class SecurityAnalytics {
     /**
      * Analisa países de origem dos ataques
      */
-    public function getAttackCountries($siteId = null, $days = 30, $limit = 10) {
-        if (!$this->db) return null;
+    public function getAttackCountries($siteId = null, $userId = null, $days = 30, $limit = 10) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [$days, $limit];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params = [$siteId, $days, $limit];
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params = [$userId, $days, $limit];
+        }
         
         $sql = "
             SELECT 
-                country_code,
+                COALESCE(country_code, '??') as country_code,
                 COUNT(*) as attack_count,
                 COUNT(DISTINCT ip_address) as unique_ips,
-                AVG(threat_score) as avg_threat_score,
+                COALESCE(AVG(threat_score), 0) as avg_threat_score,
+                COALESCE(MAX(threat_score), 0) as max_threat_score,
                 SUM(CASE WHEN threat_type = 'sql_injection' THEN 1 ELSE 0 END) as sql_attacks,
-                SUM(CASE WHEN threat_type = 'xss' THEN 1 ELSE 0 END) as xss_attacks
+                SUM(CASE WHEN threat_type = 'xss' THEN 1 ELSE 0 END) as xss_attacks,
+                SUM(CASE WHEN threat_type = 'brute_force' THEN 1 ELSE 0 END) as brute_force_attacks
             FROM safenode_security_logs
             WHERE action_taken = 'blocked'
-            AND country_code IS NOT NULL
             AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
             $siteFilter
             GROUP BY country_code
@@ -159,20 +201,30 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days, $limit]);
-        return $stmt->fetchAll();
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
     
     /**
      * Identifica tendências de ameaças (aumento/diminuição)
      */
-    public function getThreatTrends($siteId = null, $days = 30) {
-        if (!$this->db) return null;
+    public function getThreatTrends($siteId = null, $userId = null, $days = 30) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params[] = $siteId;
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params[] = $userId;
+        }
         
         // Dividir em períodos para comparar
         $halfDays = ceil($days / 2);
+        $params = array_merge($params, [$days, $halfDays, $halfDays, $days]);
         
         $sql = "
             SELECT 
@@ -192,13 +244,13 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days, $halfDays, $halfDays, $days]);
-        $trends = $stmt->fetchAll();
+        $stmt->execute($params);
+        $trends = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Calcular tendência (aumento/diminuição)
         foreach ($trends as &$trend) {
-            $period1 = $trend['period1_attacks'];
-            $period2 = $trend['period2_attacks'];
+            $period1 = (int)$trend['period1_attacks'];
+            $period2 = (int)$trend['period2_attacks'];
             
             if ($period1 > 0) {
                 $change = (($period2 - $period1) / $period1) * 100;
@@ -210,16 +262,25 @@ class SecurityAnalytics {
             }
         }
         
-        return $trends;
+        return $trends ?: [];
     }
     
     /**
      * Identifica alvos mais atacados (URIs)
      */
-    public function getMostAttackedTargets($siteId = null, $days = 30, $limit = 10) {
-        if (!$this->db) return null;
+    public function getMostAttackedTargets($siteId = null, $userId = null, $days = 30, $limit = 10) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [$days, $limit];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params = [$siteId, $days, $limit];
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params = [$userId, $days, $limit];
+        }
         
         $sql = "
             SELECT 
@@ -227,7 +288,8 @@ class SecurityAnalytics {
                 COUNT(*) as attack_count,
                 COUNT(DISTINCT ip_address) as unique_attackers,
                 COUNT(DISTINCT threat_type) as threat_types_count,
-                AVG(threat_score) as avg_threat_score,
+                COALESCE(AVG(threat_score), 0) as avg_threat_score,
+                COALESCE(MAX(threat_score), 0) as max_threat_score,
                 MAX(created_at) as last_attack
             FROM safenode_security_logs
             WHERE action_taken = 'blocked'
@@ -239,24 +301,33 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days, $limit]);
-        return $stmt->fetchAll();
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
     
     /**
      * Correlaciona ataques (IPs que atacam múltiplos alvos)
      */
-    public function getCorrelatedAttacks($siteId = null, $days = 7, $limit = 10) {
-        if (!$this->db) return null;
+    public function getCorrelatedAttacks($siteId = null, $userId = null, $days = 7, $limit = 10) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [$days, $limit];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params = [$siteId, $days, $limit];
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params = [$userId, $days, $limit];
+        }
         
         $sql = "
             SELECT 
                 ip_address,
                 COUNT(DISTINCT request_uri) as targets_count,
                 COUNT(*) as total_attacks,
-                GROUP_CONCAT(DISTINCT request_uri SEPARATOR ', ') as targets,
+                SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT request_uri ORDER BY request_uri ASC SEPARATOR ', '), ', ', 5) as targets,
                 country_code,
                 MAX(created_at) as last_attack
             FROM safenode_security_logs
@@ -270,20 +341,20 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days, $limit]);
-        return $stmt->fetchAll();
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
     
     /**
      * Gera insights automáticos baseados nos dados
      */
-    public function generateInsights($siteId = null, $days = 30) {
+    public function generateInsights($siteId = null, $userId = null, $days = 30) {
         if (!$this->db) return [];
         
         $insights = [];
         
         // Insight 1: Horário de pico de ataques
-        $timePatterns = $this->getAttackPatternsByTime($siteId, $days);
+        $timePatterns = $this->getAttackPatternsByTime($siteId, $userId, $days);
         if (!empty($timePatterns)) {
             $peakHour = $timePatterns[0];
             $insights[] = [
@@ -296,12 +367,12 @@ class SecurityAnalytics {
         }
         
         // Insight 2: IPs mais suspeitos
-        $suspiciousIPs = $this->getSuspiciousIPs($siteId, min($days, 7), 5);
+        $suspiciousIPs = $this->getSuspiciousIPs($siteId, $userId, min($days, 7), 5);
         if (!empty($suspiciousIPs)) {
             $topSuspicious = $suspiciousIPs[0];
             $insights[] = [
                 'type' => 'suspicious_ip',
-                'severity' => $topSuspicious['suspicion_score'] > 70 ? 'high' : 'medium',
+                'severity' => ($topSuspicious['suspicion_score'] ?? 0) > 70 ? 'high' : 'medium',
                 'title' => 'IP Altamente Suspeito Detectado',
                 'message' => "IP {$topSuspicious['ip_address']} realizou {$topSuspicious['total_attacks']} ataques de {$topSuspicious['attack_types_count']} tipos diferentes",
                 'data' => $topSuspicious
@@ -309,9 +380,9 @@ class SecurityAnalytics {
         }
         
         // Insight 3: Tendências
-        $trends = $this->getThreatTrends($siteId, $days);
+        $trends = $this->getThreatTrends($siteId, $userId, $days);
         foreach ($trends as $trend) {
-            if ($trend['trend'] === 'increasing' && $trend['trend_percentage'] > 50) {
+            if (($trend['trend'] ?? '') === 'increasing' && ($trend['trend_percentage'] ?? 0) > 50) {
                 $insights[] = [
                     'type' => 'trend',
                     'severity' => 'warning',
@@ -323,13 +394,13 @@ class SecurityAnalytics {
         }
         
         // Insight 4: Alvos mais atacados
-        $targets = $this->getMostAttackedTargets($siteId, $days, 1);
-        if (!empty($targets) && $targets[0]['attack_count'] > 10) {
+        $targets = $this->getMostAttackedTargets($siteId, $userId, $days, 1);
+        if (!empty($targets) && ($targets[0]['attack_count'] ?? 0) > 10) {
             $insights[] = [
                 'type' => 'target',
                 'severity' => 'medium',
                 'title' => 'Alvo Frequente de Ataques',
-                'message' => "O caminho {$targets[0]['request_uri']} foi atacado {$targets[0]['attack_count']} vezes",
+                'message' => "O caminho " . substr($targets[0]['request_uri'], 0, 50) . " foi atacado {$targets[0]['attack_count']} vezes",
                 'data' => $targets[0]
             ];
         }
@@ -340,18 +411,27 @@ class SecurityAnalytics {
     /**
      * Estatísticas resumidas para dashboard
      */
-    public function getSummaryStats($siteId = null, $days = 30) {
-        if (!$this->db) return null;
+    public function getSummaryStats($siteId = null, $userId = null, $days = 30) {
+        if (!$this->db) return [];
         
-        $siteFilter = $siteId ? " AND site_id = $siteId " : "";
+        $params = [$days];
+        $siteFilter = "";
+        
+        if ($siteId) {
+            $siteFilter = " AND site_id = ?";
+            $params = [$siteId, $days];
+        } elseif ($userId) {
+            $siteFilter = " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            $params = [$userId, $days];
+        }
         
         $sql = "
             SELECT 
                 COUNT(*) as total_attacks,
                 COUNT(DISTINCT ip_address) as unique_attackers,
                 COUNT(DISTINCT threat_type) as threat_types,
-                AVG(threat_score) as avg_threat_score,
-                MAX(threat_score) as max_threat_score,
+                COALESCE(AVG(threat_score), 0) as avg_threat_score,
+                COALESCE(MAX(threat_score), 0) as max_threat_score,
                 COUNT(DISTINCT DATE(created_at)) as active_days,
                 COUNT(DISTINCT country_code) as countries
             FROM safenode_security_logs
@@ -361,9 +441,11 @@ class SecurityAnalytics {
         ";
         
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$days]);
-        return $stmt->fetch();
+        $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: [];
     }
 }
+
 
 

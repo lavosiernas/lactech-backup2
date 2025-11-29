@@ -136,19 +136,22 @@ if ($db) {
     }
 }
 ?>
+$pageTitle = 'Perfil do Usuário';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="dark h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil | SafeNode</title>
+    <title><?php echo $pageTitle; ?> | SafeNode</title>
     <link rel="icon" type="image/png" href="assets/img/logos (6).png">
     <link rel="shortcut icon" type="image/png" href="assets/img/logos (6).png">
     <link rel="apple-touch-icon" href="assets/img/logos (6).png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -157,66 +160,256 @@ if ($db) {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#030303',
+                            900: '#050505',
+                            850: '#080808',
+                            800: '#0a0a0a',
+                            700: '#0f0f0f',
+                            600: '#141414',
+                            500: '#1a1a1a',
+                            400: '#222222',
+                        },
+                        accent: {
+                            DEFAULT: '#ffffff',
+                            light: '#ffffff',
+                            dark: '#ffffff',
+                            glow: 'rgba(255, 255, 255, 0.15)',
+                        }
                     }
                 }
             }
         }
     </script>
+    
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #030303;
+            --bg-secondary: #080808;
+            --bg-tertiary: #0f0f0f;
+            --bg-card: #0a0a0a;
+            --bg-hover: #111111;
+            --border-subtle: rgba(255,255,255,0.04);
+            --border-light: rgba(255,255,255,0.08);
+            --accent: #ffffff;
+            --accent-glow: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-secondary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
         
-        /* Glass Components Melhorados */
+        .glass {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-right: 1px solid var(--border-subtle);
+            position: relative;
+        }
+        
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, var(--accent-glow) 50%, transparent 100%);
+            opacity: 0.5;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-item:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-item:hover::before {
+            opacity: 0.5;
+        }
+        
+        .nav-item.active {
+            color: var(--accent);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+        }
+        
+        .nav-item.active::before {
+            opacity: 1;
+        }
+        
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+        }
+        
+        .stat-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -20px rgba(0,0,0,0.5), 0 0 60px -30px var(--accent-glow);
+        }
+        
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%);
+            color: #000;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .search-input {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 18px 12px 44px;
+            color: var(--text-primary);
+            width: 240px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+            width: 280px;
+        }
+        
+        .upgrade-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.3) 100%);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        [x-cloak] { display: none !important; }
+        
+        /* Profile specific styles */
         .glass-card {
-            background: linear-gradient(180deg, rgba(39, 39, 42, 0.5) 0%, rgba(24, 24, 27, 0.5) 100%);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-card:hover {
-            background: linear-gradient(180deg, rgba(39, 39, 42, 0.7) 0%, rgba(24, 24, 27, 0.7) 100%);
-            border-color: rgba(255, 255, 255, 0.12);
+            border-color: var(--border-light);
         }
 
-        /* Stat Card Melhorado */
-        .stat-card {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(0, 0, 0, 0.6) 100%);
-            border: 1px solid rgba(59, 130, 246, 0.15);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .stat-card:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(0, 0, 0, 0.7) 100%);
-            border-color: rgba(59, 130, 246, 0.25);
-            transform: translateY(-4px);
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
-        }
-
-        /* Avatar Glow */
         .avatar-glow {
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
             transition: all 0.3s;
         }
         .avatar-glow:hover {
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.5);
             transform: scale(1.05);
         }
 
-        /* Form Inputs Melhorados */
         .form-input {
-            background: rgba(39, 39, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(10, 10, 10, 0.6);
+            border: 1px solid var(--border-subtle);
             transition: all 0.3s;
         }
         .form-input:focus {
-            background: rgba(39, 39, 42, 0.8);
-            border-color: rgba(59, 130, 246, 0.5);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 20px rgba(59, 130, 246, 0.1);
+            background: rgba(10, 10, 10, 0.8);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
             outline: none;
         }
 
-        /* Grid Pattern */
         .grid-pattern {
             background-image: 
                 linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
@@ -224,31 +417,17 @@ if ($db) {
             background-size: 20px 20px;
         }
 
-        /* Badge Moderno */
         .modern-badge {
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-subtle);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             transition: all 0.3s;
         }
         .modern-badge:hover {
-            border-color: rgba(255, 255, 255, 0.15);
+            border-color: var(--border-light);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
-        /* Botões Melhorados */
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
-            transition: all 0.3s;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-            transform: translateY(-1px);
-        }
-
-        /* Animações */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -271,7 +450,6 @@ if ($db) {
             animation: scale-in 0.2s ease-out;
         }
 
-        /* Depth Shadow */
         .depth-shadow {
             box-shadow: 
                 0 10px 30px rgba(0, 0, 0, 0.5),
@@ -279,41 +457,129 @@ if ($db) {
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        /* Security Card */
         .security-card {
             transition: all 0.3s;
         }
         .security-card:hover {
             transform: translateX(4px);
-            border-color: rgba(59, 130, 246, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
-<body class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex">
-    <?php include __DIR__ . '/includes/sidebar.php'; ?>
-
-    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
-        <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
-            <div class="hidden md:flex md:items-center md:gap-3 md:flex-1">
-                <div class="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
-                <div class="flex-1">
-                    <h2 class="text-xl font-bold text-white tracking-tight">Perfil do Usuário</h2>
-                    <p class="text-xs text-zinc-400 mt-0.5 font-medium">Gerencie suas informações pessoais</p>
+<body x-data="{ notificationsOpen: false, sidebarOpen: false }" class="h-full overflow-hidden flex">
+    <!-- Sidebar -->
+    <aside class="sidebar w-72 h-full flex-shrink-0 flex flex-col hidden lg:flex">
+        <div class="p-6 border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain">
+                    <div>
+                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                    </div>
                 </div>
-                <a href="dashboard.php" class="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all flex items-center gap-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span class="text-sm font-medium">Voltar</span>
+                <button class="ml-auto text-zinc-600 hover:text-zinc-400 transition-colors">
+                    <i data-lucide="chevrons-left" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+        
+        <nav class="flex-1 p-5 space-y-2 overflow-y-auto">
+            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Menu Principal</p>
+            
+            <a href="dashboard.php" class="nav-item">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="font-medium">Home</span>
+            </a>
+            <a href="security-analytics.php" class="nav-item">
+                <i data-lucide="activity" class="w-5 h-5"></i>
+                <span class="font-medium">Network</span>
+            </a>
+            <a href="behavior-analysis.php" class="nav-item">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+                <span class="font-medium">Kubernetes</span>
+            </a>
+            <a href="logs.php" class="nav-item">
+                <i data-lucide="compass" class="w-5 h-5"></i>
+                <span class="font-medium">Explorar</span>
+            </a>
+            <a href="suspicious-ips.php" class="nav-item">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                <span class="font-medium">Analisar</span>
+            </a>
+            <a href="attacked-targets.php" class="nav-item">
+                <i data-lucide="users-2" class="w-5 h-5"></i>
+                <span class="font-medium">Grupos</span>
+            </a>
+            
+            <div class="pt-6 mt-6 border-t border-white/5">
+                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
+                <a href="profile.php" class="nav-item active">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                    <span class="font-medium">Perfil</span>
+                </a>
+                <a href="settings.php" class="nav-item">
+                    <i data-lucide="settings-2" class="w-5 h-5"></i>
+                    <span class="font-medium">Configurações</span>
+                </a>
+                <a href="help.php" class="nav-item">
+                    <i data-lucide="life-buoy" class="w-5 h-5"></i>
+                    <span class="font-medium">Ajuda</span>
                 </a>
             </div>
-            <div class="flex items-center gap-4 md:hidden">
-                <button class="text-zinc-400 hover:text-white transition-colors" data-sidebar-toggle>
+        </nav>
+        
+        <div class="p-5">
+            <div class="upgrade-card">
+                <div class="relative z-10">
+                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-5">
+                        <i data-lucide="zap" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-1">Ativar Pro</h3>
+                    <p class="text-sm text-white/60 mb-5 leading-relaxed">Desbloqueie recursos avançados de proteção</p>
+                    <button class="w-full btn-primary py-3 text-sm">
+                        Upgrade Agora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
+        <!-- Header -->
+        <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-6">
+                <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-zinc-400 hover:text-white transition-colors">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
-                <span class="font-bold text-lg text-white">SafeNode</span>
+                <div>
+                    <h2 class="text-2xl font-bold text-white tracking-tight"><?php echo $pageTitle; ?></h2>
+                    <p class="text-sm text-zinc-500 mt-0.5">Gerencie suas informações pessoais</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="relative hidden md:block">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
+                    <input type="text" placeholder="Buscar..." class="search-input">
+                </div>
+                
+                <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-white rounded-full border-2 border-dark-900 animate-pulse"></span>
+                </button>
+                
+                <button onclick="window.location.href='profile.php'" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-all group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform">
+                        <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
+                    </div>
+                </button>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 z-10">
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8">
             <div class="max-w-5xl mx-auto space-y-6">
                 <?php if ($message): ?>
                     <div class="mb-6 p-4 rounded-xl <?php 
@@ -340,32 +606,32 @@ if ($db) {
                     <div class="absolute inset-0 grid-pattern opacity-20"></div>
                     
                     <!-- Background Pattern -->
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-600/10 to-purple-600/5 rounded-full blur-3xl"></div>
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/5 to-white/2 rounded-full blur-3xl"></div>
                     
                     <div class="relative z-10">
                         <div class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
                             <?php if ($avatarUrl): ?>
-                                <div class="relative w-28 h-28 rounded-2xl overflow-hidden shadow-2xl avatar-glow border-2 border-blue-500/30">
+                                <div class="relative w-28 h-28 rounded-2xl overflow-hidden shadow-2xl avatar-glow border-2 border-white/20">
                                     <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="Avatar" class="w-full h-full object-cover">
-                                    <div class="absolute bottom-1 right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center border-2 border-black shadow-lg">
-                                        <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+                                    <div class="absolute bottom-1 right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-black shadow-lg">
+                                        <i data-lucide="check" class="w-3.5 h-3.5 text-black"></i>
                                     </div>
                                 </div>
                             <?php else: ?>
-                                <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-white font-black text-4xl shadow-2xl avatar-glow border-2 border-blue-500/30">
+                                <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-white to-zinc-300 flex items-center justify-center text-black font-black text-4xl shadow-2xl avatar-glow border-2 border-white/20">
                                     <?php echo $userInitial; ?>
                                 </div>
                             <?php endif; ?>
                             <div class="flex-1">
                                 <div class="flex items-center gap-3 mb-3">
                                     <h3 class="text-3xl font-black text-white"><?php echo htmlspecialchars($username); ?></h3>
-                                    <span class="modern-badge px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-bold border border-blue-600/30">
+                                    <span class="modern-badge px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold border border-white/20">
                                         <i data-lucide="check-circle" class="w-3.5 h-3.5 inline mr-1"></i>
                                         Ativo
                                     </span>
                                 </div>
                                 <p class="text-zinc-400 text-sm flex items-center gap-2 mb-2 font-semibold">
-                                    <i data-lucide="shield-check" class="w-4 h-4 text-blue-400"></i>
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-white"></i>
                                     Administrador do Sistema
                                 </p>
                                 <p class="text-zinc-500 text-xs flex items-center gap-2 font-medium">
@@ -378,11 +644,11 @@ if ($db) {
                         <!-- Estatísticas - Redesign -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="stat-card rounded-xl p-5 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl"></div>
+                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full blur-2xl"></div>
                                 <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-3">
-                                        <div class="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                                        <i data-lucide="globe" class="w-6 h-6 text-blue-400"></i>
+                                        <div class="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+                                        <i data-lucide="globe" class="w-6 h-6 text-white"></i>
                                     </div>
                                         <span class="text-xs text-zinc-500 uppercase tracking-wider font-bold">Sites</span>
                                 </div>
@@ -916,10 +1182,10 @@ if ($db) {
             
             // Atualizar classes para modo editável
             usernameInput.classList.remove('text-zinc-500', 'cursor-not-allowed');
-            usernameInput.classList.add('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-blue-500/50', 'focus:border-blue-500/50');
+            usernameInput.classList.add('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-white/50', 'focus:border-white/50');
             
             fullNameInput.classList.remove('text-zinc-500', 'cursor-not-allowed');
-            fullNameInput.classList.add('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-blue-500/50', 'focus:border-blue-500/50');
+            fullNameInput.classList.add('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-white/50', 'focus:border-white/50');
             
             // Mostrar/esconder botões
             document.getElementById('editButtonContainer').classList.add('hidden');
@@ -944,10 +1210,10 @@ if ($db) {
             fullNameInput.disabled = true;
             
             // Restaurar classes para modo visualização
-            usernameInput.classList.remove('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-blue-500/50', 'focus:border-blue-500/50');
+            usernameInput.classList.remove('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-white/50', 'focus:border-white/50');
             usernameInput.classList.add('text-zinc-500', 'cursor-not-allowed');
             
-            fullNameInput.classList.remove('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-blue-500/50', 'focus:border-blue-500/50');
+            fullNameInput.classList.remove('text-white', 'cursor-text', 'focus:ring-2', 'focus:ring-white/50', 'focus:border-white/50');
             fullNameInput.classList.add('text-zinc-500', 'cursor-not-allowed');
             
             // Mostrar/esconder botões

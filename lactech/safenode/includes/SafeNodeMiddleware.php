@@ -57,24 +57,55 @@ class SafeNodeMiddleware {
         require_once __DIR__ . '/SecurityLogger.php';
         require_once __DIR__ . '/CloudflareAPI.php';
         require_once __DIR__ . '/Settings.php';
-        require_once __DIR__ . '/BrowserIntegrity.php'; // Novo componente
+        require_once __DIR__ . '/BrowserIntegrity.php';
+        require_once __DIR__ . '/IPReputationManager.php'; // Sistema de reputação próprio
+        require_once __DIR__ . '/BehaviorAnalyzer.php'; // Análise comportamental
         
         $ipBlocker = new IPBlocker(self::$db);
         $rateLimiter = new RateLimiter(self::$db);
         $threatDetector = new ThreatDetector(self::$db);
         $logger = new SecurityLogger(self::$db);
         $browserIntegrity = new BrowserIntegrity(self::$db);
+        $ipReputation = new IPReputationManager(self::$db); // Gerenciador de reputação
+        $behaviorAnalyzer = new BehaviorAnalyzer(self::$db); // Analisador comportamental
         
         // 0. Security Headers (Blindagem do Cliente)
         self::sendSecurityHeaders();
         
-        // 1. Verificar whitelist
+        // 1. Verificar whitelist (IPBlocker)
         if ($ipBlocker->isWhitelisted($ipAddress)) {
             $logger->log($ipAddress, $_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET', 'allowed', null, 0, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
             return; // Permite requisição
         }
         
         self::$visitorCountry = self::detectCountryCode($ipAddress);
+        
+        // 1.1 Verificar reputação própria (SISTEMA INDEPENDENTE)
+        if ($ipReputation->isWhitelisted($ipAddress)) {
+            $logger->log($ipAddress, $_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET', 'allowed', null, 0, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+            $ipReputation->updateReputation($ipAddress, 'allowed', 0, null, self::$visitorCountry);
+            return; // Permite requisição
+        }
+        
+        if ($ipReputation->isBlacklisted($ipAddress)) {
+            $logger->log($ipAddress, $_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET', 'blocked', 'ip_reputation_blacklist', 100, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+            self::blockRequest("IP bloqueado por reputação", 'ip_reputation_blacklist');
+        }
+        
+        // Verificar trust_score baixo (ajustar threshold baseado no nível de segurança)
+        $trustScore = $ipReputation->getTrustScore($ipAddress);
+        $trustThreshold = self::$securityLevel === 'under_attack' ? 40 : (self::$securityLevel === 'high' ? 30 : 20);
+        if ($trustScore < $trustThreshold && $trustScore > 0) {
+            // IP com baixa reputação - aplicar challenge ou rate limit mais agressivo
+            $rateLimitCheck = $rateLimiter->checkRateLimit($ipAddress, true); // Modo agressivo
+            if (!$rateLimitCheck['allowed']) {
+                $ipBlocker->blockIP($ipAddress, "Baixa reputação + rate limit", 'low_reputation', 1800);
+                $logger->log($ipAddress, $_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET', 'blocked', 'low_reputation', 50, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+                $ipReputation->updateReputation($ipAddress, 'blocked', 50, 'low_reputation', self::$visitorCountry);
+                self::blockRequest("Acesso negado por segurança", 'low_reputation');
+            }
+        }
+        
         if (self::$visitorCountry) {
             self::enforceGeoBlocking(self::$visitorCountry, $ipAddress);
         }
@@ -120,30 +151,49 @@ class SafeNodeMiddleware {
             }
         }
         
-        // 6. Analisar requisição para ameaças
+        // 6. Análise Comportamental (SISTEMA PRÓPRIO)
+        $behaviorAnalysis = $behaviorAnalyzer->analyzeIPBehavior($ipAddress, 3600);
+        if ($behaviorAnalysis['risk_level'] === 'critical' || $behaviorAnalysis['risk_level'] === 'high') {
+            // Comportamento suspeito detectado - aumentar sensibilidade
+            $behaviorRiskScore = $behaviorAnalysis['risk_score'] ?? 0;
+            if ($behaviorRiskScore >= 70) {
+                // Comportamento muito suspeito - bloquear diretamente
+                $ipBlocker->blockIP($ipAddress, "Comportamento suspeito detectado", 'suspicious_behavior', 7200);
+                $logger->log($ipAddress, $requestUri, $_SERVER['REQUEST_METHOD'] ?? 'GET', 'blocked', 'suspicious_behavior', $behaviorRiskScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+                $ipReputation->updateReputation($ipAddress, 'blocked', $behaviorRiskScore, 'suspicious_behavior', self::$visitorCountry);
+                self::blockRequest("Acesso negado por comportamento suspeito", 'suspicious_behavior');
+            }
+        }
+        
+        // 7. Analisar requisição para ameaças
         $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $headers = self::getHeaders();
         $body = file_get_contents('php://input');
         
         $threatAnalysis = $threatDetector->analyzeRequest($requestUri, $requestMethod, $headers, $body);
         
-        // 7. Verificar brute force
+        // Ajustar threat_score baseado em análise comportamental
+        if ($behaviorAnalysis['risk_score'] > 50) {
+            $threatAnalysis['threat_score'] = min(100, $threatAnalysis['threat_score'] + ($behaviorAnalysis['risk_score'] * 0.2));
+        }
+        
+        // 8. Verificar brute force
         if (stripos($requestUri, 'login') !== false || stripos($requestUri, 'auth') !== false) {
             if ($threatDetector->detectBruteForce($ipAddress, $requestUri)) {
                 $threatAnalysis['is_threat'] = true;
                 $threatAnalysis['threat_type'] = 'brute_force';
-                $threatAnalysis['threat_score'] = 80;
+                $threatAnalysis['threat_score'] = max(80, $threatAnalysis['threat_score']);
             }
         }
         
-        // 8. Verificar DDoS
+        // 9. Verificar DDoS
         if ($threatDetector->detectDDoS($ipAddress)) {
             $threatAnalysis['is_threat'] = true;
             $threatAnalysis['threat_type'] = 'ddos';
-            $threatAnalysis['threat_score'] = 90;
+            $threatAnalysis['threat_score'] = max(90, $threatAnalysis['threat_score']);
         }
         
-        // 9. Processar resultado com sensibilidade por site
+        // 10. Processar resultado com sensibilidade por site (com confidence score)
         // Ajustar thresholds conforme nível
         $blockThreshold = 70;
         $criticalThreshold = 85;
@@ -165,25 +215,44 @@ class SafeNodeMiddleware {
                 $criticalThreshold = 70;
                 break;
         }
-
-        // 10. Processar resultado
-        if ($threatAnalysis['is_threat'] && $threatAnalysis['threat_score'] >= $blockThreshold) {
+        
+        // Processar resultado (com confidence score)
+        $confidenceScore = $threatAnalysis['confidence_score'] ?? 0;
+        $threatScore = $threatAnalysis['threat_score'] ?? 0;
+        
+        // Ajustar threshold baseado em confidence (se confidence baixo, precisa de score maior)
+        $adjustedThreshold = $blockThreshold;
+        if ($confidenceScore < 50) {
+            $adjustedThreshold += 10; // Aumenta threshold se confidence baixo
+        } elseif ($confidenceScore >= 80) {
+            $adjustedThreshold -= 10; // Reduz threshold se confidence alto
+        }
+        $adjustedThreshold = max(40, min(90, $adjustedThreshold)); // Limitar entre 40-90
+        
+        if ($threatAnalysis['is_threat'] && $threatScore >= $adjustedThreshold) {
             // Bloquear IP com duração proporcional à gravidade e ao nível de segurança
-            $blockDuration = $threatAnalysis['threat_score'] >= $criticalThreshold ? 86400 : 3600; // 24h ou 1h
-            $ipBlocker->blockIP($ipAddress, "Ameaça detectada: " . $threatAnalysis['threat_type'], $threatAnalysis['threat_type'], $blockDuration);
+            $blockDuration = $threatScore >= $criticalThreshold ? 86400 : 3600; // 24h ou 1h
+            $ipBlocker->blockIP($ipAddress, "Ameaça detectada: " . ($threatAnalysis['threat_type'] ?? 'unknown'), $threatAnalysis['threat_type'] ?? 'unknown', $blockDuration);
             
-            // Enviar para Cloudflare se configurado
-            self::sendToCloudflare($ipAddress, $threatAnalysis['threat_type']);
+            // Enviar para Cloudflare se configurado (OPCIONAL - não bloqueia se falhar)
+            self::sendToCloudflare($ipAddress, $threatAnalysis['threat_type'] ?? 'unknown');
             
-            // Registrar log
-            $logger->log($ipAddress, $requestUri, $requestMethod, 'blocked', $threatAnalysis['threat_type'], $threatAnalysis['threat_score'], $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+            // Registrar log (com confidence score se disponível)
+            $logger->log($ipAddress, $requestUri, $requestMethod, 'blocked', $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry, $confidenceScore);
+            
+            // Atualizar reputação (SISTEMA PRÓPRIO)
+            $ipReputation->updateReputation($ipAddress, 'blocked', $threatScore, $threatAnalysis['threat_type'] ?? null, self::$visitorCountry);
             
             // Bloquear requisição
-            self::blockRequest("Acesso negado por segurança", $threatAnalysis['threat_type']);
+            self::blockRequest("Acesso negado por segurança", $threatAnalysis['threat_type'] ?? 'unknown');
         } else {
             // Permitir e registrar
             $responseTime = round((microtime(true) - self::$startTime) * 1000, 2);
-            $logger->log($ipAddress, $requestUri, $requestMethod, 'allowed', null, 0, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, $responseTime, self::$visitorCountry);
+            $actionTaken = $threatAnalysis['is_threat'] && $threatScore >= 30 ? 'challenged' : 'allowed';
+            $logger->log($ipAddress, $requestUri, $requestMethod, $actionTaken, $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, $responseTime, self::$visitorCountry, $confidenceScore);
+            
+            // Atualizar reputação (SISTEMA PRÓPRIO)
+            $ipReputation->updateReputation($ipAddress, $actionTaken, $threatScore, $threatAnalysis['threat_type'] ?? null, self::$visitorCountry);
         }
     }
     

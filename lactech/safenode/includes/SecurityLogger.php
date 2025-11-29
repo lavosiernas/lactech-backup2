@@ -14,44 +14,51 @@ class SecurityLogger {
     }
     
     /**
-     * Registra um evento de segurança
+     * Registra um evento de segurança (com confidence_score opcional)
      */
-    public function log($ipAddress, $requestUri, $requestMethod, $actionTaken, $threatType = null, $threatScore = 0, $userAgent = null, $referer = null, $siteId = null, $responseTime = null, $countryCode = null) {
+    public function log($ipAddress, $requestUri, $requestMethod, $actionTaken, $threatType = null, $threatScore = 0, $userAgent = null, $referer = null, $siteId = null, $responseTime = null, $countryCode = null, $confidenceScore = null) {
         if (!$this->db) return false;
         
         try {
-            // Verificar se a coluna response_time existe
+            // Colunas base
             $columns = "ip_address, request_uri, request_method, action_taken, threat_type, threat_score, user_agent, referer, site_id, country_code, created_at";
             $values = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()";
             $params = [$ipAddress, $requestUri, $requestMethod, $actionTaken, $threatType, $threatScore, $userAgent, $referer, $siteId, $countryCode];
             
+            // Tentar adicionar confidence_score se fornecido
+            $hasConfidenceScore = false;
+            if ($confidenceScore !== null) {
+                try {
+                    // Verificar se a coluna existe
+                    $this->db->query("SELECT confidence_score FROM safenode_security_logs LIMIT 1");
+                    $hasConfidenceScore = true;
+                    $columns .= ", confidence_score";
+                    $values .= ", ?";
+                    $params[] = $confidenceScore;
+                } catch (PDOException $e) {
+                    // Coluna não existe, continuar sem ela
+                    $hasConfidenceScore = false;
+                }
+            }
+            
+            // Tentar adicionar response_time se fornecido
             if ($responseTime !== null) {
                 try {
-                    // Tentar inserir com response_time
-                    $stmt = $this->db->prepare("
-                        INSERT INTO safenode_security_logs 
-                        ($columns, response_time) 
-                        VALUES ($values, ?)
-                    ");
+                    $columns .= ", response_time";
+                    $values .= ", ?";
                     $params[] = $responseTime;
-                    $stmt->execute($params);
                 } catch (PDOException $e) {
-                    // Se a coluna não existir, inserir sem ela
-                    $stmt = $this->db->prepare("
-                        INSERT INTO safenode_security_logs 
-                        ($columns) 
-                        VALUES ($values)
-                    ");
-                    $stmt->execute(array_slice($params, 0, -1));
+                    // Se a coluna não existir, ignorar
                 }
-            } else {
-                $stmt = $this->db->prepare("
-                    INSERT INTO safenode_security_logs 
-                    ($columns) 
-                    VALUES ($values)
-                ");
-                $stmt->execute($params);
             }
+            
+            // Inserir log
+            $stmt = $this->db->prepare("
+                INSERT INTO safenode_security_logs 
+                ($columns) 
+                VALUES ($values)
+            ");
+            $stmt->execute($params);
             
             $logId = $this->db->lastInsertId();
 
