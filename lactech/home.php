@@ -6,9 +6,13 @@
     <title>KRON - Kernel for Resilient Operating Nodes</title>
     <meta name="description" content="Construimos software que resolve problemas reais. SafeNode para seguranca web. LacTech para gestao rural.">
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="asset/kron.png">
+    <link rel="apple-touch-icon" href="asset/kron.png">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -339,10 +343,46 @@
             100% { transform: translateX(-50%); }
         }
         .marquee-track {
-            animation: marquee 35s linear infinite;
+            animation: marquee 40s linear infinite;
+        }
+        
+        .brands-carousel .marquee-track {
+            animation: marquee 50s linear infinite;
         }
         .marquee-track:hover {
             animation-play-state: paused;
+        }
+        
+        /* Footer Letreiro */
+        @keyframes letreiro {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .letreiro-track {
+            animation: letreiro 20s linear infinite;
+        }
+        .letreiro-track:hover {
+            animation-play-state: paused;
+        }
+        
+        /* Brands Carousel Premium Style */
+        .brands-carousel {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+        
+        @media (min-width: 1024px) {
+            .brand-name {
+                font-size: 15px;
+                letter-spacing: 0.08em;
+            }
         }
         
         /* Feature item hover */
@@ -392,14 +432,13 @@
                 radial-gradient(ellipse 60% 40% at 20% 80%, rgba(80, 80, 100, 0.08), transparent 50%);
         }
         
-        .hero-image {
+        .hero-video {
             position: absolute;
             inset: 0;
-            background-image: url('https://i.postimg.cc/s2HP9BH0/emailotp-(19).jpg');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.2;
-            filter: brightness(0.7) contrast(1.1) saturate(0.9);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
         }
         
         /* Nebula effect - Enhanced */
@@ -541,6 +580,160 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
+        /* Header scroll animation */
+        nav.scrolled .nav-container {
+            height: 56px;
+        }
+        
+        nav.scrolled .logo-full {
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+            width: 0;
+            overflow: hidden;
+        }
+        
+        nav.scrolled .logo-icon {
+            opacity: 1;
+            transform: translateX(-50%);
+        }
+        
+        .logo-full {
+            transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transform: translateX(0);
+        }
+        
+        .logo-icon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%) translateX(20px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            pointer-events: none;
+        }
+        
+        nav.scrolled .logo-icon {
+            pointer-events: auto;
+        }
+        
+        /* Rotação apenas no ícone (imagem) */
+        .logo-full img {
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transform: rotate(0deg);
+        }
+        
+        nav.scrolled .logo-full img {
+            transform: rotate(-180deg);
+        }
+        
+        .logo-icon img {
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transform: rotate(180deg);
+        }
+        
+        nav.scrolled .logo-icon img {
+            transform: rotate(0deg);
+        }
+        
+        .nav-container {
+            transition: height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        nav.scrolled .desktop-menu,
+        nav.scrolled .cta-button {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 1023px) {
+            nav.scrolled .nav-container {
+                height: 56px;
+            }
+            
+            nav.scrolled .mobile-btn {
+                position: absolute;
+                right: 1.5rem;
+            }
+            
+            nav.scrolled .logo-icon {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            nav.scrolled .nav-container {
+                height: 64px;
+            }
+        }
+        
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.8);
+            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        
+        .back-to-top:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .back-to-top:active {
+            transform: translateY(-2px) scale(0.95);
+        }
+        
+        .back-to-top svg {
+            width: 22px;
+            height: 22px;
+            stroke: white;
+            stroke-width: 2;
+            transition: transform 0.3s;
+        }
+        
+        .back-to-top:hover svg {
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .back-to-top {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 44px;
+                height: 44px;
+            }
+            
+            .back-to-top svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+        
         /* Mobile menu */
         .mobile-menu {
             clip-path: circle(0% at calc(100% - 2rem) 2rem);
@@ -653,26 +846,34 @@
     <!-- Navigation -->
     <nav id="main-nav" class="fixed top-0 w-full z-50">
         <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20">
-            <div class="flex justify-between items-center h-16 lg:h-[68px]">
+            <div class="nav-container flex justify-between items-center h-16 lg:h-[68px] relative">
                 
-                <!-- Logo -->
-                <a href="#" class="relative z-50 flex items-center gap-3 group magnetic">
+                <!-- Logo Full -->
+                <a href="#" class="logo-full relative z-50 flex items-center gap-3 group magnetic">
                     <div class="relative">
-                        <img src="https://i.postimg.cc/25v7C99J/kron.jpg" alt="KRON" class="h-8 w-auto rounded-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/10">
+                        <img src="asset/kron.png" alt="KRON" class="h-8 w-auto rounded-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/10">
                         <div class="absolute inset-0 rounded-lg bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <span class="text-[16px] font-semibold tracking-tight transition-all duration-300">KRON</span>
                 </a>
                 
+                <!-- Logo Icon (centered when scrolled) -->
+                <a href="#" class="logo-icon z-50 flex items-center justify-center group">
+                    <div class="relative">
+                        <img src="asset/kron.png" alt="KRON" class="h-10 lg:h-12 w-auto rounded-lg transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-white/10">
+                        <div class="absolute inset-0 rounded-lg bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                </a>
+                
                 <!-- Desktop Menu -->
-                <div class="hidden lg:flex items-center gap-10">
+                <div class="desktop-menu hidden lg:flex items-center gap-10 transition-opacity duration-300">
                     <a href="#produtos" class="text-[14px] font-medium text-white/60 hover:text-white transition-colors duration-300 link-hover">Produtos</a>
                     <a href="#sobre" class="text-[14px] font-medium text-white/60 hover:text-white transition-colors duration-300 link-hover">Sobre</a>
                     <a href="#contato" class="text-[14px] font-medium text-white/60 hover:text-white transition-colors duration-300 link-hover">Contato</a>
                 </div>
                 
                 <!-- CTA Button -->
-                <div class="hidden lg:block">
+                <div class="cta-button hidden lg:block transition-opacity duration-300">
                     <a href="#contato" class="btn-primary px-5 py-2.5 rounded-full text-[13px] font-semibold inline-flex items-center gap-2">
                         <span>Fale Conosco</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -682,7 +883,7 @@
                 </div>
                 
                 <!-- Mobile Button -->
-                <button id="menu-btn" class="lg:hidden relative z-50 w-12 h-12 flex flex-col justify-center items-center gap-1.5 rounded-xl hover:bg-white/5 transition-colors" aria-label="Menu">
+                <button id="menu-btn" class="mobile-btn lg:hidden relative z-50 w-12 h-12 flex flex-col justify-center items-center gap-1.5 rounded-xl hover:bg-white/5 transition-colors" aria-label="Menu">
                     <span class="w-5 h-[2px] bg-white/90 rounded-full transition-all duration-400" id="line1"></span>
                     <span class="w-5 h-[2px] bg-white/90 rounded-full transition-all duration-400" id="line2"></span>
                 </button>
@@ -706,87 +907,69 @@
     </div>
 
     <!-- Hero Section -->
-    <section class="min-h-screen flex flex-col justify-end pb-16 lg:pb-24 relative overflow-hidden">
+    <section class="min-h-screen flex flex-col relative overflow-hidden">
         
-        <!-- Backgrounds -->
-        <div class="hero-image"></div>
+        <!-- Background Video -->
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="asset/Design sem nome (3).mp4" type="video/mp4">
+            <!-- Fallback para imagem caso o vídeo não carregue -->
+            <div class="absolute inset-0 bg-black"></div>
+        </video>
         
-        <!-- Nebula Effect -->
-        <div class="nebula-effect">
-            <div class="nebula-layer nebula-layer-1"></div>
-            <div class="nebula-layer nebula-layer-2"></div>
-            <div class="nebula-layer nebula-layer-3"></div>
-            <div class="nebula-layer nebula-layer-4"></div>
-            <div class="stars-layer"></div>
-        </div>
+        <!-- Overlay escuro para melhorar legibilidade -->
+        <div class="absolute inset-0 bg-black/40 z-[2]"></div>
         
-        <div class="hero-overlay"></div>
-        <div class="hero-gradient"></div>
-        <div class="grid-bg"></div>
-        
-        
-        <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 w-full relative z-10">
+        <!-- Container Principal -->
+        <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 w-full relative z-10 flex-1 flex flex-col justify-between py-32 lg:py-40">
             
-            <!-- Main Headline -->
-            <div class="mb-12 lg:mb-16">
-                <div class="mb-8 reveal overflow-visible">
-                    <p class="text-[13px] sm:text-[14px] lg:text-[15px] tracking-[0.2em] uppercase text-white/40 font-medium leading-[1.5]">
-                        Kernel for Resilient Operating Nodes
+            <!-- Center Section: Main Content -->
+            <div class="flex-1 flex items-center justify-center">
+                <div class="text-center max-w-4xl mx-auto w-full px-4">
+                    
+                    <!-- Main Headline -->
+                    <h1 class="text-[36px] sm:text-[48px] md:text-[56px] lg:text-[64px] xl:text-[72px] font-bold leading-[1.15] tracking-[-0.01em] mb-6 text-white reveal">
+                        <span class="whitespace-nowrap">Estamos revolucionando a</span><br><span>tecnologia empresarial</span>
+                    </h1>
+                    
+                    <!-- Subtitle -->
+                    <p class="text-[16px] sm:text-[17px] lg:text-[18px] text-white/75 leading-[1.65] mb-8 max-w-2xl mx-auto font-normal reveal" style="transition-delay: 100ms">
+                        Nossa missão é fornecer as ferramentas que você precisa para transformar seu negócio com tecnologia de ponta.
                     </p>
-                </div>
-                <h1 class="text-[12vw] sm:text-[10vw] lg:text-[8vw] xl:text-[110px] font-bold leading-[0.9] tracking-tightest">
-                    <span class="block reveal text-gradient-shine">Tecnologia que</span>
-                    <span class="block reveal text-white/20" style="transition-delay: 100ms">transforma.</span>
-                </h1>
-            </div>
-            
-            <!-- Bottom row -->
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12 lg:gap-8">
-                
-                <!-- Description -->
-                <div class="max-w-md reveal" style="transition-delay: 300ms">
-                    <p class="text-[16px] lg:text-[18px] text-white/50 leading-[1.7] font-normal mb-8">
-                        Duas soluções. Dois mercados diferentes.<br>
-                        Uma mesma obsessão por simplicidade.
-                    </p>
-                    <div class="flex flex-wrap gap-4">
-                        <a href="#produtos" class="btn-primary px-6 py-3 rounded-full text-[14px] font-semibold inline-flex items-center gap-2">
-                            <span>Ver Produtos</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    
+                    <!-- CTA Button -->
+                    <div class="reveal" style="transition-delay: 200ms">
+                        <a href="#produtos" class="group btn-primary px-8 py-3.5 rounded-full text-[15px] font-semibold inline-flex items-center gap-2 tracking-tight shadow-xl shadow-black/30 hover:shadow-2xl hover:shadow-black/40 transition-all duration-500">
+                            <span>Conheça Nossos Produtos</span>
+                            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"/>
                             </svg>
                         </a>
-                        <a href="#sobre" class="btn-outline px-6 py-3 rounded-full text-[14px] font-semibold text-white/80 hover:text-white relative z-10">
-                            <span class="relative z-10">Sobre Nós</span>
-                        </a>
                     </div>
-                </div>
-                
-                <!-- Scroll indicator -->
-                <div class="flex items-center gap-4 reveal" style="transition-delay: 400ms">
-                    <div class="scroll-indicator flex flex-col items-center gap-2">
-                        <span class="text-[11px] tracking-[0.2em] uppercase text-white/30 font-medium">Scroll</span>
-                        <svg class="w-5 h-5 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                        </svg>
-                    </div>
+                    
                 </div>
             </div>
             
         </div>
+        
     </section>
     
-    <!-- Marquee -->
-    <div class="border-y border-white/[0.05] py-6 overflow-hidden bg-gradient-to-r from-black via-white/[0.02] to-black">
-        <div class="marquee-track flex whitespace-nowrap">
-            <?php for($i = 0; $i < 4; $i++): ?>
-            <span class="text-[9vw] lg:text-[6vw] font-bold text-white/[0.04] mx-8 lg:mx-12 tracking-tight">SafeNode</span>
-            <span class="text-[9vw] lg:text-[6vw] font-bold text-white/[0.04] mx-8 lg:mx-12">·</span>
-            <span class="text-[9vw] lg:text-[6vw] font-bold text-white/[0.04] mx-8 lg:mx-12 tracking-tight">LacTech</span>
-            <span class="text-[9vw] lg:text-[6vw] font-bold text-white/[0.04] mx-8 lg:mx-12">·</span>
-            <span class="text-[9vw] lg:text-[6vw] font-bold text-white/[0.04] mx-8 lg:mx-12 tracking-tight">KRON</span>
-            <span class="text-[9vw] lg:text-[6vw] font-bold text-white/[0.04] mx-8 lg:mx-12">·</span>
-            <?php endfor; ?>
+    <!-- Brands Carousel -->
+    <div class="brands-carousel py-10 lg:py-14 border-y border-white/[0.08] bg-black overflow-hidden">
+        <div class="marquee-track flex whitespace-nowrap items-center">
+            <?php 
+            $brands = ['Cloudflare', 'LacTech', 'SafeNode', 'Prefeitura de Maranguape', 'KRON'];
+            // Duplicar para criar loop infinito suave
+            for($i = 0; $i < 2; $i++): 
+                foreach($brands as $index => $brand):
+            ?>
+            <span class="brand-name text-white/50 hover:text-white/80 transition-colors duration-300 mx-10 lg:mx-16"><?= $brand ?></span>
+            <?php if($index < count($brands) - 1 || $i < 1): ?>
+            <span class="w-[2px] h-[2px] rounded-full bg-white/20 mx-6"></span>
+            <?php endif; ?>
+            <?php 
+                endforeach;
+            endfor; 
+            ?>
         </div>
     </div>
     
@@ -1192,43 +1375,146 @@
         </div>
     </section>
     
-    <!-- Contact CTA -->
+    <!-- Presence Map -->
     <section id="contato" class="py-28 lg:py-40 border-t border-white/[0.05] relative overflow-hidden">
-        
-        <!-- Background effects -->
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.01] to-transparent pointer-events-none"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.02] rounded-full blur-[200px] pointer-events-none"></div>
         
         <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 relative">
             
-            <div class="text-center max-w-3xl mx-auto">
-                
+            <div class="text-center mb-16 lg:mb-20">
                 <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full glass mb-8 reveal">
                     <span class="w-2 h-2 rounded-full bg-white/50 animate-pulse"></span>
-                    <span class="text-[12px] tracking-[0.15em] uppercase text-white/60 font-medium">Disponível para projetos</span>
+                    <span class="text-[12px] tracking-[0.15em] uppercase text-white/60 font-medium">Estamos presentes</span>
                 </div>
                 
-                <h2 class="text-[40px] sm:text-[52px] lg:text-[68px] xl:text-[80px] font-bold mb-8 tracking-tight reveal">
-                    <span class="text-gradient">Vamos conversar?</span>
+                <h2 class="text-[40px] sm:text-[52px] lg:text-[68px] xl:text-[80px] font-bold mb-6 tracking-tight reveal">
+                    <span class="text-gradient">Nossa Presença Global</span>
                 </h2>
                 
-                <p class="text-[17px] lg:text-[19px] text-white/45 mb-12 reveal" style="transition-delay: 100ms">
-                    Entre em contato para saber mais sobre nossas soluções<br class="hidden sm:block"> e como podemos ajudar seu negócio.
+                <p class="text-[17px] lg:text-[19px] text-white/45 max-w-2xl mx-auto reveal" style="transition-delay: 100ms">
+                    Atendemos clientes em diversos países ao redor do mundo
                 </p>
-                
-                <a href="mailto:contato@kron.com.br" class="group inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 reveal" style="transition-delay: 200ms">
-                    <span class="text-[24px] sm:text-[32px] lg:text-[40px] font-bold text-white/70 group-hover:text-white transition-colors duration-300">contato@kron.com.br</span>
-                    <span class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:border-white transition-all duration-500">
-                        <svg class="w-6 h-6 text-white/50 group-hover:text-black group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-                    </svg>
-                    </span>
-                </a>
-                
+            </div>
+            
+            <!-- Map Container -->
+            <div class="relative w-full h-[500px] lg:h-[600px] rounded-2xl overflow-hidden glass-card border border-white/10 reveal" style="transition-delay: 200ms">
+                <div id="presence-map" class="w-full h-full"></div>
             </div>
             
         </div>
     </section>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create map with world view
+            const map = L.map('presence-map', {
+                zoomControl: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                boxZoom: false,
+                keyboard: false,
+                dragging: false,
+                touchZoom: false
+            }).setView([20, 0], 2);
+            
+            // Add dark tile layer without attribution
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: false,
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Custom marker icon
+            const markerIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div class="marker-pin"></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30]
+            });
+            
+            // Countries where we are present
+            const locations = [
+                { name: 'Brasil', lat: -14.2350, lng: -51.9253 },
+                { name: 'Chile', lat: -35.6751, lng: -71.5430 }
+            ];
+            
+            // Add markers
+            locations.forEach(location => {
+                const marker = L.marker([location.lat, location.lng], { icon: markerIcon }).addTo(map);
+                marker.bindPopup(`<div class="text-black font-semibold">${location.name}</div>`);
+            });
+        });
+    </script>
+    
+    <style>
+        .custom-marker {
+            background: transparent;
+            border: none;
+        }
+        
+        .marker-pin {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: 3px solid white;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            animation: pulse-marker 2s ease-in-out infinite;
+        }
+        
+        .marker-pin::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        
+        @keyframes pulse-marker {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6);
+            }
+        }
+        
+        #presence-map {
+            background: #000;
+        }
+        
+        .leaflet-container {
+            background: #000 !important;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+        
+        /* Hide all controls and attributions */
+        .leaflet-control-container {
+            display: none !important;
+        }
+        
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+        
+        .leaflet-control-zoom {
+            display: none !important;
+        }
+    </style>
     
     <!-- Footer -->
     <footer class="py-16 lg:py-24 border-t border-white/[0.05] bg-gradient-to-b from-black to-black/95 relative">
@@ -1236,13 +1522,20 @@
         
         <div class="max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-20 relative">
             
+            <!-- Full Name Letreiro -->
+            <div class="mb-16 lg:mb-20 py-4 overflow-hidden relative">
+                <div class="letreiro-track whitespace-nowrap">
+                    <span class="text-[18px] lg:text-[22px] font-bold text-white/[0.08] tracking-tight inline-block" style="font-family: 'Playfair Display', serif;">Kernel for Resilient Operating Nodes</span>
+                </div>
+            </div>
+            
             <!-- Top Section -->
             <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 mb-16 lg:mb-20">
                 
                 <!-- Brand -->
                 <div class="lg:col-span-5">
                     <a href="#" class="inline-flex items-center gap-3 mb-6 group">
-                        <img src="https://i.postimg.cc/25v7C99J/kron.jpg" alt="KRON" class="h-10 w-auto rounded-xl group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                        <img src="asset/kron.png" alt="KRON" class="h-10 w-auto rounded-xl group-hover:scale-105 transition-transform duration-500 shadow-lg">
                         <span class="text-2xl font-bold tracking-tight">KRON</span>
                     </a>
                     <p class="text-[15px] text-white/45 leading-[1.7] max-w-sm mb-6">
@@ -1475,7 +1768,40 @@
         }, { threshold: 0.5 });
         
         statNumbers.forEach(el => counterObserver.observe(el));
+        
+        // Back to Top Button
+        const backToTopBtn = document.getElementById('back-to-top');
+        
+        if (backToTopBtn) {
+            function toggleBackToTop() {
+                const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                if (scrollPosition > 100) {
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            }
+            
+            window.addEventListener('scroll', toggleBackToTop, { passive: true });
+            // Check on load
+            setTimeout(toggleBackToTop, 100);
+            
+            backToTopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
     </script>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top" aria-label="Voltar ao topo">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </button>
     
     <div class="noise"></div>
 

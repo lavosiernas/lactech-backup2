@@ -142,3 +142,6 @@ http://seu-dominio/lactech/safenode/api/diagnostic-dashboard.php
 Após esses passos, o dashboard deve funcionar corretamente! 🚀
 
 
+
+
+

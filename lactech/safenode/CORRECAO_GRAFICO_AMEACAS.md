@@ -95,3 +95,6 @@ Se precisar funcionar offline, baixe o Chart.js localmente:
 O gráfico deve aparecer agora! Se ainda não aparecer, verifique o console do navegador para mais detalhes.
 
 
+
+
+

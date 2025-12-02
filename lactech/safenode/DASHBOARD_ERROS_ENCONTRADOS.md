@@ -122,3 +122,6 @@ O dashboard usa estas colunas:
 5. ✅ site_id está sendo salvo? → Verificar logs recentes
 
 
+
+
+

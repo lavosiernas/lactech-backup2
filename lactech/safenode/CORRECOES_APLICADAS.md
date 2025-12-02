@@ -74,3 +74,6 @@ http://seu-dominio/lactech/safenode/api/diagnostic-dashboard.php
 Os erros de view e valores NULL devem estar resolvidos.
 
 
+
+
+
