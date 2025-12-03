@@ -1,24 +1,7 @@
-/**
- * SafeNode Human Verification SDK
- * 
- * SDK JavaScript para verificação humana em sites de terceiros
- * 
- * Uso:
- *   <script src="https://seudominio.com/safenode/sdk/safenode-hv.js"></script>
- *   <script>
- *     const hv = new SafeNodeHV('https://seudominio.com/safenode/api/sdk');
- *     hv.init().then(() => {
- *       // SDK pronto para uso
- *     });
- *   </script>
- */
-
 (function(window) {
     'use strict';
 
-    /**
-     * SafeNode Human Verification SDK
-     */
+
     class SafeNodeHV {
         constructor(apiBaseUrl, apiKey, options = {}) {
             this.apiBaseUrl = apiBaseUrl || '';
@@ -29,13 +12,10 @@
             this.jsEnabled = true;
             this.maxRetries = options.maxRetries || 3;
             this.retryDelay = options.retryDelay || 1000;
-            this.tokenMaxAge = options.tokenMaxAge || 3600000; // 1 hora em ms
+            this.tokenMaxAge = options.tokenMaxAge || 3600000; 
             this.initTime = null;
         }
 
-        /**
-         * Inicializa o SDK e obtém o token com retry automático
-         */
         async init(retryCount = 0) {
             if (!this.apiKey) {
                 throw new Error('API key é obrigatória');
@@ -47,14 +27,12 @@
 
                 const response = await fetch(url.toString(), {
                     method: 'GET',
-                    credentials: 'include',
                     headers: {
                         'Accept': 'application/json',
                         'X-API-Key': this.apiKey
                     }
                 });
 
-                // Verificar rate limit
                 if (response.status === 429) {
                     const resetTime = response.headers.get('X-RateLimit-Reset');
                     const waitTime = resetTime ? (parseInt(resetTime) * 1000 - Date.now()) : this.retryDelay;
@@ -74,6 +52,16 @@
                     this.tokenMaxAge = (data.max_age || 3600) * 1000; // Converter para ms
                     this.initTime = Date.now();
                     this.initialized = true;
+                    
+                    // Mostrar indicador visual de verificação ativa (se o método existir)
+                    if (typeof this.showVerificationIndicator === 'function') {
+                        try {
+                            this.showVerificationIndicator();
+                        } catch (e) {
+                            console.warn('SafeNode HV: Erro ao mostrar indicador', e);
+                        }
+                    }
+                    
                     return true;
                 } else {
                     throw new Error('Token não recebido');
@@ -143,7 +131,6 @@
             try {
                 const response = await fetch(`${this.apiBaseUrl}/validate.php`, {
                     method: 'POST',
-                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
@@ -262,6 +249,166 @@
          */
         isInitialized() {
             return this.initialized;
+        }
+
+        /**
+         * Mostra indicador visual de verificação ativa (mesma interface do login SafeNode)
+         * Sempre insere ANTES do botão de submit, no mesmo local do login SafeNode
+         */
+        showVerificationIndicator() {
+            console.log('SafeNode HV: Mostrando indicador de verificação...');
+            
+            // Função para tentar inserir (com retry)
+            const tryInsert = (attempt = 0) => {
+                // Buscar formulários na página
+                const forms = document.querySelectorAll('form');
+                console.log('SafeNode HV: Tentativa', attempt + 1, '- Formulários encontrados:', forms.length);
+                
+                if (forms.length === 0 && attempt < 5) {
+                    console.warn('SafeNode HV: Nenhum formulário encontrado, tentando novamente em 500ms...');
+                    setTimeout(() => tryInsert(attempt + 1), 500);
+                    return;
+                }
+                
+                if (forms.length === 0) {
+                    console.error('SafeNode HV: Nenhum formulário encontrado após 5 tentativas');
+                    return;
+                }
+                
+                this._insertVerificationBox(forms);
+            };
+            
+            // Aguardar DOM estar pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => tryInsert(0));
+            } else {
+                // DOM já está pronto, aguardar um pouco para garantir
+                setTimeout(() => tryInsert(0), 100);
+            }
+        }
+        
+        /**
+         * Insere a interface de verificação nos formulários
+         */
+        _insertVerificationBox(forms) {
+
+            // Adicionar CSS para animação se não existir
+            if (!document.getElementById('safenode-hv-styles')) {
+                const style = document.createElement('style');
+                style.id = 'safenode-hv-styles';
+                style.textContent = `
+                    @keyframes safenode-spin {
+                        to { transform: rotate(360deg); }
+                    }
+                    .safenode-hv-spinner {
+                        animation: safenode-spin 0.8s linear infinite;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Processar cada formulário
+            const boxes = [];
+            Array.from(forms).forEach((form, index) => {
+                // Remover box anterior se existir para este formulário
+                const formId = form.id || 'safenode-form-' + index;
+                const existingBox = form.querySelector('#safenode-hv-box-' + formId);
+                if (existingBox) {
+                    existingBox.remove();
+                }
+
+                // Detectar URL base do SafeNode (produção ou desenvolvimento)
+                const getSafeNodeBaseUrl = () => {
+                    // Sempre usar produção para a logo
+                    return 'https://safenode.cloud';
+                };
+                
+                const baseUrl = getSafeNodeBaseUrl();
+                const logoUrl = baseUrl + '/assets/img/logos%20(6).png';
+                
+                // Criar a interface de verificação (igual ao login SafeNode)
+                const hvBox = document.createElement('div');
+                hvBox.id = 'safenode-hv-box-' + formId;
+                hvBox.setAttribute('style', 'margin-top: 12px; padding: 12px; border-radius: 16px; border: 1px solid #e2e8f0; background-color: #f8fafc; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);');
+                hvBox.innerHTML = `
+                    <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">
+                        <div class="safenode-hv-spinner" id="safenode-hv-spinner-${formId}" style="position: absolute; inset: 0; border-radius: 16px; border: 2px solid #e2e8f0; border-top-color: #000000;"></div>
+                        <div style="position: relative; z-index: 10; width: 28px; height: 28px; border-radius: 16px; background-color: #000000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img src="${logoUrl}" alt="SafeNode" style="width: 16px; height: 16px; object-fit: contain; filter: brightness(0) invert(1);" onerror="this.onerror=null; this.style.display='none'; const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('width', '16'); svg.setAttribute('height', '16'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'white'); svg.setAttribute('stroke-width', '2'); const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path1.setAttribute('d', 'M12 2L2 7l10 5 10-5-10-5z'); svg.appendChild(path1); const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path2.setAttribute('d', 'M2 17l10 5 10-5'); svg.appendChild(path2); const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path3.setAttribute('d', 'M2 12l10 5 10-5'); svg.appendChild(path3); this.parentElement.appendChild(svg);">
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <p style="font-size: 12px; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 4px; margin: 0 0 4px 0;">
+                            SafeNode <span style="font-size: 10px; font-weight: 400; color: #64748b;">verificação humana</span>
+                        </p>
+                        <p style="font-size: 11px; color: #64748b; margin: 0;" id="safenode-hv-text-${formId}">Validando interação do navegador…</p>
+                    </div>
+                    <svg id="safenode-hv-check-${formId}" style="width: 16px; height: 16px; color: #10b981; display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                `;
+
+                // Buscar botão de submit - tentar diferentes seletores
+                let submitBtn = form.querySelector('button[type="submit"]');
+                if (!submitBtn) {
+                    submitBtn = form.querySelector('input[type="submit"]');
+                }
+                if (!submitBtn) {
+                    // Se não houver botão explícito, buscar qualquer botão no formulário
+                    submitBtn = form.querySelector('button');
+                }
+
+                // Inserir ANTES do botão de submit (mesmo local do login SafeNode)
+                if (submitBtn && submitBtn.parentNode) {
+                    submitBtn.parentNode.insertBefore(hvBox, submitBtn);
+                    console.log('SafeNode HV: Interface inserida antes do botão de submit no formulário', formId);
+                    console.log('SafeNode HV: Elemento inserido:', hvBox);
+                    console.log('SafeNode HV: Elemento visível?', hvBox.offsetParent !== null);
+                } else {
+                    // Se não houver botão, adicionar no final do formulário
+                    form.appendChild(hvBox);
+                    console.log('SafeNode HV: Interface inserida no final do formulário', formId);
+                    console.log('SafeNode HV: Elemento inserido:', hvBox);
+                    console.log('SafeNode HV: Elemento visível?', hvBox.offsetParent !== null);
+                }
+
+                // Forçar visibilidade
+                hvBox.style.display = 'flex';
+                hvBox.style.visibility = 'visible';
+                hvBox.style.opacity = '1';
+                
+                boxes.push({ formId: formId });
+            });
+            
+            console.log('SafeNode HV: Total de interfaces criadas:', boxes.length);
+            
+            // Teste: verificar se os elementos estão no DOM
+            setTimeout(() => {
+                boxes.forEach(({ formId }) => {
+                    const box = document.getElementById('safenode-hv-box-' + formId);
+                    if (box) {
+                        console.log('SafeNode HV: Box encontrado no DOM:', box);
+                        console.log('SafeNode HV: Box estilos:', window.getComputedStyle(box).display);
+                    } else {
+                        console.error('SafeNode HV: Box NÃO encontrado no DOM:', 'safenode-hv-box-' + formId);
+                    }
+                });
+            }, 100);
+
+            // Após um pequeno atraso, mostrar visual de verificado (igual ao login)
+            setTimeout(() => {
+                boxes.forEach(({ formId }) => {
+                    const spinner = document.getElementById('safenode-hv-spinner-' + formId);
+                    const check = document.getElementById('safenode-hv-check-' + formId);
+                    const text = document.getElementById('safenode-hv-text-' + formId);
+                    
+                    if (spinner) spinner.style.display = 'none';
+                    if (check) check.style.display = 'block';
+                    if (text) {
+                        text.innerHTML = 'Verificado com <a href="https://safenode.cloud" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none; font-weight: 600;">SafeNode</a>';
+                    }
+                });
+            }, 800);
         }
     }
 

@@ -9,22 +9,53 @@
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/HVAPIKeyManager.php';
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-API-Key');
+// CORS: Configurar headers antes de qualquer output
+$origin = $_SERVER['HTTP_ORIGIN'] ?? $_SERVER['HTTP_REFERER'] ?? '';
 
-// Handle preflight
+// Função para validar e retornar origin válido
+function getValidOrigin($origin) {
+    if (empty($origin)) {
+        return null;
+    }
+    
+    // Validar origin (remover path, manter apenas protocolo + domínio)
+    $parsedOrigin = parse_url($origin);
+    if ($parsedOrigin && isset($parsedOrigin['scheme']) && isset($parsedOrigin['host'])) {
+        $validOrigin = $parsedOrigin['scheme'] . '://' . $parsedOrigin['host'];
+        if (isset($parsedOrigin['port'])) {
+            $validOrigin .= ':' . $parsedOrigin['port'];
+        }
+        return $validOrigin;
+    }
+    
+    return null;
+}
+
+// Configurar CORS headers
+$validOrigin = getValidOrigin($origin);
+if ($validOrigin) {
+    header('Access-Control-Allow-Origin: ' . $validOrigin);
+} else {
+    header('Access-Control-Allow-Origin: *');
+}
+
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Accept, X-API-Key, x-api-key');
+header('Access-Control-Max-Age: 86400'); // Cache preflight por 24 horas
+
+// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('Content-Type: application/json; charset=utf-8');
     http_response_code(200);
     exit;
 }
+
+header('Content-Type: application/json; charset=utf-8');
 
 // Obter API key
 $apiKey = $_GET['api_key'] ?? $_POST['api_key'] ?? $_SERVER['HTTP_X_API_KEY'] ?? '';
 $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '';
 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-$origin = $_SERVER['HTTP_ORIGIN'] ?? $_SERVER['HTTP_REFERER'] ?? '';
 
 if (empty($apiKey)) {
     http_response_code(401);

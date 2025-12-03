@@ -335,22 +335,17 @@ class HVAPIKeyManager
     const apiUrl = '{$apiUrlEscaped}';
     const hv = new SafeNodeHV(apiUrl, apiKey);
     
-    // Inicializar
     hv.init().then(() => {
-        // Adicionar campos aos formulários
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
-            // Adicionar campos hidden
             if (form.id) {
                 hv.attachToForm('#' + form.id);
             } else {
-                // Se não tem ID, criar um temporário
                 const tempId = 'safenode_form_' + Math.random().toString(36).substr(2, 9);
                 form.id = tempId;
                 hv.attachToForm('#' + tempId);
             }
             
-            // Validar antes de enviar
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 try {
