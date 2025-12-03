@@ -105,8 +105,10 @@
          * Valida a verificação humana
          */
         async validate(retryCount = 0) {
+            console.log('SafeNode HV: validate() chamado, retryCount:', retryCount);
+            
             if (!this.initialized || !this.token) {
-                // Tentar reinicializar se token expirou
+                console.warn('SafeNode HV: SDK não inicializado ou sem token, tentando reinicializar...');
                 if (this.token && !this._isTokenValid()) {
                     try {
                         await this.init();
@@ -124,11 +126,21 @@
 
             // Verificar se token ainda é válido
             if (!this._isTokenValid()) {
-                // Reinicializar automaticamente
+                console.warn('SafeNode HV: Token expirado, reinicializando...');
                 await this.init();
             }
 
             try {
+                const payload = {
+                    token: this.token,
+                    nonce: this.nonce || '',
+                    js_enabled: '1',
+                    api_key: this.apiKey
+                };
+                
+                console.log('SafeNode HV: Enviando validação para:', `${this.apiBaseUrl}/validate.php`);
+                console.log('SafeNode HV: Payload (sem token):', { ...payload, token: '***' });
+                
                 const response = await fetch(`${this.apiBaseUrl}/validate.php`, {
                     method: 'POST',
                     headers: {
@@ -136,13 +148,10 @@
                         'Accept': 'application/json',
                         'X-API-Key': this.apiKey
                     },
-                    body: JSON.stringify({
-                        token: this.token,
-                        nonce: this.nonce || '',
-                        js_enabled: '1',
-                        api_key: this.apiKey
-                    })
+                    body: JSON.stringify(payload)
                 });
+
+                console.log('SafeNode HV: Resposta recebida, status:', response.status);
 
                 // Verificar rate limit
                 if (response.status === 429) {
@@ -153,8 +162,14 @@
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    console.error('SafeNode HV: Erro na resposta:', errorData);
+                    
                     // Se token inválido, tentar reinicializar uma vez
-                    if (response.status === 400 && retryCount === 0 && errorData.error?.includes('Token inválido')) {
+                    if (response.status === 400 && retryCount === 0 && (
+                        errorData.error?.includes('Token inválido') || 
+                        errorData.error?.includes('Recarregue a página')
+                    )) {
+                        console.warn('SafeNode HV: Token inválido, reinicializando e tentando novamente...');
                         await this.init();
                         return this.validate(1);
                     }
@@ -162,19 +177,22 @@
                 }
 
                 const data = await response.json();
+                console.log('SafeNode HV: Dados da validação:', data);
                 return data.success === true && data.valid === true;
             } catch (error) {
+                console.error('SafeNode HV: Erro ao validar', error);
+                
                 // Retry automático em caso de erro de rede
                 if (retryCount < this.maxRetries && (
                     error.message.includes('Failed to fetch') || 
                     error.message.includes('NetworkError') ||
                     error.message.includes('timeout')
                 )) {
+                    console.log('SafeNode HV: Tentando novamente após erro de rede...');
                     await this._delay(this.retryDelay * (retryCount + 1));
                     return this.validate(retryCount + 1);
                 }
                 
-                console.error('SafeNode HV: Erro ao validar', error);
                 throw error;
             }
         }
@@ -226,13 +244,36 @@
          */
         async validateForm(formSelector) {
             try {
+                console.log('SafeNode HV: Iniciando validação do formulário...');
+                console.log('SafeNode HV: Token atual:', this.token ? 'existe' : 'não existe');
+                console.log('SafeNode HV: SDK inicializado?', this.initialized);
+                
+                if (!this.initialized || !this.token) {
+                    console.warn('SafeNode HV: SDK não inicializado, tentando reinicializar...');
+                    await this.init();
+                }
+                
                 const isValid = await this.validate();
+                console.log('SafeNode HV: Resultado da validação:', isValid);
+                
                 if (!isValid) {
                     throw new Error('Verificação humana falhou');
                 }
+                
+                // Atualizar campos do formulário com o token atual
+                if (formSelector) {
+                    this.attachToForm(formSelector);
+                }
+                
                 return true;
             } catch (error) {
                 console.error('SafeNode HV: Validação falhou', error);
+                console.error('SafeNode HV: Detalhes do erro:', {
+                    message: error.message,
+                    stack: error.stack,
+                    token: this.token ? 'existe' : 'não existe',
+                    initialized: this.initialized
+                });
                 throw error;
             }
         }

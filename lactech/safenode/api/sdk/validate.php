@@ -132,6 +132,18 @@ $ipSession = $_SESSION['safenode_hv_ip'] ?? '';
 $userAgentSession = $_SESSION['safenode_hv_user_agent'] ?? '';
 $maxTokenAge = (int)($_SESSION['safenode_hv_max_age'] ?? $keyData['max_token_age'] ?? 3600);
 
+// Debug (apenas em desenvolvimento)
+if (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL') {
+    error_log("SafeNode Validate Debug:");
+    error_log("  Token Session: " . ($tokenSession ? substr($tokenSession, 0, 16) . '...' : 'null'));
+    error_log("  Token Post: " . ($tokenPost ? substr($tokenPost, 0, 16) . '...' : 'null'));
+    error_log("  Nonce Session: " . ($nonceSession ? substr($nonceSession, 0, 16) . '...' : 'null'));
+    error_log("  Nonce Post: " . ($noncePost ? substr($noncePost, 0, 16) . '...' : 'null'));
+    error_log("  IP Session: $ipSession");
+    error_log("  IP Current: $ipAddress");
+    error_log("  Origin: $origin");
+}
+
 // Regras básicas de segurança
 $now = time();
 $minElapsed = 1;             // mínimo de 1s entre carregar página e enviar
@@ -179,7 +191,32 @@ if (($_SESSION['safenode_hv_api_key'] ?? '') !== $apiKey) {
     }
 }
 
-// Validar nonce para prevenir replay attacks
+// Verificar se a sessão foi recriada ou token não corresponde PRIMEIRO (antes de consumir nonce)
+$tokenValid = hash_equals($tokenSession, (string)$tokenPost);
+if ($sessionExpired || !$tokenValid) {
+    if ($jsFlag === '1') {
+        // Aceita se JavaScript está habilitado (sessão foi recriada ou token expirou)
+        // Não consumir nonce aqui, pois a sessão foi recriada
+        HVAPIKeyManager::logAttempt($keyData['id'], $ipAddress, $userAgent, $origin, 'validate');
+        echo json_encode([
+            'success' => true,
+            'valid' => true,
+            'message' => 'Verificação válida'
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    } else {
+        // Se JS não está habilitado e token não corresponde, rejeitar
+        HVAPIKeyManager::logAttempt($keyData['id'], $ipAddress, $userAgent, $origin, 'failed', 'Token inválido e JS desabilitado');
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Token inválido. Recarregue a página.'
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+// Validar nonce para prevenir replay attacks (só se token é válido)
 if (!empty($noncePost) && !empty($nonceSession)) {
     if (!hash_equals($nonceSession, $noncePost)) {
         HVAPIKeyManager::logAttempt($keyData['id'], $ipAddress, $userAgent, $origin, 'suspicious', 'Nonce inválido');
@@ -190,7 +227,7 @@ if (!empty($noncePost) && !empty($nonceSession)) {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    // Marcar nonce como usado (prevenir reuso)
+    // Marcar nonce como usado (prevenir reuso) - só se tudo estiver OK
     unset($_SESSION['safenode_hv_nonce']);
 }
 
@@ -198,19 +235,6 @@ if (!empty($noncePost) && !empty($nonceSession)) {
 if (!empty($userAgentSession) && $userAgentSession !== $userAgent && !$sessionExpired) {
     HVAPIKeyManager::logAttempt($keyData['id'], $ipAddress, $userAgent, $origin, 'suspicious', 'User Agent alterado');
     // Não bloquear, apenas logar (pode ser navegador atualizado)
-}
-
-// Se a sessão foi recriada, aceita se JS está habilitado
-if ($sessionExpired || !hash_equals($tokenSession, (string)$tokenPost)) {
-    if ($jsFlag === '1') {
-        // Aceita se JavaScript está habilitado (sessão foi recriada)
-        echo json_encode([
-            'success' => true,
-            'valid' => true,
-            'message' => 'Verificação válida'
-        ], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
 }
 
 // Verificar tempo mínimo (proteção contra bots)

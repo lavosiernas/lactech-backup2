@@ -192,7 +192,13 @@ $baseUrl = getSafeNodeBaseUrl();
 
             <!-- Lista de API Keys -->
             <div class="glass rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-white mb-6">Suas API Keys</h2>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-white">Suas API Keys</h2>
+                    <a href="api-monitor.php" class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                        Monitoramento
+                    </a>
+                </div>
                 
                 <?php if (empty($apiKeys)): ?>
                     <p class="text-zinc-500 text-center py-8">Nenhuma API key criada ainda. Gere uma acima para começar.</p>
@@ -211,11 +217,19 @@ $baseUrl = getSafeNodeBaseUrl();
                                         <?php endif; ?>
                                     </div>
                                     <p class="text-sm text-zinc-500 mb-1">
-                                        Criada em: <?php echo date('d/m/Y H:i', strtotime($key['created_at'])); ?>
+                                        Criada em: <?php 
+                                            $date = new DateTime($key['created_at'], new DateTimeZone('UTC'));
+                                            $date->setTimezone(new DateTimeZone('America/Sao_Paulo'));
+                                            echo $date->format('d/m/Y H:i');
+                                        ?>
                                     </p>
                                     <?php if ($key['last_used_at']): ?>
                                         <p class="text-sm text-zinc-500 mb-1">
-                                            Último uso: <?php echo date('d/m/Y H:i', strtotime($key['last_used_at'])); ?>
+                                            Último uso: <?php 
+                                                $date = new DateTime($key['last_used_at'], new DateTimeZone('UTC'));
+                                                $date->setTimezone(new DateTimeZone('America/Sao_Paulo'));
+                                                echo $date->format('d/m/Y H:i');
+                                            ?>
                                         </p>
                                     <?php endif; ?>
                                     <p class="text-sm text-zinc-500 mb-1">
@@ -234,6 +248,10 @@ $baseUrl = getSafeNodeBaseUrl();
                                     </p>
                                 </div>
                                 <div class="flex gap-2">
+                                    <a href="api-monitor.php?key_id=<?php echo $key['id']; ?>" class="px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm flex items-center gap-2">
+                                        <i data-lucide="bar-chart-2" class="w-3 h-3"></i>
+                                        Monitorar
+                                    </a>
                                     <?php if ($key['is_active']): ?>
                                         <form method="POST" class="inline">
                                             <input type="hidden" name="action" value="deactivate">

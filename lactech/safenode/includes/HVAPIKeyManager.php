@@ -346,15 +346,34 @@ class HVAPIKeyManager
                 hv.attachToForm('#' + tempId);
             }
             
-            form.addEventListener('submit', async (e) => {
+            const submitHandler = async (e) => {
                 e.preventDefault();
+                const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+                let originalText = '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    originalText = submitBtn.textContent || submitBtn.value || '';
+                    if (submitBtn.textContent) submitBtn.textContent = 'Validando...';
+                    if (submitBtn.value) submitBtn.value = 'Validando...';
+                }
                 try {
                     await hv.validateForm('#' + form.id);
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                    }
+                    form.removeEventListener('submit', submitHandler);
                     form.submit();
                 } catch (error) {
+                    console.error('SafeNode HV: Erro na validação:', error);
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        if (submitBtn.textContent) submitBtn.textContent = originalText;
+                        if (submitBtn.value) submitBtn.value = originalText;
+                    }
                     alert('Verificação de segurança falhou. Por favor, tente novamente.');
                 }
-            });
+            };
+            form.addEventListener('submit', submitHandler);
         });
     }).catch((error) => {
         console.error('SafeNode HV: Erro ao inicializar', error);
@@ -362,6 +381,238 @@ class HVAPIKeyManager
 })();
 </script>
 HTML;
+    }
+
+    /**
+     * Obtém estatísticas de uso de uma API key
+     */
+    public static function getUsageStats(int $apiKeyId, int $userId, ?string $period = '24h'): array
+    {
+        $db = getSafeNodeDatabase();
+        if (!$db) {
+            return [];
+        }
+
+        try {
+            // Validar que a API key pertence ao usuário
+            $stmt = $db->prepare("SELECT id FROM safenode_hv_api_keys WHERE id = ? AND user_id = ?");
+            $stmt->execute([$apiKeyId, $userId]);
+            if (!$stmt->fetch()) {
+                return [];
+            }
+
+            // Calcular intervalo de tempo
+            $interval = match($period) {
+                '1h' => '1 HOUR',
+                '24h' => '24 HOUR',
+                '7d' => '7 DAY',
+                '30d' => '30 DAY',
+                default => '24 HOUR'
+            };
+
+            // Total de requisições
+            $stmt = $db->prepare("
+                SELECT COUNT(*) as total
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+            ");
+            $stmt->execute([$apiKeyId]);
+            $total = (int)$stmt->fetchColumn();
+
+            // Requisições por tipo
+            $stmt = $db->prepare("
+                SELECT attempt_type, COUNT(*) as count
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                GROUP BY attempt_type
+            ");
+            $stmt->execute([$apiKeyId]);
+            $byType = [];
+            while ($row = $stmt->fetch()) {
+                $byType[$row['attempt_type']] = (int)$row['count'];
+            }
+
+            // Taxa de sucesso
+            $success = ($byType['init'] ?? 0) + ($byType['validate'] ?? 0);
+            $failed = ($byType['failed'] ?? 0) + ($byType['suspicious'] ?? 0);
+            $successRate = $total > 0 ? round(($success / $total) * 100, 2) : 0;
+
+            // Requisições por hora (últimas 24h)
+            $stmt = $db->prepare("
+                SELECT 
+                    DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') as hour,
+                    COUNT(*) as count,
+                    SUM(CASE WHEN attempt_type IN ('init', 'validate') THEN 1 ELSE 0 END) as success,
+                    SUM(CASE WHEN attempt_type IN ('failed', 'suspicious') THEN 1 ELSE 0 END) as failed
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                GROUP BY hour
+                ORDER BY hour ASC
+            ");
+            $stmt->execute([$apiKeyId]);
+            $hourly = [];
+            while ($row = $stmt->fetch()) {
+                $hourly[] = [
+                    'hour' => $row['hour'],
+                    'total' => (int)$row['count'],
+                    'success' => (int)$row['success'],
+                    'failed' => (int)$row['failed']
+                ];
+            }
+
+            // IPs mais frequentes
+            $stmt = $db->prepare("
+                SELECT ip_address, COUNT(*) as count
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                GROUP BY ip_address
+                ORDER BY count DESC
+                LIMIT 10
+            ");
+            $stmt->execute([$apiKeyId]);
+            $topIPs = [];
+            while ($row = $stmt->fetch()) {
+                $topIPs[] = [
+                    'ip' => $row['ip_address'],
+                    'count' => (int)$row['count']
+                ];
+            }
+
+            // Domínios mais frequentes (do referer)
+            $stmt = $db->prepare("
+                SELECT 
+                    CASE 
+                        WHEN referer IS NOT NULL AND referer != '' 
+                        THEN SUBSTRING_INDEX(SUBSTRING_INDEX(referer, '://', -1), '/', 1)
+                        ELSE 'Direct'
+                    END as domain,
+                    COUNT(*) as count
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                GROUP BY domain
+                ORDER BY count DESC
+                LIMIT 10
+            ");
+            $stmt->execute([$apiKeyId]);
+            $topDomains = [];
+            while ($row = $stmt->fetch()) {
+                $topDomains[] = [
+                    'domain' => $row['domain'],
+                    'count' => (int)$row['count']
+                ];
+            }
+
+            return [
+                'total' => $total,
+                'by_type' => $byType,
+                'success_rate' => $successRate,
+                'success' => $success,
+                'failed' => $failed,
+                'hourly' => $hourly,
+                'top_ips' => $topIPs,
+                'top_domains' => $topDomains,
+                'period' => $period
+            ];
+        } catch (PDOException $e) {
+            error_log("HVAPIKeyManager::getUsageStats Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtém estatísticas de desempenho (tempo de resposta médio, etc)
+     */
+    public static function getPerformanceStats(int $apiKeyId, int $userId, ?string $period = '24h'): array
+    {
+        $db = getSafeNodeDatabase();
+        if (!$db) {
+            return [];
+        }
+
+        try {
+            // Validar que a API key pertence ao usuário
+            $stmt = $db->prepare("SELECT id FROM safenode_hv_api_keys WHERE id = ? AND user_id = ?");
+            $stmt->execute([$apiKeyId, $userId]);
+            if (!$stmt->fetch()) {
+                return [];
+            }
+
+            $interval = match($period) {
+                '1h' => '1 HOUR',
+                '24h' => '24 HOUR',
+                '7d' => '7 DAY',
+                '30d' => '30 DAY',
+                default => '24 HOUR'
+            };
+
+            // Requisições por minuto (última hora)
+            $stmt = $db->prepare("
+                SELECT 
+                    DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00') as minute,
+                    COUNT(*) as count
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+                GROUP BY minute
+                ORDER BY minute ASC
+            ");
+            $stmt->execute([$apiKeyId]);
+            $byMinute = [];
+            while ($row = $stmt->fetch()) {
+                $byMinute[] = [
+                    'minute' => $row['minute'],
+                    'count' => (int)$row['count']
+                ];
+            }
+
+            // Pico de requisições
+            $peak = 0;
+            foreach ($byMinute as $min) {
+                if ($min['count'] > $peak) {
+                    $peak = $min['count'];
+                }
+            }
+
+            // Distribuição por tipo de requisição
+            $stmt = $db->prepare("
+                SELECT 
+                    attempt_type,
+                    COUNT(*) as count,
+                    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM safenode_hv_attempts WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)), 2) as percentage
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                GROUP BY attempt_type
+            ");
+            $stmt->execute([$apiKeyId, $apiKeyId]);
+            $distribution = [];
+            while ($row = $stmt->fetch()) {
+                $distribution[] = [
+                    'type' => $row['attempt_type'],
+                    'count' => (int)$row['count'],
+                    'percentage' => (float)$row['percentage']
+                ];
+            }
+
+            return [
+                'by_minute' => $byMinute,
+                'peak_requests_per_minute' => $peak,
+                'distribution' => $distribution,
+                'period' => $period
+            ];
+        } catch (PDOException $e) {
+            error_log("HVAPIKeyManager::getPerformanceStats Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtém todas as estatísticas consolidadas
+     */
+    public static function getAllStats(int $apiKeyId, int $userId, ?string $period = '24h'): array
+    {
+        return [
+            'usage' => self::getUsageStats($apiKeyId, $userId, $period),
+            'performance' => self::getPerformanceStats($apiKeyId, $userId, $period)
+        ];
     }
 }
 
