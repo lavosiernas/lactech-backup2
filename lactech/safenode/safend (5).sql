@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Tempo de geração: 22/11/2025 às 03:53
--- Versão do servidor: 11.8.3-MariaDB-log
--- Versão do PHP: 7.2.34
+-- Host: 127.0.0.1
+-- Tempo de geração: 02/12/2025 às 22:59
+-- Versão do servidor: 10.4.32-MariaDB
+-- Versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,8 +18,51 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `u311882628_safend`
+-- Banco de dados: `safend`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `safenode_2fa_attempts`
+--
+
+CREATE TABLE `safenode_2fa_attempts` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `attempt_code` varchar(6) DEFAULT NULL,
+  `success` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `safenode_activity_log`
+--
+
+CREATE TABLE `safenode_activity_log` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `action` varchar(100) NOT NULL COMMENT 'login, logout, password_change, profile_update, etc',
+  `description` text DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `device_type` varchar(50) DEFAULT 'unknown',
+  `browser` varchar(100) DEFAULT NULL,
+  `os` varchar(100) DEFAULT NULL,
+  `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Dados adicionais da ação em formato JSON',
+  `status` varchar(20) DEFAULT 'success' COMMENT 'success, failed, warning',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `safenode_activity_log`
+--
+
+INSERT INTO `safenode_activity_log` (`id`, `user_id`, `action`, `description`, `ip_address`, `user_agent`, `device_type`, `browser`, `os`, `metadata`, `status`, `created_at`) VALUES
+(5, 10, '2fa_enabled', 'Autenticação de dois fatores ativada', '170.84.77.248', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', 'desktop', 'Chrome', 'Windows', NULL, 'success', '2025-11-22 21:57:21');
 
 -- --------------------------------------------------------
 
@@ -81,6 +124,59 @@ CREATE TABLE `safenode_firewall_rules` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `safenode_hv_api_keys`
+--
+
+CREATE TABLE `safenode_hv_api_keys` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `api_key` varchar(64) NOT NULL,
+  `api_secret` varchar(64) NOT NULL,
+  `name` varchar(255) DEFAULT 'Verificação Humana',
+  `allowed_domains` text DEFAULT NULL COMMENT 'Domínios permitidos separados por vírgula',
+  `rate_limit_per_minute` int(11) DEFAULT 60 COMMENT 'Limite de requisições por minuto',
+  `max_token_age` int(11) DEFAULT 3600 COMMENT 'Idade máxima do token em segundos (padrão: 1 hora)',
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `usage_count` int(11) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `safenode_hv_attempts`
+--
+
+CREATE TABLE `safenode_hv_attempts` (
+  `id` int(11) NOT NULL,
+  `api_key_id` int(11) DEFAULT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `user_agent` text DEFAULT NULL,
+  `referer` text DEFAULT NULL,
+  `attempt_type` enum('init','validate','failed','suspicious') NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `safenode_hv_rate_limits`
+--
+
+CREATE TABLE `safenode_hv_rate_limits` (
+  `id` int(11) NOT NULL,
+  `api_key_id` int(11) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `request_count` int(11) DEFAULT 1,
+  `window_start` timestamp NOT NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `safenode_incidents`
 --
 
@@ -101,12 +197,37 @@ CREATE TABLE `safenode_incidents` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `safenode_ip_reputation`
+--
+
+CREATE TABLE `safenode_ip_reputation` (
+  `id` int(11) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `trust_score` int(11) DEFAULT 50 COMMENT '0-100, 0=muito suspeito, 100=muito confiável',
+  `total_requests` int(11) DEFAULT 0,
+  `blocked_requests` int(11) DEFAULT 0,
+  `allowed_requests` int(11) DEFAULT 0,
+  `challenged_requests` int(11) DEFAULT 0,
+  `first_seen` datetime DEFAULT current_timestamp(),
+  `last_seen` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `country_code` char(2) DEFAULT NULL,
+  `is_whitelisted` tinyint(1) DEFAULT 0,
+  `is_blacklisted` tinyint(1) DEFAULT 0,
+  `threat_score_avg` decimal(5,2) DEFAULT 0.00,
+  `threat_score_max` int(11) DEFAULT 0,
+  `last_threat_type` varchar(50) DEFAULT NULL,
+  `notes` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `safenode_otp_codes`
 --
 
 CREATE TABLE `safenode_otp_codes` (
   `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
   `otp_code` varchar(6) NOT NULL,
   `action` varchar(50) DEFAULT 'email_verification',
@@ -122,9 +243,8 @@ CREATE TABLE `safenode_otp_codes` (
 --
 
 INSERT INTO `safenode_otp_codes` (`id`, `user_id`, `email`, `otp_code`, `action`, `expires_at`, `verified`, `verified_at`, `attempts`, `created_at`) VALUES
-(1, 2, 'slavosier298@gmail.com', '947749', 'email_verification', '2025-11-21 06:30:12', 1, '2025-11-21 06:30:12', 0, '2025-11-21 06:29:16'),
-(2, 3, 'lavosiersilva02@gmail.com', '100205', 'email_verification', '2025-11-21 06:34:16', 1, '2025-11-21 06:34:16', 0, '2025-11-21 06:33:53'),
-(3, 4, 'joselucenadev@gmail.com', '306238', 'email_verification', '2025-11-21 14:31:58', 1, '2025-11-21 14:31:58', 0, '2025-11-21 14:31:28');
+(3, 4, 'joselucenadev@gmail.com', '306238', 'email_verification', '2025-11-21 14:31:58', 1, '2025-11-21 14:31:58', 0, '2025-11-21 14:31:28'),
+(10, NULL, 'lavosiersilva02@gmail.com', '343528', 'email_verification', '2025-11-24 15:21:02', 0, NULL, 0, '2025-11-24 15:11:02');
 
 -- --------------------------------------------------------
 
@@ -229,8 +349,8 @@ INSERT INTO `safenode_settings` (`id`, `setting_key`, `setting_value`, `setting_
 (13, 'api_rate_limit', '100', 'integer', 'Limite de requisições por minuto para API', 'rate_limit', 1, '2025-11-20 22:47:10', '2025-11-20 22:47:10'),
 (14, 'api_rate_window', '60', 'integer', 'Janela de tempo para rate limit da API em segundos', 'rate_limit', 1, '2025-11-20 22:47:10', '2025-11-20 22:47:10'),
 (15, 'cloudflare_sync', '1', 'boolean', 'Sincronizar bloqueios com Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-20 22:47:10'),
-(16, 'cloudflare_zone_id', '', 'string', 'Zone ID do Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-20 22:47:10'),
-(17, 'cloudflare_api_token', '', 'string', 'API Token do Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-20 22:47:10');
+(16, 'cloudflare_zone_id', '2e1eb9127f2d34761d4626b5e71aaaab', 'string', 'Zone ID do Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-22 22:59:49'),
+(17, 'cloudflare_api_token', 'B4ExJBwzVAIZHjzEFjA3lEp2kyxBgmYE5pAEmCfA', 'string', 'API Token do Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-22 22:59:49');
 
 -- --------------------------------------------------------
 
@@ -240,6 +360,7 @@ INSERT INTO `safenode_settings` (`id`, `setting_key`, `setting_value`, `setting_
 
 CREATE TABLE `safenode_sites` (
   `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
   `domain` varchar(255) NOT NULL,
   `display_name` varchar(255) DEFAULT NULL,
   `cloudflare_zone_id` varchar(100) DEFAULT NULL,
@@ -262,8 +383,9 @@ CREATE TABLE `safenode_sites` (
 -- Despejando dados para a tabela `safenode_sites`
 --
 
-INSERT INTO `safenode_sites` (`id`, `domain`, `display_name`, `cloudflare_zone_id`, `cloudflare_status`, `ssl_status`, `security_level`, `auto_block`, `rate_limit_enabled`, `threat_detection_enabled`, `is_active`, `notes`, `verification_token`, `verification_status`, `geo_allow_only`, `created_at`, `updated_at`) VALUES
-(2, 'denfy.vercel.app', 'denfy', NULL, 'active', 'pending', 'high', 1, 1, 1, 1, NULL, 'bb2f697e6d5943ed3b7f248e4ee52cb95c5d0bea5a5beec74a015f5752c665b4', 'pending', 0, '2025-11-21 14:34:36', '2025-11-21 14:34:36');
+INSERT INTO `safenode_sites` (`id`, `user_id`, `domain`, `display_name`, `cloudflare_zone_id`, `cloudflare_status`, `ssl_status`, `security_level`, `auto_block`, `rate_limit_enabled`, `threat_detection_enabled`, `is_active`, `notes`, `verification_token`, `verification_status`, `geo_allow_only`, `created_at`, `updated_at`) VALUES
+(2, 4, 'denfy.vercel.app', 'denfy', NULL, 'active', 'pending', 'high', 1, 1, 1, 1, NULL, 'bb2f697e6d5943ed3b7f248e4ee52cb95c5d0bea5a5beec74a015f5752c665b4', 'pending', 0, '2025-11-21 14:34:36', '2025-11-22 04:59:09'),
+(5, 10, 'lactechsys.com', 'Lactech', '2e1eb9127f2d34761d4626b5e71aaaab', 'active', 'pending', 'medium', 1, 1, 1, 1, NULL, 'df113b7e1414049d0330bd55a367a6838ae7b56e0d0c8ae3948416889d7b3be3', 'pending', 0, '2025-11-25 18:14:06', '2025-11-25 18:36:19');
 
 -- --------------------------------------------------------
 
@@ -337,6 +459,8 @@ CREATE TABLE `safenode_users` (
   `email_verified` tinyint(1) DEFAULT 0,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `google_id` varchar(255) DEFAULT NULL,
+  `avatar_url` varchar(500) DEFAULT NULL,
+  `avatar_updated_at` timestamp NULL DEFAULT NULL,
   `last_login` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -346,11 +470,59 @@ CREATE TABLE `safenode_users` (
 -- Despejando dados para a tabela `safenode_users`
 --
 
-INSERT INTO `safenode_users` (`id`, `username`, `email`, `password_hash`, `full_name`, `role`, `is_active`, `email_verified`, `email_verified_at`, `google_id`, `last_login`, `created_at`, `updated_at`) VALUES
-(1, 'admin', 'admin@safenode.cloud', '$2y$10$ya9uwD0EkE0WhYZu0EhKm.PrRsa/46dt4bGsJtNeHdN04peKAPL0K', 'Administrador SafeNode', 'admin', 1, 1, '2025-11-20 01:48:07', NULL, '2025-11-21 05:55:55', '2025-11-20 01:48:07', '2025-11-21 05:55:55'),
-(2, 'Lavosier Lactech', 'slavosier298@gmail.com', '$2y$10$4Q/M9RXzNyS2XYfeuanZXOtnZaUqLEZSuJG1LwtvH1ACeH.TyYvRm', 'Francisco lavosier Silva Nascimento', 'user', 1, 1, '2025-11-22 02:08:14', '115943975533213801187', '2025-11-22 02:08:14', '2025-11-21 06:29:16', '2025-11-22 02:08:14'),
-(3, 'Lavosier Emilly', 'lavosiersilva02@gmail.com', '$2y$10$oF8ntBF/jLqvWYi.ekke4.5vNl8eoqKzKfYHbt/.yXw0DNTm5Wp4a', 'Francisco lavosier Silva Nascimento', 'user', 1, 1, '2025-11-21 06:34:16', NULL, '2025-11-21 06:34:36', '2025-11-21 06:33:53', '2025-11-21 06:34:36'),
-(4, 'lucenadev', 'joselucenadev@gmail.com', '$2y$10$AO6cXWR4Fo1HqSkxW4KY5.lVuEEXh.FT/hyyzSmgYzP.acKvwkDKW', 'José Kleiton Sinesio de Lucena Alves', 'user', 1, 1, '2025-11-21 14:31:58', NULL, '2025-11-21 14:32:24', '2025-11-21 14:31:28', '2025-11-21 14:32:24');
+INSERT INTO `safenode_users` (`id`, `username`, `email`, `password_hash`, `full_name`, `role`, `is_active`, `email_verified`, `email_verified_at`, `google_id`, `avatar_url`, `avatar_updated_at`, `last_login`, `created_at`, `updated_at`) VALUES
+(1, 'admin', 'admin@safenode.cloud', '$2y$10$ya9uwD0EkE0WhYZu0EhKm.PrRsa/46dt4bGsJtNeHdN04peKAPL0K', 'Administrador SafeNode', 'admin', 1, 1, '2025-11-20 01:48:07', NULL, NULL, NULL, '2025-12-02 17:36:06', '2025-11-20 01:48:07', '2025-12-02 17:36:06'),
+(4, 'lucenadev', 'joselucenadev@gmail.com', '$2y$10$AO6cXWR4Fo1HqSkxW4KY5.lVuEEXh.FT/hyyzSmgYzP.acKvwkDKW', 'José Kleiton Sinesio de Lucena Alves', 'user', 1, 1, '2025-11-21 14:31:58', NULL, NULL, NULL, '2025-11-21 14:32:24', '2025-11-21 14:31:28', '2025-11-21 14:32:24'),
+(10, 'slavosier298', 'slavosier298@gmail.com', '$2y$10$YwzsJuCguE9CD.F6mxZJfODE4K5AxH9xMsM/e0lLFPyUgXcSzMNwe', 'Lavosier Silva', 'user', 1, 1, '2025-11-22 21:55:58', '115943975533213801187', 'https://lh3.googleusercontent.com/a/ACg8ocLmIAT_o4DY75p14SM6C4-nMnGPsJtc1-v3XL7JAkQNCHvmG36V=s96-c', '2025-11-25 14:33:29', '2025-11-25 14:33:29', '2025-11-22 21:55:58', '2025-11-25 14:33:29');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `safenode_user_2fa`
+--
+
+CREATE TABLE `safenode_user_2fa` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `secret_key` varchar(32) NOT NULL COMMENT 'Chave secreta para geração de códigos TOTP',
+  `is_enabled` tinyint(1) DEFAULT 0 COMMENT '2FA está ativado?',
+  `backup_codes` text DEFAULT NULL COMMENT 'Códigos de backup em JSON',
+  `qr_code_setup_at` timestamp NULL DEFAULT NULL COMMENT 'Quando foi configurado',
+  `last_used_at` timestamp NULL DEFAULT NULL COMMENT 'Último uso do 2FA',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `safenode_user_2fa`
+--
+
+INSERT INTO `safenode_user_2fa` (`id`, `user_id`, `secret_key`, `is_enabled`, `backup_codes`, `qr_code_setup_at`, `last_used_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'H5ZATURJLCYLZWLGBYBN6FXPYMZWVMBI', 0, NULL, NULL, NULL, '2025-11-22 06:25:28', '2025-11-22 06:30:13'),
+(7, 10, 'X6ECLYQSB556DHHD6O6FZLSYD2J6O65L', 1, '[\"16239993\",\"46079156\",\"62638836\",\"36234941\",\"58772076\",\"77582773\",\"98798609\",\"23323552\",\"04530952\",\"73847738\"]', '2025-11-22 21:57:21', NULL, '2025-11-22 21:56:58', '2025-11-22 21:57:21');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `safenode_user_sessions`
+--
+
+CREATE TABLE `safenode_user_sessions` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `session_token` varchar(64) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `user_agent` text DEFAULT NULL,
+  `device_type` varchar(50) DEFAULT 'unknown' COMMENT 'desktop, mobile, tablet',
+  `browser` varchar(100) DEFAULT NULL,
+  `os` varchar(100) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `is_current` tinyint(1) DEFAULT 0,
+  `last_activity` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `expires_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -413,12 +585,57 @@ CREATE TABLE `v_safenode_top_blocked_ips` (
 `ip_address` varchar(45)
 ,`block_count` bigint(21)
 ,`last_blocked` timestamp
-,`threat_types` longtext
+,`threat_types` mediumtext
 );
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para view `v_safenode_active_blocks`
+--
+DROP TABLE IF EXISTS `v_safenode_active_blocks`;
+
+CREATE OR REPLACE VIEW `v_safenode_active_blocks` AS SELECT `safenode_blocked_ips`.`ip_address` AS `ip_address`, `safenode_blocked_ips`.`reason` AS `reason`, `safenode_blocked_ips`.`threat_type` AS `threat_type`, `safenode_blocked_ips`.`created_at` AS `blocked_at`, `safenode_blocked_ips`.`expires_at` AS `expires_at`, timestampdiff(SECOND,current_timestamp(),`safenode_blocked_ips`.`expires_at`) AS `seconds_remaining` FROM `safenode_blocked_ips` WHERE `safenode_blocked_ips`.`is_active` = 1 AND (`safenode_blocked_ips`.`expires_at` is null OR `safenode_blocked_ips`.`expires_at` > current_timestamp()) ;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para view `v_safenode_today_stats`
+--
+DROP TABLE IF EXISTS `v_safenode_today_stats`;
+
+CREATE OR REPLACE VIEW `v_safenode_today_stats` AS SELECT count(0) AS `total_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'blocked' then 1 else 0 end) AS `blocked_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'allowed' then 1 else 0 end) AS `allowed_requests`, count(distinct `safenode_security_logs`.`ip_address`) AS `unique_ips`, sum(case when `safenode_security_logs`.`threat_type` = 'sql_injection' then 1 else 0 end) AS `sql_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'xss' then 1 else 0 end) AS `xss_count`, sum(case when `safenode_security_logs`.`threat_type` = 'brute_force' then 1 else 0 end) AS `brute_force_count`, sum(case when `safenode_security_logs`.`threat_type` = 'rate_limit' then 1 else 0 end) AS `rate_limit_count`, sum(case when `safenode_security_logs`.`threat_type` = 'path_traversal' then 1 else 0 end) AS `path_traversal_count`, sum(case when `safenode_security_logs`.`threat_type` = 'command_injection' then 1 else 0 end) AS `command_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'ddos' then 1 else 0 end) AS `ddos_count` FROM `safenode_security_logs` WHERE cast(`safenode_security_logs`.`created_at` as date) = curdate() ;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para view `v_safenode_top_blocked_ips`
+--
+DROP TABLE IF EXISTS `v_safenode_top_blocked_ips`;
+
+CREATE OR REPLACE VIEW `v_safenode_top_blocked_ips` AS SELECT `safenode_security_logs`.`ip_address` AS `ip_address`, count(0) AS `block_count`, max(`safenode_security_logs`.`created_at`) AS `last_blocked`, substring_index(group_concat(distinct `safenode_security_logs`.`threat_type` order by `safenode_security_logs`.`threat_type` ASC separator ','),',',10) AS `threat_types` FROM `safenode_security_logs` WHERE `safenode_security_logs`.`action_taken` = 'blocked' AND `safenode_security_logs`.`created_at` >= current_timestamp() - interval 7 day GROUP BY `safenode_security_logs`.`ip_address` ORDER BY count(0) DESC LIMIT 0, 100 ;
 
 --
 -- Índices para tabelas despejadas
 --
+
+--
+-- Índices de tabela `safenode_2fa_attempts`
+--
+ALTER TABLE `safenode_2fa_attempts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_created_at` (`created_at`);
+
+--
+-- Índices de tabela `safenode_activity_log`
+--
+ALTER TABLE `safenode_activity_log`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_action` (`action`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_user_date` (`user_id`,`created_at`);
 
 --
 -- Índices de tabela `safenode_alerts`
@@ -448,6 +665,35 @@ ALTER TABLE `safenode_firewall_rules`
   ADD KEY `idx_site_priority` (`site_id`,`priority`);
 
 --
+-- Índices de tabela `safenode_hv_api_keys`
+--
+ALTER TABLE `safenode_hv_api_keys`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `api_key` (`api_key`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `is_active` (`is_active`);
+
+--
+-- Índices de tabela `safenode_hv_attempts`
+--
+ALTER TABLE `safenode_hv_attempts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `api_key_id` (`api_key_id`),
+  ADD KEY `ip_address` (`ip_address`),
+  ADD KEY `created_at` (`created_at`),
+  ADD KEY `attempt_type` (`attempt_type`);
+
+--
+-- Índices de tabela `safenode_hv_rate_limits`
+--
+ALTER TABLE `safenode_hv_rate_limits`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `api_key_ip_window` (`api_key_id`,`ip_address`,`window_start`),
+  ADD KEY `api_key_id` (`api_key_id`),
+  ADD KEY `ip_address` (`ip_address`),
+  ADD KEY `window_start` (`window_start`);
+
+--
 -- Índices de tabela `safenode_incidents`
 --
 ALTER TABLE `safenode_incidents`
@@ -459,6 +705,17 @@ ALTER TABLE `safenode_incidents`
   ADD KEY `idx_inc_last_seen` (`last_seen`);
 
 --
+-- Índices de tabela `safenode_ip_reputation`
+--
+ALTER TABLE `safenode_ip_reputation`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_ip` (`ip_address`),
+  ADD KEY `idx_ip` (`ip_address`),
+  ADD KEY `idx_trust_score` (`trust_score`),
+  ADD KEY `idx_last_seen` (`last_seen`),
+  ADD KEY `idx_country` (`country_code`);
+
+--
 -- Índices de tabela `safenode_otp_codes`
 --
 ALTER TABLE `safenode_otp_codes`
@@ -467,7 +724,8 @@ ALTER TABLE `safenode_otp_codes`
   ADD KEY `idx_email` (`email`),
   ADD KEY `idx_otp_code` (`otp_code`),
   ADD KEY `idx_expires` (`expires_at`),
-  ADD KEY `idx_verified` (`verified`);
+  ADD KEY `idx_verified` (`verified`),
+  ADD KEY `idx_email_action` (`email`,`action`);
 
 --
 -- Índices de tabela `safenode_rate_limits`
@@ -521,7 +779,8 @@ ALTER TABLE `safenode_sites`
   ADD UNIQUE KEY `unique_domain` (`domain`),
   ADD KEY `idx_domain` (`domain`),
   ADD KEY `idx_active` (`is_active`),
-  ADD KEY `idx_cloudflare_zone` (`cloudflare_zone_id`);
+  ADD KEY `idx_cloudflare_zone` (`cloudflare_zone_id`),
+  ADD KEY `idx_user_id` (`user_id`);
 
 --
 -- Índices de tabela `safenode_site_geo_rules`
@@ -552,13 +811,30 @@ ALTER TABLE `safenode_threat_patterns`
 --
 ALTER TABLE `safenode_users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_username` (`username`),
   ADD UNIQUE KEY `unique_email` (`email`),
   ADD UNIQUE KEY `idx_google_id` (`google_id`),
   ADD KEY `idx_username` (`username`),
   ADD KEY `idx_email` (`email`),
   ADD KEY `idx_active` (`is_active`),
   ADD KEY `idx_email_verified` (`email_verified`);
+
+--
+-- Índices de tabela `safenode_user_2fa`
+--
+ALTER TABLE `safenode_user_2fa`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`),
+  ADD UNIQUE KEY `unique_user_id` (`user_id`);
+
+--
+-- Índices de tabela `safenode_user_sessions`
+--
+ALTER TABLE `safenode_user_sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `session_token` (`session_token`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_session_token` (`session_token`),
+  ADD KEY `idx_last_activity` (`last_activity`);
 
 --
 -- Índices de tabela `safenode_whitelist`
@@ -572,6 +848,18 @@ ALTER TABLE `safenode_whitelist`
 --
 -- AUTO_INCREMENT para tabelas despejadas
 --
+
+--
+-- AUTO_INCREMENT de tabela `safenode_2fa_attempts`
+--
+ALTER TABLE `safenode_2fa_attempts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `safenode_activity_log`
+--
+ALTER TABLE `safenode_activity_log`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de tabela `safenode_alerts`
@@ -592,16 +880,40 @@ ALTER TABLE `safenode_firewall_rules`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de tabela `safenode_hv_api_keys`
+--
+ALTER TABLE `safenode_hv_api_keys`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de tabela `safenode_hv_attempts`
+--
+ALTER TABLE `safenode_hv_attempts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `safenode_hv_rate_limits`
+--
+ALTER TABLE `safenode_hv_rate_limits`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `safenode_incidents`
 --
 ALTER TABLE `safenode_incidents`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de tabela `safenode_ip_reputation`
+--
+ALTER TABLE `safenode_ip_reputation`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de tabela `safenode_otp_codes`
 --
 ALTER TABLE `safenode_otp_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de tabela `safenode_rate_limits`
@@ -631,7 +943,7 @@ ALTER TABLE `safenode_settings`
 -- AUTO_INCREMENT de tabela `safenode_sites`
 --
 ALTER TABLE `safenode_sites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de tabela `safenode_site_geo_rules`
@@ -655,7 +967,19 @@ ALTER TABLE `safenode_threat_patterns`
 -- AUTO_INCREMENT de tabela `safenode_users`
 --
 ALTER TABLE `safenode_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT de tabela `safenode_user_2fa`
+--
+ALTER TABLE `safenode_user_2fa`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT de tabela `safenode_user_sessions`
+--
+ALTER TABLE `safenode_user_sessions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `safenode_whitelist`
@@ -663,42 +987,45 @@ ALTER TABLE `safenode_users`
 ALTER TABLE `safenode_whitelist`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
--- --------------------------------------------------------
-
---
--- Estrutura para view `v_safenode_active_blocks`
---
-DROP TABLE IF EXISTS `v_safenode_active_blocks`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_xandria`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_active_blocks`  AS SELECT `safenode_blocked_ips`.`ip_address` AS `ip_address`, `safenode_blocked_ips`.`reason` AS `reason`, `safenode_blocked_ips`.`threat_type` AS `threat_type`, `safenode_blocked_ips`.`created_at` AS `blocked_at`, `safenode_blocked_ips`.`expires_at` AS `expires_at`, timestampdiff(SECOND,current_timestamp(),`safenode_blocked_ips`.`expires_at`) AS `seconds_remaining` FROM `safenode_blocked_ips` WHERE `safenode_blocked_ips`.`is_active` = 1 AND (`safenode_blocked_ips`.`expires_at` is null OR `safenode_blocked_ips`.`expires_at` > current_timestamp()) ;
-
--- --------------------------------------------------------
-
---
--- Estrutura para view `v_safenode_today_stats`
---
-DROP TABLE IF EXISTS `v_safenode_today_stats`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_xandria`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_today_stats`  AS SELECT count(0) AS `total_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'blocked' then 1 else 0 end) AS `blocked_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'allowed' then 1 else 0 end) AS `allowed_requests`, count(distinct `safenode_security_logs`.`ip_address`) AS `unique_ips`, sum(case when `safenode_security_logs`.`threat_type` = 'sql_injection' then 1 else 0 end) AS `sql_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'xss' then 1 else 0 end) AS `xss_count`, sum(case when `safenode_security_logs`.`threat_type` = 'brute_force' then 1 else 0 end) AS `brute_force_count`, sum(case when `safenode_security_logs`.`threat_type` = 'rate_limit' then 1 else 0 end) AS `rate_limit_count`, sum(case when `safenode_security_logs`.`threat_type` = 'path_traversal' then 1 else 0 end) AS `path_traversal_count`, sum(case when `safenode_security_logs`.`threat_type` = 'command_injection' then 1 else 0 end) AS `command_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'ddos' then 1 else 0 end) AS `ddos_count` FROM `safenode_security_logs` WHERE cast(`safenode_security_logs`.`created_at` as date) = curdate() ;
-
--- --------------------------------------------------------
-
---
--- Estrutura para view `v_safenode_top_blocked_ips`
---
-DROP TABLE IF EXISTS `v_safenode_top_blocked_ips`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_xandria`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_top_blocked_ips`  AS SELECT `safenode_security_logs`.`ip_address` AS `ip_address`, count(0) AS `block_count`, max(`safenode_security_logs`.`created_at`) AS `last_blocked`, substring_index(group_concat(distinct `safenode_security_logs`.`threat_type` order by `safenode_security_logs`.`threat_type` ASC separator ','),',',10) AS `threat_types` FROM `safenode_security_logs` WHERE `safenode_security_logs`.`action_taken` = 'blocked' AND `safenode_security_logs`.`created_at` >= current_timestamp() - interval 7 day GROUP BY `safenode_security_logs`.`ip_address` ORDER BY count(0) DESC LIMIT 0, 100 ;
-
 --
 -- Restrições para tabelas despejadas
 --
+
+--
+-- Restrições para tabelas `safenode_2fa_attempts`
+--
+ALTER TABLE `safenode_2fa_attempts`
+  ADD CONSTRAINT `safenode_2fa_attempts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `safenode_users` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `safenode_activity_log`
+--
+ALTER TABLE `safenode_activity_log`
+  ADD CONSTRAINT `safenode_activity_log_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `safenode_users` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `safenode_firewall_rules`
 --
 ALTER TABLE `safenode_firewall_rules`
   ADD CONSTRAINT `safenode_firewall_rules_ibfk_1` FOREIGN KEY (`site_id`) REFERENCES `safenode_sites` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `safenode_hv_api_keys`
+--
+ALTER TABLE `safenode_hv_api_keys`
+  ADD CONSTRAINT `fk_hv_api_keys_user` FOREIGN KEY (`user_id`) REFERENCES `safenode_users` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `safenode_hv_attempts`
+--
+ALTER TABLE `safenode_hv_attempts`
+  ADD CONSTRAINT `fk_hv_attempts_api_key` FOREIGN KEY (`api_key_id`) REFERENCES `safenode_hv_api_keys` (`id`) ON DELETE SET NULL;
+
+--
+-- Restrições para tabelas `safenode_hv_rate_limits`
+--
+ALTER TABLE `safenode_hv_rate_limits`
+  ADD CONSTRAINT `fk_hv_rate_limits_api_key` FOREIGN KEY (`api_key_id`) REFERENCES `safenode_hv_api_keys` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `safenode_otp_codes`
@@ -723,6 +1050,18 @@ ALTER TABLE `safenode_security_logs`
 --
 ALTER TABLE `safenode_site_geo_rules`
   ADD CONSTRAINT `safenode_site_geo_rules_ibfk_1` FOREIGN KEY (`site_id`) REFERENCES `safenode_sites` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `safenode_user_2fa`
+--
+ALTER TABLE `safenode_user_2fa`
+  ADD CONSTRAINT `safenode_user_2fa_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `safenode_users` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `safenode_user_sessions`
+--
+ALTER TABLE `safenode_user_sessions`
+  ADD CONSTRAINT `safenode_user_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `safenode_users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

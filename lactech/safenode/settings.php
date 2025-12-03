@@ -1,6 +1,6 @@
 <?php
 /**
- * SafeNode - IPs Suspeitos
+ * SafeNode - Configurações do Sistema
  */
 
 session_start();
@@ -14,8 +14,9 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/Settings.php';
 
-$pageTitle = 'IPs Suspeitos';
+$pageTitle = 'Configurações';
 $currentSiteId = $_SESSION['view_site_id'] ?? 0;
 $userId = $_SESSION['safenode_user_id'] ?? null;
 $selectedSite = null;
@@ -30,6 +31,66 @@ if ($db && $currentSiteId > 0) {
         $selectedSite = null;
     }
 }
+
+$message = '';
+$messageType = '';
+
+// Processar atualização de configurações
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
+    if (!CSRFProtection::validate()) {
+        $message = "Token de segurança inválido.";
+        $messageType = "error";
+    } else {
+        if ($db) {
+            try {
+                $settings = $_POST['settings'] ?? [];
+                $updated = 0;
+                
+                foreach ($settings as $key => $value) {
+                    $stmt = $db->prepare("UPDATE safenode_settings SET setting_value = ?, updated_at = CURRENT_TIMESTAMP WHERE setting_key = ? AND is_editable = 1");
+                    $stmt->execute([$value, $key]);
+                    if ($stmt->rowCount() > 0) {
+                        $updated++;
+                    }
+                }
+                
+                if ($updated > 0) {
+                    $message = "Configurações atualizadas com sucesso!";
+                    $messageType = "success";
+                } else {
+                    $message = "Nenhuma configuração foi atualizada.";
+                    $messageType = "warning";
+                }
+            } catch (PDOException $e) {
+                error_log("Settings Update Error: " . $e->getMessage());
+                $message = "Erro ao atualizar configurações.";
+                $messageType = "error";
+            }
+        }
+    }
+}
+
+// Buscar todas as configurações
+$allSettings = [];
+if ($db) {
+    try {
+        $stmt = $db->query("SELECT * FROM safenode_settings ORDER BY category, setting_key");
+        $allSettings = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Settings Fetch Error: " . $e->getMessage());
+    }
+}
+
+// Agrupar por categoria
+$settingsByCategory = [];
+foreach ($allSettings as $setting) {
+    $category = $setting['category'] ?? 'general';
+    if (!isset($settingsByCategory[$category])) {
+        $settingsByCategory[$category] = [];
+    }
+    $settingsByCategory[$category][] = $setting;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="dark h-full">
@@ -109,12 +170,6 @@ if ($db && $currentSiteId > 0) {
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-subtle);
-        }
-        
-        .table-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 20px;
         }
         
         .sidebar {
@@ -223,7 +278,7 @@ if ($db && $currentSiteId > 0) {
                     <i data-lucide="compass" class="w-5 h-5"></i>
                     <span class="font-medium">Explorar</span>
                 </a>
-                <a href="suspicious-ips.php" class="nav-item active">
+                <a href="suspicious-ips.php" class="nav-item">
                     <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                     <span class="font-medium">Analisar</span>
                 </a>
@@ -238,7 +293,7 @@ if ($db && $currentSiteId > 0) {
                         <i data-lucide="shield-check" class="w-5 h-5"></i>
                         <span class="font-medium">Verificação Humana</span>
                     </a>
-                    <a href="settings.php" class="nav-item">
+                    <a href="settings.php" class="nav-item active">
                         <i data-lucide="settings-2" class="w-5 h-5"></i>
                         <span class="font-medium">Configurações</span>
                     </a>
@@ -268,7 +323,7 @@ if ($db && $currentSiteId > 0) {
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div>
-                        <h2 class="text-2xl font-bold text-white tracking-tight">IPs Suspeitos</h2>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Configurações</h2>
                         <?php if ($selectedSite): ?>
                             <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>
@@ -278,168 +333,94 @@ if ($db && $currentSiteId > 0) {
 
             <!-- Content -->
             <div class="flex-1 overflow-y-auto p-8">
-                <div id="suspicious-content" class="space-y-6">
-                    <div class="glass rounded-2xl p-12 text-center">
-                        <i data-lucide="loader" class="w-12 h-12 mx-auto mb-4 animate-spin text-zinc-400"></i>
-                        <p class="text-sm text-zinc-500">Carregando IPs suspeitos...</p>
-                    </div>
+                <?php if ($message): ?>
+                <div class="glass rounded-2xl p-4 mb-6 <?php echo $messageType === 'success' ? 'border-green-500/30 bg-green-500/10' : ($messageType === 'error' ? 'border-red-500/30 bg-red-500/10' : 'border-amber-500/30 bg-amber-500/10'); ?>">
+                    <p class="text-white"><?php echo htmlspecialchars($message); ?></p>
                 </div>
+                <?php endif; ?>
+
+                <form method="POST" action="settings.php">
+                    <?php echo CSRFProtection::getTokenField(); ?>
+                    <input type="hidden" name="update_settings" value="1">
+                    
+                    <?php 
+                    $categoryNames = [
+                        'general' => 'Geral',
+                        'detection' => 'Detecção',
+                        'rate_limit' => 'Rate Limiting',
+                        'cloudflare' => 'Cloudflare'
+                    ];
+                    
+                    foreach ($settingsByCategory as $category => $settings): 
+                        $categoryName = $categoryNames[$category] ?? ucfirst($category);
+                    ?>
+                    <div class="glass rounded-2xl p-6 mb-6">
+                        <h3 class="text-xl font-semibold text-white mb-6"><?php echo htmlspecialchars($categoryName); ?></h3>
+                        
+                        <div class="space-y-6">
+                            <?php foreach ($settings as $setting): ?>
+                                <?php if (!$setting['is_editable']): continue; endif; ?>
+                                
+                                <div class="flex items-start justify-between gap-4 pb-6 border-b border-white/5 last:border-0 last:pb-0">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-semibold text-white mb-2">
+                                            <?php echo htmlspecialchars($setting['setting_key']); ?>
+                                        </label>
+                                        <?php if ($setting['description']): ?>
+                                            <p class="text-xs text-zinc-400 mb-3"><?php echo htmlspecialchars($setting['description']); ?></p>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($setting['setting_type'] === 'boolean'): ?>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="settings[<?php echo htmlspecialchars($setting['setting_key']); ?>]" 
+                                                    value="1"
+                                                    <?php echo ($setting['setting_value'] == '1' || $setting['setting_value'] === '1') ? 'checked' : ''; ?>
+                                                    class="sr-only peer"
+                                                >
+                                                <div class="w-11 h-6 bg-white/10 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white/20"></div>
+                                                <span class="ml-3 text-sm text-zinc-400">
+                                                    <?php echo ($setting['setting_value'] == '1') ? 'Ativado' : 'Desativado'; ?>
+                                                </span>
+                                            </label>
+                                        <?php else: ?>
+                                            <input 
+                                                type="<?php echo $setting['setting_type'] === 'integer' ? 'number' : 'text'; ?>"
+                                                name="settings[<?php echo htmlspecialchars($setting['setting_key']); ?>]"
+                                                value="<?php echo htmlspecialchars($setting['setting_value']); ?>"
+                                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 transition-all"
+                                                <?php if ($setting['setting_type'] === 'integer'): ?>
+                                                    min="0"
+                                                <?php endif; ?>
+                                            >
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                    
+                    <div class="flex justify-end gap-4">
+                        <a href="dashboard.php" class="px-6 py-2.5 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="px-6 py-2.5 btn-primary rounded-xl">
+                            Salvar Configurações
+                        </button>
+                    </div>
+                </form>
             </div>
         </main>
     </div>
 
     <script>
-        let suspiciousData = null;
-
-        async function fetchSuspiciousIPs() {
-            try {
-                const response = await fetch('api/dashboard-stats.php');
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('HTTP Error:', response.status, errorText);
-                    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
-                }
-                
-                const data = await response.json();
-                console.log('API Response:', data);
-                
-                if (data.success) {
-                    suspiciousData = data.data?.analytics?.suspicious_ips || [];
-                    console.log('Suspicious IPs Data:', suspiciousData);
-                    updateSuspiciousPage();
-                } else {
-                    throw new Error(data.error || 'Erro desconhecido');
-                }
-            } catch (error) {
-                console.error('Erro ao buscar IPs suspeitos:', error);
-                document.getElementById('suspicious-content').innerHTML = `
-                    <div class="glass rounded-2xl p-8 text-center">
-                        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4 text-red-400"></i>
-                        <p class="text-red-400 font-bold mb-2">Erro ao carregar dados</p>
-                        <p class="text-zinc-500 text-sm mb-4">${error.message}</p>
-                        <button onclick="fetchSuspiciousIPs()" class="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors text-sm">
-                            Tentar novamente
-                        </button>
-                    </div>
-                `;
-                lucide.createIcons();
-            }
-        }
-
-        function updateSuspiciousPage() {
-            if (!suspiciousData) return;
-            
-            const container = document.getElementById('suspicious-content');
-            const ips = suspiciousData || [];
-            
-            if (ips.length === 0) {
-                container.innerHTML = `
-                    <div class="table-card p-8 text-center">
-                        <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-4 text-white"></i>
-                        <p class="text-white font-bold mb-2">Nenhum IP suspeito detectado</p>
-                        <p class="text-zinc-500 text-sm">Todas as rotas estão seguras</p>
-                        <p class="text-zinc-600 text-xs mt-4">IPs suspeitos aparecerão aqui quando detectados pelo sistema</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-            
-            container.innerHTML = `
-                <div class="glass rounded-2xl p-6 mb-6">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-xl font-semibold text-white">${ips.length} IP${ips.length !== 1 ? 's' : ''} Suspeito${ips.length !== 1 ? 's' : ''}</h2>
-                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold border border-red-500/30">
-                            <span class="w-2 h-2 rounded-full bg-red-400"></span>
-                            Análise Ativa
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    ${ips.map(ip => {
-                        let suspicionLevel = 'Médio';
-                        let suspicionColor = 'amber';
-                        if (ip.suspicion_score >= 70) {
-                            suspicionLevel = 'Crítico';
-                            suspicionColor = 'red';
-                        } else if (ip.suspicion_score >= 50) {
-                            suspicionLevel = 'Alto';
-                            suspicionColor = 'orange';
-                        }
-                        
-                        let suspicionBadgeClass = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-                        if (ip.suspicion_score >= 70) {
-                            suspicionBadgeClass = 'bg-red-500/20 text-red-400 border-red-500/30';
-                        } else if (ip.suspicion_score >= 50) {
-                            suspicionBadgeClass = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-                        }
-                        
-                        return `
-                            <div class="glass rounded-xl p-6">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <p class="text-lg font-mono font-bold text-white">${ip.ip_address}</p>
-                                            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${suspicionBadgeClass}">
-                                                ${suspicionLevel}
-                                            </span>
-                                        </div>
-                                        <p class="text-sm text-zinc-400">
-                                            Suspicion Score: <span class="text-white font-semibold">${ip.suspicion_score || 0}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">Total Ataques</p>
-                                        <p class="text-xl font-bold text-red-400">${ip.total_attacks || 0}</p>
-                                    </div>
-                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">Tipos de Ataque</p>
-                                        <p class="text-xl font-bold text-orange-400">${ip.attack_types_count || 0}</p>
-                                    </div>
-                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">País</p>
-                                        <p class="text-xl font-bold text-white">${ip.country_code || 'N/A'}</p>
-                                    </div>
-                                </div>
-                                
-                                ${ip.threat_types ? `
-                                    <div class="mt-4 pt-4 border-t border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-2 font-semibold">Tipos de Ameaça Detectados</p>
-                                        <p class="text-sm text-white font-mono">${ip.threat_types}</p>
-                                    </div>
-                                ` : ''}
-                                
-                                <div class="mt-4 pt-4 border-t border-white/10">
-                                    <p class="text-xs text-zinc-400 mb-1 font-semibold">Última atividade</p>
-                                    <p class="text-sm text-white">${new Date(ip.last_seen).toLocaleString('pt-BR')}</p>
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-            
-            lucide.createIcons();
-        }
-
-        // Aguardar DOM carregar
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM carregado, iniciando fetch...');
-                fetchSuspiciousIPs();
-                setInterval(fetchSuspiciousIPs, 10000);
-            });
-        } else {
-            console.log('DOM já carregado, iniciando fetch...');
-            fetchSuspiciousIPs();
-            setInterval(fetchSuspiciousIPs, 10000);
-        }
-        
         lucide.createIcons();
     </script>
+    
+    <!-- Security Scripts - Previne download de código -->
+    <script src="includes/security-scripts.js"></script>
 </body>
 </html>
+

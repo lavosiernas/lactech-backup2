@@ -135,6 +135,7 @@ if ($db) {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            font-size: 0.92em;
         }
         
         /* Custom Scrollbar */
@@ -392,33 +393,10 @@ if ($db) {
         
         /* Upgrade Card */
         .upgrade-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.3) 100%);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .upgrade-card::before {
-            content: '';
-            position: absolute;
-            top: -100%;
-            left: -100%;
-            width: 300%;
-            height: 300%;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 40%);
-            animation: rotate-gradient 10s linear infinite;
-        }
-        
-        .upgrade-card::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle at bottom right, rgba(255,255,255,0.2) 0%, transparent 60%);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
         }
         
         /* Buttons */
@@ -469,6 +447,7 @@ if ($db) {
             border-color: var(--border-light);
             color: var(--text-primary);
         }
+        
         
         /* Search Input */
         .search-input {
@@ -697,81 +676,85 @@ if ($db) {
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body x-data="{ notificationsOpen: false, sidebarOpen: false }" class="h-full overflow-hidden flex">
+<body x-data="{ notificationsOpen: false, sidebarOpen: false, sidebarCollapsed: false }" 
+      x-init="$watch('sidebarCollapsed', () => { setTimeout(() => { lucide.createIcons(); }, 150) })"
+      class="h-full overflow-hidden flex">
 
     <!-- Sidebar -->
-    <aside class="sidebar w-72 h-full flex-shrink-0 flex flex-col hidden lg:flex">
+    <aside :class="sidebarCollapsed ? 'w-20' : 'w-72'" class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
         <!-- Logo -->
-        <div class="p-6 border-b border-white/5">
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain">
-                    <div>
+        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+            <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
+                <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
+                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                    <div x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="overflow-hidden whitespace-nowrap">
                         <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
                         <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
-                <button class="ml-auto text-zinc-600 hover:text-zinc-400 transition-colors">
-                    <i data-lucide="chevrons-left" class="w-5 h-5"></i>
+                <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0" :class="sidebarCollapsed ? 'mt-2' : ''">
+                    <i :data-lucide="sidebarCollapsed ? 'chevrons-right' : 'chevrons-left'" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
         
         <!-- Navigation -->
-        <nav class="flex-1 p-5 space-y-2 overflow-y-auto">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Menu Principal</p>
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
+            <p x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
             
-            <a href="dashboard.php" class="nav-item active">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                <span class="font-medium">Home</span>
+            <a href="dashboard.php" class="nav-item active" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Home' : ''">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Home</span>
             </a>
-            <a href="security-analytics.php" class="nav-item">
-                <i data-lucide="activity" class="w-5 h-5"></i>
-                <span class="font-medium">Network</span>
+            <a href="sites.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Gerenciar Sites' : ''">
+                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Gerenciar Sites</span>
             </a>
-            <a href="behavior-analysis.php" class="nav-item">
-                <i data-lucide="cpu" class="w-5 h-5"></i>
-                <span class="font-medium">Kubernetes</span>
+            <a href="security-analytics.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Network' : ''">
+                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Network</span>
             </a>
-            <a href="logs.php" class="nav-item">
-                <i data-lucide="compass" class="w-5 h-5"></i>
-                <span class="font-medium">Explorar</span>
+            <a href="behavior-analysis.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Kubernetes' : ''">
+                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Kubernetes</span>
             </a>
-            <a href="suspicious-ips.php" class="nav-item">
-                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                <span class="font-medium">Analisar</span>
+            <a href="logs.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Explorar' : ''">
+                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Explorar</span>
             </a>
-            <a href="attacked-targets.php" class="nav-item">
-                <i data-lucide="users-2" class="w-5 h-5"></i>
-                <span class="font-medium">Grupos</span>
+            <a href="suspicious-ips.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Analisar' : ''">
+                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Analisar</span>
+            </a>
+            <a href="attacked-targets.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Grupos' : ''">
+                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Grupos</span>
             </a>
             
-            <div class="pt-6 mt-6 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
-                <a href="settings.php" class="nav-item">
-                    <i data-lucide="settings-2" class="w-5 h-5"></i>
-                    <span class="font-medium">Configurações</span>
+            <div class="pt-4 mt-4 border-t border-white/5">
+                <p x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
+                <a href="human-verification.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Verificação Humana' : ''">
+                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Verificação Humana</span>
                 </a>
-                <a href="help.php" class="nav-item">
-                    <i data-lucide="life-buoy" class="w-5 h-5"></i>
-                    <span class="font-medium">Ajuda</span>
+                <a href="settings.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Configurações' : ''">
+                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Configurações</span>
+                </a>
+                <a href="help.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Ajuda' : ''">
+                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Ajuda</span>
                 </a>
             </div>
         </nav>
         
         <!-- Upgrade Card -->
-        <div class="p-5">
+        <div class="p-4 flex-shrink-0" x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2">
             <div class="upgrade-card">
-                <div class="relative z-10">
-                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-5">
-                        <i data-lucide="zap" class="w-7 h-7 text-white"></i>
-                    </div>
-                    <h3 class="font-bold text-white text-lg mb-1">Ativar Pro</h3>
-                    <p class="text-sm text-white/60 mb-5 leading-relaxed">Desbloqueie recursos avançados de proteção</p>
-                    <button class="w-full btn-primary py-3 text-sm">
-                        Upgrade Agora
-                    </button>
-                </div>
+                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <button class="w-full btn-primary py-2.5 text-sm">
+                    Upgrade Agora
+                </button>
             </div>
         </div>
     </aside>
@@ -787,7 +770,7 @@ if ($db) {
                 <div>
                     <h2 class="text-2xl font-bold text-white tracking-tight">Dashboard</h2>
                     <?php if ($currentSiteId > 0 && $selectedSite): ?>
-                    <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['name'] ?? ''); ?></p>
+                    <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -798,12 +781,6 @@ if ($db) {
                     <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
                     <input type="text" placeholder="Buscar..." class="search-input">
                 </div>
-                
-                <!-- Add New -->
-                <button class="btn-primary hidden sm:flex items-center gap-2">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>Adicionar</span>
-                </button>
                 
                 <!-- Notifications -->
                 <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
@@ -1148,13 +1125,14 @@ if ($db) {
                 return;
             }
             
-            // Verificar se Chart.js está carregado (pode ser Chart ou Chart.Chart dependendo da versão)
-            const ChartLib = window.Chart || (window.Chart && window.Chart.Chart) || Chart;
-            if (typeof ChartLib === 'undefined' || !ChartLib) {
+            // Verificar se Chart.js está carregado
+            if (typeof Chart === 'undefined') {
                 console.error('Chart.js não está carregado. Tentando novamente...');
                 setTimeout(initEntitiesChart, 200);
                 return;
             }
+            
+            const ChartLib = Chart;
             
             // Destruir gráfico existente se houver
             if (entitiesChart) {
@@ -1186,7 +1164,7 @@ if ($db) {
             gradient3.addColorStop(1, '#7c3aed');
             
             try {
-                entitiesChart = new ChartLib(ctx, {
+                entitiesChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: ['Good', 'Moderate', 'Bad'],
@@ -1252,10 +1230,12 @@ if ($db) {
             
             const ctx = canvas.getContext('2d');
             
-            // Dados iniciais
-            const initialData = [120, 190, 80, 150, 200, 380, 320, 280, 180, 220, 160];
-            const maxValue = Math.max(...initialData, 0);
-            const yAxisMax = Math.ceil((maxValue * 1.2) / 100) * 100; // Arredondar para múltiplo de 100
+            // Dados iniciais vazios - serão preenchidos pela API
+            const initialData = [];
+            const initialLabels = [];
+            
+            // Valor padrão para o eixo Y
+            const yAxisMax = 100;
             
             // Create gradient for highlighted bars
             const highlightGradient = ctx.createLinearGradient(0, 0, 0, 200);
@@ -1265,13 +1245,20 @@ if ($db) {
             anomaliesChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov'],
+                    labels: initialLabels,
                     datasets: [{
                         data: initialData,
                         backgroundColor: function(context) {
                             const index = context.dataIndex;
-                            if (index === 5 || index === 6) {
-                                return highlightGradient;
+                            const value = context.parsed?.y || 0;
+                            // Destacar barras com valores altos (acima da média)
+                            if (value > 0) {
+                                const avg = initialData.length > 0 
+                                    ? initialData.reduce((a, b) => a + b, 0) / initialData.length 
+                                    : 0;
+                                if (value > avg * 1.5) {
+                                    return highlightGradient;
+                                }
                             }
                             return 'rgba(255,255,255,0.05)';
                         },
@@ -1549,12 +1536,19 @@ if ($db) {
             } else {
                 // Tentar reinicializar o gráfico se não existir
                 console.warn('entitiesChart não existe, tentando reinicializar...');
-                initEntitiesChart();
-                if (entitiesChart) {
+                try {
+                    initEntitiesChart();
+                    // Aguardar um pouco para garantir que o gráfico foi criado
                     setTimeout(() => {
-                        entitiesChart.data.datasets[0].data = chartData;
-                        entitiesChart.update('active');
-                    }, 100);
+                        if (entitiesChart) {
+                            entitiesChart.data.datasets[0].data = chartData;
+                            entitiesChart.update('active');
+                        } else {
+                            console.error('Falha ao criar entitiesChart após reinicialização');
+                        }
+                    }, 200);
+                } catch (error) {
+                    console.error('Erro ao reinicializar entitiesChart:', error);
                 }
             }
             
@@ -1605,6 +1599,119 @@ if ($db) {
                 `).join('');
             } else {
                 topCountriesContainer.innerHTML = '<p class="text-center py-8 text-zinc-600 text-sm">Nenhum dado disponível</p>';
+            }
+            
+            // Update Anomalies Chart with hourly data
+            const hourlyStats = dashboardData.hourly_stats || {};
+            if (anomaliesChart) {
+                const hours = Object.keys(hourlyStats).sort();
+                const labels = hours.map(h => h + 'h');
+                const data = hours.map(h => hourlyStats[h].blocked || 0);
+                
+                if (data.length > 0) {
+                    anomaliesChart.data.labels = labels;
+                    anomaliesChart.data.datasets[0].data = data;
+                    
+                    // Recalcular max do eixo Y
+                    const maxValue = Math.max(...data, 0);
+                    const yAxisMax = maxValue > 0 ? Math.ceil((maxValue * 1.2) / 100) * 100 : 100;
+                    anomaliesChart.options.scales.y.max = yAxisMax;
+                    anomaliesChart.options.scales.y.ticks.stepSize = Math.max(50, Math.ceil(yAxisMax / 5));
+                    
+                    anomaliesChart.update('active');
+                }
+            }
+            
+            // Update Devices Table with real data
+            const devicesTable = document.getElementById('devices-table');
+            if (devicesTable) {
+                // Buscar IPs únicos das últimas 24h como "dispositivos"
+                const uniqueIPs = new Set();
+                const logsForDevices = dashboardData.event_logs || dashboardData.recent_logs || [];
+                const topIPs = dashboardData.top_blocked_ips || [];
+                
+                // Combinar IPs de logs recentes e top IPs
+                logsForDevices.forEach(log => {
+                    if (log.ip_address) uniqueIPs.add(log.ip_address);
+                });
+                topIPs.forEach(ip => {
+                    if (ip.ip_address) uniqueIPs.add(ip.ip_address);
+                });
+                
+                const devices = Array.from(uniqueIPs).slice(0, 10).map(ip => {
+                    // Encontrar dados do IP nos logs
+                    const ipLogs = logsForDevices.filter(log => log.ip_address === ip);
+                    const topIPData = topIPs.find(tip => tip.ip_address === ip);
+                    
+                    const blockedCount = ipLogs.filter(log => log.action_taken === 'blocked').length;
+                    const totalRequests = ipLogs.length || (topIPData?.block_count || 0);
+                    const threatScore = topIPData?.avg_threat_score || 0;
+                    
+                    // Determinar health baseado em threat score e bloqueios
+                    let health = 'good';
+                    let healthColor = 'text-emerald-400';
+                    if (threatScore >= 70 || blockedCount > 5) {
+                        health = 'critical';
+                        healthColor = 'text-red-400';
+                    } else if (threatScore >= 50 || blockedCount > 0) {
+                        health = 'warning';
+                        healthColor = 'text-amber-400';
+                    }
+                    
+                    return {
+                        ip: ip,
+                        health: health,
+                        healthColor: healthColor,
+                        totalRequests: totalRequests,
+                        blockedCount: blockedCount,
+                        threatScore: threatScore
+                    };
+                });
+                
+                if (devices.length > 0) {
+                    devicesTable.innerHTML = devices.map(device => `
+                        <tr class="table-row">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full ${device.healthColor}"></span>
+                                    <span class="text-xs font-semibold ${device.healthColor} uppercase">${device.health}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-sm font-mono text-white">${device.ip}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs text-zinc-400">IP Address</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs text-zinc-400">Network</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs text-zinc-400">-</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs ${device.blockedCount > 0 ? 'text-red-400' : 'text-zinc-400'}">${device.blockedCount} bloqueios</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button class="text-xs text-zinc-400 hover:text-white transition-colors">Ver</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    devicesTable.innerHTML = `
+                        <tr class="table-row">
+                            <td colspan="7" class="px-6 py-12 text-center text-zinc-500">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
+                                        <i data-lucide="network" class="w-6 h-6"></i>
+                                    </div>
+                                    <p class="text-sm font-medium">Nenhum dispositivo encontrado</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+                lucide.createIcons();
             }
             
             // Recent logs
@@ -1776,5 +1883,8 @@ if ($db) {
         // Auto refresh every 3 seconds
         setInterval(fetchDashboardStats, 3000);
     </script>
+    
+    <!-- Security Scripts - Previne download de código -->
+    <script src="includes/security-scripts.js"></script>
 </body>
 </html>

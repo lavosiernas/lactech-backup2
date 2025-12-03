@@ -97,6 +97,7 @@ if ($db && $currentSiteId > 0) {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            font-size: 0.92em;
         }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -226,6 +227,17 @@ if ($db && $currentSiteId > 0) {
             border: none;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
         .btn-primary:hover {
@@ -233,35 +245,16 @@ if ($db && $currentSiteId > 0) {
             box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.5);
         }
         
-        .search-input {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 12px 18px 12px 44px;
-            color: var(--text-primary);
-            width: 240px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 14px;
+        .btn-primary:hover::before {
+            opacity: 1;
         }
         
-        .search-input::placeholder {
-            color: var(--text-muted);
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
-            width: 280px;
-        }
         
         .upgrade-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.3) 100%);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
         }
         
         [x-cloak] { display: none !important; }
@@ -292,6 +285,10 @@ if ($db && $currentSiteId > 0) {
                 <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 <span class="font-medium">Home</span>
             </a>
+            <a href="sites.php" class="nav-item">
+                <i data-lucide="globe" class="w-5 h-5"></i>
+                <span class="font-medium">Gerenciar Sites</span>
+            </a>
             <a href="security-analytics.php" class="nav-item active">
                 <i data-lucide="activity" class="w-5 h-5"></i>
                 <span class="font-medium">Network</span>
@@ -315,6 +312,10 @@ if ($db && $currentSiteId > 0) {
             
             <div class="pt-6 mt-6 border-t border-white/5">
                 <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
+                <a href="human-verification.php" class="nav-item">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    <span class="font-medium">Verificação Humana</span>
+                </a>
                 <a href="settings.php" class="nav-item">
                     <i data-lucide="settings-2" class="w-5 h-5"></i>
                     <span class="font-medium">Configurações</span>
@@ -328,16 +329,10 @@ if ($db && $currentSiteId > 0) {
         
         <div class="p-5">
             <div class="upgrade-card">
-                <div class="relative z-10">
-                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-5">
-                        <i data-lucide="zap" class="w-7 h-7 text-white"></i>
-                    </div>
-                    <h3 class="font-bold text-white text-lg mb-1">Ativar Pro</h3>
-                    <p class="text-sm text-white/60 mb-5 leading-relaxed">Desbloqueie recursos avançados de proteção</p>
-                    <button class="w-full btn-primary py-3 text-sm">
-                        Upgrade Agora
-                    </button>
-                </div>
+                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <button class="w-full btn-primary py-2.5 text-sm">
+                    Upgrade Agora
+                </button>
             </div>
         </div>
     </aside>
@@ -358,23 +353,6 @@ if ($db && $currentSiteId > 0) {
                 </div>
             </div>
 
-            <div class="flex items-center gap-4">
-                <div class="relative hidden md:block">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
-                    <input type="text" placeholder="Buscar..." class="search-input">
-                </div>
-                
-                <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-white rounded-full border-2 border-dark-900 animate-pulse"></span>
-                </button>
-                
-                <button onclick="window.location.href='profile.php'" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-all group">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform">
-                        <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
-                    </div>
-                </button>
-            </div>
         </header>
 
         <!-- Scrollable Content -->

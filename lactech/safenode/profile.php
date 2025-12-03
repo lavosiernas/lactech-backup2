@@ -136,8 +136,6 @@ if ($db) {
     }
 }
 ?>
-$pageTitle = 'Perfil do Usuário';
-?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="dark h-full">
 <head>
@@ -208,6 +206,7 @@ $pageTitle = 'Perfil do Usuário';
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            font-size: 0.92em;
         }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -337,11 +336,26 @@ $pageTitle = 'Perfil do Usuário';
             border: none;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn-primary:hover::before {
+            opacity: 1;
         }
         
         .search-input {
@@ -367,12 +381,10 @@ $pageTitle = 'Perfil do Usuário';
         }
         
         .upgrade-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.3) 100%);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
         }
         
         [x-cloak] { display: none !important; }
@@ -491,6 +503,10 @@ $pageTitle = 'Perfil do Usuário';
                 <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 <span class="font-medium">Home</span>
             </a>
+            <a href="sites.php" class="nav-item">
+                <i data-lucide="globe" class="w-5 h-5"></i>
+                <span class="font-medium">Gerenciar Sites</span>
+            </a>
             <a href="security-analytics.php" class="nav-item">
                 <i data-lucide="activity" class="w-5 h-5"></i>
                 <span class="font-medium">Network</span>
@@ -518,6 +534,10 @@ $pageTitle = 'Perfil do Usuário';
                     <i data-lucide="user" class="w-5 h-5"></i>
                     <span class="font-medium">Perfil</span>
                 </a>
+                <a href="human-verification.php" class="nav-item">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    <span class="font-medium">Verificação Humana</span>
+                </a>
                 <a href="settings.php" class="nav-item">
                     <i data-lucide="settings-2" class="w-5 h-5"></i>
                     <span class="font-medium">Configurações</span>
@@ -531,16 +551,10 @@ $pageTitle = 'Perfil do Usuário';
         
         <div class="p-5">
             <div class="upgrade-card">
-                <div class="relative z-10">
-                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-5">
-                        <i data-lucide="zap" class="w-7 h-7 text-white"></i>
-                    </div>
-                    <h3 class="font-bold text-white text-lg mb-1">Ativar Pro</h3>
-                    <p class="text-sm text-white/60 mb-5 leading-relaxed">Desbloqueie recursos avançados de proteção</p>
-                    <button class="w-full btn-primary py-3 text-sm">
-                        Upgrade Agora
-                    </button>
-                </div>
+                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <button class="w-full btn-primary py-2.5 text-sm">
+                    Upgrade Agora
+                </button>
             </div>
         </div>
     </aside>
@@ -1553,6 +1567,9 @@ $pageTitle = 'Perfil do Usuário';
             this.value = this.value.replace(/\D/g, '').slice(0, 6);
         });
     </script>
+    
+    <!-- Security Scripts - Previne download de código -->
+    <script src="includes/security-scripts.js"></script>
 </body>
 </html>
 

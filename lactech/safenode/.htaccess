@@ -1,1 +1,33 @@
-# SafeNode - Configurações básicas
+# SafeNode - Configurações Apache
+
+# Habilitar RewriteEngine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Permitir acesso direto a arquivos existentes
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+    
+    # Permitir acesso direto a diretórios existentes
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Adicionar .php se acessado sem extensão e o arquivo existir
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.*)$ $1.php [L]
+</IfModule>
+
+# Proteção de arquivos sensíveis
+<FilesMatch "\.(sql|md|txt|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Configurações de segurança
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
