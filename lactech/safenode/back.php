@@ -801,32 +801,6 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                 transform: translateX(calc(-100% / 2));
             }
         }
-        
-        /* Flocos de Neve Natalinos */
-        .snowflake {
-            position: fixed;
-            top: -10px;
-            color: #ffffff;
-            font-size: 1em;
-            font-family: Arial, sans-serif;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-            user-select: none;
-            pointer-events: none;
-            z-index: 9999;
-            animation: snowfall linear infinite;
-            opacity: 0.8;
-        }
-        
-        @keyframes snowfall {
-            0% {
-                transform: translateY(0) translateX(0) rotate(0deg);
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(100vh) translateX(50px) rotate(360deg);
-                opacity: 0;
-            }
-        }
     </style>
 </head>
 <body class="bg-black text-white font-sans antialiased selection:bg-white selection:text-black">
@@ -841,7 +815,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                 <!-- Logo -->
                 <a href="index.php" class="flex-shrink-0 flex items-center gap-3 cursor-pointer group">
                     <div class="relative">
-                        <img src="assets/img/kron (1).png" alt="SafeNode" class="h-9 w-auto transition-transform duration-300 group-hover:scale-110">
+                        <img src="assets/img/logos (6).png" alt="SafeNode" class="h-9 w-auto transition-transform duration-300 group-hover:scale-110">
                         <div class="absolute inset-0 bg-white/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <span class="font-bold text-xl tracking-tight group-hover:text-white transition-colors">SafeNode</span>
@@ -2225,59 +2199,5 @@ hv.<span class="code-syntax-function">init</span>().<span class="code-syntax-fun
     
     <!-- Security Scripts - Previne download de código -->
     <script src="includes/security-scripts.js"></script>
-    
-    <!-- Flocos de Neve Natalinos -->
-    <script>
-        (function() {
-            const snowflakes = ['❄', '❅', '❆'];
-            const maxSnowflakes = 50;
-            let snowflakeCount = 0;
-            
-            function createSnowflake() {
-                if (snowflakeCount >= maxSnowflakes) return;
-                
-                const snowflake = document.createElement('div');
-                snowflake.className = 'snowflake';
-                snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
-                
-                // Posição horizontal aleatória
-                snowflake.style.left = Math.random() * 100 + '%';
-                
-                // Duração da animação aleatória (entre 3 e 8 segundos)
-                const duration = 3 + Math.random() * 5;
-                snowflake.style.animationDuration = duration + 's';
-                
-                // Delay aleatório para começar
-                snowflake.style.animationDelay = Math.random() * 2 + 's';
-                
-                // Tamanho aleatório
-                const size = 0.5 + Math.random() * 1.5;
-                snowflake.style.fontSize = size + 'em';
-                
-                document.body.appendChild(snowflake);
-                snowflakeCount++;
-                
-                // Remover após a animação
-                setTimeout(() => {
-                    snowflake.remove();
-                    snowflakeCount--;
-                }, (duration + 2) * 1000);
-            }
-            
-            // Criar flocos de neve continuamente
-            function startSnowfall() {
-                createSnowflake();
-                const interval = 200 + Math.random() * 300; // Entre 200ms e 500ms
-                setTimeout(startSnowfall, interval);
-            }
-            
-            // Iniciar quando a página carregar
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', startSnowfall);
-            } else {
-                startSnowfall();
-            }
-        })();
-    </script>
 </body>
 </html>
