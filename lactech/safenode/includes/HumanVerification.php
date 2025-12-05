@@ -127,13 +127,4 @@ class SafeNodeHumanVerification
 
 
 
-            $_SESSION['safenode_hv_token'],
-            $_SESSION['safenode_hv_time'],
-            $_SESSION['safenode_hv_ip']
-        );
-    }
-}
-
-
-
 

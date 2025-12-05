@@ -998,7 +998,7 @@
             <div class="flex lg:grid lg:grid-cols-2 gap-8 overflow-x-auto lg:overflow-visible pb-6 lg:pb-0 -mx-6 lg:mx-0 px-6 lg:px-0 scrollbar-hide">
                 
                 <!-- SafeNode Card -->
-                <a href="#safenode" class="group block flex-shrink-0 w-[85vw] sm:w-[75vw] lg:w-auto reveal-scale">
+                <a href="https://safenode.cloud" target="_blank" rel="noopener noreferrer" class="group block flex-shrink-0 w-[85vw] sm:w-[75vw] lg:w-auto reveal-scale">
                     <div class="glass-card rounded-3xl p-10 lg:p-12 h-full card-3d border border-white/5 hover:border-white/10 transition-all duration-500">
                         <div class="card-shine"></div>
                         <div class="flex flex-col h-full min-h-[480px] lg:min-h-[560px] relative z-10">
@@ -1069,7 +1069,7 @@
                 </a>
                 
                 <!-- LacTech Card -->
-                <a href="#lactech" class="group block flex-shrink-0 w-[85vw] sm:w-[75vw] lg:w-auto reveal-scale" style="transition-delay: 150ms">
+                <a href="https://lactechsys.com" target="_blank" rel="noopener noreferrer" class="group block flex-shrink-0 w-[85vw] sm:w-[75vw] lg:w-auto reveal-scale" style="transition-delay: 150ms">
                     <div class="glass-card rounded-3xl p-10 lg:p-12 h-full card-3d border border-white/5 hover:border-white/10 transition-all duration-500">
                         <div class="card-shine"></div>
                         <div class="flex flex-col h-full min-h-[480px] lg:min-h-[560px] relative z-10">
@@ -1166,8 +1166,8 @@
                         Plataforma de segurança web integrada com Cloudflare. Proteção enterprise para suas aplicações com firewall inteligente, detecção de ameaças em tempo real e resposta automatizada a ataques.
                     </p>
                     <div class="flex flex-wrap items-center gap-4 mb-8 reveal" style="transition-delay: 150ms">
-                        <a href="#contato" class="btn-primary px-6 py-3 rounded-full text-[14px] font-semibold inline-flex items-center gap-2">
-                            <span>Solicitar demo</span>
+                        <a href="https://safenode.cloud" target="_blank" rel="noopener noreferrer" class="btn-primary px-6 py-3 rounded-full text-[14px] font-semibold inline-flex items-center gap-2">
+                            <span>Acessar SafeNode</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                             </svg>
@@ -1234,8 +1234,8 @@
                         Sistema completo de gestão para fazendas leiteiras desenvolvido com tecnologia de ponta. Aumente a produtividade e eficiência através de ferramentas inteligentes e análises precisas do seu rebanho.
                     </p>
                     <div class="flex flex-wrap items-center gap-4 mb-8 reveal" style="transition-delay: 150ms">
-                        <a href="#contato" class="btn-primary px-6 py-3 rounded-full text-[14px] font-semibold inline-flex items-center gap-2">
-                            <span>Solicitar demo</span>
+                        <a href="https://lactechsys.com" target="_blank" rel="noopener noreferrer" class="btn-primary px-6 py-3 rounded-full text-[14px] font-semibold inline-flex items-center gap-2">
+                            <span>Acessar LacTech</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                             </svg>
@@ -1555,8 +1555,8 @@
                 <div class="lg:col-span-2 lg:col-start-7">
                     <h4 class="text-[11px] tracking-[0.2em] uppercase text-white/40 mb-6 font-bold">Produtos</h4>
                     <ul class="space-y-4">
-                        <li><a href="#safenode" class="text-[15px] text-white/55 hover:text-white transition-colors duration-300 link-hover">SafeNode</a></li>
-                        <li><a href="#lactech" class="text-[15px] text-white/55 hover:text-white transition-colors duration-300 link-hover">LacTech</a></li>
+                        <li><a href="https://safenode.cloud" target="_blank" rel="noopener noreferrer" class="text-[15px] text-white/55 hover:text-white transition-colors duration-300 link-hover">SafeNode</a></li>
+                        <li><a href="https://lactechsys.com" target="_blank" rel="noopener noreferrer" class="text-[15px] text-white/55 hover:text-white transition-colors duration-300 link-hover">LacTech</a></li>
                     </ul>
                 </div>
                 

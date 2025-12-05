@@ -4,25 +4,37 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
     
-    # Permitir acesso direto a arquivos existentes
+    # Exceção: NÃO processar arquivos da API, includes e assets
+    RewriteCond %{REQUEST_URI} ^.*/(api|includes|assets)/.*$ [NC]
+    RewriteRule ^ - [L]
+    
+    # Redirecionar URLs com .php para versão sem extensão (301 permanente) - APENAS EM PRODUÇÃO
+    RewriteCond %{HTTP_HOST} ^safenode\.cloud$ [NC]
+    RewriteCond %{REQUEST_URI} \.php$ [NC]
+    RewriteCond %{REQUEST_URI} !^.*/(api|includes|assets)/
+    RewriteRule ^(.*)\.php$ $1 [R=301,L,QSA]
+    
+    # Permitir acesso direto a arquivos físicos existentes (imagens, CSS, JS, etc)
     RewriteCond %{REQUEST_FILENAME} -f
+    
     RewriteRule ^ - [L]
     
     # Permitir acesso direto a diretórios existentes
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
     
-    # Adicionar .php se acessado sem extensão e o arquivo existir
+    # Se não é arquivo nem diretório, mas existe um arquivo .php correspondente, adicionar .php internamente - APENAS EM PRODUÇÃO
+    RewriteCond %{HTTP_HOST} ^safenode\.cloud$ [NC]
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteCond %{REQUEST_URI} !^.*/(api|includes|assets)/
     RewriteRule ^(.*)$ $1.php [L]
 </IfModule>
 
 # Proteção de arquivos sensíveis
 <FilesMatch "\.(sql|md|txt|log)$">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
 # Configurações de segurança

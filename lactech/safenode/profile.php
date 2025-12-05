@@ -21,6 +21,7 @@ require_once __DIR__ . '/includes/init.php';
 
 $db = getSafeNodeDatabase();
 
+$pageTitle = 'Perfil';
 $message = '';
 $messageType = '';
 
@@ -553,8 +554,8 @@ if ($db) {
             <div class="upgrade-card">
                 <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
+                        Upgrade Agora
+                    </button>
             </div>
         </div>
     </aside>
@@ -787,7 +788,7 @@ if ($db) {
                             
                             <!-- Botão Editar (modo visualização) -->
                             <div id="editButtonContainer" class="flex justify-end w-full sm:w-auto order-1 sm:order-2">
-                                <button type="button" onclick="enableEditMode()" class="btn-primary w-full sm:w-auto px-6 py-3 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                <button type="button" onclick="enableEditMode()" class="btn-primary w-full sm:w-auto px-6 py-3 text-black rounded-xl font-bold transition-all flex items-center justify-center gap-2">
                                     <i data-lucide="edit-2" class="w-4 h-4"></i>
                                     Editar Perfil
                                 </button>
@@ -798,7 +799,7 @@ if ($db) {
                                 <button type="button" onclick="cancelEditMode()" class="w-full sm:w-auto px-6 py-3 border border-white/10 text-white rounded-xl hover:bg-white/5 hover:border-white/20 font-bold transition-all text-center">
                                     Cancelar
                                 </button>
-                                <button type="submit" name="update_profile" class="btn-primary w-full sm:w-auto px-6 py-3 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                <button type="submit" name="update_profile" class="btn-primary w-full sm:w-auto px-6 py-3 text-black rounded-xl font-bold transition-all flex items-center justify-center gap-2">
                                     <i data-lucide="save" class="w-4 h-4"></i>
                                     Salvar Alterações
                                 </button>
@@ -829,6 +830,23 @@ if ($db) {
                     
                     <div class="space-y-3">
                         <!-- 2FA removido -->
+                        
+                        <!-- Logout Simples -->
+                        <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-blue-500/30 transition-all group">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600/25 transition-colors">
+                                    <i data-lucide="log-out" class="w-6 h-6 text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-white mb-1">Sair da Conta</p>
+                                    <p class="text-xs text-zinc-500 font-medium">Fazer logout da sua conta</p>
+                                </div>
+                            </div>
+                            <a href="logout.php" class="modern-badge px-5 py-2.5 bg-blue-600/15 text-blue-400 rounded-lg text-sm font-bold hover:bg-blue-600/25 transition-all whitespace-nowrap border border-blue-600/30 text-center">
+                                <i data-lucide="log-out" class="w-4 h-4 inline mr-1"></i>
+                                Sair
+                            </a>
+                        </div>
                         
                             <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-blue-500/30 transition-all group">
                             <div class="flex items-start gap-4">
@@ -1026,8 +1044,8 @@ if ($db) {
                         <input type="password" id="terminatePassword" 
                                class="form-input w-full px-4 py-3 pr-12 rounded-xl text-white placeholder:text-zinc-600 text-sm font-medium" 
                                placeholder="Digite sua senha">
-                        <button type="button" onclick="togglePasswordVisibility('terminatePassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
-                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        <button type="button" onclick="togglePasswordVisibility('terminatePassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
+                            <i data-lucide="eye" id="eye-terminatePassword" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
@@ -1116,8 +1134,8 @@ if ($db) {
                         <input type="password" id="deletePassword" 
                                class="form-input w-full px-4 py-3 pr-12 rounded-xl text-white placeholder:text-zinc-600 text-sm font-medium" 
                                placeholder="Digite sua senha">
-                        <button type="button" onclick="togglePasswordVisibility('deletePassword')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
-                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        <button type="button" onclick="togglePasswordVisibility('deletePassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
+                            <i data-lucide="eye" id="eye-deletePassword" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
@@ -1541,12 +1559,31 @@ if ($db) {
         }
 
         // ========== UTILS ==========
-        function togglePasswordVisibility(fieldId) {
+        function togglePasswordVisibility(fieldId, buttonElement) {
             const input = document.getElementById(fieldId);
-            const button = input.parentElement.querySelector('button');
-            const icon = button ? button.querySelector('i') : null;
+            if (!input) {
+                console.error('Campo não encontrado:', fieldId);
+                return;
+            }
             
-            if (icon) {
+            // Se o botão foi passado como parâmetro, usar ele, senão procurar
+            const button = buttonElement || input.parentElement.querySelector('button');
+            if (!button) {
+                console.error('Botão não encontrado para:', fieldId);
+                return;
+            }
+            
+            // Tentar encontrar o ícone pelo ID primeiro, senão procurar no botão
+            let icon = document.getElementById('eye-' + fieldId);
+            if (!icon) {
+                icon = button.querySelector('i');
+            }
+            
+            if (!icon) {
+                console.error('Ícone não encontrado para:', fieldId);
+                return;
+            }
+            
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.setAttribute('data-lucide', 'eye-off');
@@ -1554,8 +1591,9 @@ if ($db) {
                 input.type = 'password';
                 icon.setAttribute('data-lucide', 'eye');
             }
+            
+            // Atualizar o ícone do Lucide
             lucide.createIcons();
-            }
         }
 
         // Auto-focus no código quando aparecer

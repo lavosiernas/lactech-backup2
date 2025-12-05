@@ -331,8 +331,8 @@ if ($db && $currentSiteId > 0) {
             <div class="upgrade-card">
                 <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
+                        Upgrade Agora
+                    </button>
             </div>
         </div>
     </aside>

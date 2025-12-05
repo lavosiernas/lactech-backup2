@@ -1,0 +1,27 @@
+{
+    "name": "safenode/safenode",
+    "description": "SafeNode Security Platform",
+    "type": "project",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "phpstan/phpstan": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "SafeNode\\": "src/",
+            "SafeNode\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage",
+        "phpstan": "phpstan analyse"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
+

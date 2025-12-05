@@ -40,89 +40,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "Token de segurança inválido.";
         $messageType = "error";
     } else {
-        $action = $_POST['action'] ?? '';
-        
-        if ($action === 'create') {
-            if (!$db) {
-                $message = 'Erro: Não foi possível conectar ao banco de dados';
-                $messageType = 'error';
-            } elseif (!$userId) {
-                $message = 'Erro: Usuário não identificado. Faça login novamente';
+    $action = $_POST['action'] ?? '';
+    
+    if ($action === 'create') {
+        if (!$db) {
+            $message = 'Erro: Não foi possível conectar ao banco de dados';
+            $messageType = 'error';
+        } elseif (!$userId) {
+            $message = 'Erro: Usuário não identificado. Faça login novamente';
+            $messageType = 'error';
+        } else {
+            $domain = trim($_POST['domain'] ?? '');
+            $displayName = trim($_POST['display_name'] ?? '');
+            $securityLevel = $_POST['security_level'] ?? 'medium';
+            
+            if (empty($domain)) {
+                $message = 'Domínio é obrigatório';
                 $messageType = 'error';
             } else {
-                $domain = trim($_POST['domain'] ?? '');
-                $displayName = trim($_POST['display_name'] ?? '');
-                $securityLevel = $_POST['security_level'] ?? 'medium';
-                
-                if (empty($domain)) {
-                    $message = 'Domínio é obrigatório';
-                    $messageType = 'error';
-                } else {
-                    // Validar formato do domínio
-                    $domain = strtolower($domain);
+            // Validar formato do domínio
+            $domain = strtolower($domain);
                     $domain = preg_replace('/^https?:\/\//', '', $domain);
                     $domain = preg_replace('/\/$/', '', $domain);
-                    
+            
                     if (!InputValidator::domain($domain)) {
-                        $message = 'Formato de domínio inválido';
+                $message = 'Formato de domínio inválido';
+                $messageType = 'error';
+            } else {
+                try {
+                    // Verificar se já existe
+                    $stmt = $db->prepare("SELECT id FROM safenode_sites WHERE domain = ? AND user_id = ?");
+                    $stmt->execute([$domain, $userId]);
+                    if ($stmt->fetch()) {
+                        $message = 'Este domínio já está cadastrado';
                         $messageType = 'error';
                     } else {
-                        try {
-                            // Verificar se já existe
-                            $stmt = $db->prepare("SELECT id FROM safenode_sites WHERE domain = ? AND user_id = ?");
-                            $stmt->execute([$domain, $userId]);
-                            if ($stmt->fetch()) {
-                                $message = 'Este domínio já está cadastrado';
-                                $messageType = 'error';
-                            } else {
-                                $stmt = $db->prepare("
-                                    INSERT INTO safenode_sites 
-                                    (user_id, domain, display_name, security_level, is_active, created_at, updated_at) 
-                                    VALUES (?, ?, ?, ?, 1, NOW(), NOW())
-                                ");
-                                $stmt->execute([$userId, $domain, $displayName ?: $domain, $securityLevel]);
-                                $message = 'Site cadastrado com sucesso!';
-                                $messageType = 'success';
-                            }
-                        } catch (PDOException $e) {
-                            error_log("SafeNode Create Site Error: " . $e->getMessage());
-                            $message = 'Erro ao cadastrar site';
-                            $messageType = 'error';
-                        }
-                    }
-                }
-            }
-        } elseif ($action === 'delete' && $db) {
-            $siteId = (int)($_POST['site_id'] ?? 0);
-            if ($siteId > 0) {
-                try {
-                    $stmt = $db->prepare("DELETE FROM safenode_sites WHERE id = ? AND user_id = ?");
-                    $stmt->execute([$siteId, $userId]);
-                    if ($stmt->rowCount() > 0) {
-                        $message = 'Site removido com sucesso';
+                        $stmt = $db->prepare("
+                            INSERT INTO safenode_sites 
+                            (user_id, domain, display_name, security_level, is_active, created_at, updated_at) 
+                            VALUES (?, ?, ?, ?, 1, NOW(), NOW())
+                        ");
+                        $stmt->execute([$userId, $domain, $displayName ?: $domain, $securityLevel]);
+                        $message = 'Site cadastrado com sucesso!';
                         $messageType = 'success';
-                    } else {
-                        $message = 'Site não encontrado';
-                        $messageType = 'error';
                     }
                 } catch (PDOException $e) {
-                    error_log("SafeNode Delete Site Error: " . $e->getMessage());
-                    $message = 'Erro ao remover site';
+                    error_log("SafeNode Create Site Error: " . $e->getMessage());
+                            $message = 'Erro ao cadastrar site';
                     $messageType = 'error';
                 }
             }
-        } elseif ($action === 'toggle' && $db) {
-            $siteId = (int)($_POST['site_id'] ?? 0);
-            if ($siteId > 0) {
-                try {
-                    $stmt = $db->prepare("UPDATE safenode_sites SET is_active = NOT is_active WHERE id = ? AND user_id = ?");
-                    $stmt->execute([$siteId, $userId]);
-                    $message = 'Status do site atualizado';
+            }
+        }
+    } elseif ($action === 'delete' && $db) {
+        $siteId = (int)($_POST['site_id'] ?? 0);
+        if ($siteId > 0) {
+            try {
+                $stmt = $db->prepare("DELETE FROM safenode_sites WHERE id = ? AND user_id = ?");
+                $stmt->execute([$siteId, $userId]);
+                if ($stmt->rowCount() > 0) {
+                    $message = 'Site removido com sucesso';
                     $messageType = 'success';
-                } catch (PDOException $e) {
-                    error_log("SafeNode Toggle Site Error: " . $e->getMessage());
-                    $message = 'Erro ao atualizar site';
+                } else {
+                    $message = 'Site não encontrado';
                     $messageType = 'error';
+                }
+            } catch (PDOException $e) {
+                error_log("SafeNode Delete Site Error: " . $e->getMessage());
+                $message = 'Erro ao remover site';
+                $messageType = 'error';
+            }
+        }
+    } elseif ($action === 'toggle' && $db) {
+        $siteId = (int)($_POST['site_id'] ?? 0);
+        if ($siteId > 0) {
+            try {
+                $stmt = $db->prepare("UPDATE safenode_sites SET is_active = NOT is_active WHERE id = ? AND user_id = ?");
+                $stmt->execute([$siteId, $userId]);
+                $message = 'Status do site atualizado';
+                $messageType = 'success';
+            } catch (PDOException $e) {
+                error_log("SafeNode Toggle Site Error: " . $e->getMessage());
+                $message = 'Erro ao atualizar site';
+                $messageType = 'error';
                 }
             }
         }
@@ -433,9 +433,9 @@ if ($db && $userId) {
                         
                         <div class="flex justify-end">
                             <button type="submit" class="btn-primary px-6 py-2.5 rounded-xl text-sm">
-                                <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
-                                Cadastrar Site
-                            </button>
+                            <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
+                            Cadastrar Site
+                        </button>
                         </div>
                     </form>
                 </div>
@@ -543,7 +543,7 @@ if ($db && $userId) {
     </div>
 
     <script>
-        lucide.createIcons();
+                lucide.createIcons();
     </script>
     
     <!-- Security Scripts - Previne download de código -->

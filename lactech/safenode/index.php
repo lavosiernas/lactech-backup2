@@ -853,6 +853,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                     <a href="#network" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Rede Global</a>
                     <a href="#pricing" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Planos</a>
                     <a href="#contact" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Contato</a>
+                    <a href="docs.php" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Documentação</a>
                 </div>
 
                 <!-- CTA Button -->
@@ -888,6 +889,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                 <a href="#network" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Rede Global</a>
                 <a href="#pricing" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Planos</a>
                 <a href="#contact" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Contato</a>
+                <a href="docs.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Documentação</a>
                 <a href="login.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Login</a>
                 <a href="register.php" class="block px-4 py-3 mt-4 text-center rounded-full bg-white text-black font-bold hover:bg-zinc-100 transition-all">Começar Grátis</a>
             </div>
@@ -990,10 +992,10 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                             <p class="text-[11px] text-zinc-300 mb-2">Registro de Eventos</p>
                             <div class="space-y-1 font-mono text-[10px] max-h-24 overflow-hidden">
                                 <?php if (empty($recentLogs)): ?>
-                                    <div class="flex gap-2 opacity-60">
+                                <div class="flex gap-2 opacity-60">
                                         <span class="text-zinc-500">--:--:--</span>
                                         <span class="text-zinc-400">Nenhum evento recente</span>
-                                    </div>
+                                </div>
                                 <?php else: ?>
                                     <?php foreach (array_slice($recentLogs, 0, 3) as $log): ?>
                                         <?php
@@ -1009,7 +1011,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                                 <?php echo $isCritical ? 'MITIGADO' : $action; ?>
                                             </span>
                                             <span class="text-zinc-400"><?php echo htmlspecialchars(substr($displayText, 0, 20)); ?></span>
-                                        </div>
+                                </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
@@ -1038,7 +1040,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                     <!-- Dashboard Content -->
                     <div class="flex flex-col" style="min-height: 500px; max-height: 550px;">
                         <div class="flex flex-1 overflow-hidden">
-                            <!-- Sidebar -->
+                        <!-- Sidebar -->
                             <aside class="w-72 flex-shrink-0 flex flex-col border-r border-white/5 bg-gradient-to-b from-[#080808] to-[#030303]">
                                 <!-- Logo -->
                                 <div class="p-4 border-b border-white/5">
@@ -1048,14 +1050,14 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                             <div>
                                                 <h1 class="font-bold text-white text-base tracking-tight">SafeNode</h1>
                                                 <p class="text-[10px] text-zinc-500 font-medium">Security Platform</p>
-                                            </div>
+                                </div>
                                         </div>
                                         <button class="ml-auto text-zinc-600 hover:text-zinc-400 transition-colors">
                                             <i data-lucide="chevrons-left" class="w-4 h-4"></i>
                                         </button>
                                     </div>
-                                </div>
-                                
+                            </div>
+                            
                                 <!-- Navigation -->
                                 <nav class="flex-1 p-5 space-y-2 overflow-y-auto">
                                     <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Menu Principal</p>
@@ -1103,7 +1105,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                             <i data-lucide="life-buoy" class="w-5 h-5"></i>
                                             <span class="font-medium">Ajuda</span>
                                         </a>
-                                    </div>
+                                </div>
                                 </nav>
                             </aside>
                             
@@ -1114,15 +1116,15 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                     <div class="flex items-center gap-4">
                                         <div>
                                             <h2 class="text-lg font-bold text-white tracking-tight">Dashboard</h2>
-                                        </div>
-                                    </div>
+                                </div>
+                                </div>
 
                                     <div class="flex items-center gap-3">
                                         <!-- Search -->
                                         <div class="relative hidden md:block">
                                             <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"></i>
                                             <input type="text" placeholder="Buscar..." class="bg-white/5 border border-white/10 rounded-lg py-1.5 pl-9 pr-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 w-32">
-                                        </div>
+                                </div>
                                         
                                         <!-- Notifications -->
                                         <button class="relative p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
@@ -1134,9 +1136,9 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                         <button class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-lg transition-all group">
                                             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-white font-bold text-xs shadow-lg group-hover:scale-105 transition-transform">
                                                 A
-                                            </div>
+                                </div>
                                         </button>
-                                    </div>
+                            </div>
                                 </header>
                                 
                                 <!-- Main Area -->
@@ -1165,14 +1167,14 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                         <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <i data-lucide="more-vertical" class="w-3 h-3"></i>
                                         </button>
-                                    </div>
+                            </div>
                                     <div class="flex items-end justify-between mt-3">
                                         <p class="text-3xl font-bold text-white tracking-tight"><?php echo htmlspecialchars($threatsBlocked24h); ?></p>
                                         <span class="text-xs font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-lg">+0.0%</span>
                                     </div>
                                     <p class="text-[10px] text-zinc-600 mt-2">Taxa: <span class="text-red-400 font-medium"><?php echo $indexStats['total_requests_24h'] > 0 ? round(($indexStats['threats_blocked_24h'] / $indexStats['total_requests_24h']) * 100, 1) : 0; ?>%</span></p>
-                                </div>
-                                
+                        </div>
+                        
                                 <!-- Unique IPs -->
                                 <div class="stat-card group">
                                     <div class="flex items-center justify-between mb-1">
@@ -1195,9 +1197,9 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                             echo formatNumber($uniqueIps);
                                         ?></p>
                                         <span class="text-xs font-semibold text-white bg-white/10 px-2 py-0.5 rounded-lg">+0.0%</span>
-                                    </div>
-                                    <p class="text-[10px] text-zinc-600 mt-2">últimas 24h</p>
                                 </div>
+                                    <p class="text-[10px] text-zinc-600 mt-2">últimas 24h</p>
+                                    </div>
                                 
                                 <!-- Active Blocks -->
                                 <div class="stat-card group">
@@ -1206,7 +1208,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                         <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <i data-lucide="more-vertical" class="w-3 h-3"></i>
                                         </button>
-                                    </div>
+                                </div>
                                     <div class="flex items-end justify-between mt-3">
                                         <p class="text-3xl font-bold text-white tracking-tight"><?php 
                                             $activeBlocks = 0;
@@ -1222,9 +1224,9 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                         <span class="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg">ativos</span>
                                     </div>
                                     <p class="text-[10px] text-zinc-600 mt-2">últimos 7 dias</p>
-                                    </div>
-                                    </div>
-                                    
+                                </div>
+                            </div>
+                            
                                     <!-- Charts Row -->
                                     <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
                                 <!-- Entities Overview (Donut Chart) -->
@@ -1256,10 +1258,10 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                         <div class="flex items-center gap-2">
                                             <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
                                             <span class="text-xs text-zinc-400">Bad</span>
-                                        </div>
                                     </div>
-                                </div>
-                                
+                                            </div>
+                                        </div>
+
                                 <!-- Network Anomalies (Bar Chart) -->
                                 <div class="lg:col-span-3 chart-card">
                                     <div class="flex items-center justify-between mb-6">
@@ -1279,10 +1281,10 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                             <div class="flex-1 h-3/4 bg-white/10 rounded-t"></div>
                                             <div class="flex-1 h-2/3 bg-white/10 rounded-t"></div>
                                             <div class="flex-1 h-4/5 bg-white/10 rounded-t"></div>
+                                </div>
+                                    </div>
                                         </div>
-                                    </div>
-                                    </div>
-                                    </div>
+                                        </div>
                                     
                                     <!-- Network Devices Table -->
                                     <div class="table-card">
@@ -1300,8 +1302,8 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                             <i data-lucide="sliders-horizontal" class="w-3 h-3"></i>
                                             <span>Filtrar</span>
                                         </button>
-                                    </div>
-                                </div>
+                                        </div>
+                                        </div>
                                 <div class="overflow-x-auto">
                                     <table class="w-full">
                                         <thead>
@@ -1321,14 +1323,14 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                                     <div class="flex flex-col items-center">
                                                         <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-2">
                                                             <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
-                                                        </div>
+                                    </div>
                                                         <p class="text-xs font-medium">Carregando dispositivos...</p>
-                                                    </div>
+                                </div>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
-                                    </div>
+                            </div>
                                     </div>
                                 </div>
                             </main>

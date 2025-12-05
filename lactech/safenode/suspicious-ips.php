@@ -439,7 +439,7 @@ if ($db && $currentSiteId > 0) {
             setInterval(fetchSuspiciousIPs, 10000);
         }
         
-        lucide.createIcons();
+                lucide.createIcons();
     </script>
 </body>
 </html>

@@ -381,9 +381,9 @@ $actions = [
                         </div>
                         
                         <div>
-                            <label class="block text-sm text-zinc-400 mb-2">Ação</label>
+                            <label class="block text-sm text-zinc-400 mb-2">Status/Ação</label>
                             <select name="action" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30">
-                                <option value="">Todas</option>
+                                <option value="">Todos os Status</option>
                                 <?php foreach ($actions as $key => $label): ?>
                                     <option value="<?php echo $key; ?>" <?php echo $actionTaken === $key ? 'selected' : ''; ?>><?php echo $label; ?></option>
                                 <?php endforeach; ?>
@@ -391,8 +391,11 @@ $actions = [
                         </div>
                         
                         <div>
-                            <label class="block text-sm text-zinc-400 mb-2">IP Address</label>
-                            <input type="text" name="ip" value="<?php echo htmlspecialchars($ipAddress); ?>" placeholder="Ex: 192.168.1.1" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30">
+                            <label class="block text-sm text-zinc-400 mb-2">Buscar por IP</label>
+                            <div class="relative">
+                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
+                                <input type="text" name="ip" value="<?php echo htmlspecialchars($ipAddress); ?>" placeholder="Ex: 192.168.1.1" class="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30">
+                            </div>
                         </div>
                         
                         <div>

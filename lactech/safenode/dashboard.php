@@ -576,6 +576,109 @@ if ($db) {
             animation: glow 3s ease-in-out infinite;
         }
         
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+        }
+        
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .toast::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--toast-color, #ffffff);
+        }
+        
+        .toast.success { --toast-color: #22c55e; }
+        .toast.error { --toast-color: #ef4444; }
+        .toast.warning { --toast-color: #f59e0b; }
+        .toast.info { --toast-color: #3b82f6; }
+        
+        .toast-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .toast-content {
+            flex: 1;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .toast-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        
+        .toast-close {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+        
+        .toast-close:hover {
+            color: var(--text-primary);
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        .toast.hiding {
+            animation: slideOutRight 0.3s ease-in forwards;
+        }
+        
         /* Notification Panel */
         .notification-panel {
             background: var(--bg-secondary);
@@ -745,6 +848,10 @@ if ($db) {
                     <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
                     <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Ajuda</span>
                 </a>
+                <a href="documentation.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Documentação' : ''">
+                    <i data-lucide="book-open" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Documentação</span>
+                </a>
             </div>
         </nav>
         
@@ -753,8 +860,8 @@ if ($db) {
             <div class="upgrade-card">
                 <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
+                        Upgrade Agora
+                    </button>
             </div>
         </div>
     </aside>
@@ -785,7 +892,7 @@ if ($db) {
                 <!-- Notifications -->
                 <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                     <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-white rounded-full border-2 border-dark-900 animate-pulse"></span>
+                    <span id="notification-badge" class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1.5 border-2 border-dark-900 hidden">0</span>
                 </button>
                 
                 <!-- Profile -->
@@ -808,15 +915,23 @@ if ($db) {
             </div>
                 <?php endif; ?>
             
+            <!-- Development Notice Banner -->
+            <div class="mb-8 glass rounded-2xl p-5 border-blue-500/30 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="code" class="w-5 h-5 text-blue-400"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-white text-sm mb-1">Sistema em Desenvolvimento Constante</p>
+                    <p class="text-xs text-zinc-400">O SafeNode está em evolução contínua. Novas funcionalidades e melhorias são adicionadas regularmente para garantir a melhor experiência e segurança.</p>
+                </div>
+            </div>
+            
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 <!-- Total Requests -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
                         <p class="text-sm font-medium text-zinc-400">Total de Requisições</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                        </button>
                     </div>
                     <div class="flex items-end justify-between mt-4">
                         <p id="total-requests" class="text-4xl font-bold text-white tracking-tight">-</p>
@@ -829,9 +944,6 @@ if ($db) {
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
                         <p class="text-sm font-medium text-zinc-400">Requisições Bloqueadas</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                </button>
                     </div>
                     <div class="flex items-end justify-between mt-4">
                         <p id="blocked-requests" class="text-4xl font-bold text-white tracking-tight">-</p>
@@ -844,9 +956,6 @@ if ($db) {
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
                         <p class="text-sm font-medium text-zinc-400">Visitantes Únicos</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                        </button>
                     </div>
                     <div class="flex items-end justify-between mt-4">
                         <p id="unique-ips" class="text-4xl font-bold text-white tracking-tight">-</p>
@@ -859,9 +968,6 @@ if ($db) {
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
                         <p class="text-sm font-medium text-zinc-400">IPs Bloqueados</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                        </button>
                     </div>
                     <div class="flex items-end justify-between mt-4">
                         <p id="active-blocks" class="text-4xl font-bold text-white tracking-tight">-</p>
@@ -877,9 +983,6 @@ if ($db) {
                 <div class="lg:col-span-2 chart-card">
                     <div class="flex items-center justify-between mb-8">
                         <h3 class="text-lg font-semibold text-white">Visão Geral de Ameaças</h3>
-                        <button class="text-zinc-600 hover:text-zinc-400 transition-colors">
-                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                        </button>
                     </div>
                     <div class="flex items-center justify-center">
                         <div class="relative" style="width: 220px; height: 220px;">
@@ -1097,8 +1200,8 @@ if ($db) {
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto p-5">
-                <div class="text-center py-16">
+            <div class="flex-1 overflow-y-auto p-5" id="notifications-list">
+                <div class="text-center py-16" id="notifications-empty">
                     <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-5">
                         <i data-lucide="bell-off" class="w-10 h-10 text-zinc-600"></i>
                     </div>
@@ -1109,9 +1212,214 @@ if ($db) {
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
+        
+        // Toast Notification System
+        function showToast(title, message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'check-circle-2',
+                error: 'alert-circle',
+                warning: 'alert-triangle',
+                info: 'info'
+            };
+            
+            toast.innerHTML = `
+                <i data-lucide="${icons[type] || 'info'}" class="toast-icon text-${type === 'success' ? 'green' : type === 'error' ? 'red' : type === 'warning' ? 'amber' : 'blue'}-400"></i>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.closest('.toast').remove()">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    toast.classList.add('hiding');
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+        }
+        
+        // Notification System
+        let unreadNotifications = 0;
+        let lastNotificationCheck = Date.now();
+        
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notification-badge');
+            if (!badge) return;
+            
+            unreadNotifications = count;
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        function fetchNotifications() {
+            fetch('api/notifications.php?unread=1')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.count !== undefined) {
+                        const newCount = parseInt(data.count);
+                        if (newCount > unreadNotifications) {
+                            // Novas notificações
+                            const diff = newCount - unreadNotifications;
+                            if (diff > 0) {
+                                showToast(
+                                    'Nova Ameaça Detectada',
+                                    `${diff} nova${diff > 1 ? 's' : ''} ameaça${diff > 1 ? 's' : ''} detectada${diff > 1 ? 's' : ''}`,
+                                    'warning',
+                                    6000
+                                );
+                            }
+                        }
+                        updateNotificationBadge(newCount);
+                        if (document.getElementById('notifications-list')) {
+                            loadNotifications();
+                        }
+                    }
+                })
+                .catch(err => console.error('Erro ao buscar notificações:', err));
+        }
+        
+        function loadNotifications() {
+            fetch('api/notifications.php?limit=20')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.notifications) {
+                        renderNotifications(data.notifications);
+                    }
+                })
+                .catch(err => console.error('Erro ao carregar notificações:', err));
+        }
+        
+        function renderNotifications(notifications) {
+            const container = document.getElementById('notifications-list');
+            const empty = document.getElementById('notifications-empty');
+            
+            if (!container) return;
+            
+            if (notifications.length === 0) {
+                if (empty) empty.style.display = 'block';
+                container.innerHTML = '';
+                container.appendChild(empty);
+                return;
+            }
+            
+            if (empty) empty.style.display = 'none';
+            
+            container.innerHTML = notifications.map(notif => {
+                const icons = {
+                    threat: 'shield-alert',
+                    blocked: 'ban',
+                    warning: 'alert-triangle',
+                    info: 'info',
+                    success: 'check-circle-2'
+                };
+                
+                const colors = {
+                    threat: 'text-red-400',
+                    blocked: 'text-red-500',
+                    warning: 'text-amber-400',
+                    info: 'text-blue-400',
+                    success: 'text-green-400'
+                };
+                
+                const timeAgo = getTimeAgo(notif.created_at);
+                
+                return `
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all mb-3 ${notif.is_read ? 'opacity-60' : ''}">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="${icons[notif.type] || 'info'}" class="w-5 h-5 ${colors[notif.type] || 'text-zinc-400'}"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between gap-2 mb-1">
+                                    <h4 class="text-sm font-semibold text-white">${escapeHtml(notif.title)}</h4>
+                                    ${!notif.is_read ? '<span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></span>' : ''}
+                                </div>
+                                <p class="text-xs text-zinc-400 mb-2">${escapeHtml(notif.message)}</p>
+                                <p class="text-[10px] text-zinc-600">${timeAgo}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+        
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'Agora';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m atrás`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h atrás`;
+            if (diff < 604800) return `${Math.floor(diff / 86400)}d atrás`;
+            return date.toLocaleDateString('pt-BR');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Check for new threats and show alerts
+        function checkForThreats() {
+            fetch('api/dashboard-stats.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        const criticalThreats = data.data.today?.threat_analysis?.critical_threats || 0;
+                        const recentLogs = data.data.event_logs || [];
+                        
+                        // Verificar se há novas ameaças críticas
+                        recentLogs.forEach(log => {
+                            if (log.is_critical && !log.is_read) {
+                                showToast(
+                                    'Ameaça Crítica Detectada',
+                                    `IP ${log.ip_address} - ${log.threat_type || 'Ameaça desconhecida'}`,
+                                    'error',
+                                    8000
+                                );
+                            }
+                        });
+                    }
+                })
+                .catch(err => console.error('Erro ao verificar ameaças:', err));
+        }
+        
+        // Carregar notificações ao abrir o painel
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchNotifications();
+            loadNotifications();
+            checkForThreats();
+            
+            // Atualizar notificações a cada 5 segundos
+            setInterval(fetchNotifications, 5000);
+            setInterval(checkForThreats, 10000);
+        });
 
         // Charts
         let entitiesChart = null;
@@ -1257,7 +1565,7 @@ if ($db) {
                                     ? initialData.reduce((a, b) => a + b, 0) / initialData.length 
                                     : 0;
                                 if (value > avg * 1.5) {
-                                    return highlightGradient;
+                                return highlightGradient;
                                 }
                             }
                             return 'rgba(255,255,255,0.05)';
@@ -1537,12 +1845,12 @@ if ($db) {
                 // Tentar reinicializar o gráfico se não existir
                 console.warn('entitiesChart não existe, tentando reinicializar...');
                 try {
-                    initEntitiesChart();
+                initEntitiesChart();
                     // Aguardar um pouco para garantir que o gráfico foi criado
                     setTimeout(() => {
                         if (entitiesChart) {
-                            entitiesChart.data.datasets[0].data = chartData;
-                            entitiesChart.update('active');
+                        entitiesChart.data.datasets[0].data = chartData;
+                        entitiesChart.update('active');
                         } else {
                             console.error('Falha ao criar entitiesChart após reinicialização');
                         }
@@ -1812,11 +2120,6 @@ if ($db) {
         </div>
                                     <span class="text-sm text-zinc-400 font-medium">${packetLoss}%</span>
     </div>
-                            </td>
-                            <td class="px-6 py-5">
-                                <button class="text-zinc-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
-                                    <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                                </button>
                             </td>
                         </tr>
                     `;

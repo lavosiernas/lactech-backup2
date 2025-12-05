@@ -33,61 +33,326 @@ $offset = ($page - 1) * $perPage;
 $activities = $activityLogger->getUserActivities($userId, $perPage, $offset);
 $totalActivities = $activityLogger->countUserActivities($userId);
 $totalPages = ceil($totalActivities / $perPage);
+
+$pageTitle = 'Histórico de Atividades';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="dark h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Histórico de Atividades - SafeNode</title>
+    <title><?php echo $pageTitle; ?> | SafeNode</title>
     <link rel="icon" type="image/png" href="assets/img/logos (6).png">
+    <link rel="shortcut icon" type="image/png" href="assets/img/logos (6).png">
+    <link rel="apple-touch-icon" href="assets/img/logos (6).png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#030303',
+                            900: '#050505',
+                            850: '#080808',
+                            800: '#0a0a0a',
+                            700: '#0f0f0f',
+                            600: '#141414',
+                            500: '#1a1a1a',
+                            400: '#222222',
+                        },
+                        accent: {
+                            DEFAULT: '#ffffff',
+                            light: '#ffffff',
+                            dark: '#ffffff',
+                            glow: 'rgba(255, 255, 255, 0.15)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #030303;
+            --bg-secondary: #080808;
+            --bg-tertiary: #0f0f0f;
+            --bg-card: #0a0a0a;
+            --bg-hover: #111111;
+            --border-subtle: rgba(255,255,255,0.04);
+            --border-light: rgba(255,255,255,0.08);
+            --accent: #ffffff;
+            --accent-glow: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-secondary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 0.92em;
+        }
+        
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-        .glass-card {
-            background: #000000;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px;
         }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        
+        .glass {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+        }
+        
+        .glass-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px -20px rgba(0,0,0,0.5), 0 0 60px -30px var(--accent-glow);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%);
+            color: #000;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn-ghost {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--border-light);
+            color: var(--text-primary);
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-right: 1px solid var(--border-subtle);
+            position: relative;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+        
+        .nav-item:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            color: var(--accent);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+        }
+        
+        .upgrade-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-black text-zinc-200 font-sans h-full overflow-hidden flex">
-    <?php include __DIR__ . '/includes/sidebar.php'; ?>
+<body x-data="{ notificationsOpen: false, sidebarOpen: false, sidebarCollapsed: false }" 
+      x-init="$watch('sidebarCollapsed', () => { setTimeout(() => { lucide.createIcons(); }, 150) })"
+      class="h-full overflow-hidden flex">
 
-    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
-        <header class="h-16 border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
-            <div class="flex items-center gap-4 md:hidden">
-                <button class="text-zinc-400 hover:text-white" data-sidebar-toggle>
+    <aside :class="sidebarCollapsed ? 'w-20' : 'w-72'" class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
+        <!-- Logo -->
+        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+            <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
+                <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
+                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                    <div x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="overflow-hidden whitespace-nowrap">
+                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                    </div>
+                </div>
+                <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0" :class="sidebarCollapsed ? 'mt-2' : ''">
+                    <i :data-lucide="sidebarCollapsed ? 'chevrons-right' : 'chevrons-left'" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
+            <p x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
+            
+            <a href="dashboard.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Home' : ''">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Home</span>
+            </a>
+            <a href="sites.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Gerenciar Sites' : ''">
+                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Gerenciar Sites</span>
+            </a>
+            <a href="security-analytics.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Network' : ''">
+                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Network</span>
+            </a>
+            <a href="behavior-analysis.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Kubernetes' : ''">
+                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Kubernetes</span>
+            </a>
+            <a href="logs.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Explorar' : ''">
+                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Explorar</span>
+            </a>
+            <a href="suspicious-ips.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Analisar' : ''">
+                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Analisar</span>
+            </a>
+            <a href="attacked-targets.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Grupos' : ''">
+                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Grupos</span>
+            </a>
+            
+            <div class="pt-4 mt-4 border-t border-white/5">
+                <p x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
+                <a href="profile.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Perfil' : ''">
+                    <i data-lucide="user" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Perfil</span>
+                </a>
+                <a href="activity-log.php" class="nav-item active" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Histórico de Atividades' : ''">
+                    <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Histórico de Atividades</span>
+                </a>
+                <a href="human-verification.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Verificação Humana' : ''">
+                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Verificação Humana</span>
+                </a>
+                <a href="settings.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Configurações' : ''">
+                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Configurações</span>
+                </a>
+                <a href="help.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Ajuda' : ''">
+                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
+                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Ajuda</span>
+                </a>
+            </div>
+        </nav>
+        
+        <!-- Upgrade Card -->
+        <div class="p-4 flex-shrink-0" x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2">
+            <div class="upgrade-card">
+                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <button class="w-full btn-primary py-2.5 text-sm">
+                    Upgrade Agora
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
+        <!-- Header -->
+        <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-6">
+                <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-zinc-400 hover:text-white transition-colors">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
-                <span class="font-bold text-lg text-white">SafeNode</span>
-            </div>
-            <div class="hidden md:flex items-center justify-between w-full">
                 <div>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Histórico de Atividades</h2>
-                    <p class="text-xs text-zinc-400 mt-0.5">Visualize ações recentes em sua conta</p>
+                    <h2 class="text-2xl font-bold text-white tracking-tight"><?php echo $pageTitle; ?></h2>
+                    <p class="text-sm text-zinc-500 font-mono mt-0.5">Visualize ações recentes em sua conta</p>
                 </div>
-                <a href="profile.php" class="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="profile.php" class="btn-ghost flex items-center gap-2">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span class="text-sm">Voltar</span>
+                    <span>Voltar</span>
                 </a>
+                
+                <button onclick="window.location.href='profile.php'" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-all group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform">
+                        <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
+                    </div>
+                </button>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 z-10">
-            <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-5xl mx-auto space-y-6">
                 <!-- Resumo -->
-                <div class="glass-card rounded-2xl p-6">
+                <div class="glass-card">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-lg font-bold text-white mb-1">Registro de Atividades</h3>
-                            <p class="text-sm text-zinc-500"><?php echo $totalActivities; ?> evento(s) registrado(s)</p>
+                            <p class="text-sm text-zinc-500"><?php echo number_format($totalActivities); ?> evento(s) registrado(s)</p>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center">
+                        <div class="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
                             <i data-lucide="activity" class="w-6 h-6 text-blue-400"></i>
                         </div>
                     </div>
@@ -96,11 +361,11 @@ $totalPages = ceil($totalActivities / $perPage);
                 <!-- Timeline de Atividades -->
                 <div class="space-y-4">
                     <?php if (empty($activities)): ?>
-                        <div class="glass-card rounded-2xl p-8 text-center">
-                            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800/50 flex items-center justify-center">
+                        <div class="glass-card p-12 text-center">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
                                 <i data-lucide="inbox" class="w-8 h-8 text-zinc-500"></i>
                             </div>
-                            <p class="text-zinc-400">Nenhuma atividade registrada ainda</p>
+                            <p class="text-zinc-400 font-medium">Nenhuma atividade registrada ainda</p>
                         </div>
                     <?php else: ?>
                         <?php 
@@ -124,9 +389,9 @@ $totalPages = ceil($totalActivities / $perPage);
                             </div>
                         <?php endif; ?>
                         
-                        <div class="glass-card rounded-xl p-5 hover:border-white/10 transition-colors">
+                        <div class="glass-card p-5">
                             <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-zinc-900/50 flex items-center justify-center flex-shrink-0">
+                                <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                                     <i data-lucide="<?php echo $icon; ?>" class="w-5 h-5 <?php echo $colorClass; ?>"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -175,14 +440,14 @@ $totalPages = ceil($totalActivities / $perPage);
                         </p>
                         <div class="flex gap-2">
                             <?php if ($page > 1): ?>
-                                <a href="?page=<?php echo $page - 1; ?>" class="px-4 py-2 bg-zinc-900/50 hover:bg-zinc-800 text-white rounded-lg text-sm font-medium transition-all border border-white/10 flex items-center gap-2">
+                                <a href="?page=<?php echo $page - 1; ?>" class="btn-ghost flex items-center gap-2">
                                     <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                                    Anterior
+                                    <span>Anterior</span>
                                 </a>
                             <?php endif; ?>
                             <?php if ($page < $totalPages): ?>
-                                <a href="?page=<?php echo $page + 1; ?>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
-                                    Próxima
+                                <a href="?page=<?php echo $page + 1; ?>" class="btn-primary flex items-center gap-2">
+                                    <span>Próxima</span>
                                     <i data-lucide="chevron-right" class="w-4 h-4"></i>
                                 </a>
                             <?php endif; ?>
@@ -191,10 +456,10 @@ $totalPages = ceil($totalActivities / $perPage);
                 <?php endif; ?>
 
                 <!-- Informações -->
-                <div class="glass-card rounded-2xl p-6">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center flex-shrink-0">
-                            <i data-lucide="info" class="w-5 h-5 text-blue-400"></i>
+                <div class="glass-card">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="info" class="w-6 h-6 text-blue-400"></i>
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-white mb-2">Sobre o Histórico</h4>
@@ -221,6 +486,9 @@ $totalPages = ceil($totalActivities / $perPage);
     <script>
         lucide.createIcons();
     </script>
+    
+    <!-- Security Scripts -->
+    <script src="includes/security-scripts.js"></script>
 </body>
 </html>
 

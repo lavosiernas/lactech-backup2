@@ -1,25 +1,39 @@
-# Google OAuth Credentials
-database/client_secret_*.json
+# Composer
+/vendor/
+composer.lock
 
-# Environment files
-.env
-.env.local
+# PHPUnit
+/coverage/
+.phpunit.result.cache
 
-# IDE files
-.vscode/
+# IDE
 .idea/
+.vscode/
+*.swp
+*.swo
+*~
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
-error_log
+logs/
 
-# Temporary files
-*.tmp
-*.bak
-*~
+# Environment
+.env
+.env.local
+.env.test
 
+# Cache
+cache/
+tmp/
 
+# Database
+*.sql
+!database/*.sql
+
+# Node (se houver)
+node_modules/
+package-lock.json
