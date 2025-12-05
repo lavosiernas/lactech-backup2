@@ -5,6 +5,7 @@ composer.lock
 # PHPUnit
 /coverage/
 .phpunit.result.cache
+/tests/
 
 # IDE
 .idea/
@@ -37,3 +38,9 @@ tmp/
 # Node (se houver)
 node_modules/
 package-lock.json
+
+# CI/CD (opcional - pode manter se quiser)
+# .github/
+
+# Scripts de desenvolvimento
+setup-path.ps1
