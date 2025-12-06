@@ -16,15 +16,13 @@
     
     # Permitir acesso direto a arquivos físicos existentes (imagens, CSS, JS, etc)
     RewriteCond %{REQUEST_FILENAME} -f
-    
     RewriteRule ^ - [L]
     
     # Permitir acesso direto a diretórios existentes
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
     
-    # Se não é arquivo nem diretório, mas existe um arquivo .php correspondente, adicionar .php internamente - APENAS EM PRODUÇÃO
-    RewriteCond %{HTTP_HOST} ^safenode\.cloud$ [NC]
+    # Se não é arquivo nem diretório, mas existe um arquivo .php correspondente, adicionar .php internamente
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME}.php -f

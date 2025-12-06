@@ -95,6 +95,9 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
             <i data-lucide="globe" class="w-5 h-5"></i> Gerenciar Sites
         </a>
         <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Análises</div>
+        <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'logs' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="file-text" class="w-5 h-5 group-hover:text-blue-400 transition-colors"></i> Explorar Logs
+        </a>
         <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'behavior-analysis' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="brain" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Comportamental
         </a>

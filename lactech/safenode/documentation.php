@@ -674,52 +674,215 @@ safenode/
                         
                         <div class="space-y-6">
                             <div>
-                                <h3 class="text-lg font-semibold text-white mb-3">1. Instalação do SDK</h3>
-                                <div class="code-block">
+                                <h3 class="text-lg font-semibold text-white mb-3">SDKs Disponíveis</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-lg border border-white/20 overflow-hidden">
+                                                <img src="https://cdn.jsdelivr.net/npm/programming-languages-logos@0.0.3/src/javascript/javascript.svg" alt="JavaScript" class="w-8 h-8 object-contain">
+                                            </div>
+                                            <h4 class="font-semibold text-white">JavaScript (Browser)</h4>
+                                        </div>
+                                        <p class="text-xs text-zinc-400 mb-2">Para sites web</p>
+                                        <code class="text-xs text-zinc-500">sdk/safenode-hv.js</code>
+                                    </div>
+                                    
+                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-lg border border-white/20 overflow-hidden">
+                                                <img src="https://cdn.jsdelivr.net/npm/programming-languages-logos@0.0.3/src/php/php.svg" alt="PHP" class="w-8 h-8 object-contain">
+                                            </div>
+                                            <h4 class="font-semibold text-white">PHP</h4>
+                                        </div>
+                                        <p class="text-xs text-zinc-400 mb-2">Para aplicações PHP</p>
+                                        <code class="text-xs text-zinc-500">sdk/php/SafeNodeHV.php</code>
+                                    </div>
+                                    
+                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-lg border border-white/20 overflow-hidden">
+                                                <img src="https://cdn.jsdelivr.net/npm/programming-languages-logos@0.0.3/src/python/python.svg" alt="Python" class="w-8 h-8 object-contain">
+                                            </div>
+                                            <h4 class="font-semibold text-white">Python</h4>
+                                        </div>
+                                        <p class="text-xs text-zinc-400 mb-2">Para aplicações Python</p>
+                                        <code class="text-xs text-zinc-500">sdk/python/safenode_hv.py</code>
+                                    </div>
+                                    
+                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-lg border border-white/20 overflow-hidden">
+                                                <svg class="w-8 h-8" viewBox="0 0 122 122" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M61 0L107 30.5V91.5L61 122L15 91.5V30.5L61 0Z" fill="#339933"/>
+                                                    <path d="M61 0L107 30.5V91.5L61 122L15 91.5V30.5L61 0Z" fill="url(#nodejs-gradient)" opacity="0.9"/>
+                                                    <path d="M61 0L107 30.5L61 61L15 30.5L61 0Z" fill="#66CC33" opacity="0.6"/>
+                                                    <defs>
+                                                        <linearGradient id="nodejs-gradient" x1="61" y1="0" x2="61" y2="122" gradientUnits="userSpaceOnUse">
+                                                            <stop offset="0%" stop-color="#66CC33" stop-opacity="0.9"/>
+                                                            <stop offset="100%" stop-color="#339933" stop-opacity="0.9"/>
+                                                        </linearGradient>
+                                                    </defs>
+                                                </svg>
+                                            </div>
+                                            <h4 class="font-semibold text-white">Node.js</h4>
+                                        </div>
+                                        <p class="text-xs text-zinc-400 mb-2">Para aplicações Node.js</p>
+                                        <code class="text-xs text-zinc-500">sdk/nodejs/safenode-hv.js</code>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-3">1. JavaScript (Browser) - Exemplo Completo</h3>
+                                <div class="code-block mb-4">
                                     <code>
-<span class="comment">&lt;!-- Adicione o SDK no seu HTML --&gt;</span>
+<span class="comment">&lt;!-- HTML --&gt;</span>
 <span class="keyword">&lt;script</span> <span class="function">src</span>=<span class="string">"https://safenode.cloud/sdk/safenode-hv.js"</span><span class="keyword">&gt;&lt;/script&gt;</span>
 
-<span class="comment">// Ou via npm (futuro)</span>
-<span class="function">npm</span> <span class="keyword">install</span> <span class="string">@safenode/sdk</span>
-                                    </code>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h3 class="text-lg font-semibold text-white mb-3">2. Inicialização</h3>
-                                <div class="code-block">
-                                    <code>
-<span class="keyword">const</span> <span class="function">safenode</span> = <span class="keyword">new</span> <span class="function">SafeNode</span>({
-  <span class="keyword">apiKey</span>: <span class="string">'sua-api-key'</span>,
-  <span class="keyword">siteId</span>: <span class="number">123</span>
+<span class="keyword">&lt;form</span> <span class="function">id</span>=<span class="string">"meuFormulario"</span><span class="keyword">&gt;</span>
+    <span class="keyword">&lt;input</span> <span class="function">type</span>=<span class="string">"text"</span> <span class="function">name</span>=<span class="string">"nome"</span> <span class="function">required</span><span class="keyword">&gt;</span>
+    <span class="keyword">&lt;button</span> <span class="function">type</span>=<span class="string">"submit"</span><span class="keyword">&gt;</span>Enviar<span class="keyword">&lt;/button&gt;</span>
+<span class="keyword">&lt;/form&gt;</span>
+
+<span class="comment">&lt;script&gt;</span>
+<span class="comment">// Inicializar SDK quando a página carregar</span>
+<span class="keyword">const</span> <span class="function">safenode</span> = <span class="keyword">new</span> <span class="function">SafeNodeHV</span>(<span class="string">'https://safenode.cloud/api/sdk'</span>, <span class="string">'sua-api-key-aqui'</span>);
+
+<span class="function">safenode</span>.<span class="function">init</span>().<span class="function">then</span>(() => {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">'SafeNode inicializado'</span>);
+}).<span class="function">catch</span>(<span class="function">err</span> => {
+    <span class="function">console</span>.<span class="function">error</span>(<span class="string">'Erro ao inicializar:'</span>, <span class="function">err</span>);
 });
 
-<span class="comment">// Validar requisição</span>
-<span class="function">safenode</span>.<span class="function">validate</span>(<span class="keyword">request</span>)
-  .<span class="function">then</span>(<span class="keyword">result</span> => {
-    <span class="keyword">if</span> (<span class="keyword">result</span>.<span class="function">isValid</span>) {
-      <span class="comment">// Processar requisição</span>
-    } <span class="keyword">else</span> {
-      <span class="comment">// Bloquear requisição</span>
+<span class="comment">// Validar antes de enviar formulário</span>
+<span class="function">document</span>.<span class="function">getElementById</span>(<span class="string">'meuFormulario'</span>).<span class="function">addEventListener</span>(<span class="string">'submit'</span>, <span class="keyword">async</span> (<span class="function">e</span>) => {
+    <span class="function">e</span>.<span class="function">preventDefault</span>();
+    
+    <span class="keyword">try</span> {
+        <span class="keyword">const</span> <span class="function">result</span> = <span class="keyword">await</span> <span class="function">safenode</span>.<span class="function">validate</span>();
+        <span class="keyword">if</span> (<span class="function">result</span>.<span class="function">valid</span>) {
+            <span class="comment">// Enviar formulário</span>
+            <span class="function">e</span>.<span class="function">target</span>.<span class="function">submit</span>();
+        }
+    } <span class="keyword">catch</span> (<span class="function">error</span>) {
+        <span class="function">alert</span>(<span class="string">'Erro na validação: ' + error.message</span>);
     }
-  });
+});
+<span class="keyword">&lt;/script&gt;</span>
                                     </code>
                                 </div>
                             </div>
                             
                             <div>
-                                <h3 class="text-lg font-semibold text-white mb-3">3. Exemplo Completo (PHP)</h3>
-                                <div class="code-block">
+                                <h3 class="text-lg font-semibold text-white mb-3">2. PHP - Exemplo Completo</h3>
+                                <div class="code-block mb-4">
                                     <code>
 <span class="comment">&lt;?php</span>
-<span class="keyword">require_once</span> <span class="string">'includes/SafeNodeMiddleware.php'</span>;
+<span class="keyword">require_once</span> <span class="string">'sdk/php/SafeNodeHV.php'</span>;
 
-<span class="comment">// Aplicar middleware em todas as requisições</span>
-<span class="function">SafeNodeMiddleware</span>::<span class="function">protect</span>();
+<span class="function">$safenode</span> = <span class="keyword">new</span> <span class="function">SafeNodeHV</span>(<span class="string">'https://safenode.cloud/api/sdk'</span>, <span class="string">'sua-api-key-aqui'</span>);
 
-<span class="comment">// Seu código continua normalmente</span>
-<span class="keyword">echo</span> <span class="string">"Página protegida!"</span>;
+<span class="comment">// Inicializar na página (GET)</span>
+<span class="keyword">if</span> (<span class="function">$_SERVER</span>[<span class="string">'REQUEST_METHOD'</span>] === <span class="string">'GET'</span>) {
+    <span class="keyword">try</span> {
+        <span class="function">$safenode</span>-><span class="function">init</span>();
+        <span class="function">$token</span> = <span class="function">$safenode</span>-><span class="function">getToken</span>();
+        <span class="comment">// Token armazenado na sessão do SDK</span>
+    } <span class="keyword">catch</span> (<span class="function">Exception</span> <span class="function">$e</span>) {
+        <span class="function">die</span>(<span class="string">'Erro ao inicializar: ' . $e->getMessage()</span>);
+    }
+}
+
+<span class="comment">// Validar ao processar formulário (POST)</span>
+<span class="keyword">if</span> (<span class="function">$_SERVER</span>[<span class="string">'REQUEST_METHOD'</span>] === <span class="string">'POST'</span>) {
+    <span class="keyword">try</span> {
+        <span class="function">$result</span> = <span class="function">$safenode</span>-><span class="function">validate</span>();
+        <span class="keyword">if</span> (<span class="function">$result</span>[<span class="string">'valid'</span>]) {
+            <span class="comment">// Processar dados do formulário</span>
+            <span class="function">$nome</span> = <span class="function">$_POST</span>[<span class="string">'nome'</span>] ?? <span class="string">''</span>;
+            <span class="function">echo</span> <span class="string">"Formulário processado: " . htmlspecialchars($nome)</span>;
+        } <span class="keyword">else</span> {
+            <span class="function">die</span>(<span class="string">'Validação falhou'</span>);
+        }
+    } <span class="keyword">catch</span> (<span class="function">Exception</span> <span class="function">$e</span>) {
+        <span class="function">die</span>(<span class="string">'Erro: ' . $e->getMessage()</span>);
+    }
+}
+<span class="keyword">?&gt;</span>
+                                    </code>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-3">3. Python - Exemplo com Flask</h3>
+                                <div class="code-block mb-4">
+                                    <code>
+<span class="keyword">from</span> <span class="function">flask</span> <span class="keyword">import</span> <span class="function">Flask</span>, <span class="function">request</span>, <span class="function">jsonify</span>
+<span class="keyword">from</span> <span class="function">safenode_hv</span> <span class="keyword">import</span> <span class="function">SafeNodeHV</span>
+
+<span class="function">app</span> = <span class="function">Flask</span>(<span class="function">__name__</span>)
+<span class="function">safenode</span> = <span class="function">SafeNodeHV</span>(<span class="string">'https://safenode.cloud/api/sdk'</span>, <span class="string">'sua-api-key-aqui'</span>)
+
+<span class="function">@app</span>.<span class="function">route</span>(<span class="string">'/'</span>, <span class="function">methods</span>=[<span class="string">'GET'</span>])
+<span class="keyword">def</span> <span class="function">index</span>():
+    <span class="function">safenode</span>.<span class="function">init</span>()
+    <span class="keyword">return</span> <span class="string">'Página carregada'</span>
+
+<span class="function">@app</span>.<span class="function">route</span>(<span class="string">'/submit'</span>, <span class="function">methods</span>=[<span class="string">'POST'</span>])
+<span class="keyword">def</span> <span class="function">submit</span>():
+    <span class="keyword">try</span>:
+        <span class="function">result</span> = <span class="function">safenode</span>.<span class="function">validate</span>()
+        <span class="keyword">if</span> <span class="function">result</span>[<span class="string">'valid'</span>]:
+            <span class="comment"># Processar dados</span>
+            <span class="function">nome</span> = <span class="function">request</span>.<span class="function">form</span>.<span class="function">get</span>(<span class="string">'nome'</span>)
+            <span class="keyword">return</span> <span class="function">jsonify</span>({<span class="string">'success'</span>: <span class="keyword">True</span>, <span class="string">'message'</span>: <span class="string">'Processado'</span>})
+        <span class="keyword">else</span>:
+            <span class="keyword">return</span> <span class="function">jsonify</span>({<span class="string">'error'</span>: <span class="string">'Validação falhou'</span>}), <span class="number">400</span>
+    <span class="keyword">except</span> <span class="function">Exception</span> <span class="function">as</span> <span class="function">e</span>:
+        <span class="keyword">return</span> <span class="function">jsonify</span>({<span class="string">'error'</span>: <span class="function">str</span>(<span class="function">e</span>)}), <span class="number">400</span>
+
+<span class="keyword">if</span> <span class="function">__name__</span> == <span class="string">'__main__'</span>:
+    <span class="function">app</span>.<span class="function">run</span>(<span class="function">debug</span>=<span class="keyword">True</span>)
+                                    </code>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-3">4. Node.js - Exemplo com Express</h3>
+                                <div class="code-block mb-4">
+                                    <code>
+<span class="keyword">const</span> <span class="function">express</span> = <span class="keyword">require</span>(<span class="string">'express'</span>);
+<span class="keyword">const</span> <span class="function">SafeNodeHV</span> = <span class="keyword">require</span>(<span class="string">'./sdk/nodejs/safenode-hv.js'</span>);
+
+<span class="keyword">const</span> <span class="function">app</span> = <span class="function">express</span>();
+<span class="keyword">const</span> <span class="function">safenode</span> = <span class="keyword">new</span> <span class="function">SafeNodeHV</span>(<span class="string">'https://safenode.cloud/api/sdk'</span>, <span class="string">'sua-api-key-aqui'</span>);
+
+<span class="function">app</span>.<span class="function">use</span>(<span class="function">express</span>.<span class="function">json</span>());
+
+<span class="comment">// Inicializar na página</span>
+<span class="function">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, <span class="keyword">async</span> (<span class="function">req</span>, <span class="function">res</span>) => {
+    <span class="keyword">await</span> <span class="function">safenode</span>.<span class="function">init</span>();
+    <span class="function">res</span>.<span class="function">send</span>(<span class="string">'Página carregada'</span>);
+});
+
+<span class="comment">// Validar e processar formulário</span>
+<span class="function">app</span>.<span class="function">post</span>(<span class="string">'/submit'</span>, <span class="keyword">async</span> (<span class="function">req</span>, <span class="function">res</span>) => {
+    <span class="keyword">try</span> {
+        <span class="keyword">const</span> <span class="function">result</span> = <span class="keyword">await</span> <span class="function">safenode</span>.<span class="function">validate</span>();
+        <span class="keyword">if</span> (<span class="function">result</span>.<span class="function">valid</span>) {
+            <span class="comment">// Processar dados</span>
+            <span class="function">res</span>.<span class="function">json</span>({<span class="string">'success'</span>: <span class="keyword">true</span>, <span class="string">'message'</span>: <span class="string">'Processado'</span>});
+        } <span class="keyword">else</span> {
+            <span class="function">res</span>.<span class="function">status</span>(<span class="number">400</span>).<span class="function">json</span>({<span class="string">'error'</span>: <span class="string">'Validação falhou'</span>});
+        }
+    } <span class="keyword">catch</span> (<span class="function">error</span>) {
+        <span class="function">res</span>.<span class="function">status</span>(<span class="number">400</span>).<span class="function">json</span>({<span class="string">'error'</span>: <span class="function">error</span>.<span class="function">message</span>});
+    }
+});
+
+<span class="function">app</span>.<span class="function">listen</span>(<span class="number">3000</span>, () => {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">'Servidor rodando na porta 3000'</span>);
+});
                                     </code>
                                 </div>
                             </div>
