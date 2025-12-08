@@ -212,3 +212,4 @@ FROM safenode_security_logs_archive;
 **Compatibilidade:** MySQL 5.7+, MariaDB 10.2+, Hostinger
 
 
+

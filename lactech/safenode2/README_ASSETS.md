@@ -40,3 +40,4 @@ safenode2/
 O Next.js serve arquivos estáticos da pasta `public/`. Por isso, as imagens precisam estar lá para serem acessíveis via `/assets/img/...`.
 
 
+

@@ -475,3 +475,4 @@ $alerts = $predictor->generatePredictiveAlerts(24); // Últimas 24h
 **Juntos:** Sistema inteligente que **aprende**, **prevê** e **adapta** automaticamente! 🧠✨
 
 
+

@@ -193,3 +193,4 @@ FROM safenode_security_logs_archive,
 -- 5. Monitore o tamanho da tabela de arquivo
 
 
+

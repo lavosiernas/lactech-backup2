@@ -307,3 +307,4 @@ bash hcp-install.sh
 *Documento criado em: <?php echo date('d/m/Y'); ?>*
 *Versão: 1.0 - Alibaba Cloud Free Tier*
 
+
