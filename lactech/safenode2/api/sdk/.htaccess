@@ -1,0 +1,4 @@
+# CORS será controlado pelo PHP para permitir headers customizados
+# Não definir headers CORS aqui para evitar conflitos
+# O PHP precisa controlar Access-Control-Allow-Origin dinamicamente
+

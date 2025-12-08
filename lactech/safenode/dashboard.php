@@ -135,7 +135,6 @@ if ($db) {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            font-size: 0.92em;
         }
         
         /* Custom Scrollbar */
@@ -236,25 +235,11 @@ if ($db) {
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        @media (min-width: 640px) {
-            .stat-card {
-                border-radius: 14px;
-                padding: 20px;
-            }
-        }
-        
-        @media (min-width: 1024px) {
-            .stat-card {
-                border-radius: 16px;
-                padding: 24px;
-            }
         }
         
         .stat-card::before {
@@ -407,10 +392,33 @@ if ($db) {
         
         /* Upgrade Card */
         .upgrade-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.3) 100%);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upgrade-card::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 40%);
+            animation: rotate-gradient 10s linear infinite;
+        }
+        
+        .upgrade-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at bottom right, rgba(255,255,255,0.2) 0%, transparent 60%);
         }
         
         /* Buttons */
@@ -461,7 +469,6 @@ if ($db) {
             border-color: var(--border-light);
             color: var(--text-primary);
         }
-        
         
         /* Search Input */
         .search-input {
@@ -590,109 +597,6 @@ if ($db) {
             animation: glow 3s ease-in-out infinite;
         }
         
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 400px;
-        }
-        
-        .toast {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: start;
-            gap: 12px;
-            animation: slideInRight 0.3s ease-out;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .toast::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: var(--toast-color, #ffffff);
-        }
-        
-        .toast.success { --toast-color: #22c55e; }
-        .toast.error { --toast-color: #ef4444; }
-        .toast.warning { --toast-color: #f59e0b; }
-        .toast.info { --toast-color: #3b82f6; }
-        
-        .toast-icon {
-            flex-shrink: 0;
-            width: 20px;
-            height: 20px;
-        }
-        
-        .toast-content {
-            flex: 1;
-        }
-        
-        .toast-title {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-        
-        .toast-message {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-        
-        .toast-close {
-            flex-shrink: 0;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: color 0.2s;
-        }
-        
-        .toast-close:hover {
-            color: var(--text-primary);
-        }
-        
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-        
-        .toast.hiding {
-            animation: slideOutRight 0.3s ease-in forwards;
-        }
-        
         /* Notification Panel */
         .notification-panel {
             background: var(--bg-secondary);
@@ -793,198 +697,81 @@ if ($db) {
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body x-data="{ notificationsOpen: false, sidebarOpen: false, sidebarCollapsed: false, deviceFilterOpen: false }" 
-      x-init="
-        $watch('sidebarCollapsed', () => { setTimeout(() => { lucide.createIcons(); }, 150) });
-        $watch('sidebarOpen', () => { setTimeout(() => { lucide.createIcons(); }, 150) });
-      "
-      class="h-full overflow-hidden flex">
+<body x-data="{ notificationsOpen: false, sidebarOpen: false }" class="h-full overflow-hidden flex">
 
     <!-- Sidebar -->
-    <aside :class="sidebarCollapsed ? 'w-20' : 'w-72'" class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
+    <aside class="sidebar w-72 h-full flex-shrink-0 flex flex-col hidden lg:flex">
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
-            <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
-                <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
-                    <div x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="overflow-hidden whitespace-nowrap">
+        <div class="p-6 border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain">
+                    <div>
                         <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
                         <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
-                <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0" :class="sidebarCollapsed ? 'mt-2' : ''">
-                    <i :data-lucide="sidebarCollapsed ? 'chevrons-right' : 'chevrons-left'" class="w-5 h-5"></i>
+                <button class="ml-auto text-zinc-600 hover:text-zinc-400 transition-colors">
+                    <i data-lucide="chevrons-left" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
         
         <!-- Navigation -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
-            <p x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
+        <nav class="flex-1 p-5 space-y-2 overflow-y-auto">
+            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Menu Principal</p>
             
-            <a href="dashboard.php" class="nav-item active" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Home' : ''">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Home</span>
+            <a href="dashboard.php" class="nav-item active">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="font-medium">Home</span>
             </a>
-            <a href="sites.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Gerenciar Sites' : ''">
-                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Gerenciar Sites</span>
+            <a href="security-analytics.php" class="nav-item">
+                <i data-lucide="activity" class="w-5 h-5"></i>
+                <span class="font-medium">Network</span>
             </a>
-            <a href="security-analytics.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Network' : ''">
-                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Network</span>
+            <a href="behavior-analysis.php" class="nav-item">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+                <span class="font-medium">Kubernetes</span>
             </a>
-            <a href="behavior-analysis.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Kubernetes' : ''">
-                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Kubernetes</span>
+            <a href="logs.php" class="nav-item">
+                <i data-lucide="compass" class="w-5 h-5"></i>
+                <span class="font-medium">Explorar</span>
             </a>
-            <a href="logs.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Explorar' : ''">
-                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Explorar</span>
+            <a href="suspicious-ips.php" class="nav-item">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                <span class="font-medium">Analisar</span>
             </a>
-            <a href="suspicious-ips.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Analisar' : ''">
-                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Analisar</span>
-            </a>
-            <a href="attacked-targets.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Grupos' : ''">
-                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Grupos</span>
+            <a href="attacked-targets.php" class="nav-item">
+                <i data-lucide="users-2" class="w-5 h-5"></i>
+                <span class="font-medium">Grupos</span>
             </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="human-verification.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Verificação Humana' : ''">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Verificação Humana</span>
+            <div class="pt-6 mt-6 border-t border-white/5">
+                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
+                <a href="settings.php" class="nav-item">
+                    <i data-lucide="settings-2" class="w-5 h-5"></i>
+                    <span class="font-medium">Configurações</span>
                 </a>
-                <a href="settings.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Configurações' : ''">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
-                <a href="help.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Ajuda' : ''">
-                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Ajuda</span>
-                </a>
-                <a href="documentation.php" class="nav-item" :class="sidebarCollapsed ? 'justify-center px-2' : ''" :title="sidebarCollapsed ? 'Documentação' : ''">
-                    <i data-lucide="book-open" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-x-2" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 -translate-x-2" class="font-medium whitespace-nowrap">Documentação</span>
+                <a href="help.php" class="nav-item">
+                    <i data-lucide="life-buoy" class="w-5 h-5"></i>
+                    <span class="font-medium">Ajuda</span>
                 </a>
             </div>
         </nav>
         
         <!-- Upgrade Card -->
-        <div class="p-4 flex-shrink-0" x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2">
+        <div class="p-5">
             <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
+                <div class="relative z-10">
+                    <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-5">
+                        <i data-lucide="zap" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-lg mb-1">Ativar Pro</h3>
+                    <p class="text-sm text-white/60 mb-5 leading-relaxed">Desbloqueie recursos avançados de proteção</p>
+                    <button class="w-full btn-primary py-3 text-sm">
                         Upgrade Agora
                     </button>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Mobile Sidebar Overlay -->
-    <div x-show="sidebarOpen" 
-         x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click="sidebarOpen = false"
-         class="fixed inset-0 bg-black/80 z-40 lg:hidden"
-         x-cloak
-         style="display: none;"></div>
-
-    <!-- Mobile Sidebar -->
-    <aside x-show="sidebarOpen"
-           x-transition:enter="transition ease-out duration-300 transform"
-           x-transition:enter-start="-translate-x-full"
-           x-transition:enter-end="translate-x-0"
-           x-transition:leave="transition ease-in duration-300 transform"
-           x-transition:leave-start="translate-x-0"
-           x-transition:leave-end="-translate-x-full"
-           @click.away="sidebarOpen = false"
-           class="fixed inset-y-0 left-0 w-72 sidebar h-full flex flex-col z-50 lg:hidden overflow-y-auto"
-           x-cloak
-           style="display: none;">
-        <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
-                    <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
-                    </div>
                 </div>
-                <button @click="sidebarOpen = false" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
-            
-            <a href="dashboard.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Home</span>
-            </a>
-            <a href="sites.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
-            </a>
-            <a href="security-analytics.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Network</span>
-            </a>
-            <a href="behavior-analysis.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Kubernetes</span>
-            </a>
-            <a href="logs.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Explorar</span>
-            </a>
-            <a href="suspicious-ips.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Analisar</span>
-            </a>
-            <a href="attacked-targets.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Grupos</span>
-            </a>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="human-verification.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="settings.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
-                <a href="help.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Ajuda</span>
-                </a>
-                <a href="documentation.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="book-open" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Documentação</span>
-                </a>
-            </div>
-        </nav>
-        
-        <!-- Upgrade Card -->
-        <div class="p-4 flex-shrink-0">
-            <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
             </div>
         </div>
     </aside>
@@ -1000,7 +787,7 @@ if ($db) {
                 <div>
                     <h2 class="text-2xl font-bold text-white tracking-tight">Dashboard</h2>
                     <?php if ($currentSiteId > 0 && $selectedSite): ?>
-                    <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
+                    <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['name'] ?? ''); ?></p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -1012,10 +799,16 @@ if ($db) {
                     <input type="text" placeholder="Buscar..." class="search-input">
                 </div>
                 
+                <!-- Add New -->
+                <button class="btn-primary hidden sm:flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Adicionar</span>
+                </button>
+                
                 <!-- Notifications -->
                 <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                     <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span id="notification-badge" class="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1.5 border-2 border-dark-900 hidden">0</span>
+                    <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-white rounded-full border-2 border-dark-900 animate-pulse"></span>
                 </button>
                 
                 <!-- Profile -->
@@ -1038,65 +831,66 @@ if ($db) {
             </div>
                 <?php endif; ?>
             
-            <!-- Development Notice Banner -->
-            <div class="mb-8 glass rounded-2xl p-5 border-blue-500/30 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="code" class="w-5 h-5 text-blue-400"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="font-semibold text-white text-sm mb-1">Sistema em Desenvolvimento Constante</p>
-                    <p class="text-xs text-zinc-400">O SafeNode está em evolução contínua. Novas funcionalidades e melhorias são adicionadas regularmente para garantir a melhor experiência e segurança.</p>
-                </div>
-            </div>
-            
             <!-- Stats Cards -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 <!-- Total Requests -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-xs sm:text-sm font-medium text-zinc-400">Total de Requisições</p>
+                        <p class="text-sm font-medium text-zinc-400">Total de Requisições</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <div class="flex items-end justify-between mt-3 sm:mt-4">
-                        <p id="total-requests" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="requests-change" class="text-[10px] sm:text-xs font-semibold text-white bg-white/10 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg"></span>
+                    <div class="flex items-end justify-between mt-4">
+                        <p id="total-requests" class="text-4xl font-bold text-white tracking-tight">-</p>
+                        <span id="requests-change" class="text-sm font-semibold text-white bg-white/10 px-2.5 py-1 rounded-lg"></span>
                     </div>
-                    <p class="text-[10px] sm:text-xs text-zinc-600 mt-2 sm:mt-3">comparado a ontem</p>
+                    <p class="text-xs text-zinc-600 mt-3">comparado a ontem</p>
             </div>
 
                 <!-- Blocked -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-xs sm:text-sm font-medium text-zinc-400">Requisições Bloqueadas</p>
+                        <p class="text-sm font-medium text-zinc-400">Requisições Bloqueadas</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                </button>
                     </div>
-                    <div class="flex items-end justify-between mt-3 sm:mt-4">
-                        <p id="blocked-requests" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="blocked-change" class="text-[10px] sm:text-xs font-semibold text-red-400 bg-red-500/10 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg"></span>
+                    <div class="flex items-end justify-between mt-4">
+                        <p id="blocked-requests" class="text-4xl font-bold text-white tracking-tight">-</p>
+                        <span id="blocked-change" class="text-sm font-semibold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-lg"></span>
                     </div>
-                    <p class="text-[10px] sm:text-xs text-zinc-600 mt-2 sm:mt-3">Taxa: <span id="block-rate" class="text-red-400 font-medium">-</span>%</p>
+                    <p class="text-xs text-zinc-600 mt-3">Taxa: <span id="block-rate" class="text-red-400 font-medium">-</span>%</p>
                 </div>
                 
                 <!-- Unique IPs -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-xs sm:text-sm font-medium text-zinc-400">Visitantes Únicos</p>
+                        <p class="text-sm font-medium text-zinc-400">Visitantes Únicos</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <div class="flex items-end justify-between mt-3 sm:mt-4">
-                        <p id="unique-ips" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="ips-change" class="text-[10px] sm:text-xs font-semibold text-white bg-white/10 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg"></span>
+                    <div class="flex items-end justify-between mt-4">
+                        <p id="unique-ips" class="text-4xl font-bold text-white tracking-tight">-</p>
+                        <span id="ips-change" class="text-sm font-semibold text-white bg-white/10 px-2.5 py-1 rounded-lg"></span>
                     </div>
-                    <p class="text-[10px] sm:text-xs text-zinc-600 mt-2 sm:mt-3">últimas 24h</p>
+                    <p class="text-xs text-zinc-600 mt-3">últimas 24h</p>
                 </div>
                 
                 <!-- Active Blocks -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-xs sm:text-sm font-medium text-zinc-400">IPs Bloqueados</p>
+                        <p class="text-sm font-medium text-zinc-400">IPs Bloqueados</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <div class="flex items-end justify-between mt-3 sm:mt-4">
-                        <p id="active-blocks" class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">-</p>
-                        <span class="text-[10px] sm:text-xs font-semibold text-amber-400 bg-amber-500/10 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg">ativos</span>
+                    <div class="flex items-end justify-between mt-4">
+                        <p id="active-blocks" class="text-4xl font-bold text-white tracking-tight">-</p>
+                        <span class="text-sm font-semibold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg">ativos</span>
                     </div>
-                    <p class="text-[10px] sm:text-xs text-zinc-600 mt-2 sm:mt-3">últimos 7 dias</p>
+                    <p class="text-xs text-zinc-600 mt-3">últimos 7 dias</p>
                 </div>
             </div>
             
@@ -1106,6 +900,9 @@ if ($db) {
                 <div class="lg:col-span-2 chart-card">
                     <div class="flex items-center justify-between mb-8">
                         <h3 class="text-lg font-semibold text-white">Visão Geral de Ameaças</h3>
+                        <button class="text-zinc-600 hover:text-zinc-400 transition-colors">
+                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                        </button>
                     </div>
                     <div class="flex items-center justify-center">
                         <div class="relative" style="width: 220px; height: 220px;">
@@ -1119,15 +916,15 @@ if ($db) {
                     <div class="flex items-center justify-center gap-8 mt-8">
                         <div class="flex items-center gap-2.5">
                             <span class="w-3 h-3 rounded-full bg-white"></span>
-                            <span class="text-sm text-zinc-400">Bom</span>
+                            <span class="text-sm text-zinc-400">Good</span>
                         </div>
                         <div class="flex items-center gap-2.5">
                             <span class="w-3 h-3 rounded-full bg-amber-500"></span>
-                            <span class="text-sm text-zinc-400">Moderado</span>
+                            <span class="text-sm text-zinc-400">Moderate</span>
                         </div>
                         <div class="flex items-center gap-2.5">
                             <span class="w-3 h-3 rounded-full bg-violet-500"></span>
-                            <span class="text-sm text-zinc-400">Ruim</span>
+                            <span class="text-sm text-zinc-400">Bad</span>
                         </div>
                     </div>
                 </div>
@@ -1149,95 +946,26 @@ if ($db) {
             </div>
             
             <!-- Network Devices Table -->
-            <div class="table-card mb-8" style="overflow: visible !important;">
-                <div class="table-header p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style="overflow: visible !important; position: relative;">
-                    <h3 class="text-base sm:text-lg font-semibold text-white">Dispositivos de Rede</h3>
-                    <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto relative">
-                        <div class="relative flex-1 sm:flex-initial sm:w-56">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
-                            <input type="text" id="device-search" placeholder="Buscar por nome" class="bg-white/5 border border-white/10 rounded-xl py-2 sm:py-2.5 pl-10 sm:pl-11 pr-3 sm:pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 w-full transition-all">
-                        </div>
-                        <button class="btn-ghost flex items-center justify-center gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-3 sm:px-4 flex-shrink-0">
-                            <span class="hidden sm:inline">Buscar</span>
-                            <i data-lucide="search" class="w-4 h-4 sm:hidden"></i>
-                        </button>
+            <div class="table-card mb-8">
+                <div class="table-header p-6 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-white">Dispositivos de Rede</h3>
+                    <div class="flex items-center gap-3">
                         <div class="relative">
-                            <button @click="deviceFilterOpen = !deviceFilterOpen" class="btn-ghost flex items-center justify-center gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-3 sm:px-4 flex-shrink-0">
-                                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                                <span class="hidden sm:inline">Filtrar</span>
-                            </button>
-                            
-                            <!-- Filter Modal -->
-                            <div x-show="deviceFilterOpen" 
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-150"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 @click.away="deviceFilterOpen = false"
-                                 @click.stop
-                                 class="absolute top-full right-0 mt-2 w-72 bg-dark-900 border border-white/10 rounded-xl shadow-2xl z-[9999] p-4"
-                                 x-cloak
-                                 style="display: none;">
-                                <div class="space-y-4">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h4 class="text-sm font-semibold text-white">Filtros</h4>
-                                        <button @click="deviceFilterOpen = false" class="text-white hover:text-zinc-300 transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5">
-                                            <i data-lucide="x" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="relative">
-                                        <label class="block text-xs text-zinc-400 mb-2">Status de Health</label>
-                                        <select id="filter-health" class="w-full bg-zinc-800/80 border-2 border-white/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/70 appearance-none cursor-pointer pr-8 hover:bg-zinc-700/80">
-                                            <option value="">Todos</option>
-                                            <option value="good">Bom</option>
-                                            <option value="moderate">Moderado</option>
-                                            <option value="bad">Ruim</option>
-                                            <option value="unavailable">Indisponível</option>
-                                        </select>
-                                        <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-8 text-white pointer-events-none"></i>
-                                    </div>
-                                    
-                                    <div class="relative">
-                                        <label class="block text-xs text-zinc-400 mb-2">Tipo</label>
-                                        <select id="filter-type" class="w-full bg-zinc-800/80 border-2 border-white/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/70 appearance-none cursor-pointer pr-8 hover:bg-zinc-700/80">
-                                            <option value="">Todos</option>
-                                            <option value="1">1 tipo</option>
-                                            <option value="2">2 tipos</option>
-                                            <option value="3">3+ tipos</option>
-                                        </select>
-                                        <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-8 text-white pointer-events-none"></i>
-                                    </div>
-                                    
-                                    <div class="relative">
-                                        <label class="block text-xs text-zinc-400 mb-2">Packet Loss</label>
-                                        <select id="filter-packet" class="w-full bg-zinc-800/80 border-2 border-white/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/70 appearance-none cursor-pointer pr-8 hover:bg-zinc-700/80">
-                                            <option value="">Todos</option>
-                                            <option value="low">Baixo (0-25%)</option>
-                                            <option value="medium">Médio (26-50%)</option>
-                                            <option value="high">Alto (51%+)</option>
-                                        </select>
-                                        <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-8 text-white pointer-events-none"></i>
-                                    </div>
-                                    
-                                    <div class="flex gap-2 pt-2">
-                                        <button @click="deviceFilterOpen = false; setTimeout(() => applyDeviceFilters(), 100);" class="flex-1 bg-white text-black py-2 text-sm font-semibold rounded-lg hover:bg-white/90 transition-colors">
-                                            Aplicar
-                                        </button>
-                                        <button @click="deviceFilterOpen = false; setTimeout(() => clearDeviceFilters(), 100);" class="flex-1 bg-white/10 text-white border border-white/20 py-2 text-sm font-semibold rounded-lg hover:bg-white/20 transition-colors">
-                                            Limpar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
+                            <input type="text" id="device-search" placeholder="Buscar por nome" class="bg-white/5 border border-white/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 w-56 transition-all">
                         </div>
-                    </div>
+                        <button class="btn-ghost flex items-center gap-2">
+                            <span>Buscar</span>
+                        </button>
+                        <button class="btn-ghost flex items-center gap-2">
+                            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                            <span>Filtrar</span>
+                    </button>
                 </div>
+                    </div>
                 
-                <!-- Desktop Table -->
-                <div class="hidden lg:block overflow-x-auto">
+                <!-- Table -->
+                <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
                             <tr class="text-left text-xs text-zinc-500 uppercase tracking-wider border-b border-white/5">
@@ -1263,16 +991,6 @@ if ($db) {
                             </tr>
                         </tbody>
                     </table>
-                </div>
-                
-                <!-- Mobile Cards -->
-                <div id="devices-cards" class="lg:hidden p-4 space-y-3">
-                    <div class="text-center py-10 text-zinc-500">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
-                        </div>
-                        <p class="text-sm font-medium">Carregando dispositivos...</p>
-                    </div>
                 </div>
             </div>
             
@@ -1402,8 +1120,8 @@ if ($db) {
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto p-5" id="notifications-list">
-                <div class="text-center py-16" id="notifications-empty">
+            <div class="flex-1 overflow-y-auto p-5">
+                <div class="text-center py-16">
                     <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-5">
                         <i data-lucide="bell-off" class="w-10 h-10 text-zinc-600"></i>
                     </div>
@@ -1414,214 +1132,9 @@ if ($db) {
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="toast-container"></div>
-
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
-        
-        // Toast Notification System
-        function showToast(title, message, type = 'info', duration = 5000) {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            const icons = {
-                success: 'check-circle-2',
-                error: 'alert-circle',
-                warning: 'alert-triangle',
-                info: 'info'
-            };
-            
-            toast.innerHTML = `
-                <i data-lucide="${icons[type] || 'info'}" class="toast-icon text-${type === 'success' ? 'green' : type === 'error' ? 'red' : type === 'warning' ? 'amber' : 'blue'}-400"></i>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <button class="toast-close" onclick="this.closest('.toast').remove()">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            `;
-            
-            container.appendChild(toast);
-            lucide.createIcons();
-            
-            if (duration > 0) {
-                setTimeout(() => {
-                    toast.classList.add('hiding');
-                    setTimeout(() => toast.remove(), 300);
-                }, duration);
-            }
-        }
-        
-        // Notification System
-        let unreadNotifications = 0;
-        let lastNotificationCheck = Date.now();
-        
-        function updateNotificationBadge(count) {
-            const badge = document.getElementById('notification-badge');
-            if (!badge) return;
-            
-            unreadNotifications = count;
-            if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-        
-        function fetchNotifications() {
-            fetch('api/notifications.php?unread=1')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.count !== undefined) {
-                        const newCount = parseInt(data.count);
-                        if (newCount > unreadNotifications) {
-                            // Novas notificações
-                            const diff = newCount - unreadNotifications;
-                            if (diff > 0) {
-                                showToast(
-                                    'Nova Ameaça Detectada',
-                                    `${diff} nova${diff > 1 ? 's' : ''} ameaça${diff > 1 ? 's' : ''} detectada${diff > 1 ? 's' : ''}`,
-                                    'warning',
-                                    6000
-                                );
-                            }
-                        }
-                        updateNotificationBadge(newCount);
-                        if (document.getElementById('notifications-list')) {
-                            loadNotifications();
-                        }
-                    }
-                })
-                .catch(err => console.error('Erro ao buscar notificações:', err));
-        }
-        
-        function loadNotifications() {
-            fetch('api/notifications.php?limit=20')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.notifications) {
-                        renderNotifications(data.notifications);
-                    }
-                })
-                .catch(err => console.error('Erro ao carregar notificações:', err));
-        }
-        
-        function renderNotifications(notifications) {
-            const container = document.getElementById('notifications-list');
-            const empty = document.getElementById('notifications-empty');
-            
-            if (!container) return;
-            
-            if (notifications.length === 0) {
-                if (empty) empty.style.display = 'block';
-                container.innerHTML = '';
-                container.appendChild(empty);
-                return;
-            }
-            
-            if (empty) empty.style.display = 'none';
-            
-            container.innerHTML = notifications.map(notif => {
-                const icons = {
-                    threat: 'shield-alert',
-                    blocked: 'ban',
-                    warning: 'alert-triangle',
-                    info: 'info',
-                    success: 'check-circle-2'
-                };
-                
-                const colors = {
-                    threat: 'text-red-400',
-                    blocked: 'text-red-500',
-                    warning: 'text-amber-400',
-                    info: 'text-blue-400',
-                    success: 'text-green-400'
-                };
-                
-                const timeAgo = getTimeAgo(notif.created_at);
-                
-                return `
-                    <div class="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all mb-3 ${notif.is_read ? 'opacity-60' : ''}">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                                <i data-lucide="${icons[notif.type] || 'info'}" class="w-5 h-5 ${colors[notif.type] || 'text-zinc-400'}"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-start justify-between gap-2 mb-1">
-                                    <h4 class="text-sm font-semibold text-white">${escapeHtml(notif.title)}</h4>
-                                    ${!notif.is_read ? '<span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></span>' : ''}
-                                </div>
-                                <p class="text-xs text-zinc-400 mb-2">${escapeHtml(notif.message)}</p>
-                                <p class="text-[10px] text-zinc-600">${timeAgo}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            lucide.createIcons();
-        }
-        
-        function getTimeAgo(dateString) {
-            const now = new Date();
-            const date = new Date(dateString);
-            const diff = Math.floor((now - date) / 1000);
-            
-            if (diff < 60) return 'Agora';
-            if (diff < 3600) return `${Math.floor(diff / 60)}m atrás`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)}h atrás`;
-            if (diff < 604800) return `${Math.floor(diff / 86400)}d atrás`;
-            return date.toLocaleDateString('pt-BR');
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Check for new threats and show alerts
-        function checkForThreats() {
-            fetch('api/dashboard-stats.php')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const criticalThreats = data.data.today?.threat_analysis?.critical_threats || 0;
-                        const recentLogs = data.data.event_logs || [];
-                        
-                        // Verificar se há novas ameaças críticas
-                        recentLogs.forEach(log => {
-                            if (log.is_critical && !log.is_read) {
-                                showToast(
-                                    'Ameaça Crítica Detectada',
-                                    `IP ${log.ip_address} - ${log.threat_type || 'Ameaça desconhecida'}`,
-                                    'error',
-                                    8000
-                                );
-                            }
-                        });
-                    }
-                })
-                .catch(err => console.error('Erro ao verificar ameaças:', err));
-        }
-        
-        // Carregar notificações ao abrir o painel
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchNotifications();
-            loadNotifications();
-            checkForThreats();
-            
-            // Atualizar notificações a cada 5 segundos
-            setInterval(fetchNotifications, 5000);
-            setInterval(checkForThreats, 10000);
-        });
 
         // Charts
         let entitiesChart = null;
@@ -1635,14 +1148,13 @@ if ($db) {
                 return;
             }
             
-            // Verificar se Chart.js está carregado
-            if (typeof Chart === 'undefined') {
+            // Verificar se Chart.js está carregado (pode ser Chart ou Chart.Chart dependendo da versão)
+            const ChartLib = window.Chart || (window.Chart && window.Chart.Chart) || Chart;
+            if (typeof ChartLib === 'undefined' || !ChartLib) {
                 console.error('Chart.js não está carregado. Tentando novamente...');
                 setTimeout(initEntitiesChart, 200);
                 return;
             }
-            
-            const ChartLib = Chart;
             
             // Destruir gráfico existente se houver
             if (entitiesChart) {
@@ -1674,10 +1186,10 @@ if ($db) {
             gradient3.addColorStop(1, '#7c3aed');
             
             try {
-                entitiesChart = new Chart(ctx, {
+                entitiesChart = new ChartLib(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Bom', 'Moderado', 'Ruim'],
+                        labels: ['Good', 'Moderate', 'Bad'],
                         datasets: [{
                             data: [65, 25, 10],
                             backgroundColor: [gradient1, gradient2, gradient3],
@@ -1740,12 +1252,10 @@ if ($db) {
             
             const ctx = canvas.getContext('2d');
             
-            // Dados iniciais vazios - serão preenchidos pela API
-            const initialData = [];
-            const initialLabels = [];
-            
-            // Valor padrão para o eixo Y
-            const yAxisMax = 100;
+            // Dados iniciais
+            const initialData = [120, 190, 80, 150, 200, 380, 320, 280, 180, 220, 160];
+            const maxValue = Math.max(...initialData, 0);
+            const yAxisMax = Math.ceil((maxValue * 1.2) / 100) * 100; // Arredondar para múltiplo de 100
             
             // Create gradient for highlighted bars
             const highlightGradient = ctx.createLinearGradient(0, 0, 0, 200);
@@ -1755,20 +1265,13 @@ if ($db) {
             anomaliesChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: initialLabels,
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov'],
                     datasets: [{
                         data: initialData,
                         backgroundColor: function(context) {
                             const index = context.dataIndex;
-                            const value = context.parsed?.y || 0;
-                            // Destacar barras com valores altos (acima da média)
-                            if (value > 0) {
-                                const avg = initialData.length > 0 
-                                    ? initialData.reduce((a, b) => a + b, 0) / initialData.length 
-                                    : 0;
-                                if (value > avg * 1.5) {
+                            if (index === 5 || index === 6) {
                                 return highlightGradient;
-                                }
                             }
                             return 'rgba(255,255,255,0.05)';
                         },
@@ -2046,19 +1549,12 @@ if ($db) {
             } else {
                 // Tentar reinicializar o gráfico se não existir
                 console.warn('entitiesChart não existe, tentando reinicializar...');
-                try {
                 initEntitiesChart();
-                    // Aguardar um pouco para garantir que o gráfico foi criado
+                if (entitiesChart) {
                     setTimeout(() => {
-                        if (entitiesChart) {
                         entitiesChart.data.datasets[0].data = chartData;
                         entitiesChart.update('active');
-                        } else {
-                            console.error('Falha ao criar entitiesChart após reinicialização');
-                        }
-                    }, 200);
-                } catch (error) {
-                    console.error('Erro ao reinicializar entitiesChart:', error);
+                    }, 100);
                 }
             }
             
@@ -2109,119 +1605,6 @@ if ($db) {
                 `).join('');
             } else {
                 topCountriesContainer.innerHTML = '<p class="text-center py-8 text-zinc-600 text-sm">Nenhum dado disponível</p>';
-            }
-            
-            // Update Anomalies Chart with hourly data
-            const hourlyStats = dashboardData.hourly_stats || {};
-            if (anomaliesChart) {
-                const hours = Object.keys(hourlyStats).sort();
-                const labels = hours.map(h => h + 'h');
-                const data = hours.map(h => hourlyStats[h].blocked || 0);
-                
-                if (data.length > 0) {
-                    anomaliesChart.data.labels = labels;
-                    anomaliesChart.data.datasets[0].data = data;
-                    
-                    // Recalcular max do eixo Y
-                    const maxValue = Math.max(...data, 0);
-                    const yAxisMax = maxValue > 0 ? Math.ceil((maxValue * 1.2) / 100) * 100 : 100;
-                    anomaliesChart.options.scales.y.max = yAxisMax;
-                    anomaliesChart.options.scales.y.ticks.stepSize = Math.max(50, Math.ceil(yAxisMax / 5));
-                    
-                    anomaliesChart.update('active');
-                }
-            }
-            
-            // Update Devices Table with real data
-            const devicesTable = document.getElementById('devices-table');
-            if (devicesTable) {
-                // Buscar IPs únicos das últimas 24h como "dispositivos"
-                const uniqueIPs = new Set();
-                const logsForDevices = dashboardData.event_logs || dashboardData.recent_logs || [];
-                const topIPs = dashboardData.top_blocked_ips || [];
-                
-                // Combinar IPs de logs recentes e top IPs
-                logsForDevices.forEach(log => {
-                    if (log.ip_address) uniqueIPs.add(log.ip_address);
-                });
-                topIPs.forEach(ip => {
-                    if (ip.ip_address) uniqueIPs.add(ip.ip_address);
-                });
-                
-                const devices = Array.from(uniqueIPs).slice(0, 10).map(ip => {
-                    // Encontrar dados do IP nos logs
-                    const ipLogs = logsForDevices.filter(log => log.ip_address === ip);
-                    const topIPData = topIPs.find(tip => tip.ip_address === ip);
-                    
-                    const blockedCount = ipLogs.filter(log => log.action_taken === 'blocked').length;
-                    const totalRequests = ipLogs.length || (topIPData?.block_count || 0);
-                    const threatScore = topIPData?.avg_threat_score || 0;
-                    
-                    // Determinar health baseado em threat score e bloqueios
-                    let health = 'good';
-                    let healthColor = 'text-emerald-400';
-                    if (threatScore >= 70 || blockedCount > 5) {
-                        health = 'critical';
-                        healthColor = 'text-red-400';
-                    } else if (threatScore >= 50 || blockedCount > 0) {
-                        health = 'warning';
-                        healthColor = 'text-amber-400';
-                    }
-                    
-                    return {
-                        ip: ip,
-                        health: health,
-                        healthColor: healthColor,
-                        totalRequests: totalRequests,
-                        blockedCount: blockedCount,
-                        threatScore: threatScore
-                    };
-                });
-                
-                if (devices.length > 0) {
-                    devicesTable.innerHTML = devices.map(device => `
-                        <tr class="table-row">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full ${device.healthColor}"></span>
-                                    <span class="text-xs font-semibold ${device.healthColor} uppercase">${device.health}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <p class="text-sm font-mono text-white">${device.ip}</p>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-xs text-zinc-400">IP Address</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-xs text-zinc-400">Network</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-xs text-zinc-400">-</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-xs ${device.blockedCount > 0 ? 'text-red-400' : 'text-zinc-400'}">${device.blockedCount} bloqueios</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <button class="text-xs text-zinc-400 hover:text-white transition-colors">Ver</button>
-                            </td>
-                        </tr>
-                    `).join('');
-                } else {
-                    devicesTable.innerHTML = `
-                        <tr class="table-row">
-                            <td colspan="7" class="px-6 py-12 text-center text-zinc-500">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
-                                        <i data-lucide="network" class="w-6 h-6"></i>
-                                    </div>
-                                    <p class="text-sm font-medium">Nenhum dispositivo encontrado</p>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }
-                lucide.createIcons();
             }
             
             // Recent logs
@@ -2283,20 +1666,12 @@ if ($db) {
         
         function updateDevicesTable() {
             const topIPs = dashboardData?.top_blocked_ips || [];
-            // Apply filters if any are set
-            if (deviceFilters.health || deviceFilters.type || deviceFilters.packet || deviceFilters.search) {
-                filterDevices();
-                return;
-            }
-            
             const tbody = document.getElementById('devices-table');
-            const cardsContainer = document.getElementById('devices-cards');
             
             if (topIPs.length > 0) {
-                // Desktop Table
                 tbody.innerHTML = topIPs.slice(0, 6).map((ip, index) => {
                     const healthStatus = ip.avg_threat_score > 7 ? 'bad' : ip.avg_threat_score > 4 ? 'moderate' : ip.avg_threat_score > 2 ? 'unavailable' : 'good';
-                    const healthLabel = healthStatus === 'good' ? 'Bom' : healthStatus === 'moderate' ? 'Moderado' : healthStatus === 'bad' ? 'Ruim' : 'Indisponível';
+                    const healthLabel = healthStatus === 'good' ? 'Good' : healthStatus === 'moderate' ? 'Moderate' : healthStatus === 'bad' ? 'Bad' : 'Unavailable';
                     const packetLoss = Math.min(Math.round((ip.avg_threat_score || 0) * 10), 100);
                     const packetColor = packetLoss > 50 ? 'bg-gradient-to-r from-red-500 to-red-600' : packetLoss > 25 ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-white';
                     
@@ -2330,6 +1705,11 @@ if ($db) {
         </div>
                                     <span class="text-sm text-zinc-400 font-medium">${packetLoss}%</span>
     </div>
+                            </td>
+                            <td class="px-6 py-5">
+                                <button class="text-zinc-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
+                                    <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                </button>
                             </td>
                         </tr>
                     `;
@@ -2364,52 +1744,6 @@ if ($db) {
                     }
                 });
                 
-                // Mobile Cards
-                if (cardsContainer) {
-                    cardsContainer.innerHTML = topIPs.slice(0, 6).map((ip, index) => {
-                        const healthStatus = ip.avg_threat_score > 7 ? 'bad' : ip.avg_threat_score > 4 ? 'moderate' : ip.avg_threat_score > 2 ? 'unavailable' : 'good';
-                        const healthLabel = healthStatus === 'good' ? 'Bom' : healthStatus === 'moderate' ? 'Moderado' : healthStatus === 'bad' ? 'Ruim' : 'Indisponível';
-                        const healthColor = healthStatus === 'good' ? 'text-green-400' : healthStatus === 'moderate' ? 'text-amber-400' : healthStatus === 'bad' ? 'text-red-400' : 'text-zinc-400';
-                        const packetLoss = Math.min(Math.round((ip.avg_threat_score || 0) * 10), 100);
-                        const packetColor = packetLoss > 50 ? 'bg-red-500' : packetLoss > 25 ? 'bg-amber-500' : 'bg-white';
-                        
-                        return `
-                            <div class="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <span class="status-dot status-${healthStatus}"></span>
-                                        <span class="text-sm font-medium ${healthColor}">${healthLabel}</span>
-                                    </div>
-                                    <input type="checkbox" class="cursor-pointer">
-                                </div>
-                                <div class="space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Nome</span>
-                                        <span class="text-sm font-mono text-white">${ip.ip_address}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Tipo</span>
-                                        <span class="text-sm text-zinc-400">${ip.threat_types_count || 1} tipos</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Origem</span>
-                                        <span class="text-sm text-zinc-400">${ip.country_code || 'Unknown'}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Packet Loss</span>
-                                        <div class="flex items-center gap-2">
-                                            <div class="packet-bar w-20 h-2">
-                                                <div class="packet-fill ${packetColor} h-full rounded" style="width: ${packetLoss}%"></div>
-                                            </div>
-                                            <span class="text-xs text-zinc-400 font-medium">${packetLoss}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-                
                 lucide.createIcons();
             } else {
                 tbody.innerHTML = `
@@ -2424,255 +1758,9 @@ if ($db) {
                         </td>
                     </tr>
                 `;
-                
-                if (cardsContainer) {
-                    cardsContainer.innerHTML = `
-                        <div class="text-center py-10 text-zinc-500">
-                            <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                                <i data-lucide="server-off" class="w-6 h-6"></i>
-                            </div>
-                            <p class="text-sm font-medium">Nenhum dispositivo encontrado</p>
-                        </div>
-                    `;
-                }
-                
                 lucide.createIcons();
             }
         }
-        
-        // Device filters
-        let deviceFilters = {
-            health: '',
-            type: '',
-            packet: '',
-            search: ''
-        };
-        
-        function applyDeviceFilters() {
-            deviceFilters.health = document.getElementById('filter-health')?.value || '';
-            deviceFilters.type = document.getElementById('filter-type')?.value || '';
-            deviceFilters.packet = document.getElementById('filter-packet')?.value || '';
-            deviceFilters.search = document.getElementById('device-search')?.value || '';
-            
-            filterDevices();
-            
-            // Close modal using Alpine.js
-            const event = new Event('close-filter-modal');
-            document.dispatchEvent(event);
-            
-            // Try to close via Alpine if available
-            if (window.Alpine && window.Alpine.store) {
-                try {
-                    const alpineData = Alpine.$data(document.querySelector('[x-data]'));
-                    if (alpineData) {
-                        alpineData.deviceFilterOpen = false;
-                    }
-                } catch(e) {}
-            }
-        }
-        
-        function clearDeviceFilters() {
-            deviceFilters = {
-                health: '',
-                type: '',
-                packet: '',
-                search: ''
-            };
-            
-            if (document.getElementById('filter-health')) document.getElementById('filter-health').value = '';
-            if (document.getElementById('filter-type')) document.getElementById('filter-type').value = '';
-            if (document.getElementById('filter-packet')) document.getElementById('filter-packet').value = '';
-            if (document.getElementById('device-search')) document.getElementById('device-search').value = '';
-            
-            filterDevices();
-        }
-        
-        function filterDevices() {
-            const topIPs = dashboardData?.top_blocked_ips || [];
-            const tbody = document.getElementById('devices-table');
-            const cardsContainer = document.getElementById('devices-cards');
-            
-            let filtered = topIPs.filter(ip => {
-                // Health filter
-                if (deviceFilters.health) {
-                    const healthStatus = ip.avg_threat_score > 7 ? 'bad' : ip.avg_threat_score > 4 ? 'moderate' : ip.avg_threat_score > 2 ? 'unavailable' : 'good';
-                    if (healthStatus !== deviceFilters.health) return false;
-                }
-                
-                // Type filter
-                if (deviceFilters.type) {
-                    const types = ip.threat_types_count || 1;
-                    if (deviceFilters.type === '1' && types !== 1) return false;
-                    if (deviceFilters.type === '2' && types !== 2) return false;
-                    if (deviceFilters.type === '3' && types < 3) return false;
-                }
-                
-                // Packet Loss filter
-                if (deviceFilters.packet) {
-                    const packetLoss = Math.min(Math.round((ip.avg_threat_score || 0) * 10), 100);
-                    if (deviceFilters.packet === 'low' && packetLoss > 25) return false;
-                    if (deviceFilters.packet === 'medium' && (packetLoss <= 25 || packetLoss > 50)) return false;
-                    if (deviceFilters.packet === 'high' && packetLoss <= 50) return false;
-                }
-                
-                // Search filter
-                if (deviceFilters.search) {
-                    const search = deviceFilters.search.toLowerCase();
-                    if (!ip.ip_address?.toLowerCase().includes(search) && 
-                        !ip.country_code?.toLowerCase().includes(search)) {
-                        return false;
-                    }
-                }
-                
-                return true;
-            });
-            
-            // Update table and cards with filtered results
-            updateDevicesDisplay(filtered);
-        }
-        
-        function updateDevicesDisplay(filteredIPs) {
-            const tbody = document.getElementById('devices-table');
-            const cardsContainer = document.getElementById('devices-cards');
-            
-            if (filteredIPs.length > 0) {
-                // Desktop Table
-                tbody.innerHTML = filteredIPs.slice(0, 6).map((ip, index) => {
-                    const healthStatus = ip.avg_threat_score > 7 ? 'bad' : ip.avg_threat_score > 4 ? 'moderate' : ip.avg_threat_score > 2 ? 'unavailable' : 'good';
-                    const healthLabel = healthStatus === 'good' ? 'Bom' : healthStatus === 'moderate' ? 'Moderado' : healthStatus === 'bad' ? 'Ruim' : 'Indisponível';
-                    const packetLoss = Math.min(Math.round((ip.avg_threat_score || 0) * 10), 100);
-                    const packetColor = packetLoss > 50 ? 'bg-gradient-to-r from-red-500 to-red-600' : packetLoss > 25 ? 'bg-gradient-to-r from-amber-500 to-amber-600' : 'bg-white';
-                    
-                    return `
-                        <tr class="table-row group">
-                            <td class="px-6 py-5">
-                                <div class="flex items-center gap-4">
-                                    <input type="checkbox" class="cursor-pointer">
-                                    <span class="status-dot status-${healthStatus}"></span>
-                                    <span class="text-sm text-white font-medium">${healthLabel}</span>
-                    </div>
-                            </td>
-                            <td class="px-6 py-5">
-                                <span class="text-sm font-mono text-white">${ip.ip_address}</span>
-                            </td>
-                            <td class="px-6 py-5">
-                                <span class="text-sm text-zinc-400">${ip.threat_types_count || 1} tipos</span>
-                            </td>
-                            <td class="px-6 py-5">
-                                <span class="text-sm text-zinc-400">${ip.country_code || 'Unknown'}</span>
-                            </td>
-                            <td class="px-6 py-5">
-                                <div class="sparkline-container">
-                                    <canvas id="sparkline-${index}" width="100" height="35"></canvas>
-            </div>
-                            </td>
-                            <td class="px-6 py-5">
-                                <div class="flex items-center gap-4">
-                                    <div class="packet-bar w-28">
-                                        <div class="packet-fill ${packetColor}" style="width: ${packetLoss}%"></div>
-        </div>
-                                    <span class="text-sm text-zinc-400 font-medium">${packetLoss}%</span>
-    </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-                
-                // Mobile Cards
-                if (cardsContainer) {
-                    cardsContainer.innerHTML = filteredIPs.slice(0, 6).map((ip, index) => {
-                        const healthStatus = ip.avg_threat_score > 7 ? 'bad' : ip.avg_threat_score > 4 ? 'moderate' : ip.avg_threat_score > 2 ? 'unavailable' : 'good';
-                        const healthLabel = healthStatus === 'good' ? 'Bom' : healthStatus === 'moderate' ? 'Moderado' : healthStatus === 'bad' ? 'Ruim' : 'Indisponível';
-                        const healthColor = healthStatus === 'good' ? 'text-green-400' : healthStatus === 'moderate' ? 'text-amber-400' : healthStatus === 'bad' ? 'text-red-400' : 'text-zinc-400';
-                        const packetLoss = Math.min(Math.round((ip.avg_threat_score || 0) * 10), 100);
-                        const packetColor = packetLoss > 50 ? 'bg-red-500' : packetLoss > 25 ? 'bg-amber-500' : 'bg-white';
-                        
-                        return `
-                            <div class="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <span class="status-dot status-${healthStatus}"></span>
-                                        <span class="text-sm font-medium ${healthColor}">${healthLabel}</span>
-                                    </div>
-                                    <input type="checkbox" class="cursor-pointer">
-                                </div>
-                                <div class="space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Nome</span>
-                                        <span class="text-sm font-mono text-white">${ip.ip_address}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Tipo</span>
-                                        <span class="text-sm text-zinc-400">${ip.threat_types_count || 1} tipos</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Origem</span>
-                                        <span class="text-sm text-zinc-400">${ip.country_code || 'Unknown'}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-zinc-500">Packet Loss</span>
-                                        <div class="flex items-center gap-2">
-                                            <div class="packet-bar w-20 h-2">
-                                                <div class="packet-fill ${packetColor} h-full rounded" style="width: ${packetLoss}%"></div>
-                                            </div>
-                                            <span class="text-xs text-zinc-400 font-medium">${packetLoss}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-                
-                lucide.createIcons();
-            } else {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-zinc-500">
-                            <div class="flex flex-col items-center">
-                                <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
-                                    <i data-lucide="search-x" class="w-6 h-6"></i>
-                                </div>
-                                <p class="text-sm font-medium">Nenhum dispositivo encontrado com os filtros aplicados</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                
-                if (cardsContainer) {
-                    cardsContainer.innerHTML = `
-                        <div class="text-center py-10 text-zinc-500">
-                            <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                                <i data-lucide="search-x" class="w-6 h-6"></i>
-                            </div>
-                            <p class="text-sm font-medium">Nenhum dispositivo encontrado com os filtros aplicados</p>
-                        </div>
-                    `;
-                }
-                
-                lucide.createIcons();
-            }
-        }
-        
-        // Search functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('device-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    deviceFilters.search = this.value;
-                    filterDevices();
-                });
-            }
-            
-            // Enter key to search
-            if (searchInput) {
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        applyDeviceFilters();
-                    }
-                });
-            }
-        });
         
         // Period buttons
         document.querySelectorAll('.period-btn').forEach(btn => {
@@ -2688,8 +1776,5 @@ if ($db) {
         // Auto refresh every 3 seconds
         setInterval(fetchDashboardStats, 3000);
     </script>
-    
-    <!-- Security Scripts - Previne download de código -->
-    <script src="includes/security-scripts.js"></script>
 </body>
 </html>

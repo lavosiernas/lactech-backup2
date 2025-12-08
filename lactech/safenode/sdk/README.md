@@ -178,3 +178,5 @@ Para mais informações, consulte a [documentação completa](../docs.php).
 
 Em caso de dúvidas ou problemas, entre em contato através do sistema de ajuda do SafeNode.
 
+
+

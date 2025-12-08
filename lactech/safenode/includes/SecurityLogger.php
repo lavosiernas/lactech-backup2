@@ -7,10 +7,17 @@
 class SecurityLogger {
     private $db;
     private static $countryColumnReady = false;
+    private $structuredLogger;
     
     public function __construct($database) {
         $this->db = $database;
         $this->ensureCountryColumn();
+        
+        // Inicializar structured logger se disponível
+        if (class_exists('StructuredLogger')) {
+            require_once __DIR__ . '/StructuredLogger.php';
+            $this->structuredLogger = new StructuredLogger($database);
+        }
     }
     
     /**
@@ -65,6 +72,20 @@ class SecurityLogger {
             // Atualizar/incorporar em incidente, se for ameaça relevante
             if ($actionTaken === 'blocked' && !empty($threatType)) {
                 $this->updateIncident($ipAddress, $threatType, $threatScore, $siteId);
+            }
+            
+            // Registrar log estruturado também
+            if ($this->structuredLogger) {
+                $level = $threatScore >= 90 ? 'critical' : ($threatScore >= 70 ? 'error' : ($threatScore >= 50 ? 'warning' : 'info'));
+                $this->structuredLogger->log($level, "Security event: $actionTaken", [
+                    'ip_address' => $ipAddress,
+                    'threat_type' => $threatType,
+                    'threat_score' => $threatScore,
+                    'action_taken' => $actionTaken,
+                    'request_uri' => $requestUri,
+                    'response_time' => $responseTime,
+                    'site_id' => $siteId
+                ]);
             }
 
             return $logId;

@@ -162,3 +162,5 @@ class SafeNodeHV:
         """Obtém o token atual"""
         return self.token
 
+
+

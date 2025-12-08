@@ -6,19 +6,30 @@
 
 class IPBlocker {
     private $db;
+    private $cache;
     
     public function __construct($database) {
         $this->db = $database;
+        require_once __DIR__ . '/CacheManager.php';
+        $this->cache = CacheManager::getInstance();
     }
     
     /**
-     * Verifica se um IP está bloqueado
+     * Verifica se um IP está bloqueado (COM CACHE)
      */
     public function isBlocked($ipAddress) {
         if (!$this->db) return false;
         
+        // Verificar cache primeiro
+        $cacheKey = "blocked_ip:$ipAddress";
+        $cached = $this->cache->get($cacheKey);
+        
+        if ($cached !== null) {
+            return (bool)$cached;
+        }
+        
+        // Se não está no cache, buscar no banco
         try {
-            // Verificar na blacklist
             $stmt = $this->db->prepare("
                 SELECT * FROM safenode_blocked_ips 
                 WHERE ip_address = ? 
@@ -27,11 +38,12 @@ class IPBlocker {
             ");
             $stmt->execute([$ipAddress]);
             
-            if ($stmt->fetch()) {
-                return true;
-            }
+            $isBlocked = (bool)$stmt->fetch();
             
-            return false;
+            // Salvar no cache (TTL de 5 minutos)
+            $this->cache->set($cacheKey, $isBlocked, CacheManager::TTL_BLOCKED_IPS);
+            
+            return $isBlocked;
         } catch (PDOException $e) {
             error_log("SafeNode IPBlocker Error: " . $e->getMessage());
             return false;
@@ -39,11 +51,20 @@ class IPBlocker {
     }
     
     /**
-     * Verifica se um IP está na whitelist
+     * Verifica se um IP está na whitelist (COM CACHE)
      */
     public function isWhitelisted($ipAddress) {
         if (!$this->db) return false;
         
+        // Verificar cache primeiro
+        $cacheKey = "whitelist_ip:$ipAddress";
+        $cached = $this->cache->get($cacheKey);
+        
+        if ($cached !== null) {
+            return (bool)$cached;
+        }
+        
+        // Se não está no cache, buscar no banco
         try {
             $stmt = $this->db->prepare("
                 SELECT * FROM safenode_whitelist 
@@ -52,7 +73,12 @@ class IPBlocker {
             ");
             $stmt->execute([$ipAddress]);
             
-            return (bool)$stmt->fetch();
+            $isWhitelisted = (bool)$stmt->fetch();
+            
+            // Salvar no cache (TTL de 30 minutos - whitelist muda raramente)
+            $this->cache->set($cacheKey, $isWhitelisted, CacheManager::TTL_SITE_CONFIG);
+            
+            return $isWhitelisted;
         } catch (PDOException $e) {
             error_log("SafeNode IPBlocker Whitelist Error: " . $e->getMessage());
             return false;
@@ -109,6 +135,9 @@ class IPBlocker {
                 ]);
             }
             
+            // Invalidar cache
+            $this->cache->delete("blocked_ip:$ipAddress");
+            
             return true;
         } catch (PDOException $e) {
             error_log("SafeNode IPBlocker Block Error: " . $e->getMessage());
@@ -129,6 +158,9 @@ class IPBlocker {
                 WHERE ip_address = ?
             ");
             $stmt->execute([$ipAddress]);
+            
+            // Invalidar cache
+            $this->cache->delete("blocked_ip:$ipAddress");
             
             return true;
         } catch (PDOException $e) {

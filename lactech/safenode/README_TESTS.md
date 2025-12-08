@@ -124,3 +124,5 @@ Os testes são executados automaticamente no GitHub Actions quando:
 
 Veja `.github/workflows/ci.yml` para mais detalhes.
 
+
+

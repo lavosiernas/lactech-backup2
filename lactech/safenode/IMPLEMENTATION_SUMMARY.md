@@ -174,3 +174,5 @@ Para dúvidas sobre:
 - **Refatoração**: Ver `REFACTORING_GUIDE.md`
 - **CI/CD**: Ver `.github/workflows/ci.yml`
 
+
+

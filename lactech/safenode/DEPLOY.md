@@ -128,3 +128,5 @@ Em caso de problemas:
 3. Verifique se o Composer está instalado
 4. Verifique se as extensões PHP estão habilitadas
 
+
+

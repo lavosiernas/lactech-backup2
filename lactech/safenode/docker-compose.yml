@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  safenode:
+    build: .
+    container_name: safenode-app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./logs:/var/www/html/logs
+      - ./backups:/var/www/html/backups
+    environment:
+      - SAFENODE_DB_HOST=mysql
+      - SAFENODE_DB_NAME=safend
+      - SAFENODE_DB_USER=safenode
+      - SAFENODE_DB_PASS=safenode_password
+      - REDIS_HOST=redis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - safenode-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: safenode-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=safend
+      - MYSQL_USER=safenode
+      - MYSQL_PASSWORD=safenode_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - safenode-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: safenode-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - safenode-network
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  safenode-network:
+    driver: bridge
+
+

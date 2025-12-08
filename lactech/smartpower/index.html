@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Power - Energético Personalizado</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: #050508;
+      overflow-x: hidden;
+      color: #ffffff;
+    }
+
+    /* Premium typography and color system */
+    :root {
+      --bg: #050508;
+      --bg-elevated: #0c0c10;
+      --bg-card: #111116;
+      --border: #1a1a22;
+      --text-primary: #ffffff;
+      --text-secondary: #8a8a96;
+      --accent: #00d4ff;
+      --accent-glow: #00d4ff;
+    }
+
+    /* Scroll progress bar */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #00d4ff, #00a8cc);
+      width: 0%;
+      z-index: 100;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+    }
+
+    /* Advanced parallax with momentum */
+    .parallax {
+      will-change: transform;
+      transform: translateZ(0);
+    }
+
+    .parallax-slow {
+      animation: parallaxScroll 0.1s linear;
+    }
+
+    /* Magnetic cursor effect for interactive elements */
+    .magnetic {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .magnetic:hover {
+      transform: scale(1.02);
+    }
+
+    /* Smooth reveal animations with stagger */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    .reveal.visible {
+      animation: revealUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes revealUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+
+    /* Floating animation with rotation */
+    .float {
+      animation: floatAnim 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    }
+
+    @keyframes floatAnim {
+      0%, 100% { transform: translateY(0px) rotateZ(0deg); }
+      25% { transform: translateY(-30px) rotateZ(1deg); }
+      50% { transform: translateY(-15px) rotateZ(-1deg); }
+      75% { transform: translateY(-25px) rotateZ(0.5deg); }
+    }
+
+    /* Glow pulse effect */
+    .glow-pulse {
+      position: relative;
+      filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.3));
+      animation: glowPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.2)); }
+      50% { filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.5)); }
+    }
+
+    /* Glassmorphism effect */
+    .glass {
+      background: rgba(12, 12, 16, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Gradient text animation */
+    .gradient-text {
+      background: linear-gradient(135deg, #00d4ff, #ffffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(20deg); }
+    }
+
+    /* Marquee text animation */
+    .marquee {
+      display: flex;
+      gap: 2rem;
+      animation: marqueeScroll 30s linear infinite;
+    }
+
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Button shimmer effect */
+    .btn-shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* Card hover with border glow */
+    .card-premium {
+      position: relative;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      background: rgba(17, 17, 22, 0.5);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-premium::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s;
+      z-index: -1;
+    }
+
+    .card-premium:hover::before {
+      opacity: 1;
+    }
+
+    .card-premium:hover {
+      transform: translateY(-12px);
+      border-color: rgba(0, 212, 255, 0.6);
+      box-shadow: 0 20px 40px rgba(0, 212, 255, 0.15);
+    }
+
+    /* Navbar auto-hide on scroll */
+    nav {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    nav.hidden {
+      transform: translateY(-100%);
+    }
+
+    /* Scroll indicator bounce */
+    .scroll-indicator {
+      animation: bounceIcon 2s ease-in-out infinite;
+    }
+
+    @keyframes bounceIcon {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+    }
+
+    /* Split heading animation */
+    .split-heading {
+      overflow: hidden;
+    }
+
+    .split-heading span {
+      display: inline-block;
+      animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive grid adjustments */
+    @media (max-width: 768px) {
+      .marquee { gap: 1rem; }
+      .reveal { transform: translateY(20px); }
+    }
+
+    /* Line accent animation */
+    .line-accent::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 2px;
+      background: #00d4ff;
+      margin-top: 1.5rem;
+      transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s;
+    }
+
+    .line-accent.visible::after {
+      width: 60px;
+    }
+
+    /* Image reveal mask animation */
+    .img-reveal {
+      overflow: hidden;
+    }
+
+    .img-reveal img {
+      animation: imageReveal 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes imageReveal {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Counter animation */
+    .counter {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Text shadow for depth */
+    .text-glow {
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Scroll progress bar -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <!-- Navigation with glassmorphism -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 glass border-b border-border">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="flex justify-between items-center h-20">
+        <a href="#" class="font-display text-2xl font-semibold tracking-tight magnetic text-white">
+          Smart<span class="text-accent">Power</span>
+        </a>
+        <div class="hidden md:flex items-center gap-12">
+          <a href="#sobre" class="text-text-secondary hover:text-accent transition text-sm tracking-wide">Sobre</a>
+          <a href="#servicos" class="text-text-secondary hover:text-accent transition text-sm tracking-wide">Serviços</a>
+          <a href="#portfolio" class="text-text-secondary hover:text-accent transition text-sm tracking-wide">Portfolio</a>
+        </div>
+        <a href="https://wa.me/5508009190011" target="_blank" class="btn-shimmer bg-accent hover:bg-blue-500 text-bg px-6 py-2.5 text-sm font-semibold tracking-wide transition magnetic rounded-full">
+          Contato
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero section with advanced animations -->
+  <section class="min-h-screen flex flex-col justify-center relative pt-20 overflow-hidden">
+    <!-- Animated background gradient -->
+    <div class="absolute inset-0 opacity-20">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-accent rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 py-20 relative z-10">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <p class="reveal text-text-secondary text-xs tracking-[0.3em] uppercase mb-6 stagger-1">Energético Premium</p>
+          
+          <h1 class="split-heading font-display text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.1] mb-8">
+            <span>Sua marca em</span>
+            <br>
+            <span class="gradient-text italic">cada lata</span>
+          </h1>
+          
+          <p class="reveal text-text-secondary text-lg leading-relaxed max-w-lg mb-10 stagger-2">
+            Energéticos personalizados que transformam eventos em experiências memoráveis. Da concepção à entrega, com qualidade premium e design exclusivo.
+          </p>
+          
+          <div class="reveal flex flex-col sm:flex-row gap-4 stagger-3">
+            <a href="https://wa.me/5508009190011" target="_blank" class="btn-shimmer bg-white text-bg px-8 py-4 font-semibold tracking-wide text-center hover:bg-gray-100 transition magnetic rounded-lg">
+              Solicitar Orçamento
+            </a>
+            <a href="https://instagram.com/smartpowerenergydrink" target="_blank" class="border border-accent/50 hover:border-accent px-8 py-4 text-accent font-semibold tracking-wide text-center transition magnetic rounded-lg">
+              Ver Instagram
+            </a>
+          </div>
+        </div>
+
+        <!-- Floating product with advanced effects -->
+        <div class="relative flex justify-center lg:justify-end reveal stagger-4">
+          <div class="relative">
+            <div class="glow-pulse absolute inset-0 bg-accent/30 blur-3xl rounded-full scale-125"></div>
+            <div class="float relative z-10">
+              <img 
+                src="/placeholder.svg?height=600&width=280" 
+                alt="Smart Power Energy Drink" 
+                class="w-56 md:w-80 drop-shadow-2xl"
+              >
+            </div>
+            <!-- Orbiting elements -->
+            <div class="absolute inset-0 animate-spin" style="animation-duration: 20s;">
+              <div class="absolute top-0 left-1/2 w-3 h-3 bg-accent rounded-full shadow-lg shadow-accent/50 -translate-x-1/2"></div>
+            </div>
+            <div class="absolute inset-0 animate-spin" style="animation-duration: 15s; animation-direction: reverse;">
+              <div class="absolute bottom-20 right-0 w-2 h-2 bg-white rounded-full shadow-lg -translate-y-1/2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll indicator with animation -->
+      <div class="absolute bottom-12 left-1/2 -translate-x-1/2 z-20">
+        <div class="flex flex-col items-center gap-3">
+          <span class="text-text-secondary text-xs tracking-[0.3em] uppercase">Scroll</span>
+          <svg class="scroll-indicator w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Marquee section with scrolling text -->
+  <section class="py-12 border-y border-border bg-bg-elevated/50 overflow-hidden">
+    <div class="marquee text-4xl md:text-6xl font-display font-bold whitespace-nowrap">
+      <span class="text-text-muted/20">SMART POWER</span>
+      <span class="text-accent/30">ENERGIA PERSONALIZADA</span>
+      <span class="text-text-muted/20">EXCLUSIVO</span>
+      <span class="text-accent/30">PREMIUM QUALITY</span>
+      <span class="text-text-muted/20">SMART POWER</span>
+      <span class="text-accent/30">ENERGIA PERSONALIZADA</span>
+      <span class="text-text-muted/20">EXCLUSIVO</span>
+      <span class="text-accent/30">PREMIUM QUALITY</span>
+    </div>
+  </section>
+
+  <!-- Stats section with counter animations -->
+  <section class="border-b border-border relative">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-2 md:grid-cols-4">
+        <div class="reveal stagger-1 p-8 lg:p-12 border-r border-border hover:bg-bg-elevated/50 transition">
+          <p class="font-display text-5xl lg:text-6xl text-accent mb-2 counter" data-target="19900">0</p>
+          <p class="text-text-secondary text-sm tracking-wide">Seguidores</p>
+        </div>
+        <div class="reveal stagger-2 p-8 lg:p-12 md:border-r border-border hover:bg-bg-elevated/50 transition">
+          <p class="font-display text-5xl lg:text-6xl text-white mb-2"><span class="counter" data-target="201">0</span>+</p>
+          <p class="text-text-secondary text-sm tracking-wide">Projetos</p>
+        </div>
+        <div class="reveal stagger-3 p-8 lg:p-12 border-r border-t md:border-t-0 border-border hover:bg-bg-elevated/50 transition">
+          <p class="font-display text-5xl lg:text-6xl text-white mb-2"><span class="counter" data-target="5">0</span>+</p>
+          <p class="text-text-secondary text-sm tracking-wide">Anos de Experiência</p>
+        </div>
+        <div class="reveal stagger-4 p-8 lg:p-12 border-t md:border-t-0 border-border hover:bg-bg-elevated/50 transition">
+          <p class="font-display text-5xl lg:text-6xl text-accent mb-2">0800</p>
+          <p class="text-text-secondary text-sm tracking-wide">Ligação Gratuita</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About section with advanced layout -->
+  <section id="sobre" class="py-32 relative">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="grid lg:grid-cols-2 gap-20">
+        <div>
+          <p class="reveal text-text-secondary text-xs tracking-[0.3em] uppercase mb-6 stagger-1">Sobre Nós</p>
+          <h2 class="reveal line-accent font-display text-5xl lg:text-6xl font-semibold leading-tight mb-12 stagger-2">
+            Energia que representa sua marca
+          </h2>
+          <a href="https://wa.me/5508009190011" target="_blank" class="reveal btn-shimmer inline-block bg-accent text-bg px-8 py-4 font-semibold tracking-wide hover:bg-blue-500 transition magnetic rounded-lg stagger-3">
+            Começar Projeto
+          </a>
+        </div>
+        <div class="flex flex-col justify-center gap-8">
+          <p class="reveal text-text-secondary text-lg leading-relaxed stagger-2">
+            A Smart Power é especializada em criar energéticos personalizados de alta qualidade. Cada lata é uma oportunidade de fortalecer sua marca e criar conexões genuínas com seu público.
+          </p>
+          <p class="reveal text-text-secondary text-lg leading-relaxed stagger-3">
+            Trabalhamos com eventos corporativos, festas, casamentos, lançamentos de produtos e qualquer ocasião que mereça um toque especial de energia e exclusividade. Nossa equipe expert garante qualidade em cada detalhe.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services section with card grid -->
+  <section id="servicos" class="py-32 bg-bg-elevated relative overflow-hidden">
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-accent/5 to-transparent pointer-events-none"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+      <div class="text-center mb-20">
+        <p class="reveal text-text-secondary text-xs tracking-[0.3em] uppercase mb-4 stagger-1">Serviços</p>
+        <h2 class="reveal font-display text-5xl lg:text-6xl font-semibold stagger-2">O que oferecemos</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="reveal stagger-1 card-premium p-8 group rounded-xl">
+          <div class="w-12 h-12 border border-accent/30 group-hover:border-accent flex items-center justify-center mb-6 transition-all duration-500 group-hover:rotate-12 rounded-lg group-hover:bg-accent/10">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Design Exclusivo</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">Criamos rótulos personalizados com sua identidade visual única e mensagem impactante.</p>
+        </div>
+
+        <div class="reveal stagger-2 card-premium p-8 group rounded-xl">
+          <div class="w-12 h-12 border border-accent/30 group-hover:border-accent flex items-center justify-center mb-6 transition-all duration-500 group-hover:rotate-12 rounded-lg group-hover:bg-accent/10">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Qualidade Premium</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">Fórmula de alta qualidade com taurina, cafeína e vitaminas para máximo desempenho.</p>
+        </div>
+
+        <div class="reveal stagger-3 card-premium p-8 group rounded-xl">
+          <div class="w-12 h-12 border border-accent/30 group-hover:border-accent flex items-center justify-center mb-6 transition-all duration-500 group-hover:rotate-12 rounded-lg group-hover:bg-accent/10">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Produção Rápida</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">Processo ágil e eficiente para atender seus prazos sem comprometer a qualidade.</p>
+        </div>
+
+        <div class="reveal stagger-4 card-premium p-8 group rounded-xl">
+          <div class="w-12 h-12 border border-accent/30 group-hover:border-accent flex items-center justify-center mb-6 transition-all duration-500 group-hover:rotate-12 rounded-lg group-hover:bg-accent/10">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Entrega Nacional</h3>
+          <p class="text-text-secondary text-sm leading-relaxed">Enviamos para todo o Brasil com segurança, rastreamento e embalagem premium.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio section with image grid -->
+  <section id="portfolio" class="py-32 relative">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-20">
+        <div>
+          <p class="reveal text-text-secondary text-xs tracking-[0.3em] uppercase mb-4 stagger-1">Portfolio</p>
+          <h2 class="reveal font-display text-5xl lg:text-6xl font-semibold stagger-2">Projetos Recentes</h2>
+        </div>
+        <a href="https://instagram.com/smartpowerenergydrink" target="_blank" class="reveal text-accent hover:text-blue-500 transition text-sm tracking-wide flex items-center gap-2 magnetic stagger-3">
+          Ver todos →
+        </a>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="reveal stagger-1 overflow-hidden rounded-xl group cursor-pointer">
+          <img src="/placeholder.svg?height=400&width=300" alt="Projeto 1" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+          <div class="bg-bg-card p-4 border-t border-border">
+            <h3 class="font-semibold">Evento Corporativo</h3>
+          </div>
+        </div>
+
+        <div class="reveal stagger-2 overflow-hidden rounded-xl group cursor-pointer">
+          <img src="/placeholder.svg?height=400&width=300" alt="Projeto 2" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+          <div class="bg-bg-card p-4 border-t border-border">
+            <h3 class="font-semibold">Casamento Exclusivo</h3>
+          </div>
+        </div>
+
+        <div class="reveal stagger-3 overflow-hidden rounded-xl group cursor-pointer">
+          <img src="/placeholder.svg?height=400&width=300" alt="Projeto 3" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+          <div class="bg-bg-card p-4 border-t border-border">
+            <h3 class="font-semibold">Festa Particular</h3>
+          </div>
+        </div>
+
+        <div class="reveal stagger-4 overflow-hidden rounded-xl group cursor-pointer">
+          <img src="/placeholder.svg?height=400&width=300" alt="Projeto 4" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+          <div class="bg-bg-card p-4 border-t border-border">
+            <h3 class="font-semibold">Lançamento Produto</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA section with glassmorphism -->
+  <section class="py-32 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-30">
+      <div class="absolute -top-40 -right-40 w-96 h-96 bg-accent rounded-full mix-blend-screen filter blur-3xl"></div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 lg:px-12 relative z-10 text-center">
+      <p class="reveal text-text-secondary text-xs tracking-[0.3em] uppercase mb-6 stagger-1">Comece Agora</p>
+      <h2 class="reveal font-display text-5xl lg:text-6xl font-semibold mb-8 stagger-2">Pronto para elevar sua marca?</h2>
+      <p class="reveal text-text-secondary text-lg max-w-2xl mx-auto mb-12 stagger-3">
+        Entre em contato conosco hoje mesmo e descubra como podemos transformar seu evento com energéticos personalizados de qualidade premium.
+      </p>
+      
+      <div class="reveal flex flex-col sm:flex-row gap-4 justify-center stagger-4">
+        <a href="https://wa.me/5508009190011" target="_blank" class="btn-shimmer bg-accent text-bg px-8 py-4 font-semibold tracking-wide hover:bg-blue-500 transition magnetic rounded-lg">
+          Chamar no WhatsApp
+        </a>
+        <a href="tel:0800" class="border border-accent/50 hover:border-accent px-8 py-4 text-accent font-semibold tracking-wide transition magnetic rounded-lg">
+          Ligar: 0800
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer with glassmorphism -->
+  <footer class="border-t border-border bg-bg-elevated/50 py-12">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="grid md:grid-cols-3 gap-12 mb-12">
+        <div>
+          <a href="#" class="font-display text-2xl font-semibold mb-4 block">
+            Smart<span class="text-accent">Power</span>
+          </a>
+          <p class="text-text-secondary text-sm">Energéticos personalizados para suas ocasiões especiais.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Links</h4>
+          <ul class="space-y-2 text-sm text-text-secondary">
+            <li><a href="#sobre" class="hover:text-accent transition">Sobre</a></li>
+            <li><a href="#servicos" class="hover:text-accent transition">Serviços</a></li>
+            <li><a href="#portfolio" class="hover:text-accent transition">Portfolio</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4">Contato</h4>
+          <p class="text-sm text-text-secondary mb-2">
+            <a href="https://wa.me/5508009190011" class="hover:text-accent transition">WhatsApp: (55) 0800-9190011</a>
+          </p>
+          <p class="text-sm text-text-secondary">
+            <a href="https://instagram.com/smartpowerenergydrink" class="hover:text-accent transition">Instagram: @smartpowerenergydrink</a>
+          </p>
+        </div>
+      </div>
+      <div class="border-t border-border pt-8 text-center text-text-secondary text-sm">
+        <p>© 2025 Smart Power Energy Drink. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const scrollProgress = document.getElementById('scrollProgress');
+    window.addEventListener('scroll', () => {
+      const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      scrollProgress.style.width = scrolled + '%';
+    });
+
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    document.querySelectorAll('.line-accent').forEach(el => observer.observe(el));
+
+    const counters = document.querySelectorAll('.counter');
+    const speed = 200;
+
+    const runCounter = (counter) => {
+      const target = +counter.getAttribute('data-target');
+      const increment = target / speed;
+
+      const updateCount = () => {
+        const count = +counter.innerText;
+        if (count < target) {
+          counter.innerText = Math.ceil(count + increment);
+          setTimeout(updateCount, 10);
+        } else {
+          counter.innerText = target;
+        }
+      };
+      updateCount();
+    };
+
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
+          entry.target.classList.add('counted');
+          runCounter(entry.target);
+        }
+      });
+    });
+
+    counters.forEach(counter => counterObserver.observe(counter));
+
+    let lastScrollTop = 0;
+    const navbar = document.getElementById('navbar');
+
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > lastScrollTop && scrollTop > 80) {
+        navbar.classList.add('hidden');
+      } else {
+        navbar.classList.remove('hidden');
+      }
+      lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    });
+
+    document.querySelectorAll('.magnetic').forEach(element => {
+      element.addEventListener('mousemove', (e) => {
+        const rect = element.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        element.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px) scale(1.02)`;
+      });
+
+      element.addEventListener('mouseleave', () => {
+        element.style.transform = 'translate(0, 0) scale(1)';
+      });
+    });
+
+    const splitHeadings = document.querySelectorAll('.split-heading');
+    splitHeadings.forEach(heading => {
+      const spans = heading.querySelectorAll('span');
+      spans.forEach((span, index) => {
+        span.style.animationDelay = (index * 0.15) + 's';
+      });
+    });
+
+    const parallaxElements = document.querySelectorAll('.parallax');
+    window.addEventListener('scroll', () => {
+      parallaxElements.forEach(element => {
+        const scrollPosition = window.pageYOffset;
+        const elementOffset = element.offsetTop;
+        const distance = scrollPosition - elementOffset;
+        element.style.transform = `translateY(${distance * 0.5}px)`;
+      });
+    });
+  </script>
+</body>
+</html>

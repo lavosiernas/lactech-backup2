@@ -7,9 +7,12 @@
 
 class IPReputationManager {
     private $db;
+    private $cache;
     
     public function __construct($database) {
         $this->db = $database;
+        require_once __DIR__ . '/CacheManager.php';
+        $this->cache = CacheManager::getInstance();
         $this->ensureTableExists();
     }
     
@@ -190,6 +193,11 @@ class IPReputationManager {
                 $ipAddress
             ]);
             
+            // Invalidar cache de reputação
+            $this->cache->delete("ip_reputation:trust_score:$ipAddress");
+            $this->cache->delete("ip_reputation:whitelist:$ipAddress");
+            $this->cache->delete("ip_reputation:blacklist:$ipAddress");
+            
             return true;
         } catch (PDOException $e) {
             error_log("SafeNode IPReputationManager Update Error: " . $e->getMessage());
@@ -250,19 +258,42 @@ class IPReputationManager {
     }
     
     /**
-     * Obtém trust_score de um IP
+     * Obtém trust_score de um IP (COM CACHE)
      */
     public function getTrustScore($ipAddress) {
+        // Verificar cache primeiro
+        $cacheKey = "ip_reputation:trust_score:$ipAddress";
+        $cached = $this->cache->get($cacheKey);
+        
+        if ($cached !== null) {
+            return (int)$cached;
+        }
+        
+        // Se não está no cache, buscar no banco
         $record = $this->getOrCreate($ipAddress);
-        return $record ? (int)$record['trust_score'] : 50; // Default neutro
+        $trustScore = $record ? (int)$record['trust_score'] : 50; // Default neutro
+        
+        // Salvar no cache (TTL de 15 minutos)
+        $this->cache->set($cacheKey, $trustScore, CacheManager::TTL_IP_REPUTATION);
+        
+        return $trustScore;
     }
     
     /**
-     * Verifica se IP está na whitelist
+     * Verifica se IP está na whitelist (COM CACHE)
      */
     public function isWhitelisted($ipAddress) {
         if (!$this->db) return false;
         
+        // Verificar cache primeiro
+        $cacheKey = "ip_reputation:whitelist:$ipAddress";
+        $cached = $this->cache->get($cacheKey);
+        
+        if ($cached !== null) {
+            return (bool)$cached;
+        }
+        
+        // Se não está no cache, buscar no banco
         try {
             $stmt = $this->db->prepare("
                 SELECT is_whitelisted FROM safenode_ip_reputation 
@@ -270,18 +301,32 @@ class IPReputationManager {
             ");
             $stmt->execute([$ipAddress]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result && (bool)$result['is_whitelisted'];
+            $isWhitelisted = $result && (bool)$result['is_whitelisted'];
+            
+            // Salvar no cache
+            $this->cache->set($cacheKey, $isWhitelisted, CacheManager::TTL_IP_REPUTATION);
+            
+            return $isWhitelisted;
         } catch (PDOException $e) {
             return false;
         }
     }
     
     /**
-     * Verifica se IP está na blacklist
+     * Verifica se IP está na blacklist (COM CACHE)
      */
     public function isBlacklisted($ipAddress) {
         if (!$this->db) return false;
         
+        // Verificar cache primeiro
+        $cacheKey = "ip_reputation:blacklist:$ipAddress";
+        $cached = $this->cache->get($cacheKey);
+        
+        if ($cached !== null) {
+            return (bool)$cached;
+        }
+        
+        // Se não está no cache, buscar no banco
         try {
             $stmt = $this->db->prepare("
                 SELECT is_blacklisted FROM safenode_ip_reputation 
@@ -289,7 +334,12 @@ class IPReputationManager {
             ");
             $stmt->execute([$ipAddress]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result && (bool)$result['is_blacklisted'];
+            $isBlacklisted = $result && (bool)$result['is_blacklisted'];
+            
+            // Salvar no cache
+            $this->cache->set($cacheKey, $isBlacklisted, CacheManager::TTL_IP_REPUTATION);
+            
+            return $isBlacklisted;
         } catch (PDOException $e) {
             return false;
         }

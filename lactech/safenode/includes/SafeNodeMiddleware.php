@@ -60,14 +60,24 @@ class SafeNodeMiddleware {
         require_once __DIR__ . '/BrowserIntegrity.php';
         require_once __DIR__ . '/IPReputationManager.php'; // Sistema de reputação próprio
         require_once __DIR__ . '/BehaviorAnalyzer.php'; // Análise comportamental
+        require_once __DIR__ . '/LogQueue.php'; // Fila de logs assíncrona
+        require_once __DIR__ . '/AdvancedHoneypot.php'; // Honeypots avançados
+        require_once __DIR__ . '/QuarantineSystem.php'; // Sistema de quarentena
+        require_once __DIR__ . '/AlertSystem.php'; // Sistema de alertas
+        require_once __DIR__ . '/AdvancedWAF.php'; // WAF Avançado
         
         $ipBlocker = new IPBlocker(self::$db);
+        $advancedWAF = new AdvancedWAF(self::$db); // WAF Avançado
         $rateLimiter = new RateLimiter(self::$db);
         $threatDetector = new ThreatDetector(self::$db);
         $logger = new SecurityLogger(self::$db);
         $browserIntegrity = new BrowserIntegrity(self::$db);
         $ipReputation = new IPReputationManager(self::$db); // Gerenciador de reputação
         $behaviorAnalyzer = new BehaviorAnalyzer(self::$db); // Analisador comportamental
+        $logQueue = new LogQueue(self::$db); // Fila de logs assíncrona
+        $honeypot = new AdvancedHoneypot(self::$db); // Honeypots avançados
+        $quarantine = new QuarantineSystem(self::$db); // Sistema de quarentena
+        $alertSystem = new AlertSystem(self::$db); // Sistema de alertas
         
         // 0. Security Headers (Blindagem do Cliente)
         self::sendSecurityHeaders();
@@ -116,6 +126,35 @@ class SafeNodeMiddleware {
             return;
         }
         
+        // 1.5. Verificar regras WAF avançadas (ANTES de verificar IP bloqueado)
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+        $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $wafResult = $advancedWAF->evaluate(
+            $ipAddress,
+            $requestUri,
+            $requestMethod,
+            getallheaders(),
+            file_get_contents('php://input')
+        );
+        
+        if ($wafResult['matched']) {
+            $wafSeverity = $wafResult['severity'] ?? 50;
+            
+            if ($wafResult['action'] === 'block' || $wafSeverity >= 70) {
+                $ipBlocker->blockIP($ipAddress, $wafResult['message'], 'waf_rule', 3600);
+                $logger->log($ipAddress, $requestUri, $requestMethod, 'blocked', 'waf_rule', $wafSeverity, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+                self::blockRequest($wafResult['message'], 'waf_rule');
+            } elseif ($wafResult['action'] === 'challenge') {
+                require_once __DIR__ . '/DynamicChallenge.php';
+                $challenge = new DynamicChallenge(self::$db);
+                $challengeData = $challenge->generateChallenge($wafSeverity);
+                $logger->log($ipAddress, $requestUri, $requestMethod, 'challenged', 'waf_rule', $wafSeverity, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+                self::blockRequest("Verificação de segurança necessária", 'waf_challenge');
+            } else {
+                $logger->log($ipAddress, $requestUri, $requestMethod, 'allowed', 'waf_rule', $wafSeverity, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+            }
+        }
+        
         // 2. Verificar se IP está bloqueado
         if ($ipBlocker->isBlocked($ipAddress)) {
             $logger->log($ipAddress, $_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET', 'blocked', 'ip_blocked', 100, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
@@ -136,8 +175,17 @@ class SafeNodeMiddleware {
             self::blockRequest("Muitas requisições. Tente novamente mais tarde.", 'rate_limit');
         }
         
-        // 5. Honeypots de rota: URLs isca comuns
+        // 5. Honeypots avançados: verificar acesso a honeypots dinâmicos
         $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+        $honeypotAccess = $honeypot->checkHoneypotAccess($requestUri, $ipAddress);
+        if ($honeypotAccess) {
+            // Bot detectado via honeypot - bloquear imediatamente
+            $ipBlocker->blockIP($ipAddress, "Bot detectado via honeypot", 'honeypot_bot', 86400);
+            $logger->log($ipAddress, $requestUri, $_SERVER['REQUEST_METHOD'] ?? 'GET', 'blocked', 'honeypot_bot', 100, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+            self::blockRequest("Acesso negado por segurança.", 'honeypot_bot');
+        }
+        
+        // 5.1 Honeypots de rota: URLs isca comuns (mantido para compatibilidade)
         $lowerUri   = strtolower(parse_url($requestUri, PHP_URL_PATH) ?? '/');
         $honeypotPaths = [
             '/wp-admin', '/wp-login.php', '/xmlrpc.php',
@@ -229,29 +277,103 @@ class SafeNodeMiddleware {
         }
         $adjustedThreshold = max(40, min(90, $adjustedThreshold)); // Limitar entre 40-90
         
+        // Verificar se IP está em quarentena
+        $quarantineData = $quarantine->isInQuarantine($ipAddress);
+        if ($quarantineData) {
+            // Processar requisição de IP em quarentena
+            $quarantineResult = $quarantine->processQuarantinedRequest($ipAddress, [
+                'request_uri' => $requestUri,
+                'threat_score' => $threatScore,
+                'threat_type' => $threatAnalysis['threat_type'] ?? null
+            ]);
+            
+            if ($quarantineResult['action'] === 'block') {
+                // Confirmado malicioso - já foi bloqueado pelo sistema de quarentena
+                $logger->log($ipAddress, $requestUri, $requestMethod, 'blocked', $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry, $confidenceScore);
+                self::blockRequest("Acesso negado por segurança", $threatAnalysis['threat_type'] ?? 'unknown');
+            } elseif ($quarantineResult['action'] === 'challenge') {
+                // Aplicar challenge baseado no nível
+                require_once __DIR__ . '/DynamicChallenge.php';
+                $challenge = new DynamicChallenge(self::$db);
+                $challengeData = $challenge->generateChallenge($quarantineResult['challenge_level']);
+                // Challenge será aplicado na resposta (implementar no blockRequest ou retornar challenge)
+                $logger->log($ipAddress, $requestUri, $requestMethod, 'challenged', $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry, $confidenceScore);
+                // Por enquanto, bloquear com mensagem de challenge
+                self::blockRequest("Verificação de segurança necessária", 'quarantine_challenge');
+            }
+            // Se action === 'allow', continuar normalmente
+        }
+        
         if ($threatAnalysis['is_threat'] && $threatScore >= $adjustedThreshold) {
-            // Bloquear IP com duração proporcional à gravidade e ao nível de segurança
-            $blockDuration = $threatScore >= $criticalThreshold ? 86400 : 3600; // 24h ou 1h
-            $ipBlocker->blockIP($ipAddress, "Ameaça detectada: " . ($threatAnalysis['threat_type'] ?? 'unknown'), $threatAnalysis['threat_type'] ?? 'unknown', $blockDuration);
-            
-            // Enviar para Cloudflare se configurado (OPCIONAL - não bloqueia se falhar)
-            self::sendToCloudflare($ipAddress, $threatAnalysis['threat_type'] ?? 'unknown');
-            
-            // Registrar log (com confidence score se disponível)
-            $logger->log($ipAddress, $requestUri, $requestMethod, 'blocked', $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry, $confidenceScore);
-            
-            // Atualizar reputação (SISTEMA PRÓPRIO)
-            $ipReputation->updateReputation($ipAddress, 'blocked', $threatScore, $threatAnalysis['threat_type'] ?? null, self::$visitorCountry);
-            
-            // Bloquear requisição
-            self::blockRequest("Acesso negado por segurança", $threatAnalysis['threat_type'] ?? 'unknown');
+            // Se threat_score está em faixa intermediária (50-70), colocar em quarentena ao invés de bloquear
+            if ($threatScore >= 50 && $threatScore < 70 && !$quarantineData) {
+                // Colocar em quarentena
+                $quarantine->addToQuarantine(
+                    $ipAddress,
+                    "Ameaça suspeita detectada",
+                    $threatScore,
+                    $threatAnalysis['threat_type'] ?? null,
+                    3600 // 1 hora
+                );
+                
+                // Enviar alerta
+                $alertSystem->sendAlert('suspicious_behavior', [
+                    'ip_address' => $ipAddress,
+                    'threat_score' => $threatScore,
+                    'threat_type' => $threatAnalysis['threat_type'] ?? 'unknown',
+                    'site_id' => self::$siteId
+                ], 3); // Severidade média
+                
+                $logger->log($ipAddress, $requestUri, $requestMethod, 'challenged', $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry, $confidenceScore);
+                self::blockRequest("Verificação de segurança necessária", 'quarantine');
+            } else {
+                // Bloquear IP com duração proporcional à gravidade e ao nível de segurança
+                $blockDuration = $threatScore >= $criticalThreshold ? 86400 : 3600; // 24h ou 1h
+                $ipBlocker->blockIP($ipAddress, "Ameaça detectada: " . ($threatAnalysis['threat_type'] ?? 'unknown'), $threatAnalysis['threat_type'] ?? 'unknown', $blockDuration);
+                
+                // Enviar alerta crítico
+                $alertSystem->sendAlert('threat_detected', [
+                    'ip_address' => $ipAddress,
+                    'threat_score' => $threatScore,
+                    'threat_type' => $threatAnalysis['threat_type'] ?? 'unknown',
+                    'site_id' => self::$siteId,
+                    'action' => 'blocked'
+                ], 5); // Severidade crítica
+                
+                // Enviar para Cloudflare se configurado (OPCIONAL - não bloqueia se falhar)
+                self::sendToCloudflare($ipAddress, $threatAnalysis['threat_type'] ?? 'unknown');
+                
+                // Registrar log SÍNCRONO (bloqueios devem ser logados imediatamente)
+                $logger->log($ipAddress, $requestUri, $requestMethod, 'blocked', $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry, $confidenceScore);
+                
+                // Atualizar reputação (SISTEMA PRÓPRIO)
+                $ipReputation->updateReputation($ipAddress, 'blocked', $threatScore, $threatAnalysis['threat_type'] ?? null, self::$visitorCountry);
+                
+                // Bloquear requisição
+                self::blockRequest("Acesso negado por segurança", $threatAnalysis['threat_type'] ?? 'unknown');
+            }
         } else {
-            // Permitir e registrar
+            // Permitir e registrar ASSÍNCRONO (não bloqueia a requisição)
             $responseTime = round((microtime(true) - self::$startTime) * 1000, 2);
             $actionTaken = $threatAnalysis['is_threat'] && $threatScore >= 30 ? 'challenged' : 'allowed';
-            $logger->log($ipAddress, $requestUri, $requestMethod, $actionTaken, $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, $responseTime, self::$visitorCountry, $confidenceScore);
             
-            // Atualizar reputação (SISTEMA PRÓPRIO)
+            // Adicionar à fila assíncrona (muito mais rápido)
+            $logQueue->enqueue([
+                'ip_address' => $ipAddress,
+                'request_uri' => $requestUri,
+                'request_method' => $requestMethod,
+                'action_taken' => $actionTaken,
+                'threat_type' => $threatAnalysis['threat_type'] ?? null,
+                'threat_score' => $threatScore,
+                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+                'referer' => $_SERVER['HTTP_REFERER'] ?? null,
+                'site_id' => self::$siteId,
+                'response_time' => $responseTime,
+                'country_code' => self::$visitorCountry,
+                'confidence_score' => $confidenceScore
+            ]);
+            
+            // Atualizar reputação (SISTEMA PRÓPRIO) - pode ser assíncrono também no futuro
             $ipReputation->updateReputation($ipAddress, $actionTaken, $threatScore, $threatAnalysis['threat_type'] ?? null, self::$visitorCountry);
         }
     }

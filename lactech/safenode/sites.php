@@ -294,7 +294,7 @@ if ($db && $userId) {
         }
     </style>
 </head>
-<body class="h-full">
+<body class="h-full" x-data="{ sidebarOpen: false }">
     <div class="flex h-full">
         <!-- Sidebar -->
         <aside class="sidebar w-72 h-full flex-shrink-0 flex flex-col hidden lg:flex">
@@ -368,17 +368,119 @@ if ($db && $userId) {
                 </div>
             </div>
         </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div x-show="sidebarOpen" 
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="sidebarOpen = false"
+         class="fixed inset-0 bg-black/80 z-40 lg:hidden"
+         x-cloak
+         style="display: none;"></div>
+
+    <!-- Mobile Sidebar -->
+    <aside x-show="sidebarOpen"
+           x-transition:enter="transition ease-out duration-300 transform"
+           x-transition:enter-start="-translate-x-full"
+           x-transition:enter-end="translate-x-0"
+           x-transition:leave="transition ease-in duration-300 transform"
+           x-transition:leave-start="translate-x-0"
+           x-transition:leave-end="-translate-x-full"
+           @click.away="sidebarOpen = false"
+           class="fixed inset-y-0 left-0 w-72 sidebar h-full flex flex-col z-50 lg:hidden overflow-y-auto"
+           x-cloak
+           style="display: none;">
+        <!-- Logo -->
+        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                    <div class="overflow-hidden whitespace-nowrap">
+                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                    </div>
+                </div>
+                <button @click="sidebarOpen = false" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
+            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
+            
+            <a href="dashboard.php" class="nav-item" @click="sidebarOpen = false">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Home</span>
+            </a>
+            <a href="sites.php" class="nav-item active" @click="sidebarOpen = false">
+                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Sites</span>
+            </a>
+            <a href="security-analytics.php" class="nav-item" @click="sidebarOpen = false">
+                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Network</span>
+            </a>
+            <a href="behavior-analysis.php" class="nav-item" @click="sidebarOpen = false">
+                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Kubernetes</span>
+            </a>
+            <a href="logs.php" class="nav-item" @click="sidebarOpen = false">
+                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Explorar</span>
+            </a>
+            <a href="suspicious-ips.php" class="nav-item" @click="sidebarOpen = false">
+                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Analisar</span>
+            </a>
+            <a href="attacked-targets.php" class="nav-item" @click="sidebarOpen = false">
+                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Grupos</span>
+            </a>
+            
+            <div class="pt-4 mt-4 border-t border-white/5">
+                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
+                <a href="human-verification.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Verificação Humana</span>
+                </a>
+                <a href="settings.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Configurações</span>
+                </a>
+                <a href="help.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Ajuda</span>
+                </a>
+            </div>
+        </nav>
+        
+        <!-- Upgrade Card -->
+        <div class="p-4 flex-shrink-0">
+            <div class="upgrade-card">
+                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <button class="w-full btn-primary py-2.5 text-sm">
+                    Upgrade Agora
+                </button>
+            </div>
+        </div>
+    </aside>
         
         <!-- Main Content -->
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
             <!-- Header -->
-            <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
-                <div class="flex items-center gap-6">
+            <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-3 md:gap-6">
                     <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-zinc-400 hover:text-white transition-colors">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div>
-                        <h2 class="text-2xl font-bold text-white tracking-tight">Gerenciar Sites</h2>
+                        <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight">Gerenciar Sites</h2>
                         <?php if ($selectedSite): ?>
                             <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>
@@ -387,7 +489,7 @@ if ($db && $userId) {
             </header>
 
             <!-- Content -->
-            <div class="flex-1 overflow-y-auto p-8">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8">
                 <?php if ($message): ?>
                 <div class="glass rounded-2xl p-4 mb-6 <?php echo $messageType === 'success' ? 'border-green-500/30 bg-green-500/10' : ($messageType === 'error' ? 'border-red-500/30 bg-red-500/10' : 'border-amber-500/30 bg-amber-500/10'); ?>">
                     <p class="text-white"><?php echo htmlspecialchars($message); ?></p>
@@ -395,16 +497,16 @@ if ($db && $userId) {
                 <?php endif; ?>
 
                 <!-- Formulário de Cadastro -->
-                <div class="glass rounded-2xl p-6 mb-6">
-                    <h3 class="text-xl font-semibold text-white mb-6 flex items-center gap-3">
-                        <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                <div class="glass rounded-2xl p-4 md:p-6 mb-6">
+                    <h3 class="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6 flex items-center gap-3">
+                        <i data-lucide="plus-circle" class="w-5 h-5 md:w-6 md:h-6"></i>
                         Cadastrar Novo Site
                     </h3>
-                    <form method="POST" class="space-y-6">
+                    <form method="POST" class="space-y-4 md:space-y-6">
                         <?php echo CSRFProtection::getTokenField(); ?>
                         <input type="hidden" name="action" value="create">
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-white mb-2">Domínio *</label>
                                 <input type="text" name="domain" required 
@@ -441,9 +543,9 @@ if ($db && $userId) {
                 </div>
 
                 <!-- Lista de Sites -->
-                <div class="glass rounded-2xl p-6">
-                    <h3 class="text-xl font-semibold text-white mb-6 flex items-center gap-3">
-                        <i data-lucide="list" class="w-6 h-6"></i>
+                <div class="glass rounded-2xl p-4 md:p-6">
+                    <h3 class="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6 flex items-center gap-3">
+                        <i data-lucide="list" class="w-5 h-5 md:w-6 md:h-6"></i>
                         Meus Sites (<?php echo count($sites); ?>)
                     </h3>
                     
@@ -458,17 +560,17 @@ if ($db && $userId) {
                     <?php else: ?>
                         <div class="space-y-4">
                             <?php foreach ($sites as $site): ?>
-                                <div class="p-6 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex-1">
-                                            <div class="flex items-center gap-3 mb-3">
-                                                <h4 class="text-lg font-semibold text-white">
+                                <div class="p-4 md:p-6 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex flex-wrap items-center gap-2 md:gap-3 mb-3">
+                                                <h4 class="text-base md:text-lg font-semibold text-white break-words">
                                                     <?php echo htmlspecialchars($site['display_name'] ?: $site['domain']); ?>
                                                 </h4>
                                                 <?php if ($site['is_active']): ?>
-                                                    <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Ativo</span>
+                                                    <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">Ativo</span>
                                                 <?php else: ?>
-                                                    <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-500/20 text-zinc-400 border border-zinc-500/30">Inativo</span>
+                                                    <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 whitespace-nowrap">Inativo</span>
                                                 <?php endif; ?>
                                                 
                                                 <?php
@@ -495,30 +597,30 @@ if ($db && $userId) {
                                                     $badgeClass = 'bg-red-500/20 text-red-400 border-red-500/30';
                                                 }
                                                 ?>
-                                                <span class="px-2.5 py-1 rounded-lg text-xs font-semibold <?php echo $badgeClass; ?>">
+                                                <span class="px-2.5 py-1 rounded-lg text-xs font-semibold <?php echo $badgeClass; ?> whitespace-nowrap">
                                                     Segurança: <?php echo $levelLabel; ?>
                                                 </span>
                                             </div>
                                             
-                                            <p class="text-sm text-zinc-400 font-mono mb-2"><?php echo htmlspecialchars($site['domain']); ?></p>
+                                            <p class="text-sm text-zinc-400 font-mono mb-2 break-all"><?php echo htmlspecialchars($site['domain']); ?></p>
                                             <p class="text-xs text-zinc-500">
                                                 <?php echo (int)$site['total_logs']; ?> eventos registrados • 
                                                 Cadastrado em <?php echo date('d/m/Y', strtotime($site['created_at'])); ?>
                                             </p>
                                         </div>
                                         
-                                        <div class="flex items-center gap-2 ml-6">
+                                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:ml-6 md:flex-shrink-0">
                                             <form method="POST" class="inline">
                                                 <?php echo CSRFProtection::getTokenField(); ?>
                                                 <input type="hidden" name="action" value="toggle">
                                                 <input type="hidden" name="site_id" value="<?php echo $site['id']; ?>">
-                                                <button type="submit" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-colors">
+                                                <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-colors whitespace-nowrap">
                                                     <?php echo $site['is_active'] ? 'Desativar' : 'Ativar'; ?>
                                                 </button>
                                             </form>
                                             
                                             <a href="dashboard.php?view_site=<?php echo $site['id']; ?>" 
-                                               class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-colors">
+                                               class="w-full sm:w-auto px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-colors text-center whitespace-nowrap">
                                                 Ver Dashboard
                                             </a>
                                             
@@ -527,7 +629,7 @@ if ($db && $userId) {
                                                 <?php echo CSRFProtection::getTokenField(); ?>
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="site_id" value="<?php echo $site['id']; ?>">
-                                                <button type="submit" class="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold transition-colors border border-red-500/30">
+                                                <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-semibold transition-colors border border-red-500/30 whitespace-nowrap">
                                                     Remover
                                                 </button>
                                             </form>

@@ -130,16 +130,16 @@ $baseUrl = getSafeNodeBaseUrl();
     </style>
 </head>
 <body class="h-full">
-    <div class="min-h-screen bg-dark-950 p-8">
+    <div class="min-h-screen bg-dark-950 p-4 md:p-8">
         <div class="max-w-6xl mx-auto">
             <!-- Header -->
-            <div class="mb-8">
+            <div class="mb-6 md:mb-8">
                 <a href="dashboard.php" class="inline-flex items-center gap-2 text-zinc-400 hover:text-white mb-4">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span>Voltar ao Dashboard</span>
                 </a>
-                <h1 class="text-3xl font-bold text-white mb-2">Verificação Humana</h1>
-                <p class="text-zinc-500">Gerencie suas API keys e integre verificação humana em seus sites</p>
+                <h1 class="text-2xl md:text-3xl font-bold text-white mb-2">Verificação Humana</h1>
+                <p class="text-sm md:text-base text-zinc-500">Gerencie suas API keys e integre verificação humana em seus sites</p>
             </div>
 
             <!-- Mensagem -->
@@ -150,8 +150,8 @@ $baseUrl = getSafeNodeBaseUrl();
             <?php endif; ?>
 
             <!-- Gerar Nova API Key -->
-            <div class="glass rounded-2xl p-6 mb-8">
-                <h2 class="text-xl font-semibold text-white mb-4">Gerar Nova API Key</h2>
+            <div class="glass rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
+                <h2 class="text-lg md:text-xl font-semibold text-white mb-4">Gerar Nova API Key</h2>
                 <form method="POST" class="space-y-4">
                     <input type="hidden" name="action" value="generate">
                     
@@ -191,10 +191,10 @@ $baseUrl = getSafeNodeBaseUrl();
             </div>
 
             <!-- Lista de API Keys -->
-            <div class="glass rounded-2xl p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-white">Suas API Keys</h2>
-                    <a href="api-monitor.php" class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm flex items-center gap-2">
+            <div class="glass rounded-2xl p-4 md:p-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 md:mb-6">
+                    <h2 class="text-lg md:text-xl font-semibold text-white">Suas API Keys</h2>
+                    <a href="api-monitor.php" class="w-full sm:w-auto px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm flex items-center justify-center gap-2 whitespace-nowrap">
                         <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
                         Monitoramento
                     </a>
@@ -205,15 +205,15 @@ $baseUrl = getSafeNodeBaseUrl();
                 <?php else: ?>
                     <div class="space-y-4">
                         <?php foreach ($apiKeys as $key): ?>
-                        <div class="bg-dark-900/50 rounded-xl p-6 border border-white/5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h3 class="text-white font-semibold"><?php echo htmlspecialchars($key['name']); ?></h3>
+                        <div class="bg-dark-900/50 rounded-xl p-4 md:p-6 border border-white/5">
+                            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                                        <h3 class="text-white font-semibold text-base md:text-lg break-words"><?php echo htmlspecialchars($key['name']); ?></h3>
                                         <?php if ($key['is_active']): ?>
-                                            <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-lg">Ativa</span>
+                                            <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-lg whitespace-nowrap">Ativa</span>
                                         <?php else: ?>
-                                            <span class="px-2 py-1 bg-zinc-500/20 text-zinc-400 text-xs rounded-lg">Inativa</span>
+                                            <span class="px-2 py-1 bg-zinc-500/20 text-zinc-400 text-xs rounded-lg whitespace-nowrap">Inativa</span>
                                         <?php endif; ?>
                                     </div>
                                     <p class="text-sm text-zinc-500 mb-1">
@@ -236,19 +236,19 @@ $baseUrl = getSafeNodeBaseUrl();
                                         Usos: <?php echo number_format($key['usage_count']); ?>
                                     </p>
                                     <?php if (!empty($key['allowed_domains'])): ?>
-                                        <p class="text-sm text-zinc-400 mb-1">
+                                        <p class="text-sm text-zinc-400 mb-1 break-words">
                                             <i data-lucide="globe" class="w-3 h-3 inline"></i> 
                                             Domínios: <?php echo htmlspecialchars($key['allowed_domains']); ?>
                                         </p>
                                     <?php endif; ?>
-                                    <p class="text-sm text-zinc-400">
+                                    <p class="text-sm text-zinc-400 break-words">
                                         <i data-lucide="gauge" class="w-3 h-3 inline"></i> 
                                         Rate Limit: <?php echo (int)($key['rate_limit_per_minute'] ?? 60); ?> req/min • 
                                         Token expira em: <?php echo (int)($key['max_token_age'] ?? 3600); ?>s
                                     </p>
                                 </div>
-                                <div class="flex gap-2">
-                                    <a href="api-monitor.php?key_id=<?php echo $key['id']; ?>" class="px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm flex items-center gap-2">
+                                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:ml-4 md:flex-shrink-0">
+                                    <a href="api-monitor.php?key_id=<?php echo $key['id']; ?>" class="px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm flex items-center justify-center gap-2 whitespace-nowrap">
                                         <i data-lucide="bar-chart-2" class="w-3 h-3"></i>
                                         Monitorar
                                     </a>
@@ -256,7 +256,7 @@ $baseUrl = getSafeNodeBaseUrl();
                                         <form method="POST" class="inline">
                                             <input type="hidden" name="action" value="deactivate">
                                             <input type="hidden" name="key_id" value="<?php echo $key['id']; ?>">
-                                            <button type="submit" class="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors text-sm">
+                                            <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors text-sm whitespace-nowrap">
                                                 Desativar
                                             </button>
                                         </form>
@@ -264,7 +264,7 @@ $baseUrl = getSafeNodeBaseUrl();
                                         <form method="POST" class="inline">
                                             <input type="hidden" name="action" value="activate">
                                             <input type="hidden" name="key_id" value="<?php echo $key['id']; ?>">
-                                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                            <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm whitespace-nowrap">
                                                 Ativar
                                             </button>
                                         </form>
@@ -272,7 +272,7 @@ $baseUrl = getSafeNodeBaseUrl();
                                     <form method="POST" class="inline" onsubmit="return confirm('Tem certeza que deseja deletar esta API key?');">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="key_id" value="<?php echo $key['id']; ?>">
-                                        <button type="submit" class="px-4 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition-colors text-sm">
+                                        <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition-colors text-sm whitespace-nowrap">
                                             Deletar
                                         </button>
                                     </form>
@@ -283,7 +283,7 @@ $baseUrl = getSafeNodeBaseUrl();
                             <?php if ($key['is_active']): ?>
                             <div class="mt-4 pt-4 border-t border-white/5">
                                 <h4 class="text-sm font-semibold text-white mb-3">Código de Integração</h4>
-                                <div class="code-block mb-3">
+                                <div class="code-block mb-3 overflow-x-auto">
                                     <?php 
                                     $embedCode = HVAPIKeyManager::generateEmbedCode($key['api_key'], $baseUrl);
                                     echo htmlspecialchars($embedCode);
@@ -292,7 +292,7 @@ $baseUrl = getSafeNodeBaseUrl();
                                 <button 
                                     onclick="copyCode(this)" 
                                     data-code="<?php echo htmlspecialchars($embedCode, ENT_QUOTES); ?>"
-                                    class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm"
+                                    class="w-full sm:w-auto px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm"
                                 >
                                     Copiar Código
                                 </button>
