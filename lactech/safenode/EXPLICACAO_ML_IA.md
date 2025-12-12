@@ -476,3 +476,5 @@ $alerts = $predictor->generatePredictiveAlerts(24); // Últimas 24h
 
 
 
+
+
