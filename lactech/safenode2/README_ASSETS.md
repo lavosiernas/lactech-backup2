@@ -43,3 +43,4 @@ O Next.js serve arquivos estáticos da pasta `public/`. Por isso, as imagens pre
 
 
 
+

@@ -236,10 +236,16 @@ if ($db) {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: 16px;
-            padding: 24px;
+            padding: 16px;
             position: relative;
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @media (min-width: 640px) {
+            .stat-card {
+                padding: 24px;
+            }
         }
         
         .stat-card::before {
@@ -756,6 +762,10 @@ if ($db) {
                     <i data-lucide="shield-check" class="w-5 h-5"></i>
                     <span class="font-medium">Verificação Humana</span>
                 </a>
+                <a href="recaptcha.php" class="nav-item">
+                    <i data-lucide="shield" class="w-5 h-5"></i>
+                    <span class="font-medium">reCAPTCHA</span>
+                </a>
                 <a href="settings.php" class="nav-item">
                     <i data-lucide="settings-2" class="w-5 h-5"></i>
                     <span class="font-medium">Configurações</span>
@@ -858,6 +868,10 @@ if ($db) {
                     <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Verificação Humana</span>
                 </a>
+                <a href="recaptcha.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="shield" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">reCAPTCHA</span>
+                </a>
                 <a href="settings.php" class="nav-item" @click="sidebarOpen = false">
                     <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Configurações</span>
@@ -936,65 +950,65 @@ if ($db) {
                 <?php endif; ?>
             
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8">
                 <!-- Total Requests -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-sm font-medium text-zinc-400">Total de Requisições</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-xs sm:text-sm font-medium text-zinc-400">Total de Requisições</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
                             <i data-lucide="more-vertical" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    <div class="flex items-end justify-between mt-4">
-                        <p id="total-requests" class="text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="requests-change" class="text-sm font-semibold text-white bg-white/10 px-2.5 py-1 rounded-lg"></span>
+                    <div class="flex items-end justify-between mt-2 sm:mt-4">
+                        <p id="total-requests" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
+                        <span id="requests-change" class="text-xs sm:text-sm font-semibold text-white bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
                     </div>
-                    <p class="text-xs text-zinc-600 mt-3">comparado a ontem</p>
-            </div>
+                    <p class="text-xs text-zinc-600 mt-2 sm:mt-3">comparado a ontem</p>
+                </div>
 
                 <!-- Blocked -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-sm font-medium text-zinc-400">Requisições Bloqueadas</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-xs sm:text-sm font-medium text-zinc-400">Requisições Bloqueadas</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
                             <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                </button>
+                        </button>
                     </div>
-                    <div class="flex items-end justify-between mt-4">
-                        <p id="blocked-requests" class="text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="blocked-change" class="text-sm font-semibold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-lg"></span>
+                    <div class="flex items-end justify-between mt-2 sm:mt-4">
+                        <p id="blocked-requests" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
+                        <span id="blocked-change" class="text-xs sm:text-sm font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
                     </div>
-                    <p class="text-xs text-zinc-600 mt-3">Taxa: <span id="block-rate" class="text-red-400 font-medium">-</span>%</p>
+                    <p class="text-xs text-zinc-600 mt-2 sm:mt-3">Taxa: <span id="block-rate" class="text-red-400 font-medium">-</span>%</p>
                 </div>
                 
                 <!-- Unique IPs -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-sm font-medium text-zinc-400">Visitantes Únicos</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-xs sm:text-sm font-medium text-zinc-400">Visitantes Únicos</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
                             <i data-lucide="more-vertical" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    <div class="flex items-end justify-between mt-4">
-                        <p id="unique-ips" class="text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="ips-change" class="text-sm font-semibold text-white bg-white/10 px-2.5 py-1 rounded-lg"></span>
+                    <div class="flex items-end justify-between mt-2 sm:mt-4">
+                        <p id="unique-ips" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
+                        <span id="ips-change" class="text-xs sm:text-sm font-semibold text-white bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
                     </div>
-                    <p class="text-xs text-zinc-600 mt-3">últimas 24h</p>
+                    <p class="text-xs text-zinc-600 mt-2 sm:mt-3">últimas 24h</p>
                 </div>
                 
                 <!-- Active Blocks -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-sm font-medium text-zinc-400">IPs Bloqueados</p>
-                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-xs sm:text-sm font-medium text-zinc-400">IPs Bloqueados</p>
+                        <button class="text-zinc-600 hover:text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
                             <i data-lucide="more-vertical" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    <div class="flex items-end justify-between mt-4">
-                        <p id="active-blocks" class="text-4xl font-bold text-white tracking-tight">-</p>
-                        <span class="text-sm font-semibold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg">ativos</span>
+                    <div class="flex items-end justify-between mt-2 sm:mt-4">
+                        <p id="active-blocks" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
+                        <span class="text-xs sm:text-sm font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg">ativos</span>
                     </div>
-                    <p class="text-xs text-zinc-600 mt-3">últimos 7 dias</p>
+                    <p class="text-xs text-zinc-600 mt-2 sm:mt-3">últimos 7 dias</p>
                 </div>
             </div>
             
@@ -1051,35 +1065,36 @@ if ($db) {
             
             <!-- Network Devices Table -->
             <div class="table-card mb-8">
-                <div class="table-header p-6 flex items-center justify-between">
+                <div class="table-header p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <h3 class="text-lg font-semibold text-white">Dispositivos de Rede</h3>
-                    <div class="flex items-center gap-3">
-                        <div class="relative">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
-                            <input type="text" id="device-search" placeholder="Buscar por nome" class="bg-white/5 border border-white/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 w-56 transition-all">
+                    <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                        <div class="relative flex-1 sm:flex-initial">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
+                            <input type="text" id="device-search" placeholder="Buscar por nome" class="bg-white/5 border border-white/10 rounded-xl py-2 sm:py-2.5 pl-9 sm:pl-11 pr-3 sm:pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 w-full sm:w-56 transition-all">
                         </div>
-                        <button class="btn-ghost flex items-center gap-2">
-                            <span>Buscar</span>
+                        <button id="device-search-btn" class="btn-ghost flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+                            <span class="hidden sm:inline">Buscar</span>
+                            <i data-lucide="search" class="w-4 h-4 sm:hidden"></i>
                         </button>
-                        <button class="btn-ghost flex items-center gap-2">
+                        <button id="device-filter-btn" class="btn-ghost flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
                             <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                            <span>Filtrar</span>
-                    </button>
-                </div>
+                            <span class="hidden sm:inline">Filtrar</span>
+                        </button>
                     </div>
+                </div>
                 
                 <!-- Table -->
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
                             <tr class="text-left text-xs text-zinc-500 uppercase tracking-wider border-b border-white/5">
-                                <th class="px-6 py-4 font-semibold">Health</th>
-                                <th class="px-6 py-4 font-semibold">Nome</th>
-                                <th class="px-6 py-4 font-semibold">Tipo</th>
-                                <th class="px-6 py-4 font-semibold">Origem</th>
-                                <th class="px-6 py-4 font-semibold">Response Time</th>
-                                <th class="px-6 py-4 font-semibold">Packet Loss</th>
-                                <th class="px-6 py-4 font-semibold">Ação</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Health</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Nome</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Tipo</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Origem</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Response Time</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Packet Loss</th>
+                                <th class="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Ação</th>
                             </tr>
                         </thead>
                         <tbody id="devices-table">
@@ -1505,6 +1520,9 @@ if ($db) {
         
         // Dashboard Data Functions
         let dashboardData = null;
+        let filteredDevicesData = null;
+        let currentSearchTerm = '';
+        let currentFilter = 'all';
         
         function formatNumber(num) {
             if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
@@ -1738,7 +1756,10 @@ if ($db) {
                 recentLogsContainer.innerHTML = '<p class="text-center py-8 text-zinc-600 text-sm col-span-2">Nenhum evento recente</p>';
             }
             
-            // Update devices table
+            // Reset filters and update devices table
+            filteredDevicesData = null;
+            currentSearchTerm = '';
+            currentFilter = 'all';
             updateDevicesTable();
             
             // Update timestamp
@@ -1768,12 +1789,38 @@ if ($db) {
             requestAnimationFrame(update);
         }
         
-        function updateDevicesTable() {
+        function filterAndSearchDevices() {
             const topIPs = dashboardData?.top_blocked_ips || [];
+            let filtered = [...topIPs];
+            
+            // Aplicar busca
+            if (currentSearchTerm.trim()) {
+                const searchLower = currentSearchTerm.toLowerCase();
+                filtered = filtered.filter(ip => 
+                    ip.ip_address?.toLowerCase().includes(searchLower) ||
+                    ip.country_code?.toLowerCase().includes(searchLower) ||
+                    (ip.threat_types_count?.toString().includes(searchLower))
+                );
+            }
+            
+            // Aplicar filtro de health
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(ip => {
+                    const healthStatus = ip.avg_threat_score > 7 ? 'bad' : ip.avg_threat_score > 4 ? 'moderate' : ip.avg_threat_score > 2 ? 'unavailable' : 'good';
+                    return healthStatus === currentFilter;
+                });
+            }
+            
+            filteredDevicesData = filtered;
+            updateDevicesTable();
+        }
+        
+        function updateDevicesTable() {
+            const topIPs = filteredDevicesData !== null ? filteredDevicesData : (dashboardData?.top_blocked_ips || []);
             const tbody = document.getElementById('devices-table');
             
             if (topIPs.length > 0) {
-                tbody.innerHTML = topIPs.slice(0, 6).map((ip, index) => {
+                tbody.innerHTML = topIPs.slice(0, 10).map((ip, index) => {
                     const healthStatus = ip.avg_threat_score > 7 ? 'bad' : ip.avg_threat_score > 4 ? 'moderate' : ip.avg_threat_score > 2 ? 'unavailable' : 'good';
                     const healthLabel = healthStatus === 'good' ? 'Good' : healthStatus === 'moderate' ? 'Moderate' : healthStatus === 'bad' ? 'Bad' : 'Unavailable';
                     const packetLoss = Math.min(Math.round((ip.avg_threat_score || 0) * 10), 100);
@@ -1781,36 +1828,37 @@ if ($db) {
                     
                     return `
                         <tr class="table-row group">
-                            <td class="px-6 py-5">
-                                <div class="flex items-center gap-4">
+                            <td class="px-3 sm:px-6 py-3 sm:py-5">
+                                <div class="flex items-center gap-2 sm:gap-4">
                                     <input type="checkbox" class="cursor-pointer">
                                     <span class="status-dot status-${healthStatus}"></span>
-                                    <span class="text-sm text-white font-medium">${healthLabel}</span>
-                    </div>
+                                    <span class="text-xs sm:text-sm text-white font-medium">${healthLabel}</span>
+                                </div>
                             </td>
-                            <td class="px-6 py-5">
-                                <span class="text-sm font-mono text-white">${ip.ip_address}</span>
+                            <td class="px-3 sm:px-6 py-3 sm:py-5">
+                                <span class="text-xs sm:text-sm font-mono text-white break-all">${ip.ip_address}</span>
                             </td>
-                            <td class="px-6 py-5">
-                                <span class="text-sm text-zinc-400">${ip.threat_types_count || 1} tipos</span>
+                            <td class="px-3 sm:px-6 py-3 sm:py-5">
+                                <span class="text-xs sm:text-sm text-zinc-400">${ip.threat_types_count || 1} tipos</span>
                             </td>
-                            <td class="px-6 py-5">
-                                <span class="text-sm text-zinc-400">${ip.country_code || 'Unknown'}</span>
+                            <td class="px-3 sm:px-6 py-3 sm:py-5">
+                                <span class="text-xs sm:text-sm text-zinc-400">${ip.country_code || 'Unknown'}</span>
                             </td>
-                            <td class="px-6 py-5">
-                                <div class="sparkline-container">
+                            <td class="px-3 sm:px-6 py-3 sm:py-5">
+                                <div class="sparkline-container hidden sm:block">
                                     <canvas id="sparkline-${index}" width="100" height="35"></canvas>
-            </div>
+                                </div>
+                                <span class="text-xs sm:hidden text-zinc-400">-</span>
                             </td>
-                            <td class="px-6 py-5">
-                                <div class="flex items-center gap-4">
-                                    <div class="packet-bar w-28">
+                            <td class="px-3 sm:px-6 py-3 sm:py-5">
+                                <div class="flex items-center gap-2 sm:gap-4">
+                                    <div class="packet-bar w-16 sm:w-28">
                                         <div class="packet-fill ${packetColor}" style="width: ${packetLoss}%"></div>
-        </div>
-                                    <span class="text-sm text-zinc-400 font-medium">${packetLoss}%</span>
-    </div>
+                                    </div>
+                                    <span class="text-xs sm:text-sm text-zinc-400 font-medium">${packetLoss}%</span>
+                                </div>
                             </td>
-                            <td class="px-6 py-5">
+                            <td class="px-3 sm:px-6 py-3 sm:py-5">
                                 <button class="text-zinc-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100">
                                     <i data-lucide="more-vertical" class="w-4 h-4"></i>
                                 </button>
@@ -1820,7 +1868,7 @@ if ($db) {
                 }).join('');
                 
                 // Draw sparklines with improved style
-                topIPs.slice(0, 6).forEach((ip, index) => {
+                topIPs.slice(0, 10).forEach((ip, index) => {
                     const canvas = document.getElementById(`sparkline-${index}`);
                     if (canvas) {
                         const ctx = canvas.getContext('2d');
@@ -1850,19 +1898,39 @@ if ($db) {
                 
                 lucide.createIcons();
             } else {
+                const message = (currentSearchTerm || currentFilter !== 'all') 
+                    ? 'Nenhum dispositivo encontrado com os filtros aplicados' 
+                    : 'Carregando dispositivos...';
+                const icon = (currentSearchTerm || currentFilter !== 'all') ? 'search-x' : 'loader-2';
+                const animate = (currentSearchTerm || currentFilter !== 'all') ? '' : 'animate-spin';
+                
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-zinc-500">
+                        <td colspan="7" class="px-3 sm:px-6 py-12 text-center text-zinc-500">
                             <div class="flex flex-col items-center">
                                 <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-4">
-                                    <i data-lucide="server-off" class="w-8 h-8"></i>
+                                    <i data-lucide="${icon}" class="w-8 h-8 ${animate}"></i>
                                 </div>
-                                <p class="text-sm font-medium">Nenhum dispositivo encontrado</p>
+                                <p class="text-sm font-medium">${message}</p>
+                                ${(currentSearchTerm || currentFilter !== 'all') ? 
+                                    '<button class="mt-4 text-xs text-white/60 hover:text-white underline" id="clear-filters-btn">Limpar filtros</button>' 
+                                    : ''}
                             </div>
                         </td>
                     </tr>
                 `;
                 lucide.createIcons();
+                
+                // Botão para limpar filtros
+                const clearFiltersBtn = document.getElementById('clear-filters-btn');
+                if (clearFiltersBtn) {
+                    clearFiltersBtn.addEventListener('click', function() {
+                        currentSearchTerm = '';
+                        currentFilter = 'all';
+                        if (deviceSearchInput) deviceSearchInput.value = '';
+                        filterAndSearchDevices();
+                    });
+                }
             }
         }
         
@@ -1873,6 +1941,91 @@ if ($db) {
                 this.classList.add('active');
             });
         });
+        
+        // Device search and filter functionality
+        const deviceSearchInput = document.getElementById('device-search');
+        const deviceSearchBtn = document.getElementById('device-search-btn');
+        const deviceFilterBtn = document.getElementById('device-filter-btn');
+        
+        if (deviceSearchInput) {
+            deviceSearchInput.addEventListener('input', function() {
+                currentSearchTerm = this.value;
+                filterAndSearchDevices();
+            });
+            
+            deviceSearchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    filterAndSearchDevices();
+                }
+            });
+        }
+        
+        if (deviceSearchBtn) {
+            deviceSearchBtn.addEventListener('click', function() {
+                filterAndSearchDevices();
+            });
+        }
+        
+        if (deviceFilterBtn) {
+            deviceFilterBtn.addEventListener('click', function() {
+                // Modal simples de filtro
+                const filters = [
+                    { value: 'all', label: 'Todos' },
+                    { value: 'good', label: 'Good' },
+                    { value: 'moderate', label: 'Moderate' },
+                    { value: 'bad', label: 'Bad' },
+                    { value: 'unavailable', label: 'Unavailable' }
+                ];
+                
+                // Criar overlay de modal
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center';
+                modal.innerHTML = `
+                    <div class="bg-dark-900 border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-white">Filtrar por Health</h3>
+                            <button class="text-zinc-400 hover:text-white transition-colors" id="close-filter-modal">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-2">
+                            ${filters.map(filter => `
+                                <button class="w-full text-left px-4 py-3 rounded-xl transition-all ${
+                                    currentFilter === filter.value 
+                                        ? 'bg-white/10 text-white border border-white/20' 
+                                        : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white border border-transparent'
+                                }" data-filter="${filter.value}">
+                                    ${filter.label}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                lucide.createIcons();
+                
+                // Event listeners
+                modal.querySelectorAll('[data-filter]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        currentFilter = this.dataset.filter;
+                        filterAndSearchDevices();
+                        document.body.removeChild(modal);
+                    });
+                });
+                
+                modal.querySelector('#close-filter-modal').addEventListener('click', function() {
+                    document.body.removeChild(modal);
+                });
+                
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        document.body.removeChild(modal);
+                    }
+                });
+            });
+        }
         
         // Initial load
         fetchDashboardStats();

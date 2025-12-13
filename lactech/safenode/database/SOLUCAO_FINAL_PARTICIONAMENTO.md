@@ -94,3 +94,4 @@ Se o `EXPLAIN` mostrar `key: idx_archive_created`, está funcionando perfeitamen
 
 
 
+

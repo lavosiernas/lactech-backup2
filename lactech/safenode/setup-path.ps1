@@ -31,3 +31,4 @@ Write-Host "`nReinicie o terminal para aplicar as mudanças!" -ForegroundColor C
 
 
 
+
