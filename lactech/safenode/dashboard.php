@@ -762,10 +762,6 @@ if ($db) {
                     <i data-lucide="shield-check" class="w-5 h-5"></i>
                     <span class="font-medium">Verificação Humana</span>
                 </a>
-                <a href="recaptcha.php" class="nav-item">
-                    <i data-lucide="shield" class="w-5 h-5"></i>
-                    <span class="font-medium">reCAPTCHA</span>
-                </a>
                 <a href="settings.php" class="nav-item">
                     <i data-lucide="settings-2" class="w-5 h-5"></i>
                     <span class="font-medium">Configurações</span>
@@ -867,10 +863,6 @@ if ($db) {
                 <a href="human-verification.php" class="nav-item" @click="sidebarOpen = false">
                     <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="recaptcha.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">reCAPTCHA</span>
                 </a>
                 <a href="settings.php" class="nav-item" @click="sidebarOpen = false">
                     <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
