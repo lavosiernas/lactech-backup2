@@ -55,3 +55,4 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
     require_once __DIR__ . '/Router.php';
     SafeNodeRouter::init();
 }
+

@@ -50,18 +50,30 @@ class CSRFProtection {
             session_start();
         }
         
+        if (empty($token)) {
+            error_log("CSRFProtection: Token vazio recebido");
+            return false;
+        }
+        
         if (empty($_SESSION[self::$tokenName])) {
+            error_log("CSRFProtection: Token não existe na sessão");
             return false;
         }
         
         // Verificar se o token expirou (2 horas)
         $tokenTime = $_SESSION[self::$tokenTime] ?? 0;
         if ((time() - $tokenTime) > 7200) {
+            error_log("CSRFProtection: Token expirado");
             self::clearToken();
             return false;
         }
         
-        return hash_equals($_SESSION[self::$tokenName], $token);
+        $isValid = hash_equals($_SESSION[self::$tokenName], $token);
+        if (!$isValid) {
+            error_log("CSRFProtection: Token não corresponde");
+        }
+        
+        return $isValid;
     }
     
     /**

@@ -757,6 +757,26 @@ if ($db) {
             </a>
             
             <div class="pt-6 mt-6 border-t border-white/5">
+                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Inteligência</p>
+                <a href="threat-intelligence.php" class="nav-item">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                    <span class="font-medium">Threat Intelligence</span>
+                </a>
+                <a href="security-advisor.php" class="nav-item">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    <span class="font-medium">Security Advisor</span>
+                </a>
+                <a href="endpoint-protection.php" class="nav-item">
+                    <i data-lucide="route" class="w-5 h-5"></i>
+                    <span class="font-medium">Proteção por Endpoint</span>
+                </a>
+                <a href="security-tests.php" class="nav-item">
+                    <i data-lucide="test-tube" class="w-5 h-5"></i>
+                    <span class="font-medium">Testes de Segurança</span>
+                </a>
+            </div>
+            
+            <div class="pt-6 mt-6 border-t border-white/5">
                 <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
                 <a href="human-verification.php" class="nav-item">
                     <i data-lucide="shield-check" class="w-5 h-5"></i>
@@ -859,6 +879,26 @@ if ($db) {
             </a>
             
             <div class="pt-4 mt-4 border-t border-white/5">
+                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
+                <a href="threat-intelligence.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Threat Intelligence</span>
+                </a>
+                <a href="security-advisor.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Security Advisor</span>
+                </a>
+                <a href="endpoint-protection.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
+                </a>
+                <a href="security-tests.php" class="nav-item" @click="sidebarOpen = false">
+                    <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Testes de Segurança</span>
+                </a>
+            </div>
+            
+            <div class="pt-4 mt-4 border-t border-white/5">
                 <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
                 <a href="human-verification.php" class="nav-item" @click="sidebarOpen = false">
                     <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
@@ -925,8 +965,8 @@ if ($db) {
                 <button onclick="window.location.href='profile.php'" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-all group">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform">
                         <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
-                </div>
-                    </button>
+                    </div>
+                </button>
             </div>
         </header>
 

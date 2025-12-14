@@ -388,10 +388,15 @@ $clientCountry    = (function () {
                             <input type="checkbox" name="remember" id="remember" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300"/>
                             <label for="remember" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
                         </div>
-                        <label for="remember" class="text-sm text-slate-600 cursor-pointer select-none">Lembrar-me</label>
+                        <label for="remember" class="text-sm text-slate-600 cursor-pointer">Lembrar-me</label>
                     </div>
                     
-                    <a href="#" class="text-sm font-semibold text-black hover:underline">Esqueceu a senha?</a>
+                    <!-- Esqueceu Senha -->
+                    <div class="flex items-center justify-between">
+                        <a href="forgot-password.php" class="text-sm font-semibold text-black hover:underline transition-colors">
+                            Esqueceu a senha?
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Verificação Humana SafeNode -->

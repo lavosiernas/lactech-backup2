@@ -1,116 +1,170 @@
 <?php
 /**
- * SafeNode - Esqueci a Senha
- * Sistema de recuperação de senha via e-mail
+ * SafeNode - Esqueceu Senha
  */
+
+// Habilitar exibição de erros apenas para debug (remover em produção)
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Não exibir erros na tela, apenas log
+ini_set('log_errors', 1);
 
 session_start();
 
-// SEGURANÇA: Carregar helpers e aplicar headers
 require_once __DIR__ . '/includes/SecurityHelpers.php';
 SecurityHeaders::apply();
 
+// Verificar se já está logado
+if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true) {
+    header('Location: dashboard.php');
+    exit;
+}
+
 require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/EmailService.php';
+require_once __DIR__ . '/includes/HumanVerification.php';
+require_once __DIR__ . '/includes/EmailSender.php';
+require_once __DIR__ . '/includes/SecurityLogger.php';
 
-$db = getSafeNodeDatabase();
-
+$pageTitle = 'Esqueceu Senha';
 $message = '';
 $messageType = '';
-$step = $_GET['step'] ?? 'request'; // request, verify, reset
 
-// STEP 1: Solicitar código de recuperação
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_code'])) {
+// Processar solicitação de reset
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_reset'])) {
+    // Validar CSRF
     if (!CSRFProtection::validate()) {
         $message = 'Token de segurança inválido. Recarregue a página e tente novamente.';
         $messageType = 'error';
     } else {
-        $email = XSSProtection::sanitize($_POST['email'] ?? '');
+        $email = XSSProtection::sanitize(trim($_POST['email'] ?? ''));
         
-        if (!InputValidator::email($email)) {
-            $message = 'Por favor, insira um e-mail válido.';
+        // Validar email
+        if (empty($email)) {
+            $message = 'Por favor, informe seu email.';
+            $messageType = 'error';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message = 'Por favor, insira um email válido.';
             $messageType = 'error';
         } else {
-            if ($db) {
+            // Validar verificação humana
+            $hvError = '';
+            if (!SafeNodeHumanVerification::validateRequest($_POST, $hvError)) {
+                $message = $hvError ?: 'Falha na verificação de segurança.';
+                $messageType = 'error';
+            } else {
                 try {
-                    // Verificar se o e-mail existe
-                    $stmt = $db->prepare("SELECT id, username FROM safenode_users WHERE email = ? AND is_active = 1");
-                    $stmt->execute([$email]);
-                    $user = $stmt->fetch();
+                    $db = getSafeNodeDatabase();
                     
-                    if ($user) {
-                        // Gerar código OTP
-                        $otpCode = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-                        $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
-                        
-                        // Salvar OTP no banco
-                        $stmt = $db->prepare("INSERT INTO safenode_otp_codes (user_id, email, otp_code, action, expires_at, created_at) VALUES (?, ?, ?, 'password_reset', ?, NOW())");
-                        $stmt->execute([$user['id'], $email, $otpCode, $expiresAt]);
-                        
-                        // Enviar e-mail
-                        $emailService = new EmailService();
-                        $emailSent = $emailService->sendPasswordResetOTP($email, $otpCode);
-                        
-                        if ($emailSent) {
-                            $_SESSION['reset_email'] = $email;
-                            $_SESSION['reset_user_id'] = $user['id'];
-                            header('Location: forgot-password.php?step=verify');
-                            exit;
-                        } else {
-                            $message = 'Erro ao enviar e-mail. Tente novamente.';
-                            $messageType = 'error';
-                        }
-                    } else {
-                        // Por segurança, não informar se o e-mail existe ou não
-                        $_SESSION['reset_email'] = $email;
-                        header('Location: forgot-password.php?step=verify');
-                        exit;
-                    }
-                } catch (PDOException $e) {
-                    error_log("SafeNode Forgot Password Error: " . $e->getMessage());
-                    $message = 'Erro ao processar solicitação. Tente novamente.';
-                    $messageType = 'error';
-                }
-            }
-        }
-    }
-}
-
-// STEP 2: Verificar código OTP
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_code'])) {
-    if (!CSRFProtection::validate()) {
-        $message = 'Token de segurança inválido. Recarregue a página e tente novamente.';
-        $messageType = 'error';
-    } else {
-        $otpCode = $_POST['otp_code'] ?? '';
-        $email = $_SESSION['reset_email'] ?? '';
-        
-        if (empty($otpCode) || empty($email)) {
-            $message = 'Código inválido.';
-            $messageType = 'error';
-        } else {
-            if ($db) {
-                try {
-                    $stmt = $db->prepare("SELECT id, user_id FROM safenode_otp_codes WHERE email = ? AND otp_code = ? AND action = 'password_reset' AND verified = 0 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1");
-                    $stmt->execute([$email, $otpCode]);
-                    $otpRecord = $stmt->fetch();
-                    
-                    if ($otpRecord) {
-                        // Marcar OTP como verificado
-                        $stmt = $db->prepare("UPDATE safenode_otp_codes SET verified = 1, verified_at = NOW() WHERE id = ?");
-                        $stmt->execute([$otpRecord['id']]);
-                        
-                        $_SESSION['reset_verified'] = true;
-                        $_SESSION['reset_user_id'] = $otpRecord['user_id'];
-                        header('Location: forgot-password.php?step=reset');
-                        exit;
-                    } else {
-                        $message = 'Código inválido ou expirado.';
+                    if (!$db) {
+                        $message = 'Erro ao conectar ao banco de dados. Tente novamente.';
                         $messageType = 'error';
+                    } else {
+                        // Verificar se o email existe e se está vinculado ao Google
+                        $stmt = $db->prepare("SELECT id, username, email, full_name, google_id FROM safenode_users WHERE email = ? AND is_active = 1");
+                        $stmt->execute([$email]);
+                        $user = $stmt->fetch();
+                        
+                        if ($user) {
+                            // Verificar se a conta está vinculada ao Google
+                            if (!empty($user['google_id'])) {
+                                // Conta vinculada ao Google - não permitir reset de senha via OTP
+                                $message = 'Esta conta está vinculada ao Google. Para alterar sua senha, utilize a opção "Esqueci minha senha" no Google ou altere diretamente na sua conta Google.';
+                                $messageType = 'error';
+                            } else {
+                                // Conta normal - proceder com OTP
+                                // Por segurança, sempre mostrar mensagem de sucesso
+                                $message = 'Se o email informado existir em nosso sistema, você receberá um código OTP para redefinir sua senha.';
+                                $messageType = 'success';
+                                
+                                // Gerar código OTP de 6 dígitos
+                                $otpCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                            
+                                // Expira em 10 minutos
+                                $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+                                
+                                // Obter IP do usuário
+                                $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+                                
+                                // Invalidar OTPs anteriores do mesmo usuário
+                                $invalidateStmt = $db->prepare("
+                                    UPDATE safenode_password_reset_otp 
+                                    SET used_at = NOW() 
+                                    WHERE user_id = ? AND used_at IS NULL AND expires_at > NOW()
+                                ");
+                                $invalidateStmt->execute([$user['id']]);
+                                
+                                // Salvar OTP no banco
+                                $insertStmt = $db->prepare("
+                                    INSERT INTO safenode_password_reset_otp 
+                                    (user_id, email, otp_code, expires_at, ip_address, created_at) 
+                                    VALUES (?, ?, ?, ?, ?, NOW())
+                                ");
+                                $insertStmt->execute([
+                                    $user['id'],
+                                    $user['email'],
+                                    $otpCode,
+                                    $expiresAt,
+                                    $ipAddress
+                                ]);
+                                
+                                // Enviar email com OTP (não bloqueia o fluxo se falhar)
+                                try {
+                                    $emailSender = new EmailSender();
+                                    $username = !empty($user['full_name']) ? $user['full_name'] : $user['username'];
+                                    $emailSent = $emailSender->sendPasswordResetOTP($user['email'], $otpCode, $username);
+                                    
+                                    if ($emailSent) {
+                                        error_log("Forgot Password: OTP enviado com sucesso para " . $user['email']);
+                                    } else {
+                                        error_log("Forgot Password: Falha ao enviar OTP para " . $user['email']);
+                                    }
+                                } catch (Exception $emailError) {
+                                    error_log("Forgot Password: Erro ao enviar email: " . $emailError->getMessage());
+                                }
+                                
+                                // SEMPRE redirecionar (OTP já está salvo no banco)
+                                // Salvar email na sessão para redirecionar para reset-password
+                                $_SESSION['reset_email_for_otp'] = $user['email'];
+                                
+                                // Redirecionar para página de reset de senha
+                                header('Location: reset-password.php');
+                                exit;
+                                
+                                // Log de segurança
+                                try {
+                                    if (class_exists('SecurityLogger')) {
+                                        $logger = new SecurityLogger($db);
+                                        $logger->log(
+                                            $ipAddress,
+                                            '/forgot-password.php',
+                                            'POST',
+                                            'password_reset_request_otp',
+                                            'password_reset_otp_requested',
+                                            0,
+                                            $_SERVER['HTTP_USER_AGENT'] ?? null,
+                                            $_SERVER['HTTP_REFERER'] ?? null,
+                                            null,
+                                            null,
+                                            null,
+                                            null
+                                        );
+                                    }
+                                } catch (Exception $logError) {
+                                    error_log("Erro ao registrar log: " . $logError->getMessage());
+                                }
+                            }
+                        } else {
+                            // Email não existe - mostrar mensagem genérica de segurança
+                            $message = 'Se o email informado existir em nosso sistema, você receberá um código OTP para redefinir sua senha.';
+                            $messageType = 'success';
+                        }
                     }
                 } catch (PDOException $e) {
-                    error_log("SafeNode Verify OTP Error: " . $e->getMessage());
-                    $message = 'Erro ao verificar código. Tente novamente.';
+                    error_log("Erro ao processar reset de senha: " . $e->getMessage());
+                    $message = 'Erro ao processar solicitação. Tente novamente mais tarde.';
+                    $messageType = 'error';
+                } catch (Exception $e) {
+                    error_log("Erro geral: " . $e->getMessage());
+                    $message = 'Erro ao processar solicitação. Tente novamente mais tarde.';
                     $messageType = 'error';
                 }
             }
@@ -118,312 +172,367 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_code'])) {
     }
 }
 
-// STEP 3: Redefinir senha
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
-    if (!CSRFProtection::validate()) {
-        $message = 'Token de segurança inválido. Recarregue a página e tente novamente.';
-        $messageType = 'error';
-    } else {
-        if (!isset($_SESSION['reset_verified']) || !$_SESSION['reset_verified']) {
-            header('Location: forgot-password.php?step=request');
-            exit;
-        }
-        
-        $newPassword = $_POST['new_password'] ?? '';
-        $confirmPassword = $_POST['confirm_password'] ?? '';
-        $userId = $_SESSION['reset_user_id'] ?? null;
-        
-        if (empty($newPassword) || empty($confirmPassword)) {
-            $message = 'Por favor, preencha todos os campos.';
-            $messageType = 'error';
-        } elseif ($newPassword !== $confirmPassword) {
-            $message = 'As senhas não coincidem.';
-            $messageType = 'error';
-        } elseif (!InputValidator::strongPassword($newPassword)) {
-            $message = 'A senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e símbolos.';
-            $messageType = 'error';
-        } else {
-            if ($db && $userId) {
-                try {
-                    $newPasswordHash = password_hash($newPassword, PASSWORD_DEFAULT);
-                    $stmt = $db->prepare("UPDATE safenode_users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-                    $stmt->execute([$newPasswordHash, $userId]);
-                    
-                    // Limpar sessão de reset
-                    unset($_SESSION['reset_email']);
-                    unset($_SESSION['reset_user_id']);
-                    unset($_SESSION['reset_verified']);
-                    
-                    $_SESSION['password_reset_success'] = true;
-                    header('Location: login.php');
-                    exit;
-                } catch (PDOException $e) {
-                    error_log("SafeNode Reset Password Error: " . $e->getMessage());
-                    $message = 'Erro ao redefinir senha. Tente novamente.';
-                    $messageType = 'error';
-                }
-            }
-        }
-    }
-}
+// Inicializar verificação humana
+$safenodeHvToken = SafeNodeHumanVerification::initChallenge();
+
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark h-full">
+<html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esqueci a Senha - SafeNode</title>
+    <title><?php echo $pageTitle; ?> | SafeNode</title>
     <link rel="icon" type="image/png" href="assets/img/logos (6).png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
-        .glass-card {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #030303;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 15% 30%, rgba(59, 130, 246, 0.25) 0%, transparent 45%),
+                radial-gradient(circle at 85% 70%, rgba(139, 92, 246, 0.25) 0%, transparent 45%),
+                radial-gradient(circle at 50% 10%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 30% 90%, rgba(34, 197, 94, 0.1) 0%, transparent 35%),
+                radial-gradient(circle at 70% 40%, rgba(251, 191, 36, 0.08) 0%, transparent 30%),
+                linear-gradient(135deg, #030303 0%, #0a0a0a 20%, #1a1a1a 40%, #0f0f0f 60%, #0a0a0a 80%, #030303 100%);
+            background-size: 200% 200%;
+            z-index: 0;
+            animation: gradientShift 20s ease infinite;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.02) 2px, rgba(255, 255, 255, 0.02) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255, 255, 255, 0.02) 2px, rgba(255, 255, 255, 0.02) 4px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            25% {
+                background-position: 100% 30%;
+            }
+            50% {
+                background-position: 50% 100%;
+            }
+            75% {
+                background-position: 0% 70%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) translateX(0px);
+            }
+            33% {
+                transform: translateY(-20px) translateX(10px);
+            }
+            66% {
+                transform: translateY(10px) translateX(-15px);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
+        }
+        
+        .bg-decoration {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .bg-circle-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+        
+        .bg-circle-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent);
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -5s;
+        }
+        
+        .bg-circle-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }
+        
+        .bg-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 40%; left: 80%; animation-delay: 0.5s; }
+        .particle:nth-child(3) { top: 60%; left: 30%; animation-delay: 1s; }
+        .particle:nth-child(4) { top: 80%; left: 70%; animation-delay: 1.5s; }
+        .particle:nth-child(5) { top: 30%; left: 50%; animation-delay: 2s; }
+        .particle:nth-child(6) { top: 70%; left: 20%; animation-delay: 2.5s; }
+        .particle:nth-child(7) { top: 10%; left: 60%; animation-delay: 3s; }
+        .particle:nth-child(8) { top: 90%; left: 40%; animation-delay: 3.5s; }
+        
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
-<body class="bg-black text-white min-h-screen flex items-center justify-center p-4 font-sans">
-    <div class="w-full max-w-md">
+<body class="h-full flex items-center justify-center p-4">
+    <!-- Background Decorations -->
+    <div class="bg-decoration">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+    </div>
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <div class="content-wrapper w-full max-w-md">
         <!-- Logo -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center gap-3 mb-4">
-                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-12 h-12">
-                <span class="text-3xl font-bold">SafeNode</span>
+                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-10 h-10">
+                <h1 class="text-2xl font-bold text-white">SafeNode</h1>
             </div>
+            <p class="text-zinc-400 text-sm">Security Platform</p>
         </div>
-
-        <!-- Card Principal -->
-        <div class="glass-card rounded-2xl p-8">
-            <?php if ($step === 'request'): ?>
-                <!-- STEP 1: Solicitar Código -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">Esqueceu sua senha?</h2>
-                    <p class="text-sm text-zinc-400">Digite seu e-mail para receber um código de recuperação</p>
-                </div>
-
-                <?php if ($message): ?>
-                    <div class="mb-6 p-4 rounded-xl <?php echo $messageType === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'; ?> text-sm flex items-start gap-2">
-                        <i data-lucide="<?php echo $messageType === 'error' ? 'alert-circle' : 'info'; ?>" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
-                        <span><?php echo htmlspecialchars($message); ?></span>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST" class="space-y-5">
-                    <?php echo csrf_field(); ?>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">E-mail</label>
-                        <div class="relative">
-                            <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"></i>
-                            <input type="email" name="email" required 
-                                   class="w-full pl-11 pr-4 py-3 border border-white/10 rounded-xl bg-zinc-900/30 text-white placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all" 
-                                   placeholder="seu@email.com">
-                        </div>
-                    </div>
-
-                    <button type="submit" name="request_code" 
-                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
-                        <i data-lucide="send" class="w-5 h-5"></i>
-                        Enviar Código
-                    </button>
-                </form>
-
-            <?php elseif ($step === 'verify'): ?>
-                <!-- STEP 2: Verificar Código -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">Verifique seu e-mail</h2>
-                    <p class="text-sm text-zinc-400">
-                        Enviamos um código de 6 dígitos para<br>
-                        <span class="font-semibold text-white"><?php echo htmlspecialchars($_SESSION['reset_email'] ?? ''); ?></span>
-                    </p>
-                </div>
-
-                <?php if ($message): ?>
-                    <div class="mb-6 p-4 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-sm flex items-start gap-2">
-                        <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
-                        <span><?php echo htmlspecialchars($message); ?></span>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST" class="space-y-5">
-                    <?php echo csrf_field(); ?>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">Código de Verificação</label>
-                        <input type="text" name="otp_code" required maxlength="6" pattern="[0-9]{6}"
-                               class="w-full px-4 py-3 border border-white/10 rounded-xl bg-zinc-900/30 text-white text-center text-2xl tracking-widest font-mono placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all" 
-                               placeholder="000000">
-                    </div>
-
-                    <button type="submit" name="verify_code" 
-                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
-                        <i data-lucide="check" class="w-5 h-5"></i>
-                        Verificar Código
-                    </button>
-                </form>
-
-            <?php elseif ($step === 'reset'): ?>
-                <!-- STEP 3: Redefinir Senha -->
-                <?php if (!isset($_SESSION['reset_verified']) || !$_SESSION['reset_verified']): ?>
-                    <?php header('Location: forgot-password.php?step=request'); exit; ?>
-                <?php endif; ?>
-
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">Nova Senha</h2>
-                    <p class="text-sm text-zinc-400">Defina uma nova senha forte para sua conta</p>
-                </div>
-
-                <?php if ($message): ?>
-                    <div class="mb-6 p-4 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-sm flex items-start gap-2">
-                        <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
-                        <span><?php echo htmlspecialchars($message); ?></span>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST" id="resetForm" class="space-y-5">
-                    <?php echo csrf_field(); ?>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">Nova Senha</label>
-                        <div class="relative">
-                            <input type="password" id="new_password" name="new_password" required 
-                                   class="w-full px-4 py-3 pr-12 border border-white/10 rounded-xl bg-zinc-900/30 text-white placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all" 
-                                   placeholder="Digite sua nova senha">
-                            <button type="button" onclick="togglePassword('new_password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
-                                <i data-lucide="eye" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                        <div class="mt-3 space-y-2">
-                            <p class="text-xs text-zinc-500 flex items-center gap-2">
-                                <span id="length-check" class="w-2 h-2 rounded-full bg-zinc-700"></span>
-                                Mínimo de 8 caracteres
-                            </p>
-                            <p class="text-xs text-zinc-500 flex items-center gap-2">
-                                <span id="upper-check" class="w-2 h-2 rounded-full bg-zinc-700"></span>
-                                Letras maiúsculas e minúsculas
-                            </p>
-                            <p class="text-xs text-zinc-500 flex items-center gap-2">
-                                <span id="number-check" class="w-2 h-2 rounded-full bg-zinc-700"></span>
-                                Números e símbolos
-                            </p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">Confirmar Senha</label>
-                        <div class="relative">
-                            <input type="password" id="confirm_password" name="confirm_password" required 
-                                   class="w-full px-4 py-3 pr-12 border border-white/10 rounded-xl bg-zinc-900/30 text-white placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all" 
-                                   placeholder="Confirme sua nova senha">
-                            <button type="button" onclick="togglePassword('confirm_password')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
-                                <i data-lucide="eye" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                        <p id="match-message" class="mt-2 text-xs hidden"></p>
-                    </div>
-
-                    <button type="submit" name="reset_password" 
-                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
-                        <i data-lucide="check-circle" class="w-5 h-5"></i>
-                        Redefinir Senha
-                    </button>
-                </form>
+        
+        <!-- Card -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Esqueceu sua senha?</h2>
+            <p class="text-slate-600 text-sm mb-6">
+                Digite seu email e enviaremos um código OTP para redefinir sua senha.
+            </p>
+            
+            <?php if ($message): ?>
+            <div class="mb-6 p-4 rounded-lg <?php 
+                echo $messageType === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 
+                    'bg-red-50 text-red-800 border border-red-200'; 
+            ?>">
+                <p class="text-sm font-medium"><?php echo htmlspecialchars($message); ?></p>
+            </div>
             <?php endif; ?>
-
-            <!-- Link para voltar ao login -->
-            <div class="mt-6 text-center">
-                <a href="login.php" class="text-sm text-zinc-400 hover:text-blue-400 transition-colors flex items-center justify-center gap-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    Voltar para o login
+            
+            <form method="POST" action="" id="forgotPasswordForm">
+                <?php echo csrf_field(); ?>
+                
+                <!-- Email -->
+                <div class="mb-6">
+                    <label for="email" class="block text-sm font-medium text-slate-700 mb-2">
+                        Email
+                    </label>
+                    <input 
+                        type="email" 
+                        name="email" 
+                        id="email" 
+                        required 
+                        autocomplete="email"
+                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="seu@email.com"
+                        value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
+                    >
+                </div>
+                
+                <!-- Verificação Humana SafeNode -->
+                <div class="mt-3 p-3 rounded-2xl border border-slate-200 bg-slate-50 flex items-center gap-3 shadow-sm" id="hv-box">
+                    <div class="relative flex items-center justify-center w-9 h-9">
+                        <div class="absolute inset-0 rounded-2xl border-2 border-slate-200 border-t-black animate-spin" id="hv-spinner"></div>
+                        <div class="relative z-10 w-7 h-7 rounded-2xl bg-black flex items-center justify-center">
+                            <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain">
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-semibold text-slate-900 flex items-center gap-1">
+                            SafeNode <span class="text-[10px] font-normal text-slate-500">verificação humana</span>
+                        </p>
+                        <p class="text-[11px] text-slate-500" id="hv-text">Validando interação do navegador…</p>
+                    </div>
+                    <svg id="hv-check" class="w-4 h-4 text-emerald-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <input type="hidden" name="safenode_hv_token" value="<?php echo htmlspecialchars($safenodeHvToken); ?>">
+                <input type="hidden" name="safenode_hv_js" id="safenode_hv_js" value="">
+                
+                <!-- Submit -->
+                <button 
+                    type="submit" 
+                    name="request_reset"
+                    class="w-full bg-slate-900 text-white py-3 rounded-lg font-semibold hover:bg-slate-800 transition-colors mb-4 mt-4"
+                >
+                    Enviar Código OTP
+                </button>
+            </form>
+            
+            <!-- Voltar para login -->
+            <div class="text-center">
+                <a href="login.php" class="text-sm text-slate-600 hover:text-slate-900 font-medium">
+                    ← Voltar para login
                 </a>
             </div>
         </div>
+        
+        <!-- Footer -->
+        <p class="text-center text-zinc-500 text-xs mt-6">
+            © <?php echo date('Y'); ?> SafeNode Security Platform
+        </p>
     </div>
-
+    
     <script>
-        lucide.createIcons();
-
-        function togglePassword(fieldId) {
-            const input = document.getElementById(fieldId);
-            const icon = input.nextElementSibling.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.setAttribute('data-lucide', 'eye-off');
-            } else {
-                input.type = 'password';
-                icon.setAttribute('data-lucide', 'eye');
+        // Tratamento global de erros para evitar problemas com extensões do navegador
+        window.addEventListener('error', function(e) {
+            // Ignorar erros de extensões do navegador
+            if (e.message && e.message.includes('message channel closed')) {
+                e.preventDefault();
+                return false;
             }
-            
-            lucide.createIcons();
+        });
+        
+        // Tratamento de erros não capturados
+        window.addEventListener('unhandledrejection', function(e) {
+            // Ignorar erros de extensões do navegador
+            if (e.reason && e.reason.message && e.reason.message.includes('message channel closed')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        lucide.createIcons();
+        
+        function initSafeNodeHumanVerification() {
+            try {
+                const hvJs = document.getElementById('safenode_hv_js');
+                const hvSpinner = document.getElementById('hv-spinner');
+                const hvCheck = document.getElementById('hv-check');
+                const hvText = document.getElementById('hv-text');
+
+                // Marcar imediatamente como verificado
+                if (hvJs) {
+                    hvJs.value = '1';
+                }
+
+                // Após um pequeno atraso, mostrar visual de verificado
+                setTimeout(() => {
+                    try {
+                        if (hvSpinner) hvSpinner.classList.add('hidden');
+                        if (hvCheck) hvCheck.classList.remove('hidden');
+                        if (hvText) hvText.textContent = 'Verificado com SafeNode';
+                    } catch (e) {
+                        // Ignorar erros de DOM
+                        console.warn('Erro ao atualizar verificação humana:', e);
+                    }
+                }, 800);
+            } catch (e) {
+                // Ignorar erros, não é crítico
+                console.warn('Erro ao inicializar verificação humana:', e);
+            }
         }
 
-        // Password validation (se estiver na step reset)
-        const newPassword = document.getElementById('new_password');
-        const confirmPassword = document.getElementById('confirm_password');
-        
-        if (newPassword && confirmPassword) {
-            const matchMessage = document.getElementById('match-message');
-            const lengthCheck = document.getElementById('length-check');
-            const upperCheck = document.getElementById('upper-check');
-            const numberCheck = document.getElementById('number-check');
-
-            newPassword.addEventListener('input', function() {
-                const password = this.value;
-                
-                if (password.length >= 8) {
-                    lengthCheck.classList.remove('bg-zinc-700');
-                    lengthCheck.classList.add('bg-emerald-500');
-                } else {
-                    lengthCheck.classList.remove('bg-emerald-500');
-                    lengthCheck.classList.add('bg-zinc-700');
-                }
-                
-                if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
-                    upperCheck.classList.remove('bg-zinc-700');
-                    upperCheck.classList.add('bg-emerald-500');
-                } else {
-                    upperCheck.classList.remove('bg-emerald-500');
-                    upperCheck.classList.add('bg-zinc-700');
-                }
-                
-                if (/\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-                    numberCheck.classList.remove('bg-zinc-700');
-                    numberCheck.classList.add('bg-emerald-500');
-                } else {
-                    numberCheck.classList.remove('bg-emerald-500');
-                    numberCheck.classList.add('bg-zinc-700');
-                }
-                
-                checkMatch();
-            });
-
-            confirmPassword.addEventListener('input', checkMatch);
-
-            function checkMatch() {
-                if (confirmPassword.value && newPassword.value) {
-                    if (confirmPassword.value === newPassword.value) {
-                        matchMessage.textContent = '✓ As senhas coincidem';
-                        matchMessage.className = 'mt-2 text-xs text-emerald-400';
-                        matchMessage.classList.remove('hidden');
-                    } else {
-                        matchMessage.textContent = '✗ As senhas não coincidem';
-                        matchMessage.className = 'mt-2 text-xs text-red-400';
-                        matchMessage.classList.remove('hidden');
-                    }
-                } else {
-                    matchMessage.classList.add('hidden');
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initSafeNodeHumanVerification();
+            } catch (e) {
+                console.warn('Erro no DOMContentLoaded:', e);
             }
+        });
+        
+        // Garantir que o formulário seja submetido mesmo com erros de extensões
+        const form = document.getElementById('forgotPasswordForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Garantir que o campo de verificação humana está preenchido
+                const hvJs = document.getElementById('safenode_hv_js');
+                if (hvJs && !hvJs.value) {
+                    hvJs.value = '1';
+                }
+            });
         }
     </script>
 </body>
 </html>
-
-

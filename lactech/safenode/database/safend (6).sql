@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3306
--- Tempo de geração: 12/12/2025 às 23:50
--- Versão do servidor: 11.8.3-MariaDB-log
--- Versão do PHP: 7.2.34
+-- Host: 127.0.0.1
+-- Tempo de geração: 13/12/2025 às 20:12
+-- Versão do servidor: 10.4.32-MariaDB
+-- Versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `u311882628_safend`
+-- Banco de dados: `safend`
 --
 
 DELIMITER $$
@@ -1505,13 +1505,7 @@ INSERT INTO `safenode_settings` (`id`, `setting_key`, `setting_value`, `setting_
 (14, 'api_rate_window', '60', 'integer', 'Janela de tempo para rate limit da API em segundos', 'rate_limit', 1, '2025-11-20 22:47:10', '2025-11-20 22:47:10'),
 (15, 'cloudflare_sync', '1', 'boolean', 'Sincronizar bloqueios com Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-20 22:47:10'),
 (16, 'cloudflare_zone_id', '2e1eb9127f2d34761d4626b5e71aaaab', 'string', 'Zone ID do Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-22 22:59:49'),
-(17, 'cloudflare_api_token', 'B4ExJBwzVAIZHjzEFjA3lEp2kyxBgmYE5pAEmCfA', 'string', 'API Token do Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-22 22:59:49'),
-(18, 'recaptcha_site_key', '', 'string', 'Google reCAPTCHA Site Key (obtenha em https://www.google.com/recaptcha/admin)', 'security', 1, '2025-12-12 23:43:15', '2025-12-12 23:43:15'),
-(19, 'recaptcha_secret_key', '', 'string', 'Google reCAPTCHA Secret Key', 'security', 1, '2025-12-12 23:43:15', '2025-12-12 23:43:15'),
-(20, 'recaptcha_version', 'v2', 'string', 'Versão do reCAPTCHA: v2 (checkbox) ou v3 (invisível)', 'security', 1, '2025-12-12 23:43:15', '2025-12-12 23:43:15'),
-(21, 'recaptcha_action', 'submit', 'string', 'Nome da ação para reCAPTCHA v3 (ex: login, register, submit)', 'security', 1, '2025-12-12 23:43:15', '2025-12-12 23:43:15'),
-(22, 'recaptcha_score_threshold', '0.5', 'float', 'Score mínimo para aprovar em v3 (0.0 = bot, 1.0 = humano). Recomendado: 0.5', 'security', 1, '2025-12-12 23:43:15', '2025-12-12 23:43:15'),
-(23, 'recaptcha_enabled', '0', 'boolean', 'Habilitar reCAPTCHA no login (1 = sim, 0 = não)', 'security', 1, '2025-12-12 23:43:15', '2025-12-12 23:43:15');
+(17, 'cloudflare_api_token', 'B4ExJBwzVAIZHjzEFjA3lEp2kyxBgmYE5pAEmCfA', 'string', 'API Token do Cloudflare', 'cloudflare', 1, '2025-11-20 22:47:10', '2025-11-22 22:59:49');
 
 -- --------------------------------------------------------
 
@@ -1746,8 +1740,35 @@ CREATE TABLE `v_safenode_top_blocked_ips` (
 `ip_address` varchar(45)
 ,`block_count` bigint(21)
 ,`last_blocked` timestamp
-,`threat_types` longtext
+,`threat_types` mediumtext
 );
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para view `v_safenode_active_blocks`
+--
+DROP TABLE IF EXISTS `v_safenode_active_blocks`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_Kron`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_active_blocks`  AS SELECT `safenode_blocked_ips`.`ip_address` AS `ip_address`, `safenode_blocked_ips`.`reason` AS `reason`, `safenode_blocked_ips`.`threat_type` AS `threat_type`, `safenode_blocked_ips`.`created_at` AS `blocked_at`, `safenode_blocked_ips`.`expires_at` AS `expires_at`, timestampdiff(SECOND,current_timestamp(),`safenode_blocked_ips`.`expires_at`) AS `seconds_remaining` FROM `safenode_blocked_ips` WHERE `safenode_blocked_ips`.`is_active` = 1 AND (`safenode_blocked_ips`.`expires_at` is null OR `safenode_blocked_ips`.`expires_at` > current_timestamp()) ;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para view `v_safenode_today_stats`
+--
+DROP TABLE IF EXISTS `v_safenode_today_stats`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_Kron`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_today_stats`  AS SELECT count(0) AS `total_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'blocked' then 1 else 0 end) AS `blocked_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'allowed' then 1 else 0 end) AS `allowed_requests`, count(distinct `safenode_security_logs`.`ip_address`) AS `unique_ips`, sum(case when `safenode_security_logs`.`threat_type` = 'sql_injection' then 1 else 0 end) AS `sql_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'xss' then 1 else 0 end) AS `xss_count`, sum(case when `safenode_security_logs`.`threat_type` = 'brute_force' then 1 else 0 end) AS `brute_force_count`, sum(case when `safenode_security_logs`.`threat_type` = 'rate_limit' then 1 else 0 end) AS `rate_limit_count`, sum(case when `safenode_security_logs`.`threat_type` = 'path_traversal' then 1 else 0 end) AS `path_traversal_count`, sum(case when `safenode_security_logs`.`threat_type` = 'command_injection' then 1 else 0 end) AS `command_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'ddos' then 1 else 0 end) AS `ddos_count` FROM `safenode_security_logs` WHERE cast(`safenode_security_logs`.`created_at` as date) = curdate() ;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para view `v_safenode_top_blocked_ips`
+--
+DROP TABLE IF EXISTS `v_safenode_top_blocked_ips`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_Kron`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_top_blocked_ips`  AS SELECT `safenode_security_logs`.`ip_address` AS `ip_address`, count(0) AS `block_count`, max(`safenode_security_logs`.`created_at`) AS `last_blocked`, substring_index(group_concat(distinct `safenode_security_logs`.`threat_type` order by `safenode_security_logs`.`threat_type` ASC separator ','),',',10) AS `threat_types` FROM `safenode_security_logs` WHERE `safenode_security_logs`.`action_taken` = 'blocked' AND `safenode_security_logs`.`created_at` >= current_timestamp() - interval 7 day GROUP BY `safenode_security_logs`.`ip_address` ORDER BY count(0) DESC LIMIT 0, 100 ;
 
 --
 -- Índices para tabelas despejadas
@@ -2107,7 +2128,7 @@ ALTER TABLE `safenode_security_logs_archive`
 -- AUTO_INCREMENT de tabela `safenode_settings`
 --
 ALTER TABLE `safenode_settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT de tabela `safenode_sites`
@@ -2156,33 +2177,6 @@ ALTER TABLE `safenode_user_sessions`
 --
 ALTER TABLE `safenode_whitelist`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
--- --------------------------------------------------------
-
---
--- Estrutura para view `v_safenode_active_blocks`
---
-DROP TABLE IF EXISTS `v_safenode_active_blocks`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_Kron`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_active_blocks`  AS SELECT `safenode_blocked_ips`.`ip_address` AS `ip_address`, `safenode_blocked_ips`.`reason` AS `reason`, `safenode_blocked_ips`.`threat_type` AS `threat_type`, `safenode_blocked_ips`.`created_at` AS `blocked_at`, `safenode_blocked_ips`.`expires_at` AS `expires_at`, timestampdiff(SECOND,current_timestamp(),`safenode_blocked_ips`.`expires_at`) AS `seconds_remaining` FROM `safenode_blocked_ips` WHERE `safenode_blocked_ips`.`is_active` = 1 AND (`safenode_blocked_ips`.`expires_at` is null OR `safenode_blocked_ips`.`expires_at` > current_timestamp()) ;
-
--- --------------------------------------------------------
-
---
--- Estrutura para view `v_safenode_today_stats`
---
-DROP TABLE IF EXISTS `v_safenode_today_stats`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_Kron`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_today_stats`  AS SELECT count(0) AS `total_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'blocked' then 1 else 0 end) AS `blocked_requests`, sum(case when `safenode_security_logs`.`action_taken` = 'allowed' then 1 else 0 end) AS `allowed_requests`, count(distinct `safenode_security_logs`.`ip_address`) AS `unique_ips`, sum(case when `safenode_security_logs`.`threat_type` = 'sql_injection' then 1 else 0 end) AS `sql_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'xss' then 1 else 0 end) AS `xss_count`, sum(case when `safenode_security_logs`.`threat_type` = 'brute_force' then 1 else 0 end) AS `brute_force_count`, sum(case when `safenode_security_logs`.`threat_type` = 'rate_limit' then 1 else 0 end) AS `rate_limit_count`, sum(case when `safenode_security_logs`.`threat_type` = 'path_traversal' then 1 else 0 end) AS `path_traversal_count`, sum(case when `safenode_security_logs`.`threat_type` = 'command_injection' then 1 else 0 end) AS `command_injection_count`, sum(case when `safenode_security_logs`.`threat_type` = 'ddos' then 1 else 0 end) AS `ddos_count` FROM `safenode_security_logs` WHERE cast(`safenode_security_logs`.`created_at` as date) = curdate() ;
-
--- --------------------------------------------------------
-
---
--- Estrutura para view `v_safenode_top_blocked_ips`
---
-DROP TABLE IF EXISTS `v_safenode_top_blocked_ips`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`u311882628_Kron`@`127.0.0.1` SQL SECURITY DEFINER VIEW `v_safenode_top_blocked_ips`  AS SELECT `safenode_security_logs`.`ip_address` AS `ip_address`, count(0) AS `block_count`, max(`safenode_security_logs`.`created_at`) AS `last_blocked`, substring_index(group_concat(distinct `safenode_security_logs`.`threat_type` order by `safenode_security_logs`.`threat_type` ASC separator ','),',',10) AS `threat_types` FROM `safenode_security_logs` WHERE `safenode_security_logs`.`action_taken` = 'blocked' AND `safenode_security_logs`.`created_at` >= current_timestamp() - interval 7 day GROUP BY `safenode_security_logs`.`ip_address` ORDER BY count(0) DESC LIMIT 0, 100 ;
 
 --
 -- Restrições para tabelas despejadas

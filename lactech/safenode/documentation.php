@@ -378,8 +378,8 @@ $pageTitle = 'Documentação';
 
             <div class="flex items-center gap-4">
                 <button onclick="window.location.href='profile.php'" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl transition-all group">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform">
-                        <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
+                    <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden">
+                        <img src="assets/img/logos (6).png" alt="SafeNode" class="w-full h-full object-contain p-1">
                     </div>
                 </button>
             </div>

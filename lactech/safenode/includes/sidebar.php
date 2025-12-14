@@ -110,6 +110,19 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
         <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'attacked-targets' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="target" class="w-5 h-5 group-hover:text-orange-400 transition-colors"></i> Alvos Atacados
         </a>
+        <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Inteligência</div>
+        <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'threat-intelligence' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="shield-alert" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i> Threat Intelligence
+        </a>
+        <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'security-advisor' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="shield-check" class="w-5 h-5 group-hover:text-green-400 transition-colors"></i> Security Advisor
+        </a>
+        <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'endpoint-protection' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="route" class="w-5 h-5 group-hover:text-blue-400 transition-colors"></i> Proteção por Endpoint
+        </a>
+        <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'security-tests' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="test-tube" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Testes de Segurança
+        </a>
         <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sistema</div>
         <a href="<?php echo getSafeNodeUrl('updates'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'updates' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="sparkles" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Atualizações
@@ -120,8 +133,8 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
     </nav>
     <div class="p-4 border-t border-white/5">
         <button onclick="window.location.href='<?php echo getSafeNodeUrl('profile'); ?>'" class="w-full flex items-center gap-3 hover:bg-white/5 rounded-lg p-2 transition-all group mb-2">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                <?php echo strtoupper(substr($_SESSION['safenode_username'] ?? 'U', 0, 1)); ?>
+            <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden">
+                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-full h-full object-contain p-1">
             </div>
             <div class="flex-1 min-w-0 text-left">
                 <p class="text-sm font-medium text-white truncate"><?php echo htmlspecialchars($_SESSION['safenode_username'] ?? 'Admin'); ?></p>

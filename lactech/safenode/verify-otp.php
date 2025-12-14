@@ -438,17 +438,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend'])) {
         <!-- Resend Link -->
             <div class="mt-6 md:mt-8 text-center">
             <p class="text-slate-500 text-sm mb-3">Não recebeu o código?</p>
-            <form method="POST" id="resendForm">
-                <input type="hidden" name="resend" value="1">
-                
-                <!-- SafeNode Hidden Verification -->
-                <input type="hidden" name="safenode_hv_token" value="<?php echo htmlspecialchars($safenodeHvToken); ?>">
-                <input type="hidden" name="safenode_hv_js" id="safenode_hv_js_resend" value="">
-                
-                    <button type="submit" class="text-slate-900 font-semibold text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all">
-                    Reenviar código
-                </button>
-            </form>
+            <button 
+                type="button" 
+                id="resendOtpBtn" 
+                onclick="resendOTP()"
+                class="text-slate-900 font-semibold text-sm md:text-base hover:underline decoration-2 underline-offset-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                <span id="resendText">Reenviar código</span>
+                <span id="resendLoading" class="hidden">Enviando...</span>
+                <span id="resendSuccess" class="hidden text-green-600">✓ Código reenviado!</span>
+            </button>
+            <p id="resendError" class="text-red-600 text-sm mt-2 hidden"></p>
         </div>
 
         <!-- Footer -->
@@ -484,96 +484,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend'])) {
 
         document.addEventListener('DOMContentLoaded', function() {
             // Inicializar ícones Lucide
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-            
-            // Iniciar verificação humana
-            initSafeNodeHumanVerification();
-            
-            const form = document.getElementById('otpForm');
-            const inputs = form.querySelectorAll('.otp-input');
-            const hiddenInput = document.getElementById('otp_code');
-
-            // Focus first input on load
-            inputs[0].focus();
-
-            const updateHiddenInput = () => {
-                const code = Array.from(inputs).map(input => input.value).join('');
-                hiddenInput.value = code;
-                return code;
-            };
-
-            inputs.forEach((input, index) => {
-                // Handle typing
-                input.addEventListener('input', (e) => {
-                    // Allow only numbers
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    
-                    const val = e.target.value;
-                    
-                    if (val) {
-                        updateHiddenInput();
-                        // Move to next input if available
-                        if (index < inputs.length - 1) {
-                            inputs[index + 1].focus();
-                        } else {
-                            // If last input is filled, blur or auto-submit
-                            // Optional: form.submit();
-                            input.blur();
-                        }
-                    }
-                });
-
-                // Handle Backspace
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace') {
-                        if (!input.value && index > 0) {
-                            inputs[index - 1].focus();
-                            // Optional: clear previous input on backspace
-                            // inputs[index - 1].value = '';
-                            // updateHiddenInput();
-                        }
-                    }
-                });
-
-                // Handle Paste
-                input.addEventListener('paste', (e) => {
-                    e.preventDefault();
-                    const pasteData = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
-                    
-                    if (pasteData) {
-                        const chars = pasteData.split('');
-                        let lastIndex = index;
-                        
-                        chars.forEach((char, i) => {
-                            if (index + i < inputs.length) {
-                                inputs[index + i].value = char;
-                                lastIndex = index + i;
-                            }
-                        });
-                        
-                        updateHiddenInput();
-                        
-                        // Focus the input after the last filled one, or the last one
-                        if (lastIndex < inputs.length - 1) {
-                            inputs[lastIndex + 1].focus();
-                        } else {
-                            inputs[inputs.length - 1].focus();
-                        }
-                        
-                        // Auto submit if full code is pasted
-                        if (updateHiddenInput().length === 6) {
-                            form.submit();
-                        }
-                    }
-                });
-            });
-        });
-    </script>
-</body>
-</html>
-
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }

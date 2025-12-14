@@ -1134,9 +1134,9 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                         
                                         <!-- Profile -->
                                         <button class="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded-lg transition-all group">
-                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-white font-bold text-xs shadow-lg group-hover:scale-105 transition-transform">
-                                                A
-                                </div>
+                                            <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden">
+                                                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-full h-full object-contain p-0.5">
+                                            </div>
                                         </button>
                             </div>
                                 </header>
