@@ -39,9 +39,10 @@ $userId = $_SESSION['safenode_user_id'] ?? null;
 
 // Buscar dados atualizados do banco
 $avatarUrl = null;
+
 if ($db && $userId) {
     try {
-        $stmt = $db->prepare("SELECT username, full_name, email, created_at, avatar_url FROM safenode_users WHERE id = ?");
+        $stmt = $db->prepare("SELECT username, full_name, email, created_at, avatar_url, role FROM safenode_users WHERE id = ?");
         $stmt->execute([$userId]);
         $userData = $stmt->fetch();
         if ($userData) {
@@ -49,6 +50,7 @@ if ($db && $userId) {
             $fullName = $userData['full_name'] ?? $fullName;
             $email = $userData['email'] ?? $email;
             $avatarUrl = $userData['avatar_url'] ?? null;
+            $userRole = $userData['role'] ?? 'user';
             $userStats['account_created'] = $userData['created_at'] ?? date('Y-m-d');
             $userInitial = strtoupper(substr($username, 0, 1));
         }
@@ -105,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         }
     }
 }
+
 
 // Buscar estatísticas do usuário
 $userStats = [
@@ -911,6 +914,35 @@ if ($db) {
                     </div>
                 </div>
 
+                <!-- Permissões do Navegador - Redesign -->
+                <div class="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden animate-fade-in depth-shadow" style="animation-delay: 0.15s">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                    
+                    <!-- Decoração de fundo -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                                <i data-lucide="shield" class="w-6 h-6 text-emerald-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Permissões do Navegador</h3>
+                                <p class="text-xs text-zinc-400 mt-0.5 font-medium">Gerencie as permissões do seu navegador</p>
+                            </div>
+                        </div>
+                        
+                        <div id="browserPermissionsContainer" class="space-y-4">
+                            <!-- Permissões serão carregadas via JavaScript -->
+                            <div class="text-center py-8">
+                                <i data-lucide="loader-2" class="w-8 h-8 text-zinc-500 animate-spin mx-auto mb-3"></i>
+                                <p class="text-sm text-zinc-500 font-medium">Carregando permissões...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Segurança Avançada - Redesign -->
                 <div class="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden animate-fade-in depth-shadow" style="animation-delay: 0.2s">
                     <!-- Grid pattern -->
@@ -1705,6 +1737,335 @@ if ($db) {
 
         document.getElementById('deleteCode')?.addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        });
+
+        // ========== PERMISSÕES DO NAVEGADOR ==========
+        const browserPermissions = [
+            {
+                key: 'camera',
+                name: 'Câmera',
+                description: 'Acesso à câmera do dispositivo',
+                icon: 'camera',
+                apiName: 'camera'
+            },
+            {
+                key: 'microphone',
+                name: 'Microfone',
+                description: 'Acesso ao microfone do dispositivo',
+                icon: 'mic',
+                apiName: 'microphone'
+            },
+            {
+                key: 'geolocation',
+                name: 'Localização',
+                description: 'Acesso à localização do dispositivo',
+                icon: 'map-pin',
+                apiName: 'geolocation'
+            },
+            {
+                key: 'notifications',
+                name: 'Notificações',
+                description: 'Enviar notificações push',
+                icon: 'bell',
+                apiName: 'notifications'
+            },
+            {
+                key: 'clipboard',
+                name: 'Área de Transferência',
+                description: 'Ler e escrever na área de transferência',
+                icon: 'clipboard',
+                apiName: 'clipboard-read'
+            },
+            {
+                key: 'persistent-storage',
+                name: 'Armazenamento Persistente',
+                description: 'Armazenamento de dados persistente',
+                icon: 'hard-drive',
+                apiName: 'persistent-storage'
+            }
+        ];
+
+        function getPermissionStatus(permissionName) {
+            if (!navigator.permissions || !navigator.permissions.query) {
+                return Promise.resolve('unsupported');
+            }
+            
+            return navigator.permissions.query({ name: permissionName })
+                .then(result => result.state)
+                .catch(() => {
+                    // Algumas permissões podem não ser suportadas
+                    if (permissionName === 'notifications') {
+                        return Notification.permission || 'default';
+                    }
+                    if (permissionName === 'geolocation') {
+                        return 'prompt';
+                    }
+                    return 'unsupported';
+                });
+        }
+
+        async function requestPermission(apiName) {
+            try {
+                switch(apiName) {
+                    case 'camera':
+                        const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        cameraStream.getTracks().forEach(track => track.stop());
+                        return 'granted';
+                    
+                    case 'microphone':
+                        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        micStream.getTracks().forEach(track => track.stop());
+                        return 'granted';
+                    
+                    case 'geolocation':
+                        return new Promise((resolve) => {
+                            navigator.geolocation.getCurrentPosition(
+                                () => resolve('granted'),
+                                () => resolve('denied'),
+                                { timeout: 5000 }
+                            );
+                        });
+                    
+                    case 'notifications':
+                        const result = await Notification.requestPermission();
+                        return result;
+                    
+                    case 'persistent-storage':
+                        if (navigator.storage && navigator.storage.persist) {
+                            try {
+                                const granted = await navigator.storage.persist();
+                                return granted ? 'granted' : 'denied';
+                            } catch (err) {
+                                return 'denied';
+                            }
+                        }
+                        return 'unsupported';
+                    
+                    case 'clipboard-read':
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                            try {
+                                await navigator.clipboard.readText();
+                                return 'granted';
+                            } catch (err) {
+                                if (err.name === 'NotAllowedError') {
+                                    return 'denied';
+                                }
+                                return 'prompt';
+                            }
+                        }
+                        return 'unsupported';
+                    
+                    default:
+                        return 'prompt';
+                }
+            } catch (error) {
+                console.error('Erro ao solicitar permissão:', error);
+                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    return 'denied';
+                }
+                return 'denied';
+            }
+        }
+
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'granted':
+                    return { icon: 'check-circle', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30' };
+                case 'denied':
+                    return { icon: 'x-circle', color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/30' };
+                case 'prompt':
+                    return { icon: 'alert-circle', color: 'text-yellow-400', bg: 'bg-yellow-500/15', border: 'border-yellow-500/30' };
+                default:
+                    return { icon: 'help-circle', color: 'text-zinc-400', bg: 'bg-zinc-500/15', border: 'border-zinc-500/30' };
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'granted': return 'Permitido';
+                case 'denied': return 'Negado';
+                case 'prompt': return 'Solicitar';
+                case 'unsupported': return 'Não Suportado';
+                default: return 'Desconhecido';
+            }
+        }
+
+        function createPermissionCard(permission, status) {
+            const statusInfo = getStatusIcon(status);
+            const statusText = getStatusText(status);
+            const isGranted = status === 'granted';
+            const isUnsupported = status === 'unsupported';
+            
+            return `
+                <div class="permission-item flex items-center justify-between p-4 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-emerald-500/30 transition-all group">
+                    <div class="flex items-center gap-3 flex-1">
+                        <div class="w-10 h-10 rounded-lg ${statusInfo.bg} border ${statusInfo.border} flex items-center justify-center group-hover:opacity-80 transition-colors">
+                            <i data-lucide="${permission.icon}" class="w-5 h-5 ${statusInfo.color}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-white">${permission.name}</p>
+                            <p class="text-xs text-zinc-500 font-medium">${permission.description}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold ${statusInfo.color}">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        ${isUnsupported ? 
+                            `<button disabled class="px-4 py-2 rounded-lg bg-zinc-700/50 text-zinc-500 text-sm font-bold cursor-not-allowed">
+                                Não Disponível
+                            </button>` :
+                            isGranted ?
+                            `<label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked disabled class="sr-only peer">
+                                <div class="w-11 h-6 bg-emerald-500 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </label>` :
+                            `<button onclick="requestBrowserPermission('${permission.apiName}', '${permission.key}')" class="px-4 py-2 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 text-sm font-bold transition-all flex items-center gap-2">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                                Solicitar
+                            </button>`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadBrowserPermissions() {
+            const container = document.getElementById('browserPermissionsContainer');
+            if (!container) return;
+
+            container.innerHTML = '<div class="text-center py-8"><i data-lucide="loader-2" class="w-8 h-8 text-zinc-500 animate-spin mx-auto mb-3"></i><p class="text-sm text-zinc-500 font-medium">Carregando permissões...</p></div>';
+            lucide.createIcons();
+
+            let html = '';
+            
+            for (const permission of browserPermissions) {
+                let status = 'unsupported';
+                
+                try {
+                    if (permission.apiName === 'notifications') {
+                        status = Notification.permission || 'default';
+                        if (status === 'default') status = 'prompt';
+                    } else if (permission.apiName === 'geolocation') {
+                        if (navigator.geolocation) {
+                            status = await getPermissionStatus('geolocation');
+                        } else {
+                            status = 'unsupported';
+                        }
+                    } else if (permission.apiName === 'camera') {
+                        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                            status = await getPermissionStatus('camera');
+                        } else {
+                            status = 'unsupported';
+                        }
+                    } else if (permission.apiName === 'microphone') {
+                        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                            status = await getPermissionStatus('microphone');
+                        } else {
+                            status = 'unsupported';
+                        }
+                    } else if (permission.apiName === 'clipboard-read') {
+                        // Verificar se clipboard API está disponível
+                        if (navigator.clipboard && navigator.clipboard.readText) {
+                            // Tentar ler para verificar permissão
+                            try {
+                                await navigator.clipboard.readText();
+                                status = 'granted';
+                            } catch (err) {
+                                if (err.name === 'NotAllowedError') {
+                                    status = 'denied';
+                                } else {
+                                    status = 'prompt';
+                                }
+                            }
+                        } else {
+                            status = 'unsupported';
+                        }
+                    } else if (permission.apiName === 'persistent-storage') {
+                        if (navigator.storage && navigator.storage.persist) {
+                            try {
+                                const isPersistent = await navigator.storage.persisted();
+                                status = isPersistent ? 'granted' : 'prompt';
+                            } catch (err) {
+                                status = 'prompt';
+                            }
+                        } else {
+                            status = 'unsupported';
+                        }
+                    } else {
+                        status = await getPermissionStatus(permission.apiName);
+                    }
+                } catch (error) {
+                    console.error(`Erro ao verificar permissão ${permission.name}:`, error);
+                    status = 'unsupported';
+                }
+                
+                html += createPermissionCard(permission, status);
+            }
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        async function requestBrowserPermission(apiName, key) {
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            button.disabled = true;
+            button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            lucide.createIcons();
+
+            try {
+                const status = await requestPermission(apiName);
+                
+                if (status === 'granted') {
+                    showTemporaryMessage('Permissão concedida com sucesso!', 'success');
+                } else {
+                    showTemporaryMessage('Permissão negada. Verifique as configurações do navegador.', 'error');
+                }
+                
+                // Recarregar permissões
+                setTimeout(() => {
+                    loadBrowserPermissions();
+                }, 1000);
+            } catch (error) {
+                console.error('Erro ao solicitar permissão:', error);
+                showTemporaryMessage('Erro ao solicitar permissão. Tente novamente.', 'error');
+                button.disabled = false;
+                button.textContent = originalText;
+                button.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function showTemporaryMessage(message, type) {
+            const existingMsg = document.getElementById('tempPermissionMessage');
+            if (existingMsg) {
+                existingMsg.remove();
+            }
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.id = 'tempPermissionMessage';
+            msgDiv.className = 'fixed top-20 right-8 z-50 p-4 rounded-xl font-semibold flex items-center gap-3 animate-fade-in shadow-lg ' + 
+                (type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30');
+            msgDiv.innerHTML = '<i data-lucide="' + (type === 'success' ? 'check-circle' : 'alert-circle') + '" class="w-5 h-5"></i><span>' + message + '</span>';
+            
+            document.body.appendChild(msgDiv);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                msgDiv.style.opacity = '0';
+                msgDiv.style.transition = 'opacity 0.3s';
+                setTimeout(() => msgDiv.remove(), 300);
+            }, 3000);
+        }
+
+        // Carregar permissões ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBrowserPermissions();
+            
+            // Atualizar permissões periodicamente (a cada 5 segundos)
+            setInterval(loadBrowserPermissions, 5000);
         });
     </script>
     
