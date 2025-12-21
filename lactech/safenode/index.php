@@ -2079,6 +2079,10 @@ hv.<span class="code-syntax-function">init</span>().<span class="code-syntax-fun
                 <div>
                     <h4 class="font-semibold text-white mb-5 text-sm uppercase tracking-wider">Recursos</h4>
                     <ul class="space-y-3">
+                        <li><a href="ANALISE_FUNCIONALIDADES.html" class="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2 group">
+                            <i data-lucide="file-text" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            Análise de Funcionalidades
+                        </a></li>
                         <li><a href="#" class="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2 group">
                             <i data-lucide="users" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                             Comunidade

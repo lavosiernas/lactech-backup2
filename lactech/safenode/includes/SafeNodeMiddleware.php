@@ -90,7 +90,19 @@ class SafeNodeMiddleware {
         
         self::$visitorCountry = self::detectCountryCode($ipAddress);
         
-        // 1.1 Verificar reputação própria (SISTEMA INDEPENDENTE)
+        // 1.1 Verificar Threat Intelligence Network (FUNCIONAL)
+        require_once __DIR__ . '/ThreatIntelligenceNetwork.php';
+        $threatNetwork = new ThreatIntelligenceNetwork(self::$db);
+        $globalThreat = $threatNetwork->checkThreat($ipAddress);
+        
+        if ($globalThreat && $globalThreat['is_global_block'] == 1) {
+            // IP está na rede global de ameaças - bloquear imediatamente
+            $ipBlocker->blockIP($ipAddress, "IP bloqueado pela rede de inteligência global: {$globalThreat['threat_type']}", 'threat_intelligence_network', 86400 * 7);
+            $logger->log($ipAddress, $_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET', 'blocked', 'threat_intelligence_network', $globalThreat['severity'], $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
+            self::blockRequest("IP bloqueado pela rede de inteligência global", 'threat_intelligence_network');
+        }
+        
+        // 1.2 Verificar reputação própria (SISTEMA INDEPENDENTE)
         if ($ipReputation->isWhitelisted($ipAddress)) {
             $logger->log($ipAddress, $_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET', 'allowed', null, 0, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry);
             $ipReputation->updateReputation($ipAddress, 'allowed', 0, null, self::$visitorCountry);
@@ -342,6 +354,9 @@ class SafeNodeMiddleware {
                 
                 // Enviar para Cloudflare se configurado (OPCIONAL - não bloqueia se falhar)
                 self::sendToCloudflare($ipAddress, $threatAnalysis['threat_type'] ?? 'unknown');
+                
+                // Reportar ameaça para Threat Intelligence Network (FUNCIONAL)
+                self::reportToThreatNetwork($ipAddress, $threatAnalysis['threat_type'] ?? 'unknown', $threatScore, $threatAnalysis);
                 
                 // Registrar log SÍNCRONO (bloqueios devem ser logados imediatamente)
                 $logger->log($ipAddress, $requestUri, $requestMethod, 'blocked', $threatAnalysis['threat_type'] ?? null, $threatScore, $_SERVER['HTTP_USER_AGENT'] ?? null, $_SERVER['HTTP_REFERER'] ?? null, self::$siteId, null, self::$visitorCountry, $confidenceScore);
@@ -684,15 +699,38 @@ class SafeNodeMiddleware {
             error_log("SafeNode Cloudflare Integration Error: " . $e->getMessage());
         }
     }
-}
-
-                    $ipAddress,
-                    'block',
-                    "SafeNode Auto-Block: $threatType"
-                );
+    
+    /**
+     * Reporta ameaça para Threat Intelligence Network (FUNCIONAL)
+     */
+    private static function reportToThreatNetwork($ipAddress, $threatType, $threatScore, $threatAnalysis) {
+        if (!self::$db || !self::$siteId) return;
+        
+        try {
+            require_once __DIR__ . '/ThreatIntelligenceNetwork.php';
+            $threatNetwork = new ThreatIntelligenceNetwork(self::$db);
+            
+            // Extrair padrão de ataque se disponível
+            $attackPattern = null;
+            if (isset($threatAnalysis['pattern']) || isset($threatAnalysis['signature'])) {
+                $attackPattern = [
+                    'pattern' => $threatAnalysis['pattern'] ?? null,
+                    'signature' => $threatAnalysis['signature'] ?? null,
+                    'payload' => $threatAnalysis['payload'] ?? null
+                ];
             }
+            
+            // Reportar ameaça para a rede
+            $threatNetwork->reportThreat(
+                $ipAddress,
+                $threatType,
+                $threatScore,
+                $attackPattern,
+                self::$siteId
+            );
         } catch (Exception $e) {
-            error_log("SafeNode Cloudflare Integration Error: " . $e->getMessage());
+            // Não bloquear requisição se falhar o report
+            error_log("SafeNode ThreatNetwork Report Error: " . $e->getMessage());
         }
     }
 }

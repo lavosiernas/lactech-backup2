@@ -15,17 +15,43 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/ThreatIntelligenceNetwork.php';
+require_once __DIR__ . '/includes/ThreatIntelligence.php';
 
 $pageTitle = 'Threat Intelligence';
 $currentSiteId = $_SESSION['view_site_id'] ?? 0;
 $userId = $_SESSION['safenode_user_id'] ?? null;
 
 $db = getSafeNodeDatabase();
-$threatIntel = new ThreatIntelligenceNetwork($db);
+$threatNetwork = new ThreatIntelligenceNetwork($db);
+$threatIntel = new ThreatIntelligence($db);
+
+// Parâmetros
+$searchIP = $_GET['ip'] ?? '';
+$threatType = $_GET['type'] ?? '';
+$minSeverity = isset($_GET['severity']) ? (int)$_GET['severity'] : 70;
 
 // Obter estatísticas
-$stats = $threatIntel->getNetworkStats();
-$globalThreats = $threatIntel->getGlobalThreats(50, 70, 60);
+$stats = $threatNetwork->getNetworkStats();
+$globalThreats = $threatNetwork->getGlobalThreats(100, $minSeverity, 60);
+$recentThreats = $threatNetwork->getRecentThreats(24, 20);
+$threatsByType = $threatNetwork->getThreatsByType();
+$topPatterns = $threatNetwork->getTopAttackPatterns(10);
+
+// Se IP específico foi pesquisado
+$ipDetails = null;
+if (!empty($searchIP) && filter_var($searchIP, FILTER_VALIDATE_IP)) {
+    $ipDetails = $threatIntel->checkIP($searchIP);
+}
+
+// Filtrar ameaças por tipo se especificado
+if (!empty($threatType)) {
+    $globalThreats = array_filter($globalThreats, function($threat) use ($threatType) {
+        return $threat['threat_type'] === $threatType;
+    });
+}
+
+// Verificar status das APIs
+$apiStatus = $threatIntel->isConfigured();
 
 ?>
 <!DOCTYPE html>
@@ -402,9 +428,6 @@ $globalThreats = $threatIntel->getGlobalThreats(50, 70, 60);
                     </button>
                     <div>
                         <h2 class="text-2xl font-bold text-white tracking-tight"><?php echo $pageTitle; ?></h2>
-                        <?php if ($currentSiteId > 0 && $selectedSite): ?>
-                            <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
-                        <?php endif; ?>
                     </div>
                 </div>
             </header>
@@ -413,11 +436,103 @@ $globalThreats = $threatIntel->getGlobalThreats(50, 70, 60);
             <div class="flex-1 overflow-y-auto p-8">
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-white mb-2">Threat Intelligence</h1>
-                    <p class="text-zinc-400">Rede colaborativa de inteligência de ameaças</p>
+                    <p class="text-zinc-400">Rede colaborativa de inteligência de ameaças e integração com fontes externas</p>
+                </div>
+                
+                <!-- Status das APIs -->
+                <div class="bg-dark-800 border border-white/10 rounded-xl p-4 mb-6">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center gap-6">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full <?php echo $apiStatus['safenode_network'] ? 'bg-green-500' : 'bg-red-500'; ?>"></span>
+                                <span class="text-sm text-zinc-300">SafeNode Network</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full <?php echo $apiStatus['abuseipdb'] ? 'bg-green-500' : 'bg-zinc-500'; ?>"></span>
+                                <span class="text-sm text-zinc-300">AbuseIPDB <?php echo $apiStatus['abuseipdb'] ? '(Ativo)' : '(Não configurado)'; ?></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full <?php echo $apiStatus['virustotal'] ? 'bg-green-500' : 'bg-zinc-500'; ?>"></span>
+                                <span class="text-sm text-zinc-300">VirusTotal <?php echo $apiStatus['virustotal'] ? '(Ativo)' : '(Não configurado)'; ?></span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-zinc-500">
+                            <span><?php echo $apiStatus['source_count'] ?? 0; ?> fonte(s) ativa(s)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Busca de IP -->
+                <div class="bg-dark-800 border border-white/10 rounded-xl p-6 mb-6">
+                    <h2 class="text-lg font-bold text-white mb-4">Verificar IP</h2>
+                    <form method="GET" class="flex gap-4">
+                        <input 
+                            type="text" 
+                            name="ip" 
+                            value="<?php echo htmlspecialchars($searchIP); ?>"
+                            placeholder="Digite um endereço IP para verificar..."
+                            class="flex-1 px-4 py-3 bg-dark-700 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
+                        >
+                        <button type="submit" class="px-6 py-3 btn-primary">
+                            <i data-lucide="search" class="w-4 h-4 inline-block mr-2"></i>
+                            Verificar
+                        </button>
+                    </form>
+                    
+                    <?php if ($ipDetails): ?>
+                    <div class="mt-6 pt-6 border-t border-white/10">
+                        <h3 class="text-lg font-bold text-white mb-4">Resultado da Verificação: <?php echo htmlspecialchars($searchIP); ?></h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="p-4 rounded-lg <?php echo $ipDetails['is_malicious'] ? 'bg-red-500/10 border border-red-500/30' : 'bg-green-500/10 border border-green-500/30'; ?>">
+                                <div class="text-sm text-zinc-400 mb-1">Status</div>
+                                <div class="text-xl font-bold <?php echo $ipDetails['is_malicious'] ? 'text-red-400' : 'text-green-400'; ?>">
+                                    <?php echo $ipDetails['is_malicious'] ? 'Malicioso' : 'Limpo'; ?>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-lg bg-dark-700 border border-white/5">
+                                <div class="text-sm text-zinc-400 mb-1">Confiança</div>
+                                <div class="text-xl font-bold text-white"><?php echo $ipDetails['confidence']; ?>%</div>
+                            </div>
+                            <div class="p-4 rounded-lg bg-dark-700 border border-white/5">
+                                <div class="text-sm text-zinc-400 mb-1">Reputação</div>
+                                <div class="text-xl font-bold text-white"><?php echo $ipDetails['reputation_score']; ?>/100</div>
+                            </div>
+                            <div class="p-4 rounded-lg bg-dark-700 border border-white/5">
+                                <div class="text-sm text-zinc-400 mb-1">Fontes Consultadas</div>
+                                <div class="text-xl font-bold text-white"><?php echo count($ipDetails['sources'] ?? []); ?></div>
+                            </div>
+                        </div>
+                        <?php if (!empty($ipDetails['sources'])): ?>
+                        <div class="mt-4">
+                            <h4 class="text-sm font-semibold text-white mb-2">Detalhes por Fonte:</h4>
+                            <div class="space-y-2">
+                                <?php foreach ($ipDetails['sources'] as $sourceName => $sourceData): ?>
+                                <div class="p-3 rounded bg-dark-700 border border-white/5">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-medium text-white capitalize"><?php echo str_replace('_', ' ', $sourceName); ?></span>
+                                        <?php if (isset($sourceData['is_malicious']) && $sourceData['is_malicious']): ?>
+                                        <span class="px-2 py-1 text-xs font-bold bg-red-500/20 text-red-400 rounded">Malicioso</span>
+                                        <?php else: ?>
+                                        <span class="px-2 py-1 text-xs font-bold bg-green-500/20 text-green-400 rounded">Limpo</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php if (isset($sourceData['confidence'])): ?>
+                                    <div class="text-xs text-zinc-400">Confiança: <?php echo $sourceData['confidence']; ?>%</div>
+                                    <?php endif; ?>
+                                    <?php if (isset($sourceData['description'])): ?>
+                                    <div class="text-xs text-zinc-500 mt-1"><?php echo htmlspecialchars($sourceData['description']); ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 
                 <?php if ($stats): ?>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                     <div class="bg-dark-800 border border-white/10 rounded-xl p-6">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-zinc-400 text-sm">IPs Únicos</span>
@@ -449,46 +564,148 @@ $globalThreats = $threatIntel->getGlobalThreats(50, 70, 60);
                 </div>
                 <?php endif; ?>
                 
-                <div class="bg-dark-800 border border-white/10 rounded-xl p-6">
-                    <h2 class="text-xl font-bold text-white mb-4">Ameaças Globais</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b border-white/10">
-                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">IP</th>
-                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Tipo</th>
-                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Severidade</th>
-                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Ocorrências</th>
-                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Sites</th>
-                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Última Visto</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($globalThreats)): ?>
-                                <tr>
-                                    <td colspan="6" class="py-8 text-center text-zinc-500">Nenhuma ameaça global encontrada</td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach ($globalThreats as $threat): ?>
-                                <tr class="border-b border-white/5 hover:bg-white/5">
-                                    <td class="py-3 px-4 font-mono text-sm text-white"><?php echo htmlspecialchars($threat['ip_address']); ?></td>
-                                    <td class="py-3 px-4 text-sm text-zinc-300"><?php echo htmlspecialchars($threat['threat_type']); ?></td>
-                                    <td class="py-3 px-4">
-                                        <span class="px-2 py-1 rounded text-xs font-medium <?php 
-                                            echo $threat['severity'] >= 80 ? 'bg-red-500/20 text-red-400' : 
-                                                ($threat['severity'] >= 60 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'); 
-                                        ?>">
+                <!-- Filtros -->
+                <div class="flex gap-4 mb-6">
+                    <form method="GET" class="flex gap-4 flex-1">
+                        <select name="type" class="px-4 py-2.5 bg-dark-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30">
+                            <option value="">Todos os tipos</option>
+                            <?php if (!empty($stats['by_type'])): ?>
+                                <?php foreach ($stats['by_type'] as $type): ?>
+                                <option value="<?php echo htmlspecialchars($type['threat_type']); ?>" <?php echo $threatType === $type['threat_type'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($type['threat_type']); ?> (<?php echo $type['count']; ?>)
+                                </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                        <select name="severity" class="px-4 py-2.5 bg-dark-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30">
+                            <option value="0" <?php echo $minSeverity === 0 ? 'selected' : ''; ?>>Todas severidades</option>
+                            <option value="50" <?php echo $minSeverity === 50 ? 'selected' : ''; ?>>Severidade ≥ 50</option>
+                            <option value="70" <?php echo $minSeverity === 70 ? 'selected' : ''; ?>>Severidade ≥ 70</option>
+                            <option value="80" <?php echo $minSeverity === 80 ? 'selected' : ''; ?>>Severidade ≥ 80</option>
+                            <option value="90" <?php echo $minSeverity === 90 ? 'selected' : ''; ?>>Severidade ≥ 90</option>
+                        </select>
+                        <button type="submit" class="px-4 py-2.5 bg-white text-black rounded-lg font-semibold hover:bg-zinc-200 transition-colors">
+                            Filtrar
+                        </button>
+                        <?php if ($searchIP): ?>
+                        <input type="hidden" name="ip" value="<?php echo htmlspecialchars($searchIP); ?>">
+                        <?php endif; ?>
+                    </form>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Ameaças Globais -->
+                    <div class="lg:col-span-2 bg-dark-800 border border-white/10 rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-white">Ameaças Globais</h2>
+                            <span class="text-sm text-zinc-400"><?php echo count($globalThreats); ?> ameaça(s)</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-white/10">
+                                        <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">IP</th>
+                                        <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Tipo</th>
+                                        <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Severidade</th>
+                                        <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Ocorrências</th>
+                                        <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Sites</th>
+                                        <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Última Visto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($globalThreats)): ?>
+                                    <tr>
+                                        <td colspan="6" class="py-8 text-center text-zinc-500">
+                                            <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-3 text-green-400 opacity-50"></i>
+                                            <p>Nenhuma ameaça global encontrada</p>
+                                        </td>
+                                    </tr>
+                                    <?php else: ?>
+                                    <?php foreach ($globalThreats as $threat): ?>
+                                    <tr class="border-b border-white/5 hover:bg-white/5 cursor-pointer" onclick="window.location.href='?ip=<?php echo urlencode($threat['ip_address']); ?>'">
+                                        <td class="py-3 px-4 font-mono text-sm text-white"><?php echo htmlspecialchars($threat['ip_address']); ?></td>
+                                        <td class="py-3 px-4 text-sm text-zinc-300"><?php echo htmlspecialchars($threat['threat_type']); ?></td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="px-2 py-1 rounded text-xs font-medium <?php 
+                                                    echo $threat['severity'] >= 80 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 
+                                                        ($threat['severity'] >= 60 ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'); 
+                                                ?>">
+                                                    <?php echo $threat['severity']; ?>%
+                                                </span>
+                                                <div class="w-16 bg-dark-700 rounded-full h-1.5">
+                                                    <div class="<?php echo $threat['severity'] >= 80 ? 'bg-red-500' : ($threat['severity'] >= 60 ? 'bg-orange-500' : 'bg-yellow-500'); ?> h-1.5 rounded-full" style="width: <?php echo $threat['severity']; ?>%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-sm text-zinc-300"><?php echo number_format($threat['total_occurrences']); ?></td>
+                                        <td class="py-3 px-4 text-sm text-zinc-300"><?php echo number_format($threat['affected_sites_count']); ?></td>
+                                        <td class="py-3 px-4 text-sm text-zinc-400"><?php echo date('d/m/Y H:i', strtotime($threat['last_seen'])); ?></td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar com informações adicionais -->
+                    <div class="space-y-6">
+                        <!-- Ameaças Recentes -->
+                        <?php if (!empty($recentThreats)): ?>
+                        <div class="bg-dark-800 border border-white/10 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-white mb-4">Ameaças Recentes (24h)</h3>
+                            <div class="space-y-3">
+                                <?php foreach (array_slice($recentThreats, 0, 5) as $threat): ?>
+                                <div class="p-3 rounded-lg bg-dark-700 border border-white/5">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="font-mono text-sm text-white"><?php echo htmlspecialchars($threat['ip_address']); ?></span>
+                                        <span class="px-2 py-0.5 text-xs font-bold <?php echo $threat['severity'] >= 80 ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'; ?> rounded">
                                             <?php echo $threat['severity']; ?>%
                                         </span>
-                                    </td>
-                                    <td class="py-3 px-4 text-sm text-zinc-300"><?php echo number_format($threat['total_occurrences']); ?></td>
-                                    <td class="py-3 px-4 text-sm text-zinc-300"><?php echo number_format($threat['affected_sites_count']); ?></td>
-                                    <td class="py-3 px-4 text-sm text-zinc-400"><?php echo date('d/m/Y H:i', strtotime($threat['last_seen'])); ?></td>
-                                </tr>
+                                    </div>
+                                    <div class="text-xs text-zinc-400"><?php echo htmlspecialchars($threat['threat_type']); ?></div>
+                                    <div class="text-xs text-zinc-500 mt-1"><?php echo date('H:i', strtotime($threat['last_seen'])); ?></div>
+                                </div>
                                 <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- Ameaças por Tipo -->
+                        <?php if (!empty($stats['by_type'])): ?>
+                        <div class="bg-dark-800 border border-white/10 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-white mb-4">Ameaças por Tipo</h3>
+                            <div class="space-y-3">
+                                <?php foreach (array_slice($stats['by_type'], 0, 8) as $type): ?>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1">
+                                        <div class="text-sm text-white font-medium"><?php echo htmlspecialchars($type['threat_type']); ?></div>
+                                        <div class="text-xs text-zinc-400">Severidade média: <?php echo round($type['avg_severity'], 1); ?>%</div>
+                                    </div>
+                                    <div class="text-lg font-bold text-zinc-300"><?php echo $type['count']; ?></div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- Top Padrões de Ataque -->
+                        <?php if (!empty($topPatterns)): ?>
+                        <div class="bg-dark-800 border border-white/10 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-white mb-4">Padrões de Ataque</h3>
+                            <div class="space-y-2">
+                                <?php foreach ($topPatterns as $pattern): ?>
+                                <div class="p-2 rounded bg-dark-700 border border-white/5">
+                                    <div class="text-sm text-white font-medium"><?php echo htmlspecialchars($pattern['pattern_name'] ?? 'Padrão Desconhecido'); ?></div>
+                                    <div class="text-xs text-zinc-400 mt-1">
+                                        <?php echo $pattern['detection_count'] ?? 0; ?> detecções
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

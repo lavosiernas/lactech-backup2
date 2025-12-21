@@ -117,6 +117,9 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
         <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'security-advisor' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="shield-check" class="w-5 h-5 group-hover:text-green-400 transition-colors"></i> Security Advisor
         </a>
+        <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'vulnerability-scanner' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
+            <i data-lucide="scan-search" class="w-5 h-5 group-hover:text-orange-400 transition-colors"></i> Vulnerability Scanner
+        </a>
         <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'endpoint-protection' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
             <i data-lucide="route" class="w-5 h-5 group-hover:text-blue-400 transition-colors"></i> Proteção por Endpoint
         </a>

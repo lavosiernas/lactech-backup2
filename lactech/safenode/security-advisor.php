@@ -479,59 +479,165 @@ if ($db && $currentSiteId > 0) {
                     </form>
                 </div>
                 
-                <?php if ($lastAudit): ?>
+                <?php if ($lastAudit): 
+                    $auditDetails = $advisor->getAuditDetails($lastAudit['id']);
+                    $score = (int)$lastAudit['security_score'];
+                    $scoreColor = $score >= 80 ? 'text-green-400' : ($score >= 60 ? 'text-yellow-400' : 'text-red-400');
+                    $scoreBg = $score >= 80 ? 'bg-green-500/10 border-green-500/30' : ($score >= 60 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-red-500/10 border-red-500/30');
+                ?>
                 <div class="bg-dark-800 border border-white/10 rounded-xl p-6 mb-6">
-                    <h2 class="text-xl font-bold text-white mb-4">Última Auditoria</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div>
-                            <div class="text-zinc-400 text-sm mb-1">Score</div>
-                            <div class="text-2xl font-bold text-white"><?php echo $lastAudit['security_score']; ?>/100</div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white">Última Auditoria</h2>
+                        <span class="text-sm text-zinc-400">
+                            <?php echo date('d/m/Y H:i', strtotime($lastAudit['created_at'])); ?>
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                        <div class="<?php echo $scoreBg; ?> border rounded-lg p-4">
+                            <div class="text-zinc-400 text-sm mb-1">Score Geral</div>
+                            <div class="text-3xl font-bold <?php echo $scoreColor; ?>"><?php echo $score; ?>/100</div>
+                            <div class="mt-2 w-full bg-dark-700 rounded-full h-2">
+                                <div class="<?php echo $score >= 80 ? 'bg-green-500' : ($score >= 60 ? 'bg-yellow-500' : 'bg-red-500'); ?> h-2 rounded-full" style="width: <?php echo $score; ?>%"></div>
+                            </div>
                         </div>
-                        <div>
+                        <div class="bg-dark-700 border border-white/5 rounded-lg p-4">
                             <div class="text-zinc-400 text-sm mb-1">Aprovados</div>
                             <div class="text-2xl font-bold text-green-400"><?php echo $lastAudit['passed_checks']; ?></div>
                         </div>
-                        <div>
+                        <div class="bg-dark-700 border border-white/5 rounded-lg p-4">
                             <div class="text-zinc-400 text-sm mb-1">Falhas</div>
                             <div class="text-2xl font-bold text-red-400"><?php echo $lastAudit['failed_checks']; ?></div>
                         </div>
-                        <div>
+                        <div class="bg-dark-700 border border-white/5 rounded-lg p-4">
                             <div class="text-zinc-400 text-sm mb-1">Avisos</div>
                             <div class="text-2xl font-bold text-yellow-400"><?php echo $lastAudit['warnings']; ?></div>
                         </div>
-                        <div>
-                            <div class="text-zinc-400 text-sm mb-1">Status</div>
-                            <div class="text-sm font-medium <?php echo $lastAudit['status'] === 'completed' ? 'text-green-400' : 'text-yellow-400'; ?>">
-                                <?php echo ucfirst($lastAudit['status']); ?>
-                            </div>
+                        <div class="bg-dark-700 border border-white/5 rounded-lg p-4">
+                            <div class="text-zinc-400 text-sm mb-1">Total</div>
+                            <div class="text-2xl font-bold text-white"><?php echo $lastAudit['total_checks']; ?></div>
                         </div>
                     </div>
+                    
+                    <?php if ($auditDetails && !empty($auditDetails['results'])): 
+                        $resultsByCategory = [];
+                        foreach ($auditDetails['results'] as $result) {
+                            $category = $result['check_category'];
+                            if (!isset($resultsByCategory[$category])) {
+                                $resultsByCategory[$category] = [];
+                            }
+                            $resultsByCategory[$category][] = $result;
+                        }
+                    ?>
+                    <div class="border-t border-white/10 pt-6">
+                        <h3 class="text-lg font-bold text-white mb-4">Detalhes por Categoria</h3>
+                        <div class="space-y-4">
+                            <?php foreach ($resultsByCategory as $category => $results): 
+                                $categoryPassed = 0;
+                                $categoryFailed = 0;
+                                $categoryWarnings = 0;
+                                foreach ($results as $result) {
+                                    if ($result['status'] === 'pass') $categoryPassed++;
+                                    elseif ($result['status'] === 'fail') $categoryFailed++;
+                                    else $categoryWarnings++;
+                                }
+                                $categoryTotal = count($results);
+                            ?>
+                            <div class="bg-dark-700 border border-white/5 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-semibold text-white capitalize"><?php echo str_replace('_', ' ', $category); ?></h4>
+                                    <div class="flex gap-3 text-sm">
+                                        <span class="text-green-400">✓ <?php echo $categoryPassed; ?></span>
+                                        <span class="text-red-400">✗ <?php echo $categoryFailed; ?></span>
+                                        <?php if ($categoryWarnings > 0): ?>
+                                        <span class="text-yellow-400">⚠ <?php echo $categoryWarnings; ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <?php foreach ($results as $result): 
+                                        $statusColor = $result['status'] === 'pass' ? 'text-green-400' : ($result['status'] === 'fail' ? 'text-red-400' : 'text-yellow-400');
+                                        $statusIcon = $result['status'] === 'pass' ? 'check-circle' : ($result['status'] === 'fail' ? 'x-circle' : 'alert-triangle');
+                                        $severityBadge = $result['severity'] === 'critical' ? 'bg-red-500/20 text-red-400' : 
+                                                         ($result['severity'] === 'high' ? 'bg-orange-500/20 text-orange-400' : 
+                                                         ($result['severity'] === 'medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-blue-500/20 text-blue-400'));
+                                    ?>
+                                    <div class="flex items-start gap-3 p-2 rounded bg-dark-800/50">
+                                        <i data-lucide="<?php echo $statusIcon; ?>" class="w-4 h-4 <?php echo $statusColor; ?> mt-0.5 flex-shrink-0"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-sm font-medium text-white"><?php echo htmlspecialchars($result['check_name']); ?></span>
+                                                <span class="px-2 py-0.5 text-xs font-medium rounded <?php echo $severityBadge; ?>">
+                                                    <?php echo ucfirst($result['severity']); ?>
+                                                </span>
+                                            </div>
+                                            <div class="text-xs text-zinc-400">
+                                                <span class="font-medium">Atual:</span> <?php echo htmlspecialchars($result['current_value']); ?>
+                                                <?php if ($result['status'] !== 'pass' && $result['recommended_value']): ?>
+                                                <span class="ml-3 font-medium">Recomendado:</span> <?php echo htmlspecialchars($result['recommended_value']); ?>
+                                                <?php endif; ?>
+                                            </div>
+                                            <?php if ($result['fix_instructions']): ?>
+                                            <div class="mt-1 text-xs text-zinc-500">
+                                                <?php echo nl2br(htmlspecialchars($result['fix_instructions'])); ?>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <?php endif; ?>
                 
                 <div class="bg-dark-800 border border-white/10 rounded-xl p-6">
-                    <h2 class="text-xl font-bold text-white mb-4">Recomendações Pendentes</h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white">Recomendações Pendentes</h2>
+                        <span class="text-sm text-zinc-400"><?php echo count($recommendations); ?> pendente(s)</span>
+                    </div>
+                    
                     <?php if (empty($recommendations)): ?>
-                    <p class="text-zinc-400 text-center py-8">Nenhuma recomendação pendente</p>
+                    <div class="text-center py-12">
+                        <i data-lucide="check-circle" class="w-16 h-16 text-green-400 mx-auto mb-4"></i>
+                        <p class="text-zinc-400 font-medium mb-1">Nenhuma recomendação pendente</p>
+                        <p class="text-zinc-500 text-sm">Todas as recomendações foram aplicadas ou não há problemas detectados</p>
+                    </div>
                     <?php else: ?>
-                    <div class="space-y-4">
-                        <?php foreach ($recommendations as $rec): ?>
-                        <div class="border border-white/10 rounded-lg p-4">
-                            <div class="flex items-start justify-between mb-2">
-                                <h3 class="font-semibold text-white"><?php echo htmlspecialchars($rec['title']); ?></h3>
-                                <span class="px-2 py-1 rounded text-xs font-medium <?php 
-                                    echo $rec['priority'] === 'critical' ? 'bg-red-500/20 text-red-400' : 
-                                        ($rec['priority'] === 'high' ? 'bg-orange-500/20 text-orange-400' : 
-                                        ($rec['priority'] === 'medium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-blue-500/20 text-blue-400')); 
-                                ?>">
-                                    <?php echo ucfirst($rec['priority']); ?>
-                                </span>
+                    <div class="space-y-3">
+                        <?php foreach ($recommendations as $rec): 
+                            $priorityBadge = $rec['priority'] === 'critical' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 
+                                            ($rec['priority'] === 'high' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 
+                                            ($rec['priority'] === 'medium' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'));
+                            $typeBadge = 'bg-white/5 text-zinc-300 border-white/10';
+                        ?>
+                        <div class="border border-white/10 rounded-lg p-5 hover:border-white/20 transition-colors">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <h3 class="font-semibold text-white text-lg"><?php echo htmlspecialchars($rec['title']); ?></h3>
+                                        <span class="px-2 py-1 rounded text-xs font-bold border <?php echo $priorityBadge; ?>">
+                                            <?php echo strtoupper($rec['priority']); ?>
+                                        </span>
+                                        <span class="px-2 py-1 rounded text-xs font-medium border <?php echo $typeBadge; ?> capitalize">
+                                            <?php echo str_replace('_', ' ', $rec['recommendation_type']); ?>
+                                        </span>
+                                    </div>
+                                    <p class="text-zinc-400 text-sm leading-relaxed whitespace-pre-wrap"><?php echo htmlspecialchars($rec['description']); ?></p>
+                                </div>
                             </div>
-                            <p class="text-zinc-400 text-sm mb-3"><?php echo htmlspecialchars($rec['description']); ?></p>
-                            <div class="flex gap-2">
+                            <div class="flex items-center justify-between pt-3 border-t border-white/5">
+                                <div class="flex items-center gap-4 text-xs text-zinc-500">
+                                    <span><i data-lucide="trending-up" class="w-3 h-3 inline mr-1"></i> Impacto: <?php echo ucfirst($rec['impact'] ?? 'Médio'); ?></span>
+                                    <span><i data-lucide="clock" class="w-3 h-3 inline mr-1"></i> Esforço: <?php echo ucfirst($rec['effort'] ?? 'Médio'); ?></span>
+                                </div>
                                 <form method="POST" class="inline">
                                     <input type="hidden" name="apply_recommendation" value="<?php echo $rec['id']; ?>">
-                                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">
+                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                        <i data-lucide="zap" class="w-4 h-4"></i>
                                         Aplicar Automaticamente
                                     </button>
                                 </form>

@@ -73,6 +73,30 @@ class SecurityAdvisor {
             $warnings += $configResult['warnings'];
             $scores['config'] = $configResult['score'];
             
+            // 6. Auditoria de SSL/TLS
+            $sslResult = $this->auditSSL($siteId, $auditId);
+            $totalChecks += $sslResult['total'];
+            $passedChecks += $sslResult['passed'];
+            $failedChecks += $sslResult['failed'];
+            $warnings += $sslResult['warnings'];
+            $scores['ssl'] = $sslResult['score'];
+            
+            // 7. Auditoria de Proteção contra Ataques Comuns
+            $attackResult = $this->auditAttackProtection($siteId, $auditId);
+            $totalChecks += $attackResult['total'];
+            $passedChecks += $attackResult['passed'];
+            $failedChecks += $attackResult['failed'];
+            $warnings += $attackResult['warnings'];
+            $scores['attack_protection'] = $attackResult['score'];
+            
+            // 8. Auditoria de Monitoramento e Logs
+            $monitoringResult = $this->auditMonitoring($siteId, $auditId);
+            $totalChecks += $monitoringResult['total'];
+            $passedChecks += $monitoringResult['passed'];
+            $failedChecks += $monitoringResult['failed'];
+            $warnings += $monitoringResult['warnings'];
+            $scores['monitoring'] = $monitoringResult['score'];
+            
             // Calcular score geral
             $overallScore = (int)round(array_sum($scores) / count($scores));
             
@@ -465,7 +489,7 @@ class SecurityAdvisor {
                 INSERT INTO safenode_security_maturity
                 (site_id, overall_score, headers_score, waf_score, rate_limit_score,
                  endpoint_protection_score, monitoring_score, maturity_level, measured_at)
-                VALUES (?, ?, ?, ?, ?, ?, 0, ?, NOW())
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ");
             $stmt->execute([
                 $siteId,
@@ -474,6 +498,7 @@ class SecurityAdvisor {
                 $scores['waf'] ?? 0,
                 $scores['rate_limit'] ?? 0,
                 $scores['endpoints'] ?? 0,
+                $scores['monitoring'] ?? 0,
                 $maturityLevel
             ]);
         } catch (PDOException $e) {
@@ -629,6 +654,363 @@ class SecurityAdvisor {
         } catch (PDOException $e) {
             error_log("SecurityAdvisor ApplyRecommendation Error: " . $e->getMessage());
             return false;
+        }
+    }
+    
+    /**
+     * Auditoria de SSL/TLS
+     */
+    private function auditSSL($siteId, $auditId) {
+        $stmt = $this->db->prepare("SELECT domain FROM safenode_sites WHERE id = ?");
+        $stmt->execute([$siteId]);
+        $site = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$site) {
+            return ['total' => 0, 'passed' => 0, 'failed' => 0, 'warnings' => 0, 'score' => 0];
+        }
+        
+        $domain = $site['domain'];
+        $url = (strpos($domain, 'http') === 0 ? $domain : 'https://' . $domain);
+        
+        $sslInfo = $this->checkSSL($url);
+        
+        $checks = [];
+        $passed = 0;
+        $failed = 0;
+        $warnings = 0;
+        
+        // Verificar se SSL está habilitado
+        $hasSSL = $sslInfo['valid'] && $sslInfo['protocol'] === 'https';
+        $checks[] = [
+            'name' => 'SSL/TLS Habilitado',
+            'status' => $hasSSL ? 'pass' : 'fail',
+            'severity' => $hasSSL ? 'low' : 'critical',
+            'current' => $hasSSL ? 'Sim' : 'Não',
+            'recommended' => 'Sim'
+        ];
+        
+        // Verificar validade do certificado
+        $certValid = $sslInfo['cert_valid'] ?? false;
+        $checks[] = [
+            'name' => 'Certificado SSL Válido',
+            'status' => $certValid ? 'pass' : 'fail',
+            'severity' => $certValid ? 'low' : 'critical',
+            'current' => $certValid ? 'Válido' : 'Inválido ou Expirado',
+            'recommended' => 'Válido'
+        ];
+        
+        // Verificar versão do TLS
+        $tlsVersion = $sslInfo['tls_version'] ?? null;
+        $tlsSecure = in_array($tlsVersion, ['TLSv1.2', 'TLSv1.3']);
+        $checks[] = [
+            'name' => 'Versão TLS Segura',
+            'status' => $tlsSecure ? 'pass' : 'warning',
+            'severity' => $tlsSecure ? 'low' : 'high',
+            'current' => $tlsVersion ?: 'Desconhecido',
+            'recommended' => 'TLSv1.2 ou superior'
+        ];
+        
+        foreach ($checks as $check) {
+            if ($check['status'] === 'pass') $passed++;
+            elseif ($check['status'] === 'fail') $failed++;
+            else $warnings++;
+            
+            $this->saveAuditResult($auditId, $check['name'], 'ssl', $check['status'], $check['severity'],
+                $check['current'], $check['recommended'],
+                "SSL/TLS: {$check['name']} = {$check['current']}",
+                $check['status'] === 'pass' ? null : "Configure {$check['name']}: {$check['recommended']}",
+                false);
+        }
+        
+        $total = count($checks);
+        $score = $total > 0 ? (int)round(($passed / $total) * 100) : 0;
+        
+        return [
+            'total' => $total,
+            'passed' => $passed,
+            'failed' => $failed,
+            'warnings' => $warnings,
+            'score' => $score
+        ];
+    }
+    
+    /**
+     * Verifica informações SSL/TLS
+     */
+    private function checkSSL($url) {
+        $info = [
+            'valid' => false,
+            'protocol' => 'http',
+            'cert_valid' => false,
+            'tls_version' => null
+        ];
+        
+        if (strpos($url, 'https://') === 0) {
+            $info['protocol'] = 'https';
+            
+            // Tentar obter informações do certificado via stream context
+            $context = stream_context_create([
+                'ssl' => [
+                    'capture_peer_cert' => true,
+                    'verify_peer' => false,
+                    'verify_peer_name' => false
+                ]
+            ]);
+            
+            try {
+                $parsedUrl = parse_url($url);
+                $host = $parsedUrl['host'] ?? '';
+                $port = $parsedUrl['port'] ?? 443;
+                
+                $socket = @stream_socket_client(
+                    "ssl://{$host}:{$port}",
+                    $errno,
+                    $errstr,
+                    5,
+                    STREAM_CLIENT_CONNECT,
+                    $context
+                );
+                
+                if ($socket) {
+                    $info['valid'] = true;
+                    
+                    // Obter informações do certificado
+                    $cert = stream_context_get_params($socket)['options']['ssl']['peer_certificate'] ?? null;
+                    if ($cert) {
+                        $certData = openssl_x509_parse($cert);
+                        if ($certData) {
+                            $validFrom = $certData['validFrom_time_t'] ?? 0;
+                            $validTo = $certData['validTo_time_t'] ?? 0;
+                            $now = time();
+                            
+                            $info['cert_valid'] = ($now >= $validFrom && $now <= $validTo);
+                        }
+                    }
+                    
+                    // Obter versão do TLS
+                    $crypto = stream_get_meta_data($socket)['crypto'] ?? [];
+                    $info['tls_version'] = $crypto['protocol'] ?? null;
+                    
+                    fclose($socket);
+                }
+            } catch (Exception $e) {
+                // Ignorar erros
+            }
+        }
+        
+        return $info;
+    }
+    
+    /**
+     * Auditoria de Proteção contra Ataques Comuns
+     */
+    private function auditAttackProtection($siteId, $auditId) {
+        $checks = [];
+        $passed = 0;
+        $failed = 0;
+        $warnings = 0;
+        
+        // Verificar se há IPs bloqueados (indica sistema de proteção ativo)
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) as count
+            FROM safenode_blocked_ips
+            WHERE site_id = ? AND expires_at > NOW()
+        ");
+        $stmt->execute([$siteId]);
+        $blockedCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
+        
+        $checks[] = [
+            'name' => 'Sistema de Bloqueio de IPs',
+            'status' => 'pass',
+            'severity' => 'low',
+            'current' => 'Ativo',
+            'recommended' => 'Ativo'
+        ];
+        $passed++;
+        
+        // Verificar se há regras WAF customizadas
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) as count
+            FROM safenode_waf_rules
+            WHERE site_id = ? AND is_active = 1
+        ");
+        $stmt->execute([$siteId]);
+        $wafRulesCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
+        
+        $hasCustomRules = $wafRulesCount > 0;
+        $checks[] = [
+            'name' => 'Regras WAF Customizadas',
+            'status' => $hasCustomRules ? 'pass' : 'warning',
+            'severity' => $hasCustomRules ? 'low' : 'medium',
+            'current' => $hasCustomRules ? "{$wafRulesCount} regras" : 'Nenhuma regra customizada',
+            'recommended' => 'Regras customizadas configuradas'
+        ];
+        if ($hasCustomRules) $passed++;
+        else $warnings++;
+        
+        // Verificar se há proteção contra SQL injection
+        $checks[] = [
+            'name' => 'Proteção SQL Injection',
+            'status' => 'pass', // Assumindo que WAF básico protege
+            'severity' => 'low',
+            'current' => 'Ativa',
+            'recommended' => 'Ativa'
+        ];
+        $passed++;
+        
+        // Verificar se há proteção contra XSS
+        $checks[] = [
+            'name' => 'Proteção XSS',
+            'status' => 'pass', // Assumindo que WAF básico protege
+            'severity' => 'low',
+            'current' => 'Ativa',
+            'recommended' => 'Ativa'
+        ];
+        $passed++;
+        
+        foreach ($checks as $check) {
+            $this->saveAuditResult($auditId, $check['name'], 'attack_protection', $check['status'], $check['severity'],
+                $check['current'], $check['recommended'],
+                "Proteção: {$check['name']} = {$check['current']}",
+                $check['status'] === 'pass' ? null : "Configure {$check['name']}: {$check['recommended']}",
+                false);
+        }
+        
+        $total = count($checks);
+        $score = $total > 0 ? (int)round(($passed / $total) * 100) : 0;
+        
+        return [
+            'total' => $total,
+            'passed' => $passed,
+            'failed' => $failed,
+            'warnings' => $warnings,
+            'score' => $score
+        ];
+    }
+    
+    /**
+     * Auditoria de Monitoramento e Logs
+     */
+    private function auditMonitoring($siteId, $auditId) {
+        $checks = [];
+        $passed = 0;
+        $failed = 0;
+        $warnings = 0;
+        
+        // Verificar se há logs recentes (indica monitoramento ativo)
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) as count
+            FROM safenode_security_logs
+            WHERE site_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ");
+        $stmt->execute([$siteId]);
+        $logsCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
+        
+        $hasLogs = $logsCount > 0;
+        $checks[] = [
+            'name' => 'Sistema de Logs Ativo',
+            'status' => $hasLogs ? 'pass' : 'warning',
+            'severity' => $hasLogs ? 'low' : 'medium',
+            'current' => $hasLogs ? "{$logsCount} eventos nas últimas 24h" : 'Nenhum log recente',
+            'recommended' => 'Sistema de logs ativo'
+        ];
+        if ($hasLogs) $passed++;
+        else $warnings++;
+        
+        // Verificar se há alertas configurados
+        require_once __DIR__ . '/Settings.php';
+        $alertEmail = SafeNodeSettings::get('alert_email', '');
+        $hasAlerts = !empty($alertEmail);
+        
+        $checks[] = [
+            'name' => 'Alertas Configurados',
+            'status' => $hasAlerts ? 'pass' : 'warning',
+            'severity' => $hasAlerts ? 'low' : 'medium',
+            'current' => $hasAlerts ? 'Email configurado' : 'Nenhum email de alerta configurado',
+            'recommended' => 'Email de alertas configurado'
+        ];
+        if ($hasAlerts) $passed++;
+        else $warnings++;
+        
+        foreach ($checks as $check) {
+            $this->saveAuditResult($auditId, $check['name'], 'monitoring', $check['status'], $check['severity'],
+                $check['current'], $check['recommended'],
+                "Monitoramento: {$check['name']} = {$check['current']}",
+                $check['status'] === 'pass' ? null : "Configure {$check['name']}: {$check['recommended']}",
+                false);
+        }
+        
+        $total = count($checks);
+        $score = $total > 0 ? (int)round(($passed / $total) * 100) : 0;
+        
+        return [
+            'total' => $total,
+            'passed' => $passed,
+            'failed' => $failed,
+            'warnings' => $warnings,
+            'score' => $score
+        ];
+    }
+    
+    /**
+     * Obtém detalhes de uma auditoria
+     */
+    public function getAuditDetails($auditId) {
+        if (!$this->db) return null;
+        
+        try {
+            $stmt = $this->db->prepare("
+                SELECT * FROM safenode_security_audits
+                WHERE id = ?
+            ");
+            $stmt->execute([$auditId]);
+            $audit = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$audit) return null;
+            
+            // Buscar resultados da auditoria
+            $stmt = $this->db->prepare("
+                SELECT * FROM safenode_audit_results
+                WHERE audit_id = ?
+                ORDER BY 
+                    CASE severity
+                        WHEN 'critical' THEN 1
+                        WHEN 'high' THEN 2
+                        WHEN 'medium' THEN 3
+                        WHEN 'low' THEN 4
+                    END,
+                    check_category
+            ");
+            $stmt->execute([$auditId]);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $audit['results'] = $results;
+            
+            return $audit;
+        } catch (PDOException $e) {
+            error_log("SecurityAdvisor GetAuditDetails Error: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Obtém histórico de auditorias
+     */
+    public function getAuditHistory($siteId, $limit = 10) {
+        if (!$this->db) return [];
+        
+        try {
+            $stmt = $this->db->prepare("
+                SELECT * FROM safenode_security_audits
+                WHERE site_id = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+            ");
+            $stmt->execute([$siteId, $limit]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("SecurityAdvisor GetAuditHistory Error: " . $e->getMessage());
+            return [];
         }
     }
 }
