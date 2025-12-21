@@ -703,235 +703,16 @@ if ($db) {
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body x-data="{ notificationsOpen: false, sidebarOpen: false }" class="h-full overflow-hidden flex">
-
-    <!-- Sidebar -->
-    <aside class="sidebar w-72 h-full flex-shrink-0 flex flex-col hidden lg:flex">
-        <!-- Logo -->
-        <div class="p-6 border-b border-white/5">
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain">
-                    <div>
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
-                    </div>
-                </div>
-                <button class="ml-auto text-zinc-600 hover:text-zinc-400 transition-colors">
-                    <i data-lucide="chevrons-left" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
+<body x-data="{ notificationsOpen: false, sidebarOpen: false }" class="h-full overflow-hidden">
+    <div class="flex h-full">
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
         
-        <!-- Navigation -->
-        <nav class="flex-1 p-5 space-y-2 overflow-y-auto">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Menu Principal</p>
-            
-            <a href="dashboard.php" class="nav-item active">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                <span class="font-medium">Home</span>
-            </a>
-            <a href="sites.php" class="nav-item">
-                <i data-lucide="globe" class="w-5 h-5"></i>
-                <span class="font-medium">Gerenciar Sites</span>
-            </a>
-            <a href="security-analytics.php" class="nav-item">
-                <i data-lucide="activity" class="w-5 h-5"></i>
-                <span class="font-medium">Network</span>
-            </a>
-            <a href="behavior-analysis.php" class="nav-item">
-                <i data-lucide="cpu" class="w-5 h-5"></i>
-                <span class="font-medium">Kubernetes</span>
-            </a>
-            <a href="logs.php" class="nav-item">
-                <i data-lucide="compass" class="w-5 h-5"></i>
-                <span class="font-medium">Explorar</span>
-            </a>
-            <a href="suspicious-ips.php" class="nav-item">
-                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                <span class="font-medium">Analisar</span>
-            </a>
-            <a href="attacked-targets.php" class="nav-item">
-                <i data-lucide="users-2" class="w-5 h-5"></i>
-                <span class="font-medium">Grupos</span>
-            </a>
-            
-            <div class="pt-6 mt-6 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Inteligência</p>
-                <a href="threat-intelligence.php" class="nav-item">
-                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
-                    <span class="font-medium">Threat Intelligence</span>
-                </a>
-                <a href="security-advisor.php" class="nav-item">
-                    <i data-lucide="shield-check" class="w-5 h-5"></i>
-                    <span class="font-medium">Security Advisor</span>
-                </a>
-                <a href="endpoint-protection.php" class="nav-item">
-                    <i data-lucide="route" class="w-5 h-5"></i>
-                    <span class="font-medium">Proteção por Endpoint</span>
-                </a>
-                <a href="security-tests.php" class="nav-item">
-                    <i data-lucide="test-tube" class="w-5 h-5"></i>
-                    <span class="font-medium">Testes de Segurança</span>
-                </a>
-            </div>
-            
-            <div class="pt-6 mt-6 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
-                <a href="human-verification.php" class="nav-item">
-                    <i data-lucide="shield-check" class="w-5 h-5"></i>
-                    <span class="font-medium">Verificação Humana</span>
-                </a>
-                <a href="settings.php" class="nav-item">
-                    <i data-lucide="settings-2" class="w-5 h-5"></i>
-                    <span class="font-medium">Configurações</span>
-                </a>
-                <a href="help.php" class="nav-item">
-                    <i data-lucide="life-buoy" class="w-5 h-5"></i>
-                    <span class="font-medium">Ajuda</span>
-                </a>
-            </div>
-        </nav>
-        
-        <!-- Upgrade Card -->
-        <div class="p-5">
-            <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Mobile Sidebar Overlay -->
-    <div x-show="sidebarOpen" 
-         x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click="sidebarOpen = false"
-         class="fixed inset-0 bg-black/80 z-40 lg:hidden"
-         x-cloak
-         style="display: none;"></div>
-
-    <!-- Mobile Sidebar -->
-    <aside x-show="sidebarOpen"
-           x-transition:enter="transition ease-out duration-300 transform"
-           x-transition:enter-start="-translate-x-full"
-           x-transition:enter-end="translate-x-0"
-           x-transition:leave="transition ease-in duration-300 transform"
-           x-transition:leave-start="translate-x-0"
-           x-transition:leave-end="-translate-x-full"
-           @click.away="sidebarOpen = false"
-           class="fixed inset-y-0 left-0 w-72 sidebar h-full flex flex-col z-50 lg:hidden overflow-y-auto"
-           x-cloak
-           style="display: none;">
-        <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
-                    <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
-                    </div>
-                </div>
-                <button @click="sidebarOpen = false" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
-            
-            <a href="dashboard.php" class="nav-item active" @click="sidebarOpen = false">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Home</span>
-            </a>
-            <a href="sites.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
-            </a>
-            <a href="security-analytics.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Network</span>
-            </a>
-            <a href="behavior-analysis.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Kubernetes</span>
-            </a>
-            <a href="logs.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Explorar</span>
-            </a>
-            <a href="suspicious-ips.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Analisar</span>
-            </a>
-            <a href="attacked-targets.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Grupos</span>
-            </a>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
-                <a href="threat-intelligence.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Threat Intelligence</span>
-                </a>
-                <a href="security-advisor.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Security Advisor</span>
-                </a>
-                <a href="endpoint-protection.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
-                </a>
-                <a href="security-tests.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Testes de Segurança</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="human-verification.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="settings.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
-                <a href="help.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Ajuda</span>
-                </a>
-            </div>
-        </nav>
-        
-        <!-- Upgrade Card -->
-        <div class="p-4 flex-shrink-0">
-            <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
-            </div>
-        </div>
-    </aside>
-
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
         <!-- Header -->
         <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-6">
-                <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-zinc-400 hover:text-white transition-colors">
+                <button data-sidebar-toggle class="lg:hidden text-zinc-400 hover:text-white transition-colors">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
                 <div>
@@ -948,12 +729,6 @@ if ($db) {
                     <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
                     <input type="text" placeholder="Buscar..." class="search-input">
                 </div>
-                
-                <!-- Add New -->
-                <button class="btn-primary hidden sm:flex items-center gap-2">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>Adicionar</span>
-                </button>
                 
                 <!-- Notifications -->
                 <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
@@ -1281,6 +1056,7 @@ if ($db) {
                 </div>
             </div>
         </div>
+    </main>
     </div>
 
     <script>
@@ -1342,7 +1118,7 @@ if ($db) {
                     data: {
                         labels: ['Good', 'Moderate', 'Bad'],
                         datasets: [{
-                            data: [65, 25, 10],
+                            data: [100, 0, 0], // Dados iniciais vazios (serão atualizados quando os dados chegarem)
                             backgroundColor: [gradient1, gradient2, gradient3],
                             borderWidth: 0,
                             cutout: '78%',
@@ -1403,10 +1179,11 @@ if ($db) {
             
             const ctx = canvas.getContext('2d');
             
-            // Dados iniciais
-            const initialData = [120, 190, 80, 150, 200, 380, 320, 280, 180, 220, 160];
-            const maxValue = Math.max(...initialData, 0);
-            const yAxisMax = Math.ceil((maxValue * 1.2) / 100) * 100; // Arredondar para múltiplo de 100
+            // Dados iniciais vazios (serão atualizados quando os dados chegarem)
+            const initialData = [0, 0, 0, 0, 0, 0, 0];
+            const labels = ['00h', '00h', '00h', '00h', '00h', '00h', '00h'];
+            const maxValue = 1;
+            const yAxisMax = 50;
             
             // Create gradient for highlighted bars
             const highlightGradient = ctx.createLinearGradient(0, 0, 0, 200);
@@ -1416,12 +1193,15 @@ if ($db) {
             anomaliesChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov'],
+                    labels: labels,
                     datasets: [{
                         data: initialData,
                         backgroundColor: function(context) {
                             const index = context.dataIndex;
-                            if (index === 5 || index === 6) {
+                            const value = context.parsed.y;
+                            const maxValueInData = Math.max(...initialData, 1);
+                            // Destacar barras com valores altos (últimas 2 barras ou valores acima de 70% do máximo)
+                            if (value > maxValueInData * 0.7 || index >= initialData.length - 2) {
                                 return highlightGradient;
                             }
                             return 'rgba(255,255,255,0.05)';
@@ -1794,10 +1574,73 @@ if ($db) {
             currentFilter = 'all';
             updateDevicesTable();
             
+            // Update Anomalies Chart with real data
+            updateAnomaliesChart();
+            
             // Update timestamp
             document.getElementById('last-update').textContent = `Atualizado: ${new Date().toLocaleTimeString('pt-BR')}`;
             
             lucide.createIcons();
+        }
+        
+        function updateAnomaliesChart() {
+            if (!anomaliesChart || !dashboardData) return;
+            
+            try {
+                // Buscar dados de anomalias dos últimos 7 dias (últimas 7 horas)
+                const hourlyStats = dashboardData.hourly_stats || {};
+                
+                // Criar array com dados das últimas 7 horas
+                const hours = [];
+                const anomalyData = [];
+                const now = new Date();
+                
+                for (let i = 6; i >= 0; i--) {
+                    const hour = new Date(now.getTime() - i * 60 * 60 * 1000);
+                    const hourKey = String(hour.getHours()).padStart(2, '0');
+                    hours.push(hourKey + 'h');
+                    
+                    // Buscar dados dessa hora ou usar 0
+                    const hourData = hourlyStats[hourKey] || {};
+                    // Usar blocked como proxy para anomalias
+                    anomalyData.push(hourData.blocked || 0);
+                }
+                
+                // Se não houver dados, mostrar zeros ao invés de dados simulados
+                const hasData = anomalyData.some(val => val > 0);
+                if (!hasData) {
+                    // Manter os labels mas com dados zerados
+                    anomalyData.fill(0);
+                }
+                
+                // Atualizar gráfico
+                anomaliesChart.data.labels = hours;
+                anomaliesChart.data.datasets[0].data = anomalyData;
+                
+                // Recalcular máximo do eixo Y
+                const maxValue = Math.max(...anomalyData, 1);
+                const yAxisMax = Math.ceil((maxValue * 1.2) / 50) * 50; // Arredondar para múltiplo de 50
+                
+                anomaliesChart.options.scales.y.max = yAxisMax;
+                anomaliesChart.options.scales.y.ticks.stepSize = Math.max(10, Math.ceil(yAxisMax / 5));
+                
+                // Calcular cores para cada barra baseado no valor
+                // Usar cores sólidas ao invés de gradientes para evitar problemas
+                const backgroundColors = anomalyData.map((value, index) => {
+                    // Destacar valores altos ou as últimas 2 barras
+                    if (value > maxValue * 0.7 || index >= anomalyData.length - 2) {
+                        return 'rgba(255,255,255,0.9)'; // Branco para destacar
+                    }
+                    return 'rgba(255,255,255,0.05)';
+                });
+                
+                // Chart.js aceita função ou array - usar array calculado
+                anomaliesChart.data.datasets[0].backgroundColor = backgroundColors;
+                
+                anomaliesChart.update('active');
+            } catch (error) {
+                console.error('Erro ao atualizar gráfico de anomalias:', error);
+            }
         }
         
         function animateValue(elementId, targetValue) {
@@ -1930,11 +1773,15 @@ if ($db) {
                 
                 lucide.createIcons();
             } else {
+                // Se dashboardData já foi carregado e não há IPs, mostrar mensagem de "sem dados"
+                const hasDataLoaded = dashboardData !== null;
                 const message = (currentSearchTerm || currentFilter !== 'all') 
                     ? 'Nenhum dispositivo encontrado com os filtros aplicados' 
-                    : 'Carregando dispositivos...';
-                const icon = (currentSearchTerm || currentFilter !== 'all') ? 'search-x' : 'loader-2';
-                const animate = (currentSearchTerm || currentFilter !== 'all') ? '' : 'animate-spin';
+                    : hasDataLoaded 
+                        ? 'Nenhum dispositivo encontrado'
+                        : 'Carregando dispositivos...';
+                const icon = hasDataLoaded && !currentSearchTerm && currentFilter === 'all' ? 'server-off' : ((currentSearchTerm || currentFilter !== 'all') ? 'search-x' : 'loader-2');
+                const animate = (hasDataLoaded && !currentSearchTerm && currentFilter === 'all') || (currentSearchTerm || currentFilter !== 'all') ? '' : 'animate-spin';
                 
                 tbody.innerHTML = `
                     <tr>

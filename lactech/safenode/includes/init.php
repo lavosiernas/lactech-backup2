@@ -10,6 +10,27 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/ProtectionStreak.php';
+
+// Remover token da URL se presente (limpeza)
+if (isset($_GET['token'])) {
+    $currentUrl = $_SERVER['REQUEST_URI'];
+    $urlParts = parse_url($currentUrl);
+    $path = $urlParts['path'] ?? '';
+    $query = $urlParts['query'] ?? '';
+    
+    if ($query) {
+        parse_str($query, $params);
+        unset($params['token']);
+        if (!empty($params)) {
+            $newQuery = http_build_query($params);
+            header("Location: $path?$newQuery");
+        } else {
+            header("Location: $path");
+        }
+        exit;
+    }
+}
 
 // Lógica de Troca de Site (Contexto)
 if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true) {
@@ -49,6 +70,18 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
     if (!isset($_SESSION['view_site_id'])) {
         $_SESSION['view_site_id'] = 0; // 0 = Global
         $_SESSION['view_site_name'] = 'Visão Global';
+    }
+
+    // Registrar proteção do dia (sequência de proteção)
+    if (isset($_SESSION['safenode_user_id'])) {
+        $userId = $_SESSION['safenode_user_id'];
+        $siteId = $_SESSION['view_site_id'] ?? 0;
+        
+        $streakManager = new ProtectionStreak();
+        // Só registrar se estiver habilitado
+        if ($streakManager->isEnabled($userId, $siteId)) {
+            $streakManager->recordProtection($userId, $siteId);
+        }
     }
 
     // Inicializar Router

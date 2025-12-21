@@ -192,6 +192,7 @@ $clientCountry    = (function () {
                         // Desafio usado com sucesso - resetar para próxima página
                         SafeNodeHumanVerification::reset();
                         
+                        // Redirecionar para dashboard
                         header('Location: dashboard.php');
                         exit;
                     }

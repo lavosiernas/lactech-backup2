@@ -12,10 +12,30 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
     $useProtectedUrls = true;
 }
 
-// Função helper para gerar URLs
-function getSafeNodeUrl($route) {
-    // Temporariamente desabilitado - usar URLs diretas
-    return $route . '.php';
+// Função helper para gerar URLs com token de segurança
+if (!function_exists('getSafeNodeUrl')) {
+    function getSafeNodeUrl($route, $siteId = null) {
+        $pagePath = strpos($route, '.php') !== false ? $route : $route . '.php';
+        
+        // Se usuário está logado, adicionar token
+        if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true) {
+            $userId = $_SESSION['safenode_user_id'] ?? null;
+            if ($userId) {
+                require_once __DIR__ . '/SecurityToken.php';
+                $tokenManager = new SecurityToken();
+                
+                // Usar site_id fornecido ou da sessão
+                $currentSiteId = $siteId !== null ? $siteId : ($_SESSION['view_site_id'] ?? 0);
+                $token = $tokenManager->generateToken($userId, $currentSiteId);
+                
+                if ($token) {
+                    return $pagePath . '?token=' . $token;
+                }
+            }
+        }
+        
+        return $pagePath;
+    }
 }
 
 // Detectar página atual
@@ -24,131 +44,499 @@ if (isset($_GET['route'])) {
     $currentPage = 'dashboard'; // Ajustar conforme necessário
 }
 
-// Buscar sites para o dropdown
-$db = getSafeNodeDatabase();
-$sidebarSites = [];
-if ($db) {
-    // SEGURANÇA: Mostrar apenas sites do usuário logado
+// Buscar sequência de proteção
+$protectionStreak = null;
+if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true) {
     $userId = $_SESSION['safenode_user_id'] ?? null;
-    $stmt = $db->prepare("SELECT id, domain, display_name FROM safenode_sites WHERE user_id = ? ORDER BY display_name ASC");
-    $stmt->execute([$userId]);
-    $sidebarSites = $stmt->fetchAll();
+    $siteId = $_SESSION['view_site_id'] ?? 0;
+    
+    if ($userId) {
+        require_once __DIR__ . '/ProtectionStreak.php';
+        $streakManager = new ProtectionStreak();
+        $protectionStreak = $streakManager->getStreak($userId, $siteId);
+    }
 }
-
-$currentSiteId = $_SESSION['view_site_id'] ?? 0;
-$currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
 ?>
+<style>
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #52525b;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+    }
+    
+    .nav-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .nav-item:hover {
+        color: #ffffff;
+    }
+    
+    .nav-item:hover::before {
+        opacity: 0.5;
+    }
+    
+    .nav-item.active {
+        color: #ffffff;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    }
+    
+    .nav-item.active::before {
+        opacity: 1;
+    }
+    
+    .nav-item.active::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 24px;
+        background: #ffffff;
+        border-radius: 0 4px 4px 0;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+    
+    .sidebar {
+        background: linear-gradient(180deg, #080808 0%, #030303 100%);
+        border-right: 1px solid rgba(255,255,255,0.04);
+        position: relative;
+    }
+    
+    .sidebar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+        opacity: 0.5;
+    }
+    
+    .upgrade-card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 16px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%);
+        color: #000;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255,255,255,0.2);
+    }
+    
+    .btn-primary:hover::before {
+        opacity: 1;
+    }
+</style>
 <!-- Sidebar Component -->
-<aside id="safenode-sidebar" class="w-72 bg-black border-r border-white/10 flex flex-col h-full z-50 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 md:static md:flex transition-transform duration-200">
-    <div class="h-16 flex items-center px-6 border-b border-white/5">
-        <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='index.php'">
-            <div class="relative">
-                <div class="absolute inset-0 bg-blue-500/20 blur-lg rounded-full group-hover:bg-blue-500/40 transition-all"></div>
-                <img src="assets/img/logos (6).png" alt="SafeNode" class="h-8 w-auto relative z-10">
+<aside id="safenode-sidebar" x-data="{ sidebarCollapsed: false }" 
+       :class="sidebarCollapsed ? 'w-20' : 'w-72'" 
+       class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
+    <!-- Logo -->
+    <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
+            <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
+                <div class="relative">
+                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                    <?php if ($protectionStreak && $protectionStreak['enabled'] && $protectionStreak['is_active']): ?>
+                    <!-- Badge de Sequência (Foguinho) -->
+                    <div class="absolute -top-1 -right-1 bg-gradient-to-br from-orange-500 to-red-600 rounded-full p-1 shadow-lg border-2 border-dark-900" 
+                         x-data="{ showTooltip: false }"
+                         @mouseenter="showTooltip = true"
+                         @mouseleave="showTooltip = false">
+                        <i data-lucide="flame" class="w-3 h-3 text-white"></i>
+                        <!-- Tooltip -->
+                        <div x-show="showTooltip" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg shadow-xl whitespace-nowrap z-50"
+                             style="display: none;">
+                            <div class="text-xs font-semibold text-white mb-1">Sequência de Proteção</div>
+                            <div class="text-sm font-bold text-orange-400"><?php echo $protectionStreak['current_streak']; ?> dias</div>
+                            <?php if ($protectionStreak['longest_streak'] > $protectionStreak['current_streak']): ?>
+                            <div class="text-xs text-zinc-400 mt-1">Recorde: <?php echo $protectionStreak['longest_streak']; ?> dias</div>
+                            <?php endif; ?>
+                            <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white/10"></div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div x-show="!sidebarCollapsed" 
+                     x-transition:enter="transition ease-out duration-200" 
+                     x-transition:enter-start="opacity-0 -translate-x-2" 
+                     x-transition:enter-end="opacity-100 translate-x-0" 
+                     x-transition:leave="transition ease-in duration-150" 
+                     x-transition:leave-start="opacity-100 translate-x-0" 
+                     x-transition:leave-end="opacity-0 -translate-x-2" 
+                     class="overflow-hidden whitespace-nowrap">
+                    <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
+                    <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                </div>
             </div>
-            <span class="font-bold text-lg text-white tracking-tight group-hover:text-blue-400 transition-colors">SafeNode</span>
+            <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" 
+                    class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0" 
+                    :class="sidebarCollapsed ? 'mt-2' : ''">
+                <i :data-lucide="sidebarCollapsed ? 'chevrons-right' : 'chevrons-left'" class="w-5 h-5"></i>
+            </button>
         </div>
     </div>
     
-    <!-- Site Selector -->
-    <div class="px-4 pt-4">
-        <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" class="w-full flex items-center justify-between bg-zinc-900 border border-white/10 hover:border-white/20 text-white px-3 py-2.5 rounded-lg transition-all group">
-                <div class="flex items-center gap-2 overflow-hidden">
-                    <div class="w-2 h-2 rounded-full <?php echo $currentSiteId === 0 ? 'bg-blue-500' : 'bg-emerald-500'; ?>"></div>
-                    <span class="text-sm font-medium truncate"><?php echo htmlspecialchars($currentSiteName); ?></span>
-                </div>
-                <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" :class="{ 'rotate-180': open }"></i>
-            </button>
-            
-            <div x-show="open" 
-                 @click.away="open = false"
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 class="absolute left-0 right-0 mt-2 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden"
-                 style="display: none;">
-                <div class="max-h-64 overflow-y-auto py-1">
-                    <a href="?view_site=0" class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors <?php echo $currentSiteId === 0 ? 'bg-white/5 text-white' : ''; ?>">
-                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                        Visão Global
-                    </a>
-                    <div class="h-px bg-white/5 my-1"></div>
-                    <?php foreach ($sidebarSites as $site): ?>
-                        <a href="?view_site=<?php echo $site['id']; ?>" class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors <?php echo $currentSiteId === $site['id'] ? 'bg-white/5 text-white' : ''; ?>">
-                            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            <?php echo htmlspecialchars($site['display_name'] ?: $site['domain']); ?>
-                        </a>
-                    <?php endforeach; ?>
-                    <div class="h-px bg-white/5 my-1"></div>
-                </div>
-            </div>
+    <!-- Navigation -->
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
+        <p x-show="!sidebarCollapsed" 
+           x-transition:enter="transition ease-out duration-200" 
+           x-transition:enter-start="opacity-0" 
+           x-transition:enter-end="opacity-100" 
+           x-transition:leave="transition ease-in duration-150" 
+           x-transition:leave-start="opacity-100" 
+           x-transition:leave-end="opacity-0" 
+           class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
+        
+        <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" 
+           class="nav-item <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" 
+           :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+           :title="sidebarCollapsed ? 'Dashboard' : ''">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+            <span x-show="!sidebarCollapsed" 
+                  x-transition:enter="transition ease-out duration-200" 
+                  x-transition:enter-start="opacity-0 -translate-x-2" 
+                  x-transition:enter-end="opacity-100 translate-x-0" 
+                  x-transition:leave="transition ease-in duration-150" 
+                  x-transition:leave-start="opacity-100 translate-x-0" 
+                  x-transition:leave-end="opacity-0 -translate-x-2" 
+                  class="font-medium whitespace-nowrap">Dashboard</span>
+        </a>
+        <a href="<?php echo getSafeNodeUrl('sites'); ?>" 
+           class="nav-item <?php echo $currentPage == 'sites' ? 'active' : ''; ?>" 
+           :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+           :title="sidebarCollapsed ? 'Gerenciar Sites' : ''">
+            <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
+            <span x-show="!sidebarCollapsed" 
+                  x-transition:enter="transition ease-out duration-200" 
+                  x-transition:enter-start="opacity-0 -translate-x-2" 
+                  x-transition:enter-end="opacity-100 translate-x-0" 
+                  x-transition:leave="transition ease-in duration-150" 
+                  x-transition:leave-start="opacity-100 translate-x-0" 
+                  x-transition:leave-end="opacity-0 -translate-x-2" 
+                  class="font-medium whitespace-nowrap">Gerenciar Sites</span>
+        </a>
+        
+        <div class="pt-4 mt-4 border-t border-white/5">
+            <p x-show="!sidebarCollapsed" 
+               x-transition:enter="transition ease-out duration-200" 
+               x-transition:enter-start="opacity-0" 
+               x-transition:enter-end="opacity-100" 
+               x-transition:leave="transition ease-in duration-150" 
+               x-transition:leave-start="opacity-100" 
+               x-transition:leave-end="opacity-0" 
+               class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Análises</p>
+            <a href="<?php echo getSafeNodeUrl('logs'); ?>" 
+               class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Explorar Logs' : ''">
+                <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Explorar Logs</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" 
+               class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Comportamental' : ''">
+                <i data-lucide="brain" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Comportamental</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" 
+               class="nav-item <?php echo $currentPage == 'security-analytics' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Analytics' : ''">
+                <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Analytics</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" 
+               class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'IPs Suspeitos' : ''">
+                <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">IPs Suspeitos</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" 
+               class="nav-item <?php echo $currentPage == 'attacked-targets' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Alvos Atacados' : ''">
+                <i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Alvos Atacados</span>
+            </a>
         </div>
-    </div>
-
-    <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-1">
-        <div class="px-3 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Principal</div>
-        <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'dashboard' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all">
-            <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
-        </a>
-        <a href="<?php echo getSafeNodeUrl('sites'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'sites' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all">
-            <i data-lucide="globe" class="w-5 h-5"></i> Gerenciar Sites
-        </a>
-        <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Análises</div>
-        <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'logs' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="file-text" class="w-5 h-5 group-hover:text-blue-400 transition-colors"></i> Explorar Logs
-        </a>
-        <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'behavior-analysis' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="brain" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Comportamental
-        </a>
-        <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'security-analytics' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="lightbulb" class="w-5 h-5 group-hover:text-amber-400 transition-colors"></i> Analytics
-        </a>
-        <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'suspicious-ips' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="alert-octagon" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i> IPs Suspeitos
-        </a>
-        <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'attacked-targets' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="target" class="w-5 h-5 group-hover:text-orange-400 transition-colors"></i> Alvos Atacados
-        </a>
-        <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Inteligência</div>
-        <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'threat-intelligence' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="shield-alert" class="w-5 h-5 group-hover:text-red-400 transition-colors"></i> Threat Intelligence
-        </a>
-        <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'security-advisor' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="shield-check" class="w-5 h-5 group-hover:text-green-400 transition-colors"></i> Security Advisor
-        </a>
-        <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'vulnerability-scanner' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="scan-search" class="w-5 h-5 group-hover:text-orange-400 transition-colors"></i> Vulnerability Scanner
-        </a>
-        <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'endpoint-protection' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="route" class="w-5 h-5 group-hover:text-blue-400 transition-colors"></i> Proteção por Endpoint
-        </a>
-        <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'security-tests' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="test-tube" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Testes de Segurança
-        </a>
-        <div class="px-3 mt-8 mb-2 text-xs font-medium text-zinc-500 uppercase tracking-wider">Sistema</div>
-        <a href="<?php echo getSafeNodeUrl('updates'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'updates' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="sparkles" class="w-5 h-5 group-hover:text-purple-400 transition-colors"></i> Atualizações
-        </a>
-        <a href="<?php echo getSafeNodeUrl('documentation'); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <?php echo $currentPage == 'documentation' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'; ?> transition-all group">
-            <i data-lucide="book-open" class="w-5 h-5 group-hover:text-cyan-400 transition-colors"></i> Documentação
-        </a>
+        
+        <div class="pt-4 mt-4 border-t border-white/5">
+            <p x-show="!sidebarCollapsed" 
+               x-transition:enter="transition ease-out duration-200" 
+               x-transition:enter-start="opacity-0" 
+               x-transition:enter-end="opacity-100" 
+               x-transition:leave="transition ease-in duration-150" 
+               x-transition:leave-start="opacity-100" 
+               x-transition:leave-end="opacity-0" 
+               class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
+            <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" 
+               class="nav-item <?php echo $currentPage == 'threat-intelligence' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Threat Intelligence' : ''">
+                <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Threat Intelligence</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" 
+               class="nav-item <?php echo $currentPage == 'security-advisor' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Security Advisor' : ''">
+                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Security Advisor</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" 
+               class="nav-item <?php echo $currentPage == 'vulnerability-scanner' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Vulnerability Scanner' : ''">
+                <i data-lucide="scan-search" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Vulnerability Scanner</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('anomaly-detector'); ?>" 
+               class="nav-item <?php echo $currentPage == 'anomaly-detector' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Anomaly Detector' : ''">
+                <i data-lucide="radar" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Anomaly Detector</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" 
+               class="nav-item <?php echo $currentPage == 'endpoint-protection' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Proteção por Endpoint' : ''">
+                <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" 
+               class="nav-item <?php echo $currentPage == 'security-tests' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Testes de Segurança' : ''">
+                <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Testes de Segurança</span>
+            </a>
+        </div>
+        
+        <div class="pt-4 mt-4 border-t border-white/5">
+            <p x-show="!sidebarCollapsed" 
+               x-transition:enter="transition ease-out duration-200" 
+               x-transition:enter-start="opacity-0" 
+               x-transition:enter-end="opacity-100" 
+               x-transition:leave="transition ease-in duration-150" 
+               x-transition:leave-start="opacity-100" 
+               x-transition:leave-end="opacity-0" 
+               class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
+            <a href="<?php echo getSafeNodeUrl('updates'); ?>" 
+               class="nav-item <?php echo $currentPage == 'updates' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Atualizações' : ''">
+                <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Atualizações</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('documentation'); ?>" 
+               class="nav-item <?php echo $currentPage == 'documentation' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Documentação' : ''">
+                <i data-lucide="book-open" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Documentação</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" 
+               class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Verificação Humana' : ''">
+                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Verificação Humana</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('settings'); ?>" 
+               class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Configurações' : ''">
+                <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Configurações</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('help'); ?>" 
+               class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Ajuda' : ''">
+                <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Ajuda</span>
+            </a>
+        </div>
     </nav>
-    <div class="p-4 border-t border-white/5">
-        <button onclick="window.location.href='<?php echo getSafeNodeUrl('profile'); ?>'" class="w-full flex items-center gap-3 hover:bg-white/5 rounded-lg p-2 transition-all group mb-2">
-            <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden">
-                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-full h-full object-contain p-1">
-            </div>
-            <div class="flex-1 min-w-0 text-left">
-                <p class="text-sm font-medium text-white truncate"><?php echo htmlspecialchars($_SESSION['safenode_username'] ?? 'Admin'); ?></p>
-                <p class="text-xs text-zinc-500 truncate">Ver perfil</p>
-            </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors"></i>
-        </button>
-        <button type="button" data-logout-trigger class="w-full p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all text-left flex items-center gap-2" title="Sair">
-            <i data-lucide="log-out" class="w-4 h-4"></i>
-            <span class="text-sm">Sair</span>
-        </button>
+    
+    <!-- Upgrade Card -->
+    <div class="p-4 flex-shrink-0" 
+         x-show="!sidebarCollapsed" 
+         x-transition:enter="transition ease-out duration-200" 
+         x-transition:enter-start="opacity-0 translate-y-2" 
+         x-transition:enter-end="opacity-100 translate-y-0" 
+         x-transition:leave="transition ease-in duration-150" 
+         x-transition:leave-start="opacity-100 translate-y-0" 
+         x-transition:leave-end="opacity-0 translate-y-2">
+        <div class="upgrade-card">
+            <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+            <button class="w-full btn-primary py-2.5 text-sm">
+                Upgrade Agora
+            </button>
+        </div>
     </div>
 </aside>
 
@@ -250,4 +638,153 @@ $currentSiteName = $_SESSION['view_site_name'] ?? 'Visão Global';
         }
     });
 })();
+</script>
+
+<!-- Mobile Sidebar Overlay -->
+<div x-show="sidebarOpen" 
+     x-transition:enter="transition-opacity ease-linear duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-300"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="sidebarOpen = false"
+     class="fixed inset-0 bg-black/80 z-40 lg:hidden"
+     x-cloak
+     style="display: none;"></div>
+
+<!-- Mobile Sidebar -->
+<aside x-show="sidebarOpen"
+       x-transition:enter="transition ease-out duration-300 transform"
+       x-transition:enter-start="-translate-x-full"
+       x-transition:enter-end="translate-x-0"
+       x-transition:leave="transition ease-in duration-300 transform"
+       x-transition:leave-start="translate-x-0"
+       x-transition:leave-end="-translate-x-full"
+       @click.away="sidebarOpen = false"
+       class="fixed inset-y-0 left-0 w-72 sidebar h-full flex flex-col z-50 lg:hidden overflow-y-auto"
+       x-cloak
+       style="display: none;">
+    <!-- Logo -->
+    <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                <div class="overflow-hidden whitespace-nowrap">
+                    <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
+                    <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                </div>
+            </div>
+            <button @click="sidebarOpen = false" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
+        <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
+        
+        <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" class="nav-item <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="font-medium whitespace-nowrap">Dashboard</span>
+        </a>
+        <a href="<?php echo getSafeNodeUrl('sites'); ?>" class="nav-item <?php echo $currentPage == 'sites' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+            <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
+            <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
+        </a>
+        
+        <div class="pt-4 mt-4 border-t border-white/5">
+            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Análises</p>
+            <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Explorar Logs</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="brain" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Comportamental</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" class="nav-item <?php echo $currentPage == 'security-analytics' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Analytics</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" class="nav-item <?php echo $currentPage == 'attacked-targets' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Alvos Atacados</span>
+            </a>
+        </div>
+        
+        <div class="pt-4 mt-4 border-t border-white/5">
+            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
+            <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" class="nav-item <?php echo $currentPage == 'threat-intelligence' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Threat Intelligence</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" class="nav-item <?php echo $currentPage == 'security-advisor' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Security Advisor</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" class="nav-item <?php echo $currentPage == 'vulnerability-scanner' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="scan-search" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Vulnerability Scanner</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('anomaly-detector'); ?>" class="nav-item <?php echo $currentPage == 'anomaly-detector' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="radar" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Anomaly Detector</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" class="nav-item <?php echo $currentPage == 'endpoint-protection' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" class="nav-item <?php echo $currentPage == 'security-tests' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Testes de Segurança</span>
+            </a>
+        </div>
+        
+        <div class="pt-4 mt-4 border-t border-white/5">
+            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
+            <a href="<?php echo getSafeNodeUrl('updates'); ?>" class="nav-item <?php echo $currentPage == 'updates' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Atualizações</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('documentation'); ?>" class="nav-item <?php echo $currentPage == 'documentation' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="book-open" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Documentação</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Verificação Humana</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Configurações</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('help'); ?>" class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Ajuda</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Upgrade Card -->
+    <div class="p-4 flex-shrink-0">
+        <div class="upgrade-card">
+            <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+            <button class="w-full btn-primary py-2.5 text-sm">
+                Upgrade Agora
+            </button>
+        </div>
+    </div>
+</aside>
+
+<script>
+// Inicializar ícones do Lucide (incluindo o foguinho)
+if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+}
 </script>

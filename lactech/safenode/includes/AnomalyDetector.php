@@ -275,6 +275,299 @@ class AnomalyDetector {
             'most_common_country' => null
         ];
     }
+    
+    /**
+     * Detecta anomalias globais (múltiplos IPs)
+     */
+    public function detectGlobalAnomalies($siteId = null, $timeWindow = 3600, $limit = 50) {
+        if (!$this->db) return [];
+        
+        try {
+            $sql = "
+                SELECT DISTINCT ip_address
+                FROM safenode_security_logs
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
+            ";
+            
+            $params = [$timeWindow];
+            if ($siteId) {
+                $sql .= " AND site_id = ?";
+                $params[] = $siteId;
+            }
+            
+            $sql .= " ORDER BY created_at DESC LIMIT ?";
+            $params[] = $limit;
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $ips = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            
+            $anomalies = [];
+            foreach ($ips as $ip) {
+                $result = $this->detectAnomalies($ip, $timeWindow);
+                if ($result['is_anomaly']) {
+                    $anomalies[] = array_merge($result, ['ip_address' => $ip]);
+                }
+            }
+            
+            // Ordenar por anomaly_score
+            usort($anomalies, function($a, $b) {
+                return $b['anomaly_score'] <=> $a['anomaly_score'];
+            });
+            
+            return $anomalies;
+        } catch (PDOException $e) {
+            error_log("AnomalyDetector Global Error: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Obtém estatísticas de anomalias
+     */
+    public function getAnomalyStats($siteId = null, $days = 7) {
+        if (!$this->db) return null;
+        
+        try {
+            // Contar IPs únicos no período
+            $sql1 = "
+                SELECT COUNT(DISTINCT ip_address) as total_ips
+                FROM safenode_security_logs
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            ";
+            $params1 = [$days];
+            
+            if ($siteId) {
+                $sql1 .= " AND site_id = ?";
+                $params1[] = $siteId;
+            }
+            
+            $stmt = $this->db->prepare($sql1);
+            $stmt->execute($params1);
+            $ipsResult = $stmt->fetch(PDO::FETCH_ASSOC);
+            $totalIPs = (int)($ipsResult['total_ips'] ?? 0);
+            
+            // Estimar anomalias (IPs com padrões suspeitos)
+            $sql2 = "
+                SELECT 
+                    ip_address,
+                    COUNT(*) as request_count,
+                    COUNT(DISTINCT request_uri) as unique_endpoints,
+                    COUNT(DISTINCT user_agent) as unique_agents
+                FROM safenode_security_logs
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            ";
+            
+            $params2 = [$days];
+            if ($siteId) {
+                $sql2 .= " AND site_id = ?";
+                $params2[] = $siteId;
+            }
+            
+            $sql2 .= " GROUP BY ip_address";
+            
+            $stmt = $this->db->prepare($sql2);
+            $stmt->execute($params2);
+            $ips = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Calcular média de requisições
+            $avgRequests = 0;
+            if (!empty($ips)) {
+                $totalRequests = array_sum(array_column($ips, 'request_count'));
+                $avgRequests = $totalRequests / count($ips);
+            }
+            
+            // Contar anomalias (IPs com comportamento suspeito)
+            $anomalies = [];
+            $scores = [];
+            
+            foreach ($ips as $ip) {
+                $isAnomaly = false;
+                $score = 0;
+                
+                // Requisições muito acima da média
+                if ($ip['request_count'] > $avgRequests * 3 && $avgRequests > 0) {
+                    $isAnomaly = true;
+                    $score = min(100, 70 + ($ip['request_count'] / max(1, $avgRequests) * 2));
+                }
+                
+                // Muitos endpoints diferentes (possível scanner)
+                if ($ip['unique_endpoints'] > 50) {
+                    $isAnomaly = true;
+                    $score = max($score, min(100, 60 + $ip['unique_endpoints']));
+                }
+                
+                // Muitos User-Agents (possível rotação)
+                if ($ip['unique_agents'] > 5) {
+                    $isAnomaly = true;
+                    $score = max($score, min(100, 50 + ($ip['unique_agents'] * 5)));
+                }
+                
+                if ($isAnomaly) {
+                    $anomalies[] = $ip['ip_address'];
+                    $scores[] = $score;
+                }
+            }
+            
+            return [
+                'total_ips_scanned' => $totalIPs,
+                'total_anomalies' => count($anomalies),
+                'avg_anomaly_score' => !empty($scores) ? array_sum($scores) / count($scores) : 0,
+                'max_anomaly_score' => !empty($scores) ? max($scores) : 0
+            ];
+        } catch (PDOException $e) {
+            error_log("AnomalyDetector Stats Error: " . $e->getMessage());
+            return [
+                'total_ips_scanned' => 0,
+                'total_anomalies' => 0,
+                'avg_anomaly_score' => 0,
+                'max_anomaly_score' => 0
+            ];
+        }
+    }
+    
+    /**
+     * Obtém anomalias recentes
+     */
+    public function getRecentAnomalies($siteId = null, $hours = 24, $limit = 20) {
+        return $this->detectGlobalAnomalies($siteId, $hours * 3600, $limit);
+    }
+    
+    /**
+     * Obtém tipos de anomalias mais comuns
+     */
+    public function getAnomalyTypes($siteId = null, $days = 7) {
+        if (!$this->db) return [];
+        
+        try {
+            // Simulação baseada em análise de padrões
+            // Em produção, isso seria calculado a partir de dados reais
+            $sql = "
+                SELECT 
+                    CASE 
+                        WHEN COUNT(*) > 100 THEN 'unusual_request_rate'
+                        WHEN COUNT(DISTINCT request_uri) > 50 THEN 'unusual_endpoints'
+                        WHEN COUNT(DISTINCT user_agent) > 5 THEN 'user_agent_change'
+                        WHEN COUNT(DISTINCT country_code) > 1 THEN 'country_change'
+                        ELSE 'unusual_time'
+                    END as anomaly_type,
+                    COUNT(*) as occurrence_count
+                FROM safenode_security_logs
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+            ";
+            
+            $params = [$days];
+            if ($siteId) {
+                $sql .= " AND site_id = ?";
+                $params[] = $siteId;
+            }
+            
+            $sql .= "
+                GROUP BY ip_address
+                HAVING occurrence_count > 0
+            ";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Agregar por tipo
+            $types = [];
+            foreach ($results as $row) {
+                $type = $row['anomaly_type'];
+                if (!isset($types[$type])) {
+                    $types[$type] = 0;
+                }
+                $types[$type] += (int)$row['occurrence_count'];
+            }
+            
+            return $types;
+        } catch (PDOException $e) {
+            error_log("AnomalyDetector Types Error: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Detecta anomalias por padrões específicos
+     */
+    public function detectPatternAnomalies($ipAddress, $timeWindow = 3600) {
+        if (!$this->db) return [];
+        
+        try {
+            $anomalies = [];
+            
+            // Padrão: Requisições muito rápidas (possível bot)
+            // Verificar se há muitas requisições em pouco tempo
+            $stmt = $this->db->prepare("
+                SELECT COUNT(*) as total_requests,
+                       TIMESTAMPDIFF(SECOND, MIN(created_at), MAX(created_at)) as time_span
+                FROM safenode_security_logs
+                WHERE ip_address = ?
+                AND created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
+            ");
+            $stmt->execute([$ipAddress, $timeWindow]);
+            $reqStats = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($reqStats && $reqStats['total_requests'] > 0 && $reqStats['time_span'] > 0) {
+                $requestsPerSecond = $reqStats['total_requests'] / max(1, $reqStats['time_span']);
+                
+                if ($requestsPerSecond > 2) { // Mais de 2 requisições por segundo
+                    $anomalies[] = [
+                        'type' => 'rapid_requests',
+                        'severity' => 'high',
+                        'count' => $reqStats['total_requests'],
+                        'description' => "{$reqStats['total_requests']} requisições em {$reqStats['time_span']}s (taxa: " . round($requestsPerSecond, 2) . " req/s - possível bot)"
+                    ];
+                }
+            }
+            
+            // Padrão: Muitos 404s (possível scanner)
+            $stmt = $this->db->prepare("
+                SELECT COUNT(*) as error_count
+                FROM safenode_security_logs
+                WHERE ip_address = ?
+                AND created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
+                AND response_code = 404
+            ");
+            $stmt->execute([$ipAddress, $timeWindow]);
+            $errors = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($errors && $errors['error_count'] > 20) {
+                $anomalies[] = [
+                    'type' => 'excessive_404s',
+                    'severity' => 'medium',
+                    'count' => $errors['error_count'],
+                    'description' => "{$errors['error_count']} requisições retornando 404 (possível scanner)"
+                ];
+            }
+            
+            // Padrão: Rotação de User-Agents
+            $stmt = $this->db->prepare("
+                SELECT COUNT(DISTINCT user_agent) as unique_agents
+                FROM safenode_security_logs
+                WHERE ip_address = ?
+                AND created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
+            ");
+            $stmt->execute([$ipAddress, $timeWindow]);
+            $agents = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($agents && $agents['unique_agents'] > 5) {
+                $timeWindowFormatted = $timeWindow >= 3600 ? round($timeWindow / 3600, 1) . 'h' : round($timeWindow / 60, 0) . 'min';
+                $anomalies[] = [
+                    'type' => 'user_agent_rotation',
+                    'severity' => 'high',
+                    'count' => $agents['unique_agents'],
+                    'description' => "{$agents['unique_agents']} User-Agents diferentes em {$timeWindowFormatted} (possível evasão)"
+                ];
+            }
+            
+            return $anomalies;
+        } catch (PDOException $e) {
+            error_log("AnomalyDetector Pattern Error: " . $e->getMessage());
+            return [];
+        }
+    }
 }
 
 

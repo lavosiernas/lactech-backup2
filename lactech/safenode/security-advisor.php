@@ -23,6 +23,18 @@ $userId = $_SESSION['safenode_user_id'] ?? null;
 $db = getSafeNodeDatabase();
 $advisor = new SecurityAdvisor($db);
 
+// Buscar sites do usuário
+$userSites = [];
+if ($db && $userId) {
+    try {
+        $stmt = $db->prepare("SELECT id, domain, display_name FROM safenode_sites WHERE user_id = ? ORDER BY display_name ASC");
+        $stmt->execute([$userId]);
+        $userSites = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Erro ao buscar sites: " . $e->getMessage());
+    }
+}
+
 $message = '';
 $messageType = '';
 
@@ -61,11 +73,15 @@ if ($currentSiteId > 0) {
 
 // Obter última auditoria
 $lastAudit = null;
+$auditHistory = [];
 if ($db && $currentSiteId > 0) {
     try {
         $stmt = $db->prepare("SELECT * FROM safenode_security_audits WHERE site_id = ? ORDER BY created_at DESC LIMIT 1");
         $stmt->execute([$currentSiteId]);
         $lastAudit = $stmt->fetch();
+        
+        // Obter histórico de auditorias
+        $auditHistory = $advisor->getAuditHistory($currentSiteId, 10);
     } catch (PDOException $e) {
         error_log("Erro ao buscar auditoria: " . $e->getMessage());
     }
@@ -221,221 +237,7 @@ if ($db && $currentSiteId > 0) {
 </head>
 <body class="h-full" x-data="{ sidebarOpen: false }">
     <div class="flex h-full">
-        <!-- Sidebar -->
-        <aside class="sidebar w-72 h-full flex-shrink-0 flex flex-col hidden lg:flex">
-            <div class="p-6 border-b border-white/5">
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain">
-                        <div>
-                            <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                            <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <nav class="flex-1 p-5 space-y-2 overflow-y-auto">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Menu Principal</p>
-                
-                <a href="dashboard.php" class="nav-item">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span class="font-medium">Home</span>
-                </a>
-                <a href="sites.php" class="nav-item">
-                    <i data-lucide="globe" class="w-5 h-5"></i>
-                    <span class="font-medium">Gerenciar Sites</span>
-                </a>
-                <a href="security-analytics.php" class="nav-item">
-                    <i data-lucide="activity" class="w-5 h-5"></i>
-                    <span class="font-medium">Network</span>
-                </a>
-                <a href="behavior-analysis.php" class="nav-item">
-                    <i data-lucide="cpu" class="w-5 h-5"></i>
-                    <span class="font-medium">Kubernetes</span>
-                </a>
-                <a href="logs.php" class="nav-item">
-                    <i data-lucide="compass" class="w-5 h-5"></i>
-                    <span class="font-medium">Explorar</span>
-                </a>
-                <a href="suspicious-ips.php" class="nav-item">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                    <span class="font-medium">Analisar</span>
-                </a>
-                <a href="attacked-targets.php" class="nav-item">
-                    <i data-lucide="users-2" class="w-5 h-5"></i>
-                    <span class="font-medium">Grupos</span>
-                </a>
-                
-                <div class="pt-6 mt-6 border-t border-white/5">
-                    <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Inteligência</p>
-                    <a href="threat-intelligence.php" class="nav-item">
-                        <i data-lucide="shield-alert" class="w-5 h-5"></i>
-                        <span class="font-medium">Threat Intelligence</span>
-                    </a>
-                    <a href="security-advisor.php" class="nav-item active">
-                        <i data-lucide="shield-check" class="w-5 h-5"></i>
-                        <span class="font-medium">Security Advisor</span>
-                    </a>
-                    <a href="endpoint-protection.php" class="nav-item">
-                        <i data-lucide="route" class="w-5 h-5"></i>
-                        <span class="font-medium">Proteção por Endpoint</span>
-                    </a>
-                    <a href="security-tests.php" class="nav-item">
-                        <i data-lucide="test-tube" class="w-5 h-5"></i>
-                        <span class="font-medium">Testes de Segurança</span>
-                    </a>
-                </div>
-                
-                <div class="pt-6 mt-6 border-t border-white/5">
-                    <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
-                    <a href="human-verification.php" class="nav-item">
-                        <i data-lucide="shield-check" class="w-5 h-5"></i>
-                        <span class="font-medium">Verificação Humana</span>
-                    </a>
-                    <a href="settings.php" class="nav-item">
-                        <i data-lucide="settings-2" class="w-5 h-5"></i>
-                        <span class="font-medium">Configurações</span>
-                    </a>
-                    <a href="help.php" class="nav-item">
-                        <i data-lucide="life-buoy" class="w-5 h-5"></i>
-                        <span class="font-medium">Ajuda</span>
-                    </a>
-                </div>
-            </nav>
-            
-            <div class="p-5">
-                <div class="upgrade-card">
-                    <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                    <button class="w-full btn-primary py-2.5 text-sm">
-                        Upgrade Agora
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-    <!-- Mobile Sidebar Overlay -->
-    <div x-show="sidebarOpen" 
-         x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click="sidebarOpen = false"
-         class="fixed inset-0 bg-black/80 z-40 lg:hidden"
-         x-cloak
-         style="display: none;"></div>
-
-    <!-- Mobile Sidebar -->
-    <aside x-show="sidebarOpen"
-           x-transition:enter="transition ease-out duration-300 transform"
-           x-transition:enter-start="-translate-x-full"
-           x-transition:enter-end="translate-x-0"
-           x-transition:leave="transition ease-in duration-300 transform"
-           x-transition:leave-start="translate-x-0"
-           x-transition:leave-end="-translate-x-full"
-           @click.away="sidebarOpen = false"
-           class="fixed inset-y-0 left-0 w-72 sidebar h-full flex flex-col z-50 lg:hidden overflow-y-auto"
-           x-cloak
-           style="display: none;">
-        <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
-                    <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
-                    </div>
-                </div>
-                <button @click="sidebarOpen = false" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
-            
-            <a href="dashboard.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Home</span>
-            </a>
-            <a href="sites.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
-            </a>
-            <a href="security-analytics.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Network</span>
-            </a>
-            <a href="behavior-analysis.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Kubernetes</span>
-            </a>
-            <a href="logs.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Explorar</span>
-            </a>
-            <a href="suspicious-ips.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Analisar</span>
-            </a>
-            <a href="attacked-targets.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Grupos</span>
-            </a>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
-                <a href="threat-intelligence.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Threat Intelligence</span>
-                </a>
-                <a href="security-advisor.php" class="nav-item active" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Security Advisor</span>
-                </a>
-                <a href="endpoint-protection.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
-                </a>
-                <a href="security-tests.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Testes de Segurança</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="human-verification.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="settings.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
-                <a href="help.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Ajuda</span>
-                </a>
-            </div>
-        </nav>
-        
-        <!-- Upgrade Card -->
-        <div class="p-4 flex-shrink-0">
-            <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
-            </div>
-        </div>
-    </aside>
-        
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
         <!-- Main Content -->
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
             <!-- Header -->
@@ -466,7 +268,42 @@ if ($db && $currentSiteId > 0) {
                 <?php if ($currentSiteId === 0): ?>
                 <div class="bg-dark-800 border border-white/10 rounded-xl p-8 text-center">
                     <i data-lucide="globe" class="w-16 h-16 text-zinc-600 mx-auto mb-4"></i>
-                    <p class="text-zinc-400">Selecione um site para executar a auditoria</p>
+                    <p class="text-zinc-400 mb-6">Selecione um site para executar a auditoria</p>
+                    <?php if (!empty($userSites)): ?>
+                    <div class="max-w-md mx-auto" x-data="{ open: false }">
+                        <button @click="open = !open" class="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors inline-flex items-center gap-2">
+                            <i data-lucide="globe" class="w-4 h-4"></i>
+                            Selecionar Site
+                            <i data-lucide="chevron-down" class="w-4 h-4" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <div x-show="open" 
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             class="mt-4 bg-dark-700 border border-white/10 rounded-lg shadow-xl overflow-hidden"
+                             style="display: none;">
+                            <div class="max-h-64 overflow-y-auto py-2">
+                                <?php foreach ($userSites as $site): ?>
+                                <a href="<?php 
+                                    require_once __DIR__ . '/includes/SecurityToken.php';
+                                    $tokenMgr = new SecurityToken();
+                                    $urlToken = $tokenMgr->generateToken($_SESSION['safenode_user_id'] ?? null, $site['id']);
+                                    echo '?token=' . $urlToken . '&view_site=' . $site['id'];
+                                ?>" class="block px-4 py-3 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors">
+                                    <div class="font-medium"><?php echo htmlspecialchars($site['display_name'] ?: $site['domain']); ?></div>
+                                    <div class="text-xs text-zinc-500 font-mono"><?php echo htmlspecialchars($site['domain']); ?></div>
+                                </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php else: ?>
+                    <a href="sites.php" class="inline-block bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>
+                        Cadastrar Primeiro Site
+                    </a>
+                    <?php endif; ?>
                 </div>
                 <?php else: ?>
                 
@@ -647,6 +484,55 @@ if ($db && $currentSiteId > 0) {
                     </div>
                     <?php endif; ?>
                 </div>
+                
+                <!-- Histórico de Auditorias -->
+                <?php if (!empty($auditHistory)): ?>
+                <div class="bg-dark-800 border border-white/10 rounded-xl p-6 mt-6">
+                    <h2 class="text-xl font-bold text-white mb-4">Histórico de Auditorias</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-white/10">
+                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Data</th>
+                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Score</th>
+                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Aprovados</th>
+                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Falhas</th>
+                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Status</th>
+                                    <th class="text-left py-3 px-4 text-zinc-400 text-sm font-medium">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($auditHistory as $audit): 
+                                    $score = (int)($audit['security_score'] ?? 0);
+                                    $scoreColor = $score >= 80 ? 'text-green-400' : ($score >= 60 ? 'text-yellow-400' : 'text-red-400');
+                                ?>
+                                <tr class="border-b border-white/5 hover:bg-white/5">
+                                    <td class="py-3 px-4 text-sm text-zinc-300"><?php echo date('d/m/Y H:i', strtotime($audit['created_at'])); ?></td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-3 py-1 rounded text-sm font-bold <?php 
+                                            echo $score >= 80 ? 'bg-green-500/20 text-green-400' : 
+                                                ($score >= 60 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'); 
+                                        ?>">
+                                            <?php echo $score; ?>/100
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-green-400"><?php echo $audit['passed_checks']; ?></td>
+                                    <td class="py-3 px-4 text-sm text-red-400"><?php echo $audit['failed_checks']; ?></td>
+                                    <td class="py-3 px-4 text-sm <?php echo $audit['status'] === 'completed' ? 'text-green-400' : ($audit['status'] === 'running' ? 'text-yellow-400' : 'text-red-400'); ?>">
+                                        <?php echo ucfirst($audit['status']); ?>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <a href="?view_audit=<?php echo $audit['id']; ?>" class="text-blue-400 hover:text-blue-300 text-sm">
+                                            Ver Detalhes
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php endif; ?>
                 
                 <?php endif; ?>
             </div>

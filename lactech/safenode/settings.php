@@ -15,6 +15,7 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/Settings.php';
+require_once __DIR__ . '/includes/ProtectionStreak.php';
 
 $pageTitle = 'Configurações';
 $currentSiteId = $_SESSION['view_site_id'] ?? 0;
@@ -34,6 +35,77 @@ if ($db && $currentSiteId > 0) {
 
 $message = '';
 $messageType = '';
+
+// Buscar sequência de proteção ANTES de verificar atualização
+$streakManager = new ProtectionStreak($db);
+$protectionStreak = null;
+if ($userId) {
+    $protectionStreak = $streakManager->getStreak($userId, $currentSiteId);
+}
+
+// Verificar se houve atualização bem-sucedida (DEPOIS de buscar os dados atualizados)
+if (isset($_GET['streak_updated'])) {
+    // Recarregar dados após atualização para garantir que está sincronizado
+    if ($userId) {
+        $protectionStreak = $streakManager->getStreak($userId, $currentSiteId);
+    }
+    // Redirecionar sem mensagem para limpar a URL
+    header("Location: settings.php");
+    exit;
+}
+
+// Processar ativação/desativação da sequência
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_streak'])) {
+    error_log("=== STREAK TOGGLE DEBUG ===");
+    error_log("POST data: " . print_r($_POST, true));
+    error_log("User ID: " . $userId);
+    error_log("Site ID: " . $currentSiteId);
+    
+    if (!CSRFProtection::validate()) {
+        error_log("CSRF validation FAILED");
+        $message = "Token de segurança inválido.";
+        $messageType = "error";
+    } else {
+        error_log("CSRF validation PASSED");
+        
+        // Verificar se o valor foi enviado (pode ser '1' ou '0' do hidden input)
+        $streakEnabledValue = $_POST['streak_enabled'] ?? null;
+        error_log("streak_enabled value from POST: " . var_export($streakEnabledValue, true));
+        
+        $enabled = ($streakEnabledValue === '1' || $streakEnabledValue === 1);
+        error_log("Enabled (boolean): " . ($enabled ? 'true' : 'false'));
+        
+        if (!$userId) {
+            error_log("ERROR: No user ID");
+            $message = "Erro: Usuário não identificado. Faça login novamente.";
+            $messageType = "error";
+        } else {
+            error_log("Calling setEnabled with: userId=$userId, siteId=$currentSiteId, enabled=" . ($enabled ? 'true' : 'false'));
+            $result = $streakManager->setEnabled($userId, $currentSiteId, $enabled);
+            error_log("setEnabled returned: " . ($result ? 'true' : 'false'));
+            
+            if ($result) {
+                // Verificar se realmente foi salvo
+                $checkStreak = $streakManager->getStreak($userId, $currentSiteId);
+                error_log("After setEnabled, getStreak returned: " . print_r($checkStreak, true));
+                
+                // Redirecionar para evitar reenvio do formulário e atualizar estado
+                error_log("Redirecting to settings.php");
+                header("Location: settings.php?streak_updated=1");
+                exit;
+            } else {
+                error_log("ERROR: setEnabled returned false");
+                $errorMsg = "Erro ao atualizar sequência de proteção.";
+                if (!$db) {
+                    $errorMsg .= " Banco de dados não disponível.";
+                }
+                $message = $errorMsg;
+                $messageType = "error";
+            }
+        }
+    }
+    error_log("=== END STREAK TOGGLE DEBUG ===");
+}
 
 // Processar atualização de configurações
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
@@ -241,187 +313,14 @@ foreach ($allSettings as $setting) {
 </head>
 <body class="h-full" x-data="{ sidebarOpen: false }">
     <div class="flex h-full">
-        <!-- Sidebar -->
-        <aside class="sidebar w-72 h-full flex-shrink-0 flex flex-col hidden lg:flex">
-            <div class="p-6 border-b border-white/5">
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain">
-                        <div>
-                            <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                            <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <nav class="flex-1 p-5 space-y-2 overflow-y-auto">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Menu Principal</p>
-                
-                <a href="dashboard.php" class="nav-item">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span class="font-medium">Home</span>
-                </a>
-                <a href="sites.php" class="nav-item">
-                    <i data-lucide="globe" class="w-5 h-5"></i>
-                    <span class="font-medium">Gerenciar Sites</span>
-                </a>
-                <a href="security-analytics.php" class="nav-item">
-                    <i data-lucide="activity" class="w-5 h-5"></i>
-                    <span class="font-medium">Network</span>
-                </a>
-                <a href="behavior-analysis.php" class="nav-item">
-                    <i data-lucide="cpu" class="w-5 h-5"></i>
-                    <span class="font-medium">Kubernetes</span>
-                </a>
-                <a href="logs.php" class="nav-item">
-                    <i data-lucide="compass" class="w-5 h-5"></i>
-                    <span class="font-medium">Explorar</span>
-                </a>
-                <a href="suspicious-ips.php" class="nav-item">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                    <span class="font-medium">Analisar</span>
-                </a>
-                <a href="attacked-targets.php" class="nav-item">
-                    <i data-lucide="users-2" class="w-5 h-5"></i>
-                    <span class="font-medium">Grupos</span>
-                </a>
-                
-                <div class="pt-6 mt-6 border-t border-white/5">
-                    <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
-                    <a href="human-verification.php" class="nav-item">
-                        <i data-lucide="shield-check" class="w-5 h-5"></i>
-                        <span class="font-medium">Verificação Humana</span>
-                    </a>
-                    <a href="settings.php" class="nav-item active">
-                        <i data-lucide="settings-2" class="w-5 h-5"></i>
-                        <span class="font-medium">Configurações</span>
-                    </a>
-                    <a href="help.php" class="nav-item">
-                        <i data-lucide="life-buoy" class="w-5 h-5"></i>
-                        <span class="font-medium">Ajuda</span>
-                    </a>
-                </div>
-            </nav>
-            
-            <div class="p-5">
-                <div class="upgrade-card">
-                    <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                    <button class="w-full btn-primary py-2.5 text-sm">
-                        Upgrade Agora
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-    <!-- Mobile Sidebar Overlay -->
-    <div x-show="sidebarOpen" 
-         x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         @click="sidebarOpen = false"
-         class="fixed inset-0 bg-black/80 z-40 lg:hidden"
-         x-cloak
-         style="display: none;"></div>
-
-    <!-- Mobile Sidebar -->
-    <aside x-show="sidebarOpen"
-           x-transition:enter="transition ease-out duration-300 transform"
-           x-transition:enter-start="-translate-x-full"
-           x-transition:enter-end="translate-x-0"
-           x-transition:leave="transition ease-in duration-300 transform"
-           x-transition:leave-start="translate-x-0"
-           x-transition:leave-end="-translate-x-full"
-           @click.away="sidebarOpen = false"
-           class="fixed inset-y-0 left-0 w-72 sidebar h-full flex flex-col z-50 lg:hidden overflow-y-auto"
-           x-cloak
-           style="display: none;">
-        <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
-                    <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
-                    </div>
-                </div>
-                <button @click="sidebarOpen = false" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Menu Principal</p>
-            
-            <a href="dashboard.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Home</span>
-            </a>
-            <a href="sites.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
-            </a>
-            <a href="security-analytics.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Network</span>
-            </a>
-            <a href="behavior-analysis.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Kubernetes</span>
-            </a>
-            <a href="logs.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="compass" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Explorar</span>
-            </a>
-            <a href="suspicious-ips.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Analisar</span>
-            </a>
-            <a href="attacked-targets.php" class="nav-item" @click="sidebarOpen = false">
-                <i data-lucide="users-2" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Grupos</span>
-            </a>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="human-verification.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="settings.php" class="nav-item active" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
-                <a href="help.php" class="nav-item" @click="sidebarOpen = false">
-                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Ajuda</span>
-                </a>
-            </div>
-        </nav>
-        
-        <!-- Upgrade Card -->
-        <div class="p-4 flex-shrink-0">
-            <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
-            </div>
-        </div>
-    </aside>
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
         
         <!-- Main Content -->
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
             <!-- Header -->
             <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center gap-6">
-                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-zinc-400 hover:text-white transition-colors">
+                    <button data-sidebar-toggle class="lg:hidden text-zinc-400 hover:text-white transition-colors">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div>
@@ -435,11 +334,196 @@ foreach ($allSettings as $setting) {
 
             <!-- Content -->
             <div class="flex-1 overflow-y-auto p-8">
-                <?php if ($message): ?>
-                <div class="glass rounded-2xl p-4 mb-6 <?php echo $messageType === 'success' ? 'border-green-500/30 bg-green-500/10' : ($messageType === 'error' ? 'border-red-500/30 bg-red-500/10' : 'border-amber-500/30 bg-amber-500/10'); ?>">
+                <?php if ($message && $messageType !== 'success'): ?>
+                <div class="glass rounded-2xl p-4 mb-6 <?php echo $messageType === 'error' ? 'border-red-500/30 bg-red-500/10' : 'border-amber-500/30 bg-amber-500/10'; ?>">
                     <p class="text-white"><?php echo htmlspecialchars($message); ?></p>
                 </div>
                 <?php endif; ?>
+
+                <!-- Sequência de Proteção -->
+                <div class="glass rounded-2xl p-6 mb-6 border border-white/10" 
+                     x-data="{ enabled: <?php echo ($protectionStreak && isset($protectionStreak['enabled']) && $protectionStreak['enabled']) ? 'true' : 'false'; ?> }"
+                     x-on:streak-updated.window="enabled = $event.detail.enabled"
+                     :class="enabled ? 'border-orange-500/30 bg-orange-500/5' : 'border-white/10'">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="bg-gradient-to-br from-orange-500 to-red-600 rounded-lg p-3 transition-opacity"
+                             :class="enabled ? 'animate-pulse' : 'opacity-50'">
+                            <i data-lucide="flame" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-white">Sequência de Proteção</h3>
+                            <p class="text-sm text-zinc-400">Acompanhe os dias consecutivos de proteção do seu site</p>
+                        </div>
+                        <div class="px-3 py-1 rounded-lg transition-colors"
+                             :class="enabled ? 'bg-green-500/20 border border-green-500/30' : 'bg-zinc-500/20 border border-zinc-500/30'">
+                            <span class="text-xs font-semibold" 
+                                  :class="enabled ? 'text-green-400' : 'text-zinc-400'"
+                                  x-text="enabled ? 'ATIVO' : 'INATIVO'"></span>
+                        </div>
+                    </div>
+                    
+                    <div x-show="enabled && <?php echo ($protectionStreak && isset($protectionStreak['current_streak']) && $protectionStreak['current_streak'] > 0) ? 'true' : 'false'; ?>" 
+                         class="mb-6 p-5 bg-dark-800/50 rounded-xl border border-white/5"
+                         style="display: <?php echo ($protectionStreak && isset($protectionStreak['enabled']) && $protectionStreak['enabled'] && isset($protectionStreak['current_streak']) && $protectionStreak['current_streak'] > 0) ? 'block' : 'none'; ?>;">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <div class="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Sequência Atual</div>
+                                <div class="text-3xl font-bold text-orange-400">
+                                    <?php echo $protectionStreak['current_streak'] ?? 0; ?> 
+                                    <span class="text-lg text-zinc-500">dias</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Recorde</div>
+                                <div class="text-3xl font-bold text-zinc-300">
+                                    <?php echo $protectionStreak['longest_streak'] ?? 0; ?> 
+                                    <span class="text-lg text-zinc-500">dias</span>
+                                </div>
+                            </div>
+                        </div>
+                        <?php if ($protectionStreak && isset($protectionStreak['last_protected_date']) && $protectionStreak['last_protected_date']): ?>
+                        <div class="mt-5 pt-5 border-t border-white/5">
+                            <div class="text-xs text-zinc-500 mb-1">Última proteção registrada</div>
+                            <div class="text-sm text-zinc-300 font-medium">
+                                <?php echo date('d/m/Y', strtotime($protectionStreak['last_protected_date'])); ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div id="streak-toggle-container" 
+                         x-data="streakToggleData()"
+                         x-on:streak-updated.window="enabled = $event.detail.enabled; currentStreak = $event.detail.current_streak || 0; longestStreak = $event.detail.longest_streak || 0">
+                        <div class="flex items-center justify-between p-4 bg-dark-800/30 rounded-xl border border-white/5">
+                            <div class="flex-1">
+                                <div class="text-sm font-semibold text-white mb-1">
+                                    <span x-text="enabled ? 'Desativar Sequência' : 'Ativar Sequência de Proteção'"></span>
+                                </div>
+                                <p class="text-xs text-zinc-400">
+                                    <span x-show="enabled" x-text="'Clique para desativar o registro automático de dias consecutivos.'"></span>
+                                    <span x-show="!enabled" x-text="'Quando ativado, o SafeNode registra automaticamente os dias consecutivos de proteção. Um badge aparecerá na sidebar mostrando sua sequência atual.'"></span>
+                                </p>
+                            </div>
+                            <button 
+                                type="button"
+                                @click="toggle()"
+                                :disabled="loading"
+                                class="ml-4 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :class="enabled ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30' : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white shadow-lg shadow-orange-500/20'"
+                            >
+                                <template x-if="loading">
+                                    <span class="inline-flex items-center">
+                                        <i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i>
+                                        Processando...
+                                    </span>
+                                </template>
+                                <template x-if="!loading && enabled">
+                                    <span class="inline-flex items-center">
+                                        <i data-lucide="x-circle" class="w-4 h-4 inline mr-2"></i>
+                                        Desativar
+                                    </span>
+                                </template>
+                                <template x-if="!loading && !enabled">
+                                    <span class="inline-flex items-center">
+                                        <i data-lucide="flame" class="w-4 h-4 inline mr-2"></i>
+                                        Ativar Agora
+                                    </span>
+                                </template>
+                            </button>
+                        </div>
+                        
+                        <div x-show="enabled && currentStreak > 0" class="mt-4 p-4 bg-dark-800/50 rounded-xl border border-white/5" style="display: none;">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="text-xs text-zinc-500 mb-1">Sequência Atual</div>
+                                    <div class="text-2xl font-bold text-orange-400">
+                                        <span x-text="currentStreak"></span> <span class="text-sm text-zinc-500">dias</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-zinc-500 mb-1">Recorde</div>
+                                    <div class="text-2xl font-bold text-zinc-300">
+                                        <span x-text="longestStreak"></span> <span class="text-sm text-zinc-500">dias</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                    function streakToggleData() {
+                        return {
+                            enabled: <?php echo ($protectionStreak && isset($protectionStreak['enabled']) && $protectionStreak['enabled']) ? 'true' : 'false'; ?>,
+                            loading: false,
+                            currentStreak: <?php echo $protectionStreak['current_streak'] ?? 0; ?>,
+                            longestStreak: <?php echo $protectionStreak['longest_streak'] ?? 0; ?>,
+                            async toggle() {
+                                console.log('=== TOGGLE STREAK START ===');
+                                console.log('Current enabled state:', this.enabled);
+                                
+                                this.loading = true;
+                                const newValue = !this.enabled;
+                                console.log('New value to set:', newValue);
+                                
+                                try {
+                                    const formData = new FormData();
+                                    formData.append('enabled', newValue ? '1' : '0');
+                                    
+                                    console.log('Sending POST to api/toggle-streak.php');
+                                    console.log('FormData enabled value:', newValue ? '1' : '0');
+                                    
+                                    const response = await fetch('api/toggle-streak.php', {
+                                        method: 'POST',
+                                        body: formData
+                                    });
+                                    
+                                    console.log('Response status:', response.status);
+                                    console.log('Response ok:', response.ok);
+                                    
+                                    const data = await response.json();
+                                    console.log('Response data:', data);
+                                    
+                                    if (data.success) {
+                                        console.log('SUCCESS! Updating local state...');
+                                        console.log('Old enabled:', this.enabled);
+                                        console.log('New enabled from API:', data.enabled);
+                                        
+                                        this.enabled = data.enabled;
+                                        this.currentStreak = data.current_streak || 0;
+                                        this.longestStreak = data.longest_streak || 0;
+                                        
+                                        console.log('State updated. New enabled:', this.enabled);
+                                        console.log('Current streak:', this.currentStreak);
+                                        console.log('Longest streak:', this.longestStreak);
+                                        
+                                        // Disparar evento para atualizar header do card
+                                        window.dispatchEvent(new CustomEvent('streak-updated', { detail: data }));
+                                        console.log('Event streak-updated dispatched');
+                                        
+                                        // Recriar ícones
+                                        if (typeof lucide !== 'undefined') {
+                                            setTimeout(() => {
+                                                lucide.createIcons();
+                                                console.log('Icons recreated');
+                                            }, 100);
+                                        }
+                                    } else {
+                                        console.error('API returned error:', data.error);
+                                        alert('Erro: ' + (data.error || 'Erro ao atualizar sequência'));
+                                    }
+                                } catch (error) {
+                                    console.error('Exception caught:', error);
+                                    console.error('Error stack:', error.stack);
+                                    alert('Erro ao atualizar sequência. Tente novamente.');
+                                } finally {
+                                    this.loading = false;
+                                    console.log('=== TOGGLE STREAK END ===');
+                                }
+                            }
+                        };
+                    }
+                    </script>
+                </div>
 
                 <form method="POST" action="settings.php">
                     <?php echo CSRFProtection::getTokenField(); ?>

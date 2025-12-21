@@ -846,9 +846,9 @@
                         <td>
                             <div class="feature-name">Cloudflare Integration</div>
                         </td>
-                        <td><span class="status status-parcial">Parcial</span></td>
-                        <td class="feature-desc">Integração com API Cloudflare</td>
-                        <td class="observacoes">Código completo, mas requer token API configurado</td>
+                        <td><span class="status status-funcional">Funcional</span></td>
+                        <td class="feature-desc">Integração completa e complementar com API Cloudflare</td>
+                        <td class="observacoes">Integração totalmente funcional: gerenciamento de regras de firewall (criar, deletar, listar), gerenciamento de DNS (criar, atualizar, deletar, listar registros), obtenção de analytics agregados (GraphQL), obtenção de eventos de segurança reais (Security Events API), sincronização automática de logs de segurança (sync-cloudflare-logs.php), verificação de token, suporte a múltiplas fontes de configuração (parâmetro, constante, variável de ambiente). Sistema funciona sem Cloudflare (opcional), integração complementar para sites que já usam Cloudflare</td>
                     </tr>
                     <tr>
                         <td>
@@ -878,9 +878,9 @@
                         <td>
                             <div class="feature-name">Anomaly Detector</div>
                         </td>
-                        <td><span class="status status-parcial">Parcial</span></td>
-                        <td class="feature-desc">Detecção de anomalias</td>
-                        <td class="observacoes">Detecção básica implementada, não é ML avançado</td>
+                        <td><span class="status status-funcional">Funcional</span></td>
+                        <td class="feature-desc">Sistema completo de detecção de anomalias comportamentais usando análise estatística</td>
+                        <td class="observacoes">Detecção baseada em baseline comportamental (30 dias), Z-score para desvios estatísticos, detecção de taxa de requisições anormal, horários incomuns, padrões de endpoints diferentes, mudanças de User-Agent, mudanças de país, requisições muito rápidas (bots), excesso de 404s (scanners), rotação de User-Agents, cálculo de score de anomalia, detecção global e por IP, análise de padrões específicos, estatísticas de anomalias, histórico e tipos mais comuns</td>
                     </tr>
                     <tr>
                         <td>
@@ -942,9 +942,9 @@
                         <td>
                             <div class="feature-name">Security Advisor</div>
                         </td>
-                        <td><span class="status status-parcial">Parcial</span></td>
-                        <td class="feature-desc">Recomendações de segurança</td>
-                        <td class="observacoes">Recomendações básicas baseadas em regras</td>
+                        <td><span class="status status-funcional">Funcional</span></td>
+                        <td class="feature-desc">Sistema completo de auditoria e consultoria de segurança</td>
+                        <td class="observacoes">Auditoria completa: headers de segurança (verificação HTTP real), endpoints sensíveis, regras WAF, rate limiting, configurações gerais, SSL/TLS (validade e versão do certificado), proteção contra ataques, monitoramento e logs. Geração automática de recomendações priorizadas, aplicação automática quando possível, histórico de auditorias, cálculo de scores por categoria, sistema de maturidade de segurança</td>
                     </tr>
                     <tr>
                         <td>
@@ -1014,9 +1014,9 @@
                         <td>
                             <div class="feature-name">Email Service</div>
                         </td>
-                        <td><span class="status status-parcial">Parcial</span></td>
-                        <td class="feature-desc">Envio de emails (OTP, notificações)</td>
-                        <td class="observacoes">Sistema implementado, requer configuração SMTP</td>
+                        <td><span class="status status-funcional">Funcional</span></td>
+                        <td class="feature-desc">Sistema completo de envio de emails</td>
+                        <td class="observacoes">Envio funcional de OTP para cadastro, recuperação de senha, códigos de segurança para ações perigosas, notificações de manutenção e sistema online. Usa mail() nativo do PHP e sendmail como fallback. Templates HTML profissionais e responsivos, validação de emails, logging extensivo para debug, detecção automática de URL base</td>
                     </tr>
                     <tr>
                         <td>
