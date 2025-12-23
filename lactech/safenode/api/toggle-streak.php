@@ -20,6 +20,20 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 // CSRF removido para facilitar desenvolvimento local
 // A autenticação por sessão já fornece segurança suficiente
 
+// Verificar método - permitir GET para verificar status
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['check'])) {
+    // Retornar apenas o status atual
+    $db = getSafeNodeDatabase();
+    $streakManager = new ProtectionStreak($db);
+    $streak = $streakManager->getStreak($userId, $siteId);
+    
+    echo json_encode([
+        'success' => true,
+        'enabled' => $streak && isset($streak['enabled']) ? (bool)$streak['enabled'] : false
+    ]);
+    exit;
+}
+
 // Verificar método
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
