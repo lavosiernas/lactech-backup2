@@ -293,6 +293,33 @@ $currentPage = 'mail';
             color: var(--text-primary);
             font-family: 'Inter', sans-serif;
         }
+        
+        /* Estilos para select e opções */
+        select[name="email_function"] {
+            color-scheme: dark;
+            z-index: 50;
+            position: relative;
+        }
+        
+        select[name="email_function"] option {
+            background-color: #0a0a0a !important;
+            color: #ffffff !important;
+            padding: 0.75rem 1rem;
+        }
+        
+        select[name="email_function"]:focus {
+            z-index: 100;
+        }
+        
+        /* Garantir que o container não corte o dropdown */
+        .bg-dark-800 {
+            overflow: visible;
+        }
+        
+        /* Ajustar para o grid não cortar */
+        .grid {
+            overflow: visible;
+        }
     </style>
 </head>
 <body class="h-full" x-data="{ sidebarOpen: false }">
@@ -792,104 +819,8 @@ await mail.send(
                      x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0">
-                <div x-data="{ selectedTemplate: null }">
-                
-                <!-- Templates Prontos -->
-                <div class="bg-dark-800 border border-white/10 rounded-xl p-6 mb-6">
-                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-3">
-                        <i data-lucide="file-code" class="w-5 h-5"></i>
-                        Templates Prontos
-                    </h3>
-                    <p class="text-sm text-zinc-400 mb-4">Escolha um template para começar rapidamente ou crie um do zero</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Template: Confirm Sign Up -->
-                        <div @click="selectedTemplate = 'confirm_signup'; loadTemplate('confirm_signup')" 
-                             :class="selectedTemplate === 'confirm_signup' ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/20'"
-                             class="bg-dark-900 border rounded-xl p-4 cursor-pointer transition-all">
-                            <div class="flex items-start justify-between mb-2">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white mb-1">Confirm Sign Up</h4>
-                                    <p class="text-xs text-zinc-400">Confirmar cadastro</p>
-                                </div>
-                                <i data-lucide="check-circle" class="w-5 h-5 text-blue-500" x-show="selectedTemplate === 'confirm_signup'"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-2">Template para confirmação de e-mail após cadastro</p>
-                        </div>
-                        
-                        <!-- Template: Invite User -->
-                        <div @click="selectedTemplate = 'invite_user'; loadTemplate('invite_user')" 
-                             :class="selectedTemplate === 'invite_user' ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/20'"
-                             class="bg-dark-900 border rounded-xl p-4 cursor-pointer transition-all">
-                            <div class="flex items-start justify-between mb-2">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white mb-1">Invite User</h4>
-                                    <p class="text-xs text-zinc-400">Convidar usuário</p>
-                                </div>
-                                <i data-lucide="check-circle" class="w-5 h-5 text-blue-500" x-show="selectedTemplate === 'invite_user'"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-2">Template para convidar novos usuários</p>
-                        </div>
-                        
-                        <!-- Template: Magic Link -->
-                        <div @click="selectedTemplate = 'magic_link'; loadTemplate('magic_link')" 
-                             :class="selectedTemplate === 'magic_link' ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/20'"
-                             class="bg-dark-900 border rounded-xl p-4 cursor-pointer transition-all">
-                            <div class="flex items-start justify-between mb-2">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white mb-1">Magic Link</h4>
-                                    <p class="text-xs text-zinc-400">Link mágico de login</p>
-                                </div>
-                                <i data-lucide="check-circle" class="w-5 h-5 text-blue-500" x-show="selectedTemplate === 'magic_link'"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-2">Template para login sem senha</p>
-                        </div>
-                        
-                        <!-- Template: Change Email -->
-                        <div @click="selectedTemplate = 'change_email'; loadTemplate('change_email')" 
-                             :class="selectedTemplate === 'change_email' ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/20'"
-                             class="bg-dark-900 border rounded-xl p-4 cursor-pointer transition-all">
-                            <div class="flex items-start justify-between mb-2">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white mb-1">Change Email</h4>
-                                    <p class="text-xs text-zinc-400">Alterar e-mail</p>
-                                </div>
-                                <i data-lucide="check-circle" class="w-5 h-5 text-blue-500" x-show="selectedTemplate === 'change_email'"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-2">Template para confirmar nova alteração de e-mail</p>
-                        </div>
-                        
-                        <!-- Template: Reset Password -->
-                        <div @click="selectedTemplate = 'reset_password'; loadTemplate('reset_password')" 
-                             :class="selectedTemplate === 'reset_password' ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/20'"
-                             class="bg-dark-900 border rounded-xl p-4 cursor-pointer transition-all">
-                            <div class="flex items-start justify-between mb-2">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white mb-1">Reset Password</h4>
-                                    <p class="text-xs text-zinc-400">Redefinir senha</p>
-                                </div>
-                                <i data-lucide="check-circle" class="w-5 h-5 text-blue-500" x-show="selectedTemplate === 'reset_password'"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-2">Template para recuperação de senha</p>
-                        </div>
-                        
-                        <!-- Template: Reauthentication -->
-                        <div @click="selectedTemplate = 'reauthentication'; loadTemplate('reauthentication')" 
-                             :class="selectedTemplate === 'reauthentication' ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/20'"
-                             class="bg-dark-900 border rounded-xl p-4 cursor-pointer transition-all">
-                            <div class="flex items-start justify-between mb-2">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-white mb-1">Reauthentication</h4>
-                                    <p class="text-xs text-zinc-400">Reautenticação</p>
-                                </div>
-                                <i data-lucide="check-circle" class="w-5 h-5 text-blue-500" x-show="selectedTemplate === 'reauthentication'"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-2">Template para reautenticação em ações sensíveis</p>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- Criar Novo Projeto -->
-                <div class="bg-dark-800 border border-white/10 rounded-xl p-6 mb-6">
+                <div class="bg-dark-800 border border-white/10 rounded-xl p-6 mb-6" style="overflow: visible;">
                     <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-3">
                         <i data-lucide="plus-circle" class="w-5 h-5"></i>
                         Criar Novo Projeto
@@ -918,14 +849,15 @@ await mail.send(
                             <div>
                                 <label class="block text-sm font-semibold text-white mb-2">Função do E-mail *</label>
                                 <select name="email_function" required 
-                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 transition-all">
-                                    <option value="">Selecione uma função</option>
-                                    <option value="confirm_signup">Confirm sign up - Confirmar cadastro</option>
-                                    <option value="invite_user">Invite user - Convidar usuário</option>
-                                    <option value="magic_link">Magic link - Link mágico de login</option>
-                                    <option value="change_email">Change email address - Alterar e-mail</option>
-                                    <option value="reset_password">Reset password - Redefinir senha</option>
-                                    <option value="reauthentication">Reauthentication - Reautenticação</option>
+                                    class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 transition-all appearance-none cursor-pointer"
+                                    style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
+                                    <option value="" class="bg-dark-900 text-white">Selecione uma função</option>
+                                    <option value="confirm_signup" class="bg-dark-900 text-white">Confirm sign up - Confirmar cadastro</option>
+                                    <option value="invite_user" class="bg-dark-900 text-white">Invite user - Convidar usuário</option>
+                                    <option value="magic_link" class="bg-dark-900 text-white">Magic link - Link mágico de login</option>
+                                    <option value="change_email" class="bg-dark-900 text-white">Change email address - Alterar e-mail</option>
+                                    <option value="reset_password" class="bg-dark-900 text-white">Reset password - Redefinir senha</option>
+                                    <option value="reauthentication" class="bg-dark-900 text-white">Reauthentication - Reautenticação</option>
                                 </select>
                                 <p class="text-xs text-zinc-400 mt-2">Escolha a função que este e-mail vai cumprir</p>
                             </div>
@@ -937,74 +869,57 @@ await mail.send(
                                 <div class="bg-dark-950 px-4 py-2 border-b border-white/10 flex items-center justify-between">
                                     <div class="flex items-center gap-3">
                                         <span class="text-xs text-zinc-400 font-mono">email-template.html</span>
-                                        <div class="flex items-center gap-2">
-                                            <button type="button" 
-                                                    onclick="switchEditorMode('visual')" 
-                                                    id="btn-visual-mode"
-                                                    class="text-xs px-3 py-1 rounded transition-colors bg-blue-600 text-white">
-                                                <i data-lucide="layout" class="w-3 h-3 inline mr-1"></i> Visual
-                                            </button>
-                                            <button type="button" 
-                                                    onclick="switchEditorMode('code')" 
-                                                    id="btn-code-mode"
-                                                    class="text-xs px-3 py-1 rounded transition-colors bg-white/5 text-zinc-400 hover:text-white">
-                                                <i data-lucide="code" class="w-3 h-3 inline mr-1"></i> Código
-                                            </button>
-                                        </div>
                                     </div>
-                                    <button type="button" onclick="previewEmail()" class="text-xs text-zinc-400 hover:text-white px-3 py-1 rounded bg-white/5 hover:bg-white/10 transition-colors">
-                                        <i data-lucide="eye" class="w-3 h-3 inline mr-1"></i> Preview
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="openCodeIDE()" class="text-xs text-white px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors inline-flex items-center gap-2 font-medium">
+                                            <i data-lucide="code" class="w-3.5 h-3.5"></i> IDE de Código
+                                        </button>
+                                        <button onclick="openVisualEditor()" class="text-xs text-white px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors inline-flex items-center gap-2 font-medium">
+                                            <i data-lucide="layout" class="w-3.5 h-3.5"></i> Editor Visual
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <!-- Editor Visual (GrapesJS) -->
-                                <div id="visual-editor-container" class="hidden">
-                                    <div style="display: flex; height: 600px; background: #0a0a0a; border-radius: 8px; overflow: hidden;">
-                                        <!-- Painel de Blocos (Esquerda) -->
-                                        <div class="blocks-container" style="width: 200px; overflow-y: auto; border-right: 1px solid #1f1f1f; background: #0a0a0a;"></div>
+                                <!-- Área para exibir código (oculta) -->
+                                <!-- Template será criado na IDE/Editor Visual -->
+                                <textarea name="html_template" id="html-editor" style="display: none;"></textarea>
+                                
+                                <!-- Área informativa -->
+                                <div class="p-8 text-center">
+                                    <div class="bg-dark-800 rounded-lg border border-white/5 p-6 max-w-lg mx-auto">
+                                        <div class="flex items-center justify-center gap-3 mb-4">
+                                            <i data-lucide="code-2" class="w-10 h-10 text-blue-400"></i>
+                                            <i data-lucide="layout" class="w-10 h-10 text-purple-400"></i>
+                                        </div>
+                                        <h4 class="text-white font-semibold mb-2">Escolha seu Editor</h4>
+                                        <p class="text-xs text-zinc-400 mb-6">
+                                            Você pode criar seu template de duas formas:
+                                        </p>
                                         
-                                        <!-- Editor Central -->
-                                        <div style="flex: 1; display: flex; flex-direction: column; background: #0a0a0a;">
-                                            <!-- Barra de Ferramentas -->
-                                            <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #1a1a1a; border-bottom: 1px solid #1f1f1f;">
-                                                <div class="panel__devices" style="display: flex; gap: 4px;"></div>
-                                                <div class="panel__switcher" style="display: flex; gap: 4px; margin-left: auto;"></div>
+                                        <!-- Botões dos editores -->
+                                        <div class="grid grid-cols-2 gap-3 mb-4">
+                                            <button onclick="openCodeIDE()" type="button" class="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors inline-flex flex-col items-center gap-2 border-2 border-blue-600 hover:border-blue-500">
+                                                <i data-lucide="code" class="w-5 h-5"></i>
+                                                <span class="font-semibold">IDE de Código</span>
+                                                <span class="text-xs opacity-90">Editor + Preview + IA</span>
+                                            </button>
+                                            <button onclick="openVisualEditor()" type="button" class="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors inline-flex flex-col items-center gap-2 border-2 border-purple-600 hover:border-purple-500">
+                                                <i data-lucide="layout" class="w-5 h-5"></i>
+                                                <span class="font-semibold">Editor Visual</span>
+                                                <span class="text-xs opacity-90">Drag & Drop</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <div id="code-status" class="mb-4 hidden">
+                                            <div class="bg-green-600/20 border border-green-600/30 rounded-lg px-3 py-2 text-xs text-green-400 inline-flex items-center gap-2">
+                                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                                                <span>Código salvo! Abra o editor novamente para continuar editando.</span>
                                             </div>
-                                            
-                                            <!-- Canvas -->
-                                            <div id="gjs-editor" style="flex: 1; overflow: auto; background: #1a1a1a;"></div>
-                                        </div>
-                                        
-                                        <!-- Painéis Laterais (Direita) -->
-                                        <div style="width: 300px; display: flex; flex-direction: column; border-left: 1px solid #1f1f1f; background: #0a0a0a;">
-                                            <div class="styles-container" style="flex: 1; overflow-y: auto; min-height: 200px;"></div>
-                                            <div class="layers-container" style="flex: 1; overflow-y: auto; border-top: 1px solid #1f1f1f; min-height: 150px;"></div>
-                                            <div class="traits-container" style="overflow-y: auto; border-top: 1px solid #1f1f1f; min-height: 100px;"></div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <!-- Editor de Código (CodeMirror) -->
-                                <div id="code-editor-container">
-                                    <textarea name="html_template" id="html-editor" required 
-                                        class="w-full bg-dark-900 text-white font-mono text-sm p-4 min-h-[400px] focus:outline-none"
-                                        placeholder="<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='UTF-8'>
-    <style>
-        body { font-family: Arial, sans-serif; }
-    </style>
-</head>
-<body>
-    <h1>Olá {{nome}}!</h1>
-    <p>Seu código de verificação é: {{codigo}}</p>
-    <a href='{{link}}'>Clique aqui para confirmar</a>
-</body>
-</html>"></textarea>
+                                    <p class="text-xs text-zinc-400 mt-4">Use variáveis como {{nome}}, {{codigo}}, {{link}} que serão substituídas automaticamente</p>
                                 </div>
                             </div>
-                            <p class="text-xs text-zinc-400 mt-2">Use variáveis como {{nome}}, {{codigo}}, {{link}} que serão substituídas automaticamente</p>
                         </div>
                         
                         <button type="submit" class="px-6 py-2.5 bg-white text-black rounded-xl font-semibold hover:bg-zinc-200 transition-colors">
@@ -1077,1158 +992,229 @@ await mail.send(
         </div>
     </div>
 
-    <!-- GrapesJS CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs@0.21.5/dist/css/grapes.min.css">
-    <!-- Font Awesome para ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- CodeMirror CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
-    
-    <!-- GrapesJS JS -->
-    <script src="https://cdn.jsdelivr.net/npm/grapesjs@0.21.5/dist/grapes.min.js"></script>
-    
-    <!-- CodeMirror JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    
     <script>
+    
     // Inicializar ícones
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
     
-    // Variáveis globais
-    let codeEditor;
-    let codeEditorInitialized = false;
-    let visualEditor;
-    let editorMode = 'code'; // 'code' ou 'visual'
-    
-    function initCodeEditor() {
-        if (codeEditorInitialized) return;
+    // Função para abrir o editor visual com o template atual
+    function openVisualEditor() {
+        // Obter dados do formulário
+        const form = document.getElementById('create-project-form');
+        if (!form) {
+            // Se não estiver na página de criar projeto, apenas abrir o editor
+            window.open('safefig.php', '_blank');
+            return;
+        }
         
+        // Validar campos obrigatórios
+        const name = form.querySelector('input[name="name"]')?.value?.trim();
+        const senderEmail = form.querySelector('input[name="sender_email"]')?.value?.trim();
+        const emailFunction = form.querySelector('select[name="email_function"]')?.value?.trim();
+        
+        // Validar se os campos obrigatórios estão preenchidos
+        if (!name || !senderEmail || !emailFunction) {
+            alert('⚠️ Por favor, preencha todos os campos obrigatórios do formulário antes de abrir o Editor Visual:\n\n' +
+                  '✗ Nome do Projeto\n' +
+                  '✗ E-mail Remetente\n' +
+                  '✗ Função do E-mail\n\n' +
+                  'Após preencher, você poderá criar o template HTML no editor.');
+            // Rolar para o topo do formulário
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        
+        // Obter HTML do editor (opcional - pode estar vazio)
+        let html = '';
+        const textarea = document.getElementById('html-editor');
+        if (textarea) {
+            html = textarea.value || '';
+        }
+        
+        // Obter todos os dados do formulário
+        const senderName = form.querySelector('input[name="sender_name"]')?.value?.trim() || '';
+        
+        // Gerar ID único temporário para o projeto
+        const projectId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Preparar dados para enviar
+        const formData = new URLSearchParams();
+        formData.append('html_template', html);
+        formData.append('project_name', name);
+        formData.append('sender_email', senderEmail);
+        formData.append('sender_name', senderName);
+        formData.append('email_function', emailFunction);
+        formData.append('project_id', projectId);
+        formData.append('editor_type', 'visual');
+        
+        // Enviar dados para a sessão via AJAX
+        fetch('api/set-safefig-template.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Abrir safefig.php em nova aba
+                window.open('safefig.php?project_id=' + projectId, '_blank');
+            } else {
+                alert('Erro ao preparar template: ' + (data.error || 'Erro desconhecido'));
+                // Tentar abrir mesmo assim
+                window.open('safefig.php', '_blank');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao conectar com o servidor. Tentando abrir o editor mesmo assim...');
+            // Tentar abrir mesmo assim
+            window.open('safefig.php', '_blank');
+        });
+    }
+    
+    // Função para abrir a IDE de código
+    function openCodeIDE() {
+        // Obter dados do formulário
+        const form = document.getElementById('create-project-form');
+        if (!form) {
+            // Se não estiver na página de criar projeto, apenas abrir a IDE
+            window.open('ide.php', '_blank');
+            return;
+        }
+        
+        // Validar campos obrigatórios (exceto html_template que será preenchido na IDE)
+        const name = form.querySelector('input[name="name"]')?.value?.trim();
+        const senderEmail = form.querySelector('input[name="sender_email"]')?.value?.trim();
+        const emailFunction = form.querySelector('select[name="email_function"]')?.value?.trim();
+        
+        // Validar se os campos obrigatórios estão preenchidos
+        if (!name || !senderEmail || !emailFunction) {
+            alert('⚠️ Por favor, preencha todos os campos obrigatórios do formulário antes de abrir a IDE:\n\n' +
+                  '✗ Nome do Projeto\n' +
+                  '✗ E-mail Remetente\n' +
+                  '✗ Função do E-mail\n\n' +
+                  'Após preencher, você poderá criar o template HTML na IDE.');
+            // Rolar para o topo do formulário
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        
+        // Obter HTML do editor (se houver)
+        let html = '';
+        const textarea = document.getElementById('html-editor');
+        if (textarea) {
+            html = textarea.value || '';
+        }
+        
+        // Obter todos os dados do formulário
+        const senderName = form.querySelector('input[name="sender_name"]')?.value?.trim() || '';
+        
+        // Gerar ID único temporário para o projeto
+        const projectId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Preparar dados para enviar
+        const formData = new URLSearchParams();
+        formData.append('html_template', html);
+        formData.append('project_name', name);
+        formData.append('sender_email', senderEmail);
+        formData.append('sender_name', senderName);
+        formData.append('email_function', emailFunction);
+        formData.append('project_id', projectId);
+        formData.append('editor_type', 'ide');
+        
+        // Enviar dados para a sessão via AJAX
+        fetch('api/set-safefig-template.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString()
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Abrir ide.php em nova aba com referência do projeto
+                window.open('ide.php?project_id=' + projectId, '_blank');
+            } else {
+                alert('Erro ao preparar dados: ' + (data.error || 'Erro desconhecido'));
+                // Tentar abrir mesmo assim
+                window.open('ide.php', '_blank');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao conectar com o servidor. Tentando abrir a IDE mesmo assim...');
+            // Tentar abrir mesmo assim
+            window.open('ide.php', '_blank');
+        });
+    }
+    
+    // Tornar funções globais IMEDIATAMENTE (ANTES de qualquer outra coisa)
+    window.openCodeIDE = openCodeIDE;
+    window.openVisualEditor = openVisualEditor;
+    
+    // Debug: verificar se as funções foram definidas
+    console.log('Funções definidas:', {
+        openCodeIDE: typeof window.openCodeIDE,
+        openVisualEditor: typeof window.openVisualEditor
+    });
+    
+    // Carregar código salvo da sessão (se houver)
+    function loadSavedCode() {
         const textarea = document.getElementById('html-editor');
         if (!textarea) return;
         
-        // Se CodeMirror não estiver carregado, aguardar
-        if (typeof CodeMirror === 'undefined') {
-            setTimeout(initCodeEditor, 100);
-            return;
-        }
-        
-        try {
-            codeEditor = CodeMirror.fromTextArea(textarea, {
-                mode: 'htmlmixed',
-                theme: 'monokai',
-                lineNumbers: true,
-                lineWrapping: true,
-                indentUnit: 2,
-                tabSize: 2,
-                autoCloseTags: true,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                foldGutter: true,
-                gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+        fetch('api/get-saved-template.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.html_template && data.html_template.trim() !== '') {
+                    textarea.value = data.html_template;
+                    // Mostrar indicador de código salvo
+                    const codeStatus = document.getElementById('code-status');
+                    if (codeStatus) {
+                        codeStatus.classList.remove('hidden');
+                    }
+                    // Atualizar ícones
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar código salvo:', error);
             });
-            
-            codeEditor.setSize('100%', '400px');
-            codeEditorInitialized = true;
-            
-            // Atualizar ícones após inicializar
-            if (typeof lucide !== 'undefined') {
-                setTimeout(() => lucide.createIcons(), 100);
-            }
-        } catch (error) {
-            console.error('Erro ao inicializar CodeMirror:', error);
-        }
     }
     
-    // Tornar initCodeEditor global
-    window.initCodeEditor = initCodeEditor;
-    
     document.addEventListener('DOMContentLoaded', function() {
-        // Tentar inicializar CodeMirror após um delay para garantir que esteja carregado
-        setTimeout(initCodeEditor, 300);
+        // Carregar código salvo se houver
+        loadSavedCode();
         
-        // Tentar inicializar GrapesJS quando necessário
-        setTimeout(() => {
-            const visualContainer = document.getElementById('visual-editor-container');
-            if (visualContainer && !visualContainer.classList.contains('hidden')) {
-                initVisualEditor();
-            }
-        }, 500);
-        
-        // Observar mudanças na tab para inicializar quando necessário
-        if (window.Alpine) {
-            // Aguardar Alpine estar pronto
-            if (document.readyState === 'loading') {
-                document.addEventListener('alpine:init', () => {
-                    setTimeout(() => {
-                        const contentDiv = document.querySelector('[x-data*="activeTab"]');
-                        if (contentDiv) {
-                            const data = Alpine.$data(contentDiv);
-                            if (data && data.activeTab === 'create' && !codeEditorInitialized) {
-                                setTimeout(initCodeEditor, 300);
-                            }
-                        }
-                    }, 200);
-                });
-            } else {
-                // Alpine já está pronto
-                setTimeout(() => {
-                    const contentDiv = document.querySelector('[x-data*="activeTab"]');
-                    if (contentDiv) {
-                        const data = Alpine.$data(contentDiv);
-                        if (data && data.activeTab === 'create' && !codeEditorInitialized) {
-                            setTimeout(initCodeEditor, 300);
-                        }
-                    }
-                }, 200);
-            }
+        // Atualizar textarea antes de submeter (o código vem da IDE/Editor Visual)
+        const form = document.getElementById('create-project-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // O textarea já terá o valor quando o usuário salvar na IDE ou Editor Visual
+                // Não precisa fazer nada aqui, apenas deixar o formulário submeter normalmente
+            });
         }
-        
-        // Observar mudanças na tab manualmente (fallback)
-        const checkTabInterval = setInterval(() => {
-            const contentDiv = document.querySelector('[x-data*="activeTab"]');
-            if (contentDiv && window.Alpine) {
-                const data = Alpine.$data(contentDiv);
-                if (data && data.activeTab === 'create' && !codeEditorInitialized) {
-                    setTimeout(initCodeEditor, 300);
-                }
-            }
-            // Parar de verificar após inicializar
-            if (codeEditorInitialized) {
-                clearInterval(checkTabInterval);
-            }
-        }, 500);
-        
-        // Limpar intervalo após 10 segundos
-        setTimeout(() => clearInterval(checkTabInterval), 10000);
     });
     
-    // Preview do email
+    // Preview do email - redireciona para safefig.php
     function previewEmail() {
-        let html = '';
-        
-        // Se estiver no modo visual, obter do GrapesJS
-        if (editorMode === 'visual' && visualEditor) {
-            html = visualEditor.getHtml();
-            const css = visualEditor.getCss();
-            html = html + '<style>' + css + '</style>';
-        } else if (codeEditor && typeof codeEditor.getValue === 'function') {
-            // Tentar obter do CodeMirror
-            html = codeEditor.getValue();
-        } else {
-            // Se CodeMirror não estiver disponível, usar o textarea diretamente
-            const textarea = document.getElementById('html-editor');
-            if (textarea) {
-                html = textarea.value;
-            }
-        }
-        
-        if (!html || html.trim() === '') {
-            alert('Adicione conteúdo HTML primeiro');
-            return;
-        }
-        
-        // Criar janela de preview
-        const previewWindow = window.open('', 'email-preview', 'width=800,height=600,scrollbars=yes,resizable=yes');
-        if (!previewWindow) {
-            alert('Por favor, permita pop-ups para visualizar o preview');
-            return;
-        }
-        
-        previewWindow.document.open();
-        previewWindow.document.write(html);
-        previewWindow.document.close();
-        
-        // Focar na janela de preview
-        previewWindow.focus();
+        window.open('safefig.php', '_blank');
     }
     
     // Tornar previewEmail global para acesso via onclick
     window.previewEmail = previewEmail;
     
-    // Inicializar Editor Visual (GrapesJS)
+    // Função removida - Editor Visual agora é safefig.php
     function initVisualEditor() {
-        if (visualEditor) return;
-        
-        const container = document.getElementById('gjs-editor');
-        if (!container || typeof grapesjs === 'undefined') {
-            setTimeout(initVisualEditor, 200);
-            return;
-        }
-        
-        try {
-            visualEditor = grapesjs.init({
-                container: container,
-                height: '600px',
-                width: '100%',
-                storageManager: false,
-                fromElement: false,
-                noticeOnUnload: false,
-                canvas: {
-                    styles: []
-                },
-                panels: {
-                    defaults: [
-                        {
-                            id: 'layers',
-                            el: '.panel__right',
-                            resizable: {
-                                maxDim: 350,
-                                minDim: 200,
-                                tc: 0,
-                                cl: 1,
-                                cr: 0,
-                                bc: 0,
-                                keyWidth: 'flex-basis',
-                            },
-                        },
-                        {
-                            id: 'panel-devices',
-                            el: '.panel__devices',
-                            buttons: [
-                                {
-                                    id: 'device-desktop',
-                                    label: '<i class="fa fa-desktop"></i>',
-                                    command: 'set-device-desktop',
-                                    active: true,
-                                    togglable: false,
-                                },
-                                {
-                                    id: 'device-tablet',
-                                    label: '<i class="fa fa-tablet"></i>',
-                                    command: 'set-device-tablet',
-                                    togglable: false,
-                                },
-                                {
-                                    id: 'device-mobile',
-                                    label: '<i class="fa fa-mobile"></i>',
-                                    command: 'set-device-mobile',
-                                    togglable: false,
-                                }
-                            ],
-                        },
-                        {
-                            id: 'panel-switcher',
-                            el: '.panel__switcher',
-                            buttons: [
-                                {
-                                    id: 'show-layers',
-                                    active: true,
-                                    label: '<i class="fa fa-bars"></i>',
-                                    command: 'show-layers',
-                                    togglable: false,
-                                },
-                                {
-                                    id: 'show-style',
-                                    active: true,
-                                    label: '<i class="fa fa-paint-brush"></i>',
-                                    command: 'show-styles',
-                                    togglable: false,
-                                },
-                                {
-                                    id: 'show-traits',
-                                    active: true,
-                                    label: '<i class="fa fa-cog"></i>',
-                                    command: 'show-traits',
-                                    togglable: false,
-                                }
-                            ],
-                        }
-                    ]
-                },
-                deviceManager: {
-                    devices: [
-                        {
-                            name: 'Desktop',
-                            width: ''
-                        },
-                        {
-                            name: 'Tablet',
-                            width: '768px',
-                            widthMedia: '992px'
-                        },
-                        {
-                            name: 'Mobile',
-                            width: '320px',
-                            widthMedia: '768px'
-                        }
-                    ]
-                },
-                blockManager: {
-                    appendTo: '.blocks-container',
-                    blocks: [
-                        {
-                            id: 'section',
-                            label: '<div style="padding: 8px; text-align: center;"><i class="fa fa-square" style="font-size: 24px; color: #3b82f6;"></i><div style="margin-top: 4px; font-size: 11px; color: #fff;">Seção</div></div>',
-                            attributes: { class: 'gjs-block-section' },
-                            content: `<section style="padding: 30px; background-color: #ffffff; max-width: 600px; margin: 0 auto;">
-                                <div>Conteúdo aqui</div>
-                            </section>`
-                        },
-                        {
-                            id: 'text',
-                            label: '<div style="padding: 8px; text-align: center;"><i class="fa fa-font" style="font-size: 24px; color: #3b82f6;"></i><div style="margin-top: 4px; font-size: 11px; color: #fff;">Texto</div></div>',
-                            content: '<div style="padding: 10px; color: #333;">Insira seu texto aqui</div>'
-                        },
-                        {
-                            id: 'heading',
-                            label: '<div style="padding: 8px; text-align: center;"><i class="fa fa-heading" style="font-size: 24px; color: #3b82f6;"></i><div style="margin-top: 4px; font-size: 11px; color: #fff;">Título</div></div>',
-                            content: '<h1 style="margin: 0; padding: 15px; color: #1f2937; font-size: 24px; font-weight: bold;">Título</h1>'
-                        },
-                        {
-                            id: 'button',
-                            label: '<div style="padding: 8px; text-align: center;"><i class="fa fa-hand-pointer" style="font-size: 24px; color: #3b82f6;"></i><div style="margin-top: 4px; font-size: 11px; color: #fff;">Botão</div></div>',
-                            content: '<a href="#" style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Clique aqui</a>'
-                        },
-                        {
-                            id: 'image',
-                            label: '<div style="padding: 8px; text-align: center;"><i class="fa fa-image" style="font-size: 24px; color: #3b82f6;"></i><div style="margin-top: 4px; font-size: 11px; color: #fff;">Imagem</div></div>',
-                            content: { type: 'image', src: 'https://via.placeholder.com/600x300', style: 'max-width: 100%; height: auto; display: block;' }
-                        },
-                        {
-                            id: 'divider',
-                            label: '<div style="padding: 8px; text-align: center;"><i class="fa fa-minus" style="font-size: 24px; color: #3b82f6;"></i><div style="margin-top: 4px; font-size: 11px; color: #fff;">Divisor</div></div>',
-                            content: '<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">'
-                        },
-                        {
-                            id: 'variable',
-                            label: '<div style="padding: 8px; text-align: center;"><i class="fa fa-code" style="font-size: 24px; color: #3b82f6;"></i><div style="margin-top: 4px; font-size: 11px; color: #fff;">Variável</div></div>',
-                            content: '<span style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-family: monospace; color: #1f2937;">{{nome}}</span>'
-                        }
-                    ]
-                },
-                styleManager: {
-                    appendTo: '.styles-container',
-                    sectors: [
-                        {
-                            name: 'Dimensões',
-                            open: false,
-                            buildProps: ['width', 'min-height', 'padding'],
-                        },
-                        {
-                            name: 'Tipografia',
-                            open: false,
-                            buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration'],
-                        },
-                        {
-                            name: 'Decoração',
-                            open: false,
-                            buildProps: ['opacity', 'border-radius', 'border', 'box-shadow', 'background'],
-                        }
-                    ]
-                },
-                traitManager: {
-                    appendTo: '.traits-container',
-                },
-                layerManager: {
-                    appendTo: '.layers-container',
-                }
-            });
-            
-            // Adicionar estilos customizados para o editor dark
-            const style = document.createElement('style');
-            style.textContent = `
-                .gjs-editor {
-                    background: #0a0a0a !important;
-                    border: 1px solid #1f1f1f !important;
-                    border-radius: 8px !important;
-                }
-                .gjs-cv-canvas {
-                    background: #1a1a1a !important;
-                }
-                .gjs-frame {
-                    background: #ffffff !important;
-                    border-radius: 4px !important;
-                }
-                .gjs-block {
-                    background: #1a1a1a !important;
-                    border: 1px solid #333 !important;
-                    color: #fff !important;
-                    border-radius: 6px !important;
-                    margin: 4px !important;
-                    padding: 8px !important;
-                    transition: all 0.2s !important;
-                }
-                .gjs-block:hover {
-                    background: #2a2a2a !important;
-                    border-color: #3b82f6 !important;
-                    transform: translateY(-2px) !important;
-                }
-                .gjs-pn-panels {
-                    background: #0a0a0a !important;
-                    border-color: #1f1f1f !important;
-                }
-                .gjs-pn-btn {
-                    color: #fff !important;
-                    border-radius: 4px !important;
-                }
-                .gjs-pn-btn:hover {
-                    background: #1a1a1a !important;
-                }
-                .gjs-pn-active {
-                    background: #3b82f6 !important;
-                    color: #fff !important;
-                }
-                .gjs-sm-sector {
-                    background: #1a1a1a !important;
-                    border-color: #333 !important;
-                    border-radius: 6px !important;
-                    margin-bottom: 8px !important;
-                }
-                .gjs-sm-label {
-                    color: #fff !important;
-                    font-weight: 600 !important;
-                }
-                .gjs-field {
-                    background: #0a0a0a !important;
-                    border-color: #333 !important;
-                    color: #fff !important;
-                    border-radius: 4px !important;
-                }
-                .gjs-field:focus {
-                    border-color: #3b82f6 !important;
-                    outline: none !important;
-                }
-                .gjs-layer {
-                    color: #fff !important;
-                }
-                .gjs-layer-title {
-                    color: #fff !important;
-                }
-                .gjs-selected {
-                    outline: 2px solid #3b82f6 !important;
-                }
-                .panel__devices {
-                    background: #1a1a1a !important;
-                    border-radius: 6px !important;
-                    padding: 8px !important;
-                    margin-bottom: 10px !important;
-                }
-                .panel__switcher {
-                    background: #1a1a1a !important;
-                    border-radius: 6px !important;
-                    padding: 8px !important;
-                    margin-bottom: 10px !important;
-                }
-                .blocks-container {
-                    background: #0a0a0a !important;
-                    border-right: 1px solid #1f1f1f !important;
-                    padding: 10px !important;
-                }
-                .styles-container {
-                    background: #0a0a0a !important;
-                    border-left: 1px solid #1f1f1f !important;
-                    padding: 10px !important;
-                }
-                .layers-container {
-                    background: #0a0a0a !important;
-                    border-left: 1px solid #1f1f1f !important;
-                    padding: 10px !important;
-                }
-                .traits-container {
-                    background: #0a0a0a !important;
-                    border-left: 1px solid #1f1f1f !important;
-                    padding: 10px !important;
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // Carregar template inicial se houver
-            const textarea = document.getElementById('html-editor');
-            if (textarea && textarea.value) {
-                visualEditor.setComponents(textarea.value);
-            }
-            
-        } catch (error) {
-            console.error('Erro ao inicializar GrapesJS:', error);
-        }
-    }
-    
-    // Alternar entre modo visual e código
-    function switchEditorMode(mode) {
-        editorMode = mode;
-        const visualContainer = document.getElementById('visual-editor-container');
-        const codeContainer = document.getElementById('code-editor-container');
-        const btnVisual = document.getElementById('btn-visual-mode');
-        const btnCode = document.getElementById('btn-code-mode');
-        
-        if (mode === 'visual') {
-            visualContainer.classList.remove('hidden');
-            codeContainer.classList.add('hidden');
-            btnVisual.classList.add('bg-blue-600', 'text-white');
-            btnVisual.classList.remove('bg-white/5', 'text-zinc-400');
-            btnCode.classList.remove('bg-blue-600', 'text-white');
-            btnCode.classList.add('bg-white/5', 'text-zinc-400');
-            
-            // Inicializar editor visual se ainda não foi
-            if (!visualEditor) {
-                setTimeout(initVisualEditor, 100);
-            }
-            
-            // Sincronizar código para visual
-            if (codeEditor) {
-                const html = codeEditor.getValue();
-                if (html && visualEditor) {
-                    visualEditor.setComponents(html);
-                }
-            } else {
-                const textarea = document.getElementById('html-editor');
-                if (textarea && textarea.value && visualEditor) {
-                    visualEditor.setComponents(textarea.value);
-                }
-            }
-        } else {
-            visualContainer.classList.add('hidden');
-            codeContainer.classList.remove('hidden');
-            btnCode.classList.add('bg-blue-600', 'text-white');
-            btnCode.classList.remove('bg-white/5', 'text-zinc-400');
-            btnVisual.classList.remove('bg-blue-600', 'text-white');
-            btnVisual.classList.add('bg-white/5', 'text-zinc-400');
-            
-            // Sincronizar visual para código
-            if (visualEditor) {
-                const html = visualEditor.getHtml();
-                const css = visualEditor.getCss();
-                const fullHtml = html + '<style>' + css + '</style>';
-                
-                if (codeEditor) {
-                    codeEditor.setValue(fullHtml);
-                } else {
-                    const textarea = document.getElementById('html-editor');
-                    if (textarea) {
-                        textarea.value = fullHtml;
-                    }
-                }
-            }
-        }
-    }
-    
-    // Tornar switchEditorMode global
-    window.switchEditorMode = switchEditorMode;
-    
-    // Templates prontos de emails
-    const emailTemplates = {
-        confirm_signup: {
-            name: 'Confirm Sign Up',
-            html: `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #1f2937;
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            margin: 30px 0;
-        }
-        p {
-            color: #4b5563;
-            margin: 15px 0;
-        }
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: #2563eb;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: 600;
-        }
-        .button:hover {
-            background-color: #1d4ed8;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">{{nome_sistema}}</div>
-            <h1>Confirme seu cadastro</h1>
-        </div>
-        <div class="content">
-            <p>Olá <strong>{{nome}}</strong>,</p>
-            <p>Obrigado por se cadastrar! Para completar seu cadastro, confirme seu endereço de e-mail clicando no botão abaixo:</p>
-            <div style="text-align: center;">
-                <a href="{{link}}" class="button">Confirmar E-mail</a>
-            </div>
-            <p>Ou copie e cole este link no seu navegador:</p>
-            <p style="word-break: break-all; color: #2563eb;">{{link}}</p>
-            <p>Este link expira em 24 horas.</p>
-            <p>Se você não se cadastrou, pode ignorar este e-mail.</p>
-        </div>
-        <div class="footer">
-            <p>Este é um e-mail automático, por favor não responda.</p>
-            <p>&copy; {{ano}} {{nome_sistema}}. Todos os direitos reservados.</p>
-        </div>
-    </div>
-</body>
-</html>`
-        },
-        invite_user: {
-            name: 'Invite User',
-            html: `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #1f2937;
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            margin: 30px 0;
-        }
-        p {
-            color: #4b5563;
-            margin: 15px 0;
-        }
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: #2563eb;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: 600;
-        }
-        .button:hover {
-            background-color: #1d4ed8;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">{{nome_sistema}}</div>
-            <h1>Você foi convidado!</h1>
-        </div>
-        <div class="content">
-            <p>Olá,</p>
-            <p><strong>{{nome_remetente}}</strong> convidou você para fazer parte do <strong>{{nome_sistema}}</strong>.</p>
-            <p>Para aceitar o convite e criar sua conta, clique no botão abaixo:</p>
-            <div style="text-align: center;">
-                <a href="{{link}}" class="button">Aceitar Convite</a>
-            </div>
-            <p>Ou copie e cole este link no seu navegador:</p>
-            <p style="word-break: break-all; color: #2563eb;">{{link}}</p>
-            <p>Este convite expira em 7 dias.</p>
-        </div>
-        <div class="footer">
-            <p>Este é um e-mail automático, por favor não responda.</p>
-            <p>&copy; {{ano}} {{nome_sistema}}. Todos os direitos reservados.</p>
-        </div>
-    </div>
-</body>
-</html>`
-        },
-        magic_link: {
-            name: 'Magic Link',
-            html: `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #1f2937;
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            margin: 30px 0;
-        }
-        p {
-            color: #4b5563;
-            margin: 15px 0;
-        }
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: #2563eb;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: 600;
-        }
-        .button:hover {
-            background-color: #1d4ed8;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">{{nome_sistema}}</div>
-            <h1>Link de acesso</h1>
-        </div>
-        <div class="content">
-            <p>Olá <strong>{{nome}}</strong>,</p>
-            <p>Você solicitou um link de acesso para entrar na sua conta. Clique no botão abaixo para fazer login:</p>
-            <div style="text-align: center;">
-                <a href="{{link}}" class="button">Fazer Login</a>
-            </div>
-            <p>Ou copie e cole este link no seu navegador:</p>
-            <p style="word-break: break-all; color: #2563eb;">{{link}}</p>
-            <p><strong>Este link expira em 15 minutos e só pode ser usado uma vez.</strong></p>
-            <p>Se você não solicitou este link, ignore este e-mail. Sua conta permanece segura.</p>
-        </div>
-        <div class="footer">
-            <p>Este é um e-mail automático, por favor não responda.</p>
-            <p>&copy; {{ano}} {{nome_sistema}}. Todos os direitos reservados.</p>
-        </div>
-    </div>
-</body>
-</html>`
-        },
-        change_email: {
-            name: 'Change Email',
-            html: `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #1f2937;
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            margin: 30px 0;
-        }
-        p {
-            color: #4b5563;
-            margin: 15px 0;
-        }
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: #2563eb;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: 600;
-        }
-        .button:hover {
-            background-color: #1d4ed8;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">{{nome_sistema}}</div>
-            <h1>Confirmar alteração de e-mail</h1>
-        </div>
-        <div class="content">
-            <p>Olá <strong>{{nome}}</strong>,</p>
-            <p>Você solicitou alterar seu endereço de e-mail de <strong>{{email_antigo}}</strong> para <strong>{{email_novo}}</strong>.</p>
-            <p>Para confirmar esta alteração, clique no botão abaixo:</p>
-            <div style="text-align: center;">
-                <a href="{{link}}" class="button">Confirmar Alteração</a>
-            </div>
-            <p>Ou copie e cole este link no seu navegador:</p>
-            <p style="word-break: break-all; color: #2563eb;">{{link}}</p>
-            <p>Este link expira em 24 horas.</p>
-            <p>Se você não solicitou esta alteração, ignore este e-mail e entre em contato conosco imediatamente.</p>
-        </div>
-        <div class="footer">
-            <p>Este é um e-mail automático, por favor não responda.</p>
-            <p>&copy; {{ano}} {{nome_sistema}}. Todos os direitos reservados.</p>
-        </div>
-    </div>
-</body>
-</html>`
-        },
-        reset_password: {
-            name: 'Reset Password',
-            html: `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #1f2937;
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            margin: 30px 0;
-        }
-        p {
-            color: #4b5563;
-            margin: 15px 0;
-        }
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: #2563eb;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: 600;
-        }
-        .button:hover {
-            background-color: #1d4ed8;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">{{nome_sistema}}</div>
-            <h1>Redefinir senha</h1>
-        </div>
-        <div class="content">
-            <p>Olá <strong>{{nome}}</strong>,</p>
-            <p>Você solicitou a redefinição da sua senha. Clique no botão abaixo para criar uma nova senha:</p>
-            <div style="text-align: center;">
-                <a href="{{link}}" class="button">Redefinir Senha</a>
-            </div>
-            <p>Ou copie e cole este link no seu navegador:</p>
-            <p style="word-break: break-all; color: #2563eb;">{{link}}</p>
-            <p><strong>Este link expira em 1 hora e só pode ser usado uma vez.</strong></p>
-            <p>Se você não solicitou a redefinição de senha, ignore este e-mail. Sua senha permanecerá a mesma.</p>
-        </div>
-        <div class="footer">
-            <p>Este é um e-mail automático, por favor não responda.</p>
-            <p>&copy; {{ano}} {{nome_sistema}}. Todos os direitos reservados.</p>
-        </div>
-    </div>
-</body>
-</html>`
-        },
-        reauthentication: {
-            name: 'Reauthentication',
-            html: `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #1f2937;
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            margin: 30px 0;
-        }
-        p {
-            color: #4b5563;
-            margin: 15px 0;
-        }
-        .code {
-            background-color: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            padding: 15px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #1f2937;
-            letter-spacing: 2px;
-            margin: 20px 0;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 12px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">{{nome_sistema}}</div>
-            <h1>Reautenticação necessária</h1>
-        </div>
-        <div class="content">
-            <p>Olá <strong>{{nome}}</strong>,</p>
-            <p>Você está tentando realizar uma ação sensível que requer reautenticação.</p>
-            <p>Use o código abaixo para confirmar sua identidade:</p>
-            <div class="code">{{codigo}}</div>
-            <p>Este código expira em <strong>10 minutos</strong>.</p>
-            <p>Se você não solicitou esta ação, ignore este e-mail e entre em contato conosco imediatamente.</p>
-        </div>
-        <div class="footer">
-            <p>Este é um e-mail automático, por favor não responda.</p>
-            <p>&copy; {{ano}} {{nome_sistema}}. Todos os direitos reservados.</p>
-        </div>
-    </div>
-</body>
-</html>`
-        }
-    };
-    
-    // Função para carregar template no editor
-    function loadTemplate(templateKey) {
-        const template = emailTemplates[templateKey];
-        if (!template) return;
-        
-        // Atualizar o select de função
-        const functionSelect = document.querySelector('select[name="email_function"]');
-        if (functionSelect) {
-            functionSelect.value = templateKey;
-        }
-        
-        // Carregar HTML no editor baseado no modo atual
-        if (editorMode === 'visual' && visualEditor) {
-            visualEditor.setComponents(template.html);
-        } else if (codeEditor && typeof codeEditor.setValue === 'function') {
-            codeEditor.setValue(template.html);
-        } else {
-            const textarea = document.getElementById('html-editor');
-            if (textarea) {
-                textarea.value = template.html;
-            }
-            // Tentar inicializar CodeMirror se ainda não foi inicializado
-            setTimeout(initCodeEditor, 200);
-        }
-        
-        // Atualizar ícones
-        if (typeof lucide !== 'undefined') {
-            setTimeout(() => lucide.createIcons(), 100);
-        }
-    }
-    
-    // Tornar loadTemplate global
-    window.loadTemplate = loadTemplate;
-    
-    // Atualizar textarea antes de submeter
-    const form = document.getElementById('create-project-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // Se estiver no modo visual, sincronizar para código primeiro
-            if (editorMode === 'visual' && visualEditor) {
-                const html = visualEditor.getHtml();
-                const css = visualEditor.getCss();
-                const fullHtml = html + '<style>' + css + '</style>';
-                
-                if (codeEditor) {
-                    codeEditor.setValue(fullHtml);
-                    codeEditor.save();
-                } else {
-                    const textarea = document.getElementById('html-editor');
-                    if (textarea) {
-                        textarea.value = fullHtml;
-                    }
-                }
-            } else if (codeEditor) {
-                codeEditor.save();
-            }
-        });
+        // Editor visual foi movido para safefig.php
+        return;
     }
     
     // Função para abrir modal de exclusão

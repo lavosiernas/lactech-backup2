@@ -199,6 +199,21 @@ $apiStatus = $threatIntel->isConfigured();
         .btn-primary:hover::before {
             opacity: 1;
         }
+        
+        /* Estilos para select e opções */
+        select {
+            color-scheme: dark;
+        }
+        
+        select option {
+            background-color: #0a0a0a !important;
+            color: #ffffff !important;
+            padding: 0.75rem 1rem;
+        }
+        
+        select:focus {
+            z-index: 100;
+        }
     </style>
 </head>
 <body class="h-full" x-data="{ sidebarOpen: false }">
@@ -232,18 +247,6 @@ $apiStatus = $threatIntel->isConfigured();
         $currentPage = 'dashboard'; // Ajustar conforme necessário
     }
 
-    // Buscar sequência de proteção
-    $protectionStreak = null;
-    if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true) {
-        $userId = $_SESSION['safenode_user_id'] ?? null;
-        $siteId = $_SESSION['view_site_id'] ?? 0;
-        
-        if ($userId) {
-            require_once __DIR__ . '/includes/ProtectionStreak.php';
-            $streakManager = new ProtectionStreak();
-            $protectionStreak = $streakManager->getStreak($userId, $siteId);
-        }
-    }
     ?>
     <style>
         .nav-item {
@@ -431,32 +434,6 @@ $apiStatus = $threatIntel->isConfigured();
                 <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <div class="relative">
                         <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
-                        <?php if ($protectionStreak && $protectionStreak['enabled'] && $protectionStreak['is_active']): ?>
-                        <!-- Badge de Sequência (Foguinho) -->
-                        <div class="absolute -top-1 -right-1 bg-gradient-to-br from-orange-500 to-red-600 rounded-full p-1 shadow-lg border-2 border-dark-900" 
-                             x-data="{ showTooltip: false }"
-                             @mouseenter="showTooltip = true"
-                             @mouseleave="showTooltip = false">
-                            <i data-lucide="flame" class="w-3 h-3 text-white"></i>
-                            <!-- Tooltip -->
-                            <div x-show="showTooltip" 
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-150"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg shadow-xl whitespace-nowrap z-50"
-                                 style="display: none;">
-                                <div class="text-xs font-semibold text-white mb-1">Sequência de Proteção</div>
-                                <div class="text-sm font-bold text-orange-400"><?php echo $protectionStreak['current_streak']; ?> dias</div>
-                                <?php if ($protectionStreak['longest_streak'] > $protectionStreak['current_streak']): ?>
-                                <div class="text-xs text-zinc-400 mt-1">Recorde: <?php echo $protectionStreak['longest_streak']; ?> dias</div>
-                                <?php endif; ?>
-                                <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white/10"></div>
-                            </div>
-                        </div>
-                        <?php endif; ?>
                     </div>
                     <div x-show="!sidebarCollapsed" 
                          x-transition:enter="transition ease-out duration-200" 
@@ -1552,22 +1529,24 @@ $apiStatus = $threatIntel->isConfigured();
                 <!-- Filtros -->
                 <div class="flex gap-4 mb-6">
                     <form method="GET" class="flex gap-4 flex-1">
-                        <select name="type" class="px-4 py-2.5 bg-dark-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30">
-                            <option value="">Todos os tipos</option>
+                        <select name="type" class="px-4 py-2.5 bg-dark-900 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
+                                style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
+                            <option value="" class="bg-dark-900 text-white">Todos os tipos</option>
                             <?php if (!empty($stats['by_type'])): ?>
                                 <?php foreach ($stats['by_type'] as $type): ?>
-                                <option value="<?php echo htmlspecialchars($type['threat_type']); ?>" <?php echo $threatType === $type['threat_type'] ? 'selected' : ''; ?>>
+                                <option value="<?php echo htmlspecialchars($type['threat_type']); ?>" <?php echo $threatType === $type['threat_type'] ? 'selected' : ''; ?> class="bg-dark-900 text-white">
                                     <?php echo htmlspecialchars($type['threat_type']); ?> (<?php echo $type['count']; ?>)
                                 </option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
-                        <select name="severity" class="px-4 py-2.5 bg-dark-800 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30">
-                            <option value="0" <?php echo $minSeverity === 0 ? 'selected' : ''; ?>>Todas severidades</option>
-                            <option value="50" <?php echo $minSeverity === 50 ? 'selected' : ''; ?>>Severidade ≥ 50</option>
-                            <option value="70" <?php echo $minSeverity === 70 ? 'selected' : ''; ?>>Severidade ≥ 70</option>
-                            <option value="80" <?php echo $minSeverity === 80 ? 'selected' : ''; ?>>Severidade ≥ 80</option>
-                            <option value="90" <?php echo $minSeverity === 90 ? 'selected' : ''; ?>>Severidade ≥ 90</option>
+                        <select name="severity" class="px-4 py-2.5 bg-dark-900 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
+                                style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
+                            <option value="0" <?php echo $minSeverity === 0 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Todas severidades</option>
+                            <option value="50" <?php echo $minSeverity === 50 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Severidade ≥ 50</option>
+                            <option value="70" <?php echo $minSeverity === 70 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Severidade ≥ 70</option>
+                            <option value="80" <?php echo $minSeverity === 80 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Severidade ≥ 80</option>
+                            <option value="90" <?php echo $minSeverity === 90 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Severidade ≥ 90</option>
                         </select>
                         <button type="submit" class="px-4 py-2.5 bg-white text-black rounded-lg font-semibold hover:bg-zinc-200 transition-colors">
                             Filtrar
@@ -1699,7 +1678,6 @@ $apiStatus = $threatIntel->isConfigured();
     <script>lucide.createIcons();    </script>
     
     <!-- Floating Flame Component -->
-    <?php include __DIR__ . '/includes/floating-flame.php'; ?>
 </body>
 </html>
 

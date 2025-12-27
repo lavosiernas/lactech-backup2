@@ -265,8 +265,8 @@ class SecurityHeaders {
         // Content Security Policy (básico) - mais permissivo para desenvolvimento
         $csp = "default-src 'self' https: http:; " .
                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://accounts.google.com https://www.google.com http://localhost; " .
-               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com http://fonts.googleapis.com; " .
-               "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com http://fonts.googleapis.com; " .
+               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net http://fonts.googleapis.com; " .
+               "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net http://fonts.googleapis.com; " .
                "font-src 'self' data: https://fonts.gstatic.com http://fonts.gstatic.com blob:; " .
                "img-src 'self' data: https: http: blob:; " .
                "connect-src 'self' https://accounts.google.com https://unpkg.com https://cdn.jsdelivr.net http://localhost https://api.qrserver.com;";

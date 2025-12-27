@@ -853,6 +853,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                     <a href="#network" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Rede Global</a>
                     <a href="#pricing" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Planos</a>
                     <a href="#contact" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Contato</a>
+                    <a href="mail-landing.php" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Mail</a>
                     <a href="docs.php" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Documentação</a>
                 </div>
 
@@ -889,6 +890,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                 <a href="#network" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Rede Global</a>
                 <a href="#pricing" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Planos</a>
                 <a href="#contact" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Contato</a>
+                <a href="mail-landing.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Mail</a>
                 <a href="docs.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Documentação</a>
                 <a href="login.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Login</a>
                 <a href="register.php" class="block px-4 py-3 mt-4 text-center rounded-full bg-white text-black font-bold hover:bg-zinc-100 transition-all">Começar Grátis</a>

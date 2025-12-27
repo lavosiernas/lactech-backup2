@@ -180,6 +180,21 @@ if (!empty($searchIP) && filter_var($searchIP, FILTER_VALIDATE_IP)) {
         .btn-primary:hover::before {
             opacity: 1;
         }
+        
+        /* Estilos para select e opções */
+        select {
+            color-scheme: dark;
+        }
+        
+        select option {
+            background-color: #0a0a0a !important;
+            color: #ffffff !important;
+            padding: 0.75rem 1rem;
+        }
+        
+        select:focus {
+            z-index: 100;
+        }
     </style>
 </head>
 <body class="h-full" x-data="{ sidebarOpen: false, loading: true }" x-init="setTimeout(() => loading = false, 500)">
@@ -213,18 +228,6 @@ if (!empty($searchIP) && filter_var($searchIP, FILTER_VALIDATE_IP)) {
         $currentPage = 'dashboard'; // Ajustar conforme necessário
     }
 
-    // Buscar sequência de proteção
-    $protectionStreak = null;
-    if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] === true) {
-        $userId = $_SESSION['safenode_user_id'] ?? null;
-        $siteId = $_SESSION['view_site_id'] ?? 0;
-        
-        if ($userId) {
-            require_once __DIR__ . '/includes/ProtectionStreak.php';
-            $streakManager = new ProtectionStreak();
-            $protectionStreak = $streakManager->getStreak($userId, $siteId);
-        }
-    }
     ?>
     <style>
         .nav-item {
@@ -412,32 +415,6 @@ if (!empty($searchIP) && filter_var($searchIP, FILTER_VALIDATE_IP)) {
                 <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <div class="relative">
                         <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
-                        <?php if ($protectionStreak && $protectionStreak['enabled'] && $protectionStreak['is_active']): ?>
-                        <!-- Badge de Sequência (Foguinho) -->
-                        <div class="absolute -top-1 -right-1 bg-gradient-to-br from-orange-500 to-red-600 rounded-full p-1 shadow-lg border-2 border-dark-900" 
-                             x-data="{ showTooltip: false }"
-                             @mouseenter="showTooltip = true"
-                             @mouseleave="showTooltip = false">
-                            <i data-lucide="flame" class="w-3 h-3 text-white"></i>
-                            <!-- Tooltip -->
-                            <div x-show="showTooltip" 
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-150"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg shadow-xl whitespace-nowrap z-50"
-                                 style="display: none;">
-                                <div class="text-xs font-semibold text-white mb-1">Sequência de Proteção</div>
-                                <div class="text-sm font-bold text-orange-400"><?php echo $protectionStreak['current_streak']; ?> dias</div>
-                                <?php if ($protectionStreak['longest_streak'] > $protectionStreak['current_streak']): ?>
-                                <div class="text-xs text-zinc-400 mt-1">Recorde: <?php echo $protectionStreak['longest_streak']; ?> dias</div>
-                                <?php endif; ?>
-                                <div class="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white/10"></div>
-                            </div>
-                        </div>
-                        <?php endif; ?>
                     </div>
                     <div x-show="!sidebarCollapsed" 
                          x-transition:enter="transition ease-out duration-200" 
@@ -1529,11 +1506,12 @@ if (!empty($searchIP) && filter_var($searchIP, FILTER_VALIDATE_IP)) {
                         placeholder="Digite um endereço IP para analisar..."
                         class="flex-1 px-4 py-3 bg-dark-700 border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 transition-colors font-mono"
                     >
-                    <select name="window" class="px-4 py-3 bg-dark-700 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30">
-                        <option value="3600" <?php echo $timeWindow === 3600 ? 'selected' : ''; ?>>Última hora</option>
-                        <option value="7200" <?php echo $timeWindow === 7200 ? 'selected' : ''; ?>>Últimas 2 horas</option>
-                        <option value="21600" <?php echo $timeWindow === 21600 ? 'selected' : ''; ?>>Últimas 6 horas</option>
-                        <option value="86400" <?php echo $timeWindow === 86400 ? 'selected' : ''; ?>>Últimas 24 horas</option>
+                    <select name="window" class="px-4 py-3 bg-dark-900 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
+                            style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
+                        <option value="3600" <?php echo $timeWindow === 3600 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Última hora</option>
+                        <option value="7200" <?php echo $timeWindow === 7200 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Últimas 2 horas</option>
+                        <option value="21600" <?php echo $timeWindow === 21600 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Últimas 6 horas</option>
+                        <option value="86400" <?php echo $timeWindow === 86400 ? 'selected' : ''; ?> class="bg-dark-900 text-white">Últimas 24 horas</option>
                     </select>
                     <button type="submit" class="px-6 py-3 bg-white text-black rounded-lg font-semibold hover:bg-zinc-200 transition-colors">
                         <i data-lucide="search" class="w-4 h-4 inline-block mr-2"></i>
@@ -1751,7 +1729,6 @@ if (!empty($searchIP) && filter_var($searchIP, FILTER_VALIDATE_IP)) {
     <script>lucide.createIcons();    </script>
     
     <!-- Floating Flame Component -->
-    <?php include __DIR__ . '/includes/floating-flame.php'; ?>
 </body>
 </html>
 
