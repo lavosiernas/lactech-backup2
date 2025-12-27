@@ -195,3 +195,5 @@ ollama pull nome-do-modelo
 
 
 
+
+

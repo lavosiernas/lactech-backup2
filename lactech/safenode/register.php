@@ -82,6 +82,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             error_log("SafeNode Register: Email inválido");
         }
         
+        // Validar se email não é temporário/descartável - PROTEÇÃO RIGOROSA
+        if (empty($error)) {
+            error_log("SafeNode Register: Verificando se email é temporário: " . $email);
+            $isTemporary = InputValidator::isTemporaryEmail($email);
+            error_log("SafeNode Register: Resultado da verificação de email temporário: " . ($isTemporary ? 'SIM - BLOQUEADO' : 'NÃO - PERMITIDO'));
+            
+            if ($isTemporary) {
+                $error = 'Boa tentativa, mas somos SafeNode! Emails temporários não são permitidos aqui. Use um email válido e permanente.';
+                error_log("SafeNode Register: Email temporário BLOQUEADO: " . $email);
+            }
+        }
+        
         if (empty($error) && !InputValidator::strongPassword($password)) {
             $error = 'Senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e símbolos';
             error_log("SafeNode Register: Senha fraca");

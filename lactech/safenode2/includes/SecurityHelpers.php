@@ -234,6 +234,360 @@ class InputValidator {
             && preg_match('/[0-9]/', $password) === 1  // Pelo menos 1 número
             && preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password) === 1; // Pelo menos 1 caractere especial
     }
+    
+    /**
+     * Verificar se email é temporário/descartável
+     * Retorna true se for email temporário (bloquear), false se não for
+     * SafeNode - Proteção rigorosa contra emails temporários
+     */
+    public static function isTemporaryEmail(string $email): bool {
+        // Extrair domínio do email
+        $parts = explode('@', strtolower(trim($email)));
+        if (count($parts) !== 2) {
+            return false; // Email inválido, será capturado pela validação de email
+        }
+        
+        $domain = $parts[1];
+        $fullDomain = $domain;
+        
+        // Extrair domínio base (sem subdomínios) para verificação mais ampla
+        $domainParts = explode('.', $domain);
+        $baseDomain = count($domainParts) >= 2 ? $domainParts[count($domainParts) - 2] . '.' . $domainParts[count($domainParts) - 1] : $domain;
+        
+        // Lista EXPANDIDA de domínios temporários conhecidos (CENTENAS de domínios)
+        $temporaryDomains = [
+            // Domínios principais mencionados
+            'tmail.link', 'tmails.net', 'tmpmail.org', 'tmpmail.net', 'tmpmail.com',
+            'tempmail.com', 'tempmail.org', 'tempmail.net', 'tempmail.io', 'tempmail.co',
+            'tempmailo.com', 'tempmailer.com', 'tempmailer.de', 'tempmailer.ru',
+            'temp-mail.org', 'temp-mail.io', 'temp-mail.ru', 'temp-mail.net', 'temp-mail.com',
+            'tempail.com', 'tempr.email', 'tempmail.de', 'tempmail.pro',
+            
+            // Guerrilla Mail e variações
+            'guerrillamail.com', 'guerrillamailblock.com', 'guerrillamail.org', 
+            'guerrillamail.net', 'guerrillamail.biz', 'guerrillamail.info',
+            'sharklasers.com', 'grr.la', 'pokemail.net', 'spam4.me',
+            
+            // 10MinuteMail e similares
+            '10minutemail.com', '10minutemail.net', '10minutemail.org', '10minutemail.co.uk',
+            '10minutemail.de', '10minutemail.es', '10minutemail.fr', '10minutemail.it',
+            '20minutemail.com', '30minutemail.com', '60minutemail.com',
+            
+            // Mailinator
+            'mailinator.com', 'mailinator.net', 'mailinator.org', 'mailinator.us',
+            
+            // YOPmail
+            'yopmail.com', 'yopmail.fr', 'yopmail.net',
+            
+            // Mohmal
+            'mohmal.com', 'mohmal.in', 'mohmal.im',
+            
+            // 1secmail
+            '1secmail.com', '1secmail.org', '1secmail.net',
+            
+            // Trashmail
+            'trashmail.com', 'trashmail.net', 'trashmail.org', 'trash-mail.com',
+            'trashymail.com', 'throwaway.email', 'throwawaymail.com',
+            
+            // Dispostable
+            'dispostable.com', 'disposablemail.com', 'disposable.com',
+            
+            // Maildrop
+            'maildrop.cc', 'maildrop.io',
+            
+            // Outros serviços conhecidos
+            'fakeinbox.com', 'fake-mail.com', 'fakeinbox.net', 'fakebox.eu',
+            'emailondeck.com', 'emailondeck.net',
+            'getnada.com', 'getairmail.com', 'getairmail.net',
+            'mailnesia.com', 'mailnesia.net',
+            'anonymbox.com', 'anonymbox.net',
+            'fftube.com', // Email temporário detectado em teste
+            'meltmail.com', 'melt.li',
+            'mox.do', 'mox.do',
+            'mintemail.com',
+            'mypacks.net', 'mypacks.info',
+            'mintemail.com', 'mintemail.net',
+            'mytrashmail.com',
+            'nospam.ze.tc', 'now.im', 'now.mefound.com',
+            'objectmail.com',
+            'obobbo.com',
+            'odaymail.com',
+            'odnorazovoe.ru',
+            'one-time.email',
+            'onewaymail.com',
+            'online.ms',
+            'owlpic.com',
+            'pancakemail.com',
+            'pookmail.com',
+            'proxymail.eu',
+            'putthisinyourspamdatabase.com',
+            'quickinbox.com',
+            'rcpt.at',
+            'recode.me',
+            'recursor.net',
+            'regbypass.com',
+            'regbypass.comsafe-mail.net',
+            'safetypost.de',
+            'safetymail.info',
+            'saynotospams.com',
+            'selfdestructingmail.com',
+            'sendspamhere.com',
+            'sharklasers.com',
+            'shiftmail.com',
+            'shortmail.net',
+            'sibmail.com',
+            'sinnlos-mail.de',
+            'slapsfromlastnight.com',
+            'slaskpost.se',
+            'smellfear.com',
+            'smellrear.com',
+            'snakemail.com',
+            'sneakemail.com',
+            'sofort-mail.de',
+            'sogetthis.com',
+            'soodonims.com',
+            'spam.la',
+            'spamavert.com',
+            'spambob.com',
+            'spambob.net',
+            'spambob.org',
+            'spambog.com',
+            'spambog.de',
+            'spambog.ru',
+            'spambox.info',
+            'spambox.us',
+            'spamday.com',
+            'spamex.com',
+            'spamfree24.org',
+            'spamfree24.de',
+            'spamfree24.eu',
+            'spamfree24.net',
+            'spamfree24.com',
+            'spamgourmet.com',
+            'spamgourmet.net',
+            'spamgourmet.org',
+            'spamherelots.com',
+            'spamhereplease.com',
+            'spamhole.com',
+            'spamify.com',
+            'spamkill.info',
+            'spaml.com',
+            'spaml.de',
+            'spammotel.com',
+            'spamobox.com',
+            'spamoff.de',
+            'spamslicer.com',
+            'spamspot.com',
+            'spamthis.co.uk',
+            'spamthisplease.com',
+            'speed.1s.fr',
+            'stuffmail.de',
+            'super-auswahl.de',
+            'supergreatmail.com',
+            'supermailer.jp',
+            'superrito.com',
+            'tagyourself.com',
+            'teewars.org',
+            'teleworm.us',
+            'tempalias.com',
+            'tempe-mail.com',
+            'tempinbox.co.uk',
+            'tempinbox.com',
+            'tempmail.it',
+            'tempomail.fr',
+            'temporaryemail.net',
+            'temporaryemailaddress.com',
+            'temporary-mail.net',
+            'temporarymailaddress.com',
+            'thanksnospam.info',
+            'thankyou2010.com',
+            'thisisnotmyrealemail.com',
+            'throwawaymailaddress.com',
+            'tilien.com',
+            'tmail.ws',
+            'tmailinator.com',
+            'toiea.com',
+            'tradermail.info',
+            'trash-amil.com',
+            'trash-mail.at',
+            'trash-mail.com',
+            'trash-mail.de',
+            'trashemail.de',
+            'trashymail.com',
+            'turual.com',
+            'twinmail.de',
+            'tyldd.com',
+            'uggsrock.com',
+            'umail.net',
+            'uroid.com',
+            'us.af',
+            'venompen.com',
+            'veryrealemail.com',
+            'viditag.com',
+            'viewcastmedia.com',
+            'viewcastmedia.net',
+            'viewcastmedia.org',
+            'webemail.me',
+            'webm4il.info',
+            'wh4f.org',
+            'whyspam.me',
+            'willselfdestruct.com',
+            'winemaven.info',
+            'wronghead.com',
+            'wuzup.net',
+            'wuzupmail.net',
+            'xagloo.com',
+            'xemaps.com',
+            'xents.com',
+            'xmaily.com',
+            'xoxy.net',
+            'yapped.net',
+            'yeah.net',
+            'yep.it',
+            'yogamaven.com',
+            'yopmail.com',
+            'yopmail.fr',
+            'yopmail.net',
+            'youmailr.com',
+            'ypmail.webnastya.ru',
+            'zippymail.info',
+            'zoemail.org',
+            'zoemail.net',
+            'cuvox.de', 'einrot.com', 'fleckens.hu', 'gustr.com', 'jourrapide.com',
+            'rhyta.com', 'superrito.com', 'teleworm.us', 'dayrep.com', 'armyspy.com',
+            'emailfake.com', 'emailfake.ml', 'fake-mail.net', 'fakemail.net',
+            'mintemail.com', 'minuteinbox.com', 'mohmal.com', 'mytrashmail.com',
+            'spambox.us', 'throwawaymail.com', 'trashmail.com', 'trashmail.net'
+        ];
+        
+        // ========== VERIFICAÇÃO 1: APIs EXTERNAS PRIMEIRO (mais confiáveis) ==========
+        // Ordem: 1. DeBounce, 2. Disify, 3. throwaway.cloud
+        // Se alguma detectar como temporário, bloqueia imediatamente
+        
+        $apis = [
+            [
+                'name' => 'DeBounce',
+                'url' => "https://disposable.debounce.io/?email=" . urlencode($email),
+                'check' => function($response, $data) {
+                    // DeBounce retorna "true" ou "false" como texto simples
+                    return trim(strtolower($response)) === 'true';
+                }
+            ],
+            [
+                'name' => 'Disify',
+                'url' => "https://www.disify.com/api/email/" . urlencode($email),
+                'check' => function($response, $data) {
+                    // Disify retorna JSON com campo "disposable"
+                    return isset($data['disposable']) && $data['disposable'] === true;
+                }
+            ],
+            [
+                'name' => 'throwaway.cloud',
+                'url' => "https://api.throwaway.cloud/v1/check?email=" . urlencode($email),
+                'check' => function($response, $data) {
+                    // throwaway.cloud retorna JSON
+                    return isset($data['disposable']) && $data['disposable'] === true
+                        || (isset($data['is_disposable']) && $data['is_disposable'] === true);
+                }
+            ]
+        ];
+        
+        foreach ($apis as $api) {
+            try {
+                $context = stream_context_create([
+                    'http' => [
+                        'method' => 'GET',
+                        'timeout' => 3, // Timeout curto para não bloquear
+                        'ignore_errors' => true,
+                        'user_agent' => 'SafeNode/1.0',
+                        'header' => "Accept: application/json\r\n"
+                    ]
+                ]);
+                
+                $response = @file_get_contents($api['url'], false, $context);
+                if ($response !== false) {
+                    $data = json_decode($response, true);
+                    if ($api['check']($response, $data ?: [])) {
+                        error_log("SafeNode: Email temporário detectado (API {$api['name']}): $domain");
+                        return true;
+                    }
+                }
+            } catch (Exception $e) {
+                // Se esta API falhar, continua para próxima
+                error_log("SafeNode: Erro ao verificar via API {$api['name']}: " . $e->getMessage());
+                continue;
+            }
+        }
+        
+        // ========== VERIFICAÇÃO 2: LISTA LOCAL (último fallback) ==========
+        // Se todas as APIs falharam, usa a lista local como backup
+        
+        // Verificar domínio completo na lista
+        if (in_array($fullDomain, $temporaryDomains)) {
+            error_log("SafeNode: Email temporário detectado (lista local - completo): $fullDomain");
+            return true;
+        }
+        
+        // Verificar domínio base (sem subdomínios)
+        if (in_array($baseDomain, $temporaryDomains)) {
+            error_log("SafeNode: Email temporário detectado (lista local - base): $baseDomain");
+            return true;
+        }
+        
+        // Verificar se o domínio contém algum dos domínios temporários (para subdomínios)
+        foreach ($temporaryDomains as $tempDomain) {
+            if (strpos($fullDomain, $tempDomain) !== false || strpos($tempDomain, $fullDomain) !== false) {
+                error_log("SafeNode: Email temporário detectado (subdomínio/match): $fullDomain contém $tempDomain");
+                return true;
+            }
+        }
+        
+        // Verificação por palavras-chave suspeitas (detecção por padrões)
+        $suspiciousPatterns = [
+            'temp', 'tmp', 'fake', 'throw', 'disposable', 'trash', 'spam', 
+            'nada', 'mohmal', 'guerrilla', 'minute', 'tmail', 'tempmail',
+            'throwaway', 'trashmail', 'fakeinbox', 'mailinator', 'yopmail',
+            '1sec', 'anonym', 'dispos', 'meltmail', 'mintemail', 'tube', 'ff'
+        ];
+        
+        // Verificar se o domínio contém padrões suspeitos
+        $domainLower = strtolower($domain);
+        foreach ($suspiciousPatterns as $pattern) {
+            if (strpos($domainLower, $pattern) !== false) {
+                // Verificação adicional: alguns domínios legítimos podem conter essas palavras
+                // Mas para segurança, vamos bloquear e o usuário pode usar outro email se for legítimo
+                $knownLegitimate = ['template', 'temptations', 'temper', 'temporal', 'temporary-storage'];
+                $isLegitimate = false;
+                foreach ($knownLegitimate as $legit) {
+                    if (strpos($domainLower, $legit) !== false) {
+                        $isLegitimate = true;
+                        break;
+                    }
+                }
+                if (!$isLegitimate) {
+                    error_log("SafeNode: Email temporário detectado (padrão suspeito): $domain contém '$pattern'");
+                    return true;
+                }
+            }
+        }
+        
+        // Se chegou até aqui, passou por todas as verificações
+        return false; // Email não é temporário conhecido
+    }
+    
+    /**
+     * Validar email e verificar se não é temporário
+     * Retorna true se email é válido E não é temporário
+     */
+    public static function emailNotTemporary(string $email): bool {
+        // Primeiro validar formato do email
+        if (!self::email($email)) {
+            return false;
+        }
+        
+        // Depois verificar se não é temporário
+        return !self::isTemporaryEmail($email);
+    }
 }
 
 /**

@@ -44,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             $error = 'Usuário deve ter entre 3-30 caracteres (letras, números, _ ou -)';
         } elseif (!InputValidator::email($email)) {
             $error = 'Email inválido';
+        } elseif (InputValidator::isTemporaryEmail($email)) {
+            $error = 'Boa tentativa, mas somos SafeNode! Emails temporários não são permitidos aqui. Use um email válido e permanente.';
+            error_log("SafeNode Register: Email temporário BLOQUEADO: " . $email);
         } elseif (!InputValidator::strongPassword($password)) {
             $error = 'Senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e símbolos';
         } elseif ($password !== $confirmPassword) {

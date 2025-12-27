@@ -140,3 +140,5 @@ export AI_API_KEY="sk-sua-chave-aqui"
 
 
 
+
+

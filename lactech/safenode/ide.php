@@ -1532,7 +1532,7 @@ if (isset($_SESSION['safefig_project_data']) && !empty($_SESSION['safefig_projec
                         <div class="android-status-bar">
                             <div class="status-left">
                                 <span id="mobile-time" class="status-time">00:00</span>
-                            </div>
+                    </div>
                             <div class="status-right">
                                 <div class="battery-container">
                                     <div class="battery-level" id="battery-level">85%</div>
@@ -1852,7 +1852,7 @@ if (isset($_SESSION['safefig_project_data']) && !empty($_SESSION['safefig_projec
                 document.addEventListener('DOMContentLoaded', initializeEditor);
             } else {
                 setTimeout(initializeEditor, 100);
-            }
+        }
         
         // Atualizar preview
         function updatePreview() {
@@ -1899,7 +1899,7 @@ if (isset($_SESSION['safefig_project_data']) && !empty($_SESSION['safefig_projec
                         `;
                         
                         if (iframe.id === 'preview-frame-mobile') {
-                            iframeDoc.write(hideScrollbarCSS + code);
+                        iframeDoc.write(hideScrollbarCSS + code);
                         } else {
                             iframeDoc.write(hideScrollbarCSS + code);
                         }
