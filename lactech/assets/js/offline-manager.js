@@ -219,7 +219,7 @@ class OfflineManager {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3000); // Timeout de 3 segundos
             
-            const response = await fetch('/api/actions.php', {
+            const response = await fetch('./api/actions.php', {
                 method: 'HEAD',
                 cache: 'no-cache',
                 signal: controller.signal

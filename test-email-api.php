@@ -92,3 +92,5 @@ echo "   - Têm documentação clara\n";
 echo "   - Respondem rápido (< 2 segundos)\n";
 echo "   - Detectam corretamente fftube.com\n";
 
+
+

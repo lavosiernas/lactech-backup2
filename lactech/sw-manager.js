@@ -16,16 +16,16 @@ const STATIC_CACHE_FILES = [
 
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
-    console.log('[Service Worker] Instalando...');
+    // Service Worker instalando
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                console.log('[Service Worker] Armazenando arquivos em cache');
+                // Armazenando arquivos em cache
                 // Adicionar arquivos um por um para evitar falhas
                 return Promise.allSettled(
                     STATIC_CACHE_FILES.map(url => {
                         return cache.add(url).catch(err => {
-                            console.warn(`[Service Worker] Não foi possível cachear ${url}:`, err);
+                            // Não foi possível cachear
                         });
                     })
                 );
@@ -39,7 +39,7 @@ self.addEventListener('install', (event) => {
 
 // Ativar Service Worker
 self.addEventListener('activate', (event) => {
-    console.log('[Service Worker] Ativando...');
+    // Service Worker ativando
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
@@ -48,7 +48,7 @@ self.addEventListener('activate', (event) => {
                         return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
                     })
                     .map((cacheName) => {
-                        console.log('[Service Worker] Removendo cache antigo:', cacheName);
+                        // Removendo cache antigo
                         return caches.delete(cacheName);
                     })
             );
@@ -61,6 +61,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
+    
+    // Ignorar requisições de chrome-extension
+    if (url.protocol.includes('chrome-extension')) {
+        return;
+    }
 
     // Tratar requisições para APIs
     if (url.pathname.startsWith('/api/')) {
@@ -121,11 +126,13 @@ self.addEventListener('fetch', (event) => {
             event.respondWith(
                 fetch(request.clone())
                     .then((response) => {
-                        // Armazenar resposta no cache para uso offline
-                        if (response.ok) {
+                        // Armazenar resposta no cache para uso offline (apenas se não for chrome-extension)
+                        if (response.ok && !url.protocol.includes('chrome-extension')) {
                             const responseClone = response.clone();
                             caches.open(RUNTIME_CACHE).then((cache) => {
-                                cache.put(request, responseClone);
+                                cache.put(request, responseClone).catch(() => {
+                                    // Ignorar erros de cache
+                                });
                             });
                         }
                         return response;
@@ -156,11 +163,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(request)
             .then((response) => {
-                // Se a resposta é válida, armazenar no cache
-                if (response.ok && request.method === 'GET') {
+                // Se a resposta é válida e não é chrome-extension, armazenar no cache
+                if (response.ok && request.method === 'GET' && !url.protocol.includes('chrome-extension')) {
                     const responseClone = response.clone();
                     caches.open(RUNTIME_CACHE).then((cache) => {
-                        cache.put(request, responseClone);
+                        cache.put(request, responseClone).catch(() => {
+                            // Ignorar erros de cache (ex: chrome-extension)
+                        });
                     });
                 }
                 return response;

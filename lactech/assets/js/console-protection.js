@@ -6,28 +6,15 @@
     'use strict';
     
     // Detectar tentativas de colar código no console
-    const originalConsoleLog = console.log;
-    const originalConsoleWarn = console.warn;
     const originalConsoleError = console.error;
-    const originalConsoleInfo = console.info;
     
-    // Mensagens de aviso personalizadas
-    const warningMessages = [
-        '⚠️ Acesso ao console detectado!',
-        '🔒 Este sistema é protegido.',
-        '📋 Tentativas de modificar o código são monitoradas.',
-        '🚫 Código malicioso será bloqueado automaticamente.',
-        '✅ Use apenas funcionalidades autorizadas do sistema.'
-    ];
-    
-    // Função para exibir mensagem de aviso
+    // Função para registrar tentativas (silenciosa em produção)
     function showWarning() {
-        const randomMessage = warningMessages[Math.floor(Math.random() * warningMessages.length)];
-        console.log('%c' + randomMessage, 'color: #ff0000; font-size: 16px; font-weight: bold; padding: 10px; background: #ffe6e6; border: 2px solid #ff0000; border-radius: 5px;');
-        console.log('%cEsta página é protegida. Qualquer tentativa de modificar o código ou executar scripts não autorizados será registrada.', 'color: #666; font-size: 12px;');
+        // Proteção ativa - tentativas são bloqueadas silenciosamente
+        // Em desenvolvimento, pode ser reativado logging se necessário
     }
     
-    // Interceptar console.log
+    // Bloquear console.log completamente em produção
     console.log = function(...args) {
         // Verificar se é tentativa de colar código malicioso
         const message = args.join(' ');
@@ -39,26 +26,27 @@
             message.includes('bypass') ||
             message.length > 500) {
             showWarning();
-            return;
         }
-        originalConsoleLog.apply(console, args);
+        // Bloqueado - não executar console.log
     };
     
-    // Interceptar console.warn
+    // Bloquear console.warn completamente em produção
     console.warn = function(...args) {
         const message = args.join(' ');
         if (message.includes('Security') || message.includes('Blocked')) {
             showWarning();
         }
-        originalConsoleWarn.apply(console, args);
+        // Bloqueado - não executar console.warn
     };
     
-    // Interceptar console.error
+    // Interceptar console.error - manter apenas erros críticos
     console.error = function(...args) {
         const message = args.join(' ');
         if (message.includes('CSP') || message.includes('Content Security Policy')) {
             showWarning();
+            return;
         }
+        // Manter apenas erros críticos em produção
         originalConsoleError.apply(console, args);
     };
     
@@ -66,7 +54,7 @@
     const originalEval = window.eval;
     window.eval = function(code) {
         showWarning();
-        console.error('%cTentativa de usar eval() bloqueada!', 'color: #ff0000; font-weight: bold;');
+        // Bloqueado silenciosamente em produção
         return originalEval.apply(this, arguments);
     };
     
@@ -78,7 +66,7 @@
         },
         set: function() {
             showWarning();
-            console.error('%cTentativa de modificar eval() bloqueada!', 'color: #ff0000; font-weight: bold;');
+            // Bloqueado silenciosamente em produção
         },
         configurable: false
     });
@@ -102,27 +90,9 @@
         }
     }, 500);
     
-    // Exibir mensagem inicial quando o console é aberto
-    console.log('%c⚡ LacTech - Sistema de Gestão', 'color: #22c55e; font-size: 20px; font-weight: bold;');
-    console.log('%cEste console é monitorado por segurança. Use apenas funcionalidades autorizadas.', 'color: #666; font-size: 12px;');
+    // Proteção ativa - console.log e console.warn bloqueados em produção
     
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

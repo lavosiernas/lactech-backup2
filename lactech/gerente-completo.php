@@ -2,7 +2,18 @@
 /**
  * Dashboard Gerente - LacTech (Versão Completa)
  * Sistema completo com todas as funcionalidades originais
+ * 
+ * ESTRUTURA DO ARQUIVO:
+ * 1. Configuração e Autenticação (linhas 1-70)
+ * 2. Busca de Dados do Usuário e Fazenda (linhas 71-215)
+ * 3. HTML Head - Meta tags e CSS (linhas 220-1800)
+ * 4. HTML Body - Estrutura principal (linhas 1800-4000)
+ * 5. JavaScript - Funcionalidades (linhas 4000-8906)
  */
+
+// ============================================
+// SEÇÃO 1: CONFIGURAÇÃO E AUTENTICAÇÃO
+// ============================================
 
 // Headers de cache otimizado
 header("Cache-Control: private, max-age=300");
@@ -68,10 +79,14 @@ if ($_SESSION['user_role'] !== 'gerente' && $_SESSION['user_role'] !== 'manager'
     }
 }
 
+// ============================================
+// SEÇÃO 2: BUSCA DE DADOS DO USUÁRIO E FAZENDA
+// ============================================
+
 // Incluir classe de banco de dados
 require_once __DIR__ . '/includes/Database.class.php';
 
-// Obter dados do usuário
+// Obter dados do usuário da sessão
 $current_user_id = $_SESSION['user_id'] ?? 1;
 $current_user_name = $_SESSION['user_name'] ?? 'Gerente';
 $current_user_role = $_SESSION['user_role'] ?? 'gerente';
@@ -93,29 +108,6 @@ try {
         $_SESSION['user_name'] = $current_user_name;
         $_SESSION['user_email'] = $current_user_email;
         
-        // Debug: verificar se a foto está vindo do banco (ativar temporariamente)
-        error_log("DEBUG - Foto do banco (raw): " . ($current_user_photo ?? 'NULL'));
-        if (!empty($current_user_photo)) {
-            $photoPathClean = trim($current_user_photo, '/\\');
-            $debugPath1 = __DIR__ . '/' . $photoPathClean;
-            $debugPath2 = __DIR__ . '/../' . $photoPathClean;
-            $debugPath3 = __DIR__ . '/uploads/profiles/' . basename($photoPathClean);
-            
-            error_log("DEBUG - Caminho 1 (__DIR__/path): " . $debugPath1 . " - Existe: " . (file_exists($debugPath1) ? 'SIM' : 'NÃO'));
-            error_log("DEBUG - Caminho 2 (__DIR__/../path): " . $debugPath2 . " - Existe: " . (file_exists($debugPath2) ? 'SIM' : 'NÃO'));
-            error_log("DEBUG - Caminho 3 (uploads/profiles): " . $debugPath3 . " - Existe: " . (file_exists($debugPath3) ? 'SIM' : 'NÃO'));
-            
-            // Determinar qual caminho usar
-            if (file_exists($debugPath1)) {
-                error_log("DEBUG - Usando caminho 1");
-            } elseif (file_exists($debugPath2)) {
-                error_log("DEBUG - Usando caminho 2");
-            } elseif (file_exists($debugPath3)) {
-                error_log("DEBUG - Usando caminho 3");
-            } else {
-                error_log("DEBUG - Nenhum caminho encontrado!");
-            }
-        }
         // Telefone do usuário - usar do banco ou deixar vazio (não usar valor hardcode)
         $current_user_phone = $userData[0]['phone'] ?? '';
     } else {
@@ -157,20 +149,20 @@ try {
     $farm_address = ''; // Não usar endereço hardcode - deve ser cadastrado no banco
 }
 
-       // Buscar dados para o modal Mais Opções
-       try {
-           $db = Database::getInstance();
+// Buscar dados para a página Mais Opções (agora é uma página completa)
+try {
+    $db = Database::getInstance();
            
-           // Buscar dados dos animais com cálculo de idade em meses
-           $animals_raw = $db->getAllAnimals();
-           // Adicionar age_months e processar dados
-           $more_options_animals = array_map(function($animal) {
-               $age_days = $animal['age_days'] ?? 0;
-               $animal['age_months'] = floor($age_days / 30);
-               return $animal;
-           }, $animals_raw);
-    
-    // Buscar dados de produção de leite (últimos 7 dias)
+    // Buscar dados dos animais com cálculo de idade em meses
+    $animals_raw = $db->getAllAnimals();
+    // Adicionar age_months e processar dados
+    $more_options_animals = array_map(function($animal) {
+        $age_days = $animal['age_days'] ?? 0;
+        $animal['age_months'] = floor($age_days / 30);
+        return $animal;
+    }, $animals_raw);
+
+    // Buscar dados de produção de leite (últimos 30 dias, limitado a 7 registros)
     $more_options_milk_data = $db->query("
         SELECT 
             DATE(production_date) as date,
@@ -193,7 +185,7 @@ try {
     $more_options_pregnant_cows = count(array_filter($more_options_animals, function($a) { 
         return ($a['reproductive_status'] ?? '') === 'prenha'; 
     }));
-    
+
     // Calcular produção total dos últimos 7 dias
     $more_options_production_result = $db->query("
         SELECT SUM(volume) as total_volume
@@ -214,7 +206,7 @@ try {
     $more_options_avg_daily_production = 0;
 }
 
-// Versão para cache busting
+// Versão para cache busting de assets
 $v = time();
 ?>
 <!DOCTYPE html>
@@ -279,6 +271,9 @@ $v = time();
     <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo $v; ?>">
     
+    <!-- ============================================ -->
+    <!-- ESTILOS PERSONALIZADOS -->
+    <!-- ============================================ -->
     <style>
         /* Cores personalizadas */
         :root {
@@ -1737,7 +1732,9 @@ $v = time();
     <!-- Container de Notificações Toast -->
     <div id="toastContainer" class="toast-container"></div>
     
-    <!-- Header -->
+    <!-- ============================================ -->
+    <!-- HEADER - NAVEGAÇÃO PRINCIPAL -->
+    <!-- ============================================ -->
     <header class="gradient-forest text-white shadow-lg" role="banner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -1835,7 +1832,9 @@ $v = time();
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- ============================================ -->
+    <!-- CONTEÚDO PRINCIPAL -->
+    <!-- ============================================ -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Dashboard Tab -->
         <div id="dashboard-tab" class="tab-content">
@@ -2432,152 +2431,13 @@ $v = time();
         </div>
     </nav>
 
-    <!-- Overlays -->
-    <!-- Modal Volume Geral - Melhorado -->
-    <div id="generalVolumeOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeGeneralVolumeOverlay()"></div>
-        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13l8 0c1.11 0 2.08-.402 2.599-1M21 13l-8 0c-1.11 0-2.08-.402-2.599-1M16 8V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v3m4 6h.01M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Registrar Volume Geral</h3>
-                            <p class="text-sm text-white/90">Registro de produção total</p>
-                        </div>
-                    </div>
-                    <button onclick="closeGeneralVolumeOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Form -->
-                <form id="generalVolumeForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div class="p-6 space-y-6">
-                        <!-- Mensagem de sucesso/erro -->
-                        <div id="generalVolumeMessage" class="hidden p-4 rounded-xl border"></div>
-
-                        <!-- Informações da Coleta -->
-                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Informações da Coleta</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                            Data da Coleta
-                                        </span>
-                                    </label>
-                                    <input type="date" name="collection_date" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            Período
-                                        </span>
-                                    </label>
-                                    <select name="period" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
-                                        <option value="manha">Manhã</option>
-                                        <option value="tarde">Tarde</option>
-                                        <option value="noite">Noite</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Medições -->
-                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Medições</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                            </svg>
-                                            Número de Vacas
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="total_animals" id="totalAnimalsInput" step="1" min="1" placeholder="0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
-                                        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                        </svg>
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-1">Quantas vacas participaram desta coleta?</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                            </svg>
-                                            Volume Total
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="total_volume" id="totalVolumeInput" step="0.1" min="0" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">L</span>
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-1" id="averagePerCowDisplay">Média por vaca: -- L</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1V9a5 5 0 00-10 0v6a4 4 0 004 4zm0-10a2 2 0 112 2"/>
-                                            </svg>
-                                            Temperatura
-                                            <span class="text-xs font-normal text-slate-500">(opcional)</span>
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="temperature" step="0.1" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">°C</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
-                        <button type="button" onclick="closeGeneralVolumeOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Registrar Volume
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- ============================================ -->
+    <!-- MODAIS - FORMULÁRIOS E DIÁLOGOS -->
+    <!-- ============================================ -->
+    <!-- NOTA: Modais principais foram movidos para páginas separadas em subs/ -->
+    <!-- O sistema modal-loader.js carrega essas páginas dinamicamente -->
+    
+    <!-- Modais principais foram movidos para subs/ (volume-geral.php, volume-vaca.php, teste-qualidade.php, registrar-venda.php) -->
 
     <!-- Modal Confirmar Exclusão de Todos os Registros de Volume -->
     <div id="deleteAllVolumeModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
@@ -2793,404 +2653,7 @@ $v = time();
         </div>
     </div>
 
-    <!-- Modal Volume por Vaca - Melhorado -->
-    <div id="volumeOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeVolumeOverlay()"></div>
-        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Registrar Volume por Vaca</h3>
-                            <p class="text-sm text-white/90">Produção individual do animal</p>
-                        </div>
-                    </div>
-                    <button onclick="closeVolumeOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Form -->
-                <form id="volumeForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div class="p-6 space-y-6">
-                        <!-- Mensagem de sucesso/erro -->
-                        <div id="volumeMessage" class="hidden p-4 rounded-xl border"></div>
-
-                        <!-- Identificação -->
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Identificação do Animal</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5z"/>
-                                            </svg>
-                                            Selecionar Vaca
-                                        </span>
-                                    </label>
-                                    <select name="animal_id" id="volumeAnimalSelect" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white" required>
-                                        <option value="">Selecione uma vaca</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                            Data da Coleta
-                                        </span>
-                                    </label>
-                                    <input type="date" name="collection_date" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Medições -->
-                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Medições de Produção</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            Período
-                                        </span>
-                                    </label>
-                                    <select name="period" class="w-full px-4 py-3 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white" required>
-                                        <option value="manha">Manhã</option>
-                                        <option value="tarde">Tarde</option>
-                                        <option value="noite">Noite</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                            </svg>
-                                            Volume
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="volume" step="0.1" min="0" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white font-semibold text-indigo-700" required>
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-600 font-bold">L</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1V9a5 5 0 00-10 0v6a4 4 0 004 4zm0-10a2 2 0 112 2"/>
-                                            </svg>
-                                            Temperatura
-                                            <span class="text-xs font-normal text-slate-500">(opcional)</span>
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="temperature" step="0.1" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white font-semibold text-indigo-700">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-600 font-bold">°C</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
-                        <button type="button" onclick="closeVolumeOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Registrar Volume
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Teste de Qualidade - Melhorado -->
-    <div id="qualityOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeQualityOverlay()"></div>
-        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Registrar Teste de Qualidade</h3>
-                            <p class="text-sm text-white/90">Análise laboratorial do leite</p>
-                        </div>
-                    </div>
-                    <button onclick="closeQualityOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Form -->
-                <form id="qualityForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div class="p-6 space-y-6">
-                        <!-- Mensagem de sucesso/erro -->
-                        <div id="qualityMessage" class="hidden p-4 rounded-xl border"></div>
-
-                        <!-- Dados do Teste -->
-                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Dados do Teste</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                            Data do Teste
-                                        </span>
-                                    </label>
-                                    <input type="date" name="test_date" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                            </svg>
-                                            Laboratório
-                                            <span class="text-xs font-normal text-slate-500">(opcional)</span>
-                                        </span>
-                                    </label>
-                                    <input type="text" name="laboratory" placeholder="Nome do laboratório" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Resultados -->
-                        <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Resultados da Análise</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
-                                            </svg>
-                                            Gordura
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="fat_content" step="0.01" min="0" max="100" placeholder="0.00" class="w-full px-4 py-3 pl-12 border-2 border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white font-semibold text-emerald-700">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold">%</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
-                                            </svg>
-                                            Proteína
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="protein_content" step="0.01" min="0" max="100" placeholder="0.00" class="w-full px-4 py-3 pl-12 border-2 border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white font-semibold text-emerald-700">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold">%</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                            </svg>
-                                            Células Somáticas
-                                        </span>
-                                    </label>
-                                    <input type="number" name="somatic_cells" min="0" placeholder="0" class="w-full px-4 py-3 border-2 border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white font-semibold text-emerald-700">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
-                        <button type="button" onclick="closeQualityOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl hover:from-emerald-700 hover:to-teal-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Registrar Teste
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Registrar Venda - Melhorado -->
-    <div id="salesOverlay" class="fixed inset-0 z-50 hidden animate-fadeIn">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeSalesOverlay()"></div>
-        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Registrar Venda</h3>
-                            <p class="text-sm text-white/90">Registro de comercialização</p>
-                        </div>
-                    </div>
-                    <button onclick="closeSalesOverlay()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Form -->
-                <form id="salesForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div class="p-6 space-y-6">
-                        <!-- Mensagem de sucesso/erro -->
-                        <div id="salesMessage" class="hidden p-4 rounded-xl border"></div>
-
-                        <!-- Detalhes da Venda -->
-                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Detalhes da Venda</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                            Data da Venda
-                                        </span>
-                                    </label>
-                                    <input type="date" name="sale_date" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                            </svg>
-                                            Cliente
-                                        </span>
-                                    </label>
-                                    <input type="text" name="customer" placeholder="Nome do cliente" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Valores -->
-                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Valores</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                            </svg>
-                                            Volume Vendido
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="volume_sold" step="0.1" min="0" placeholder="0.0" class="w-full px-4 py-3 pl-12 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">L</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            Valor Total
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="number" name="total_amount" step="0.01" min="0" placeholder="0.00" class="w-full px-4 py-3 pl-10 border-2 border-green-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white font-semibold text-green-700" required>
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-green-600 font-bold">R$</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
-                        <button type="button" onclick="closeSalesOverlay()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Registrar Venda
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- Modais antigos removidos - usar subs/volume-vaca.php, subs/teste-qualidade.php, subs/registrar-venda.php -->
 
     <!-- Notifications Drawer (lateral) -->
     <div id="notificationsDrawer" class="fixed inset-0 z-50 hidden">
@@ -3341,13 +2804,8 @@ $v = time();
                                                             $photoSrc = $photoPath;
                                                         }
                                                         $showPhoto = true;
-                                                        error_log("DEBUG - Foto encontrada em: " . $testPath . " -> Exibindo como: " . $photoSrc);
                                                         break;
                                                     }
-                                                }
-                                                
-                                                if (!$showPhoto) {
-                                                    error_log("DEBUG - Foto não encontrada em nenhum caminho testado. Path do banco: " . $photoPath);
                                                 }
                                             }
                                             
@@ -3771,7 +3229,7 @@ $v = time();
                             </a>
                             <span class="text-gray-400">|</span>
                             <div class="flex items-center space-x-2 text-gray-600">
-                                <img src="./safenode/assets/img/logos (5).png" alt="SafeNode" class="w-5 h-5 object-contain">
+                                <img src="./assets/img/lactech-logo.png" alt="LacTech" class="w-5 h-5 object-contain">
                                 <span class="text-xs font-medium">SafeNode</span>
                             </div>
                         </div>
@@ -4395,14 +3853,24 @@ $v = time();
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- ============================================ -->
+    <!-- SCRIPTS EXTERNOS -->
+    <!-- ============================================ -->
     <script src="assets/js/offline-manager.js?v=<?php echo $v; ?>"></script>
     <script src="assets/js/gerente-completo.js?v=<?php echo $v; ?>"></script>
     
-    <!-- PWA e Service Worker -->
+    <!-- Módulos JavaScript organizados -->
+    <script src="assets/js/toast-notifications.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/modal-loader.js?v=<?php echo $v; ?>"></script>
+    
+    <!-- ============================================ -->
+    <!-- JAVASCRIPT INLINE - FUNCIONALIDADES ESPECÍFICAS -->
+    <!-- ============================================ -->
+    
+    <!-- Sistema de Skeleton Loaders -->
     <script>
         // ============================================
-        // SISTEMA DE NOTIFICAÇÕES TOAST MELHORADO
+        // SISTEMA DE SKELETON LOADERS
         // ============================================
         (function() {
             const toastContainer = document.getElementById('toastContainer');
@@ -4510,6 +3978,10 @@ $v = time();
             window.showInfoToast = (message, title, groupKey) => showToast(message, 'info', title, 5000, groupKey);
         })();
         
+    </script>
+    
+    <!-- Sistema de Skeleton Loaders -->
+    <script>
         // ============================================
         // SISTEMA DE SKELETON LOADERS
         // ============================================
@@ -5093,42 +4565,18 @@ $v = time();
             window.safeAsyncOperation = safeAsyncOperation;
         })();
         
-        // ============================================
-        // SISTEMA DE DEBUG CONDICIONAL
-        // ============================================
-        (function() {
-            // Verificar se está em modo desenvolvimento
-            // Pode ser alterado para verificar variável de ambiente ou configuração
-            const isDevelopment = window.location.hostname === 'localhost' || 
-                                 window.location.hostname === '127.0.0.1' ||
-                                 window.location.hostname.includes('localhost') ||
-                                 window.location.search.includes('debug=true');
-            
-            // Função de debug condicional
-            window.debugLog = function(...args) {
-                if (isDevelopment) {
-                    console.log(...args);
-                }
-            };
-            
-            // Manter console.error sempre ativo para erros críticos
-            // Mas podemos criar uma versão customizada se necessário
-        })();
-        
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw-manager.js')
                     .then((registration) => {
-                        debugLog('✅ Service Worker registrado com sucesso:', registration.scope);
-                        
                         // Verificar atualizações periodicamente
                         setInterval(() => {
                             registration.update();
                         }, 60000); // A cada minuto
                     })
                     .catch((error) => {
-                        console.error('❌ Erro ao registrar Service Worker:', error);
+                        console.error('Erro ao registrar Service Worker:', error);
                     });
             });
         }
@@ -5176,10 +4624,7 @@ $v = time();
             const { outcome } = await deferredPrompt.userChoice;
             
             if (outcome === 'accepted') {
-                debugLog('✅ PWA instalada pelo usuário');
                 hideInstallButton();
-            } else {
-                debugLog('❌ PWA não instalada');
             }
             
             deferredPrompt = null;
@@ -5187,7 +4632,6 @@ $v = time();
         
         // Esconder botão se já estiver instalada
         window.addEventListener('appinstalled', () => {
-            debugLog('✅ PWA instalada');
             hideInstallButton();
             deferredPrompt = null;
         });
@@ -5414,497 +4858,14 @@ $v = time();
         
         // Verificar se já está instalada como PWA
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            debugLog('✅ PWA já instalada');
             if (installButton) {
                 installButton.style.display = 'none';
             }
         }
     </script>
     
-    <!-- Modal Mais Opções - Fullscreen -->
-    <div id="moreOptionsModal" class="fixed inset-0 z-[100] hidden bg-white">
-        <style>
-            /* Estilos específicos do modal Mais Opções */
-            #moreOptionsModal {
-                background: white;
-            }
-            #moreOptionsModal.hidden {
-                display: none !important;
-            }
-            #moreOptionsModal:not(.hidden) {
-                display: block !important;
-            }
-            #moreOptionsModal .app-item {
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-            #moreOptionsModal .app-item:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            }
-            #moreOptionsModal .submodal {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 99999;
-                display: none;
-                opacity: 0;
-                transition: opacity 0.2s ease;
-            }
-            #moreOptionsModal .submodal.show {
-                display: flex;
-                opacity: 1;
-                align-items: center;
-                justify-content: center;
-            }
-            #moreOptionsModal .submodal-content {
-                background: white;
-                width: 100%;
-                height: 100vh;
-                overflow-y: auto;
-                position: relative;
-                padding: 24px;
-            }
-            @media (max-width: 768px) {
-                #moreOptionsModal .submodal-content {
-                    padding: 16px;
-                }
-            }
-        </style>
-        <div class="w-full h-full bg-white overflow-y-auto">
-            <!-- Header -->
-            <div class="flex items-center justify-between p-6 bg-white sticky top-0 z-10 shadow-sm border-b border-gray-200">
-                <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900">Mais Opções</h2>
-                        <p class="text-sm text-gray-600">Acesse ferramentas e recursos do sistema</p>
-                    </div>
-                </div>
-                <button onclick="closeMoreOptionsModal()" class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-xl transition-all duration-200 shadow-sm">
-                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    <span class="text-gray-700 font-semibold">Voltar</span>
-                </button>
-            </div>
-            
-            <!-- Content -->
-            <div class="p-8">
-                <div class="max-w-7xl mx-auto">
-                    <?php 
-                    // Usar variáveis já carregadas
-                    $total_production = $more_options_total_production;
-                    $avg_daily_production = $more_options_avg_daily_production;
-                    $lactating_cows = $more_options_lactating_cows;
-                    $pregnant_cows = $more_options_pregnant_cows;
-                    $total_animals = $more_options_total_animals;
-                    $animals = $more_options_animals;
-                    $milk_data = $more_options_milk_data;
-                    ?>
-                    
-                    <!-- Ferramentas Principais -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-bold text-gray-800 mb-5 flex items-center">
-                            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                            </div>
-                            Ferramentas Principais
-                        </h3>
-                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                            <!-- Relatórios -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('reports')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Relatórios</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Análises e dados</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Gestão de Rebanho -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('animals')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Gestão de Rebanho</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Animais e IA</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Gestão Sanitária -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('health')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Gestão Sanitária</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Saúde e vacinas</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Reprodução -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('reproduction')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Reprodução</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Prenhez e DPP</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Dashboard Analítico -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('analytics')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Dashboard Analítico</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Indicadores e KPIs</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Central de Ações -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('actions')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Central de Ações</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Tarefas prioritárias</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Grupos e Lotes -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('groups')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Grupos e Lotes</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Organização</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Suporte -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('support')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Suporte</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Ajuda e contato</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- AgroNews360 -->
-                            <a href="agronews360/auto-login.php" target="_blank" class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm hover:shadow-md transition-shadow block">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">AgroNews360</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Notícias do agronegócio</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Utilitários -->
-                    <div class="mb-10">
-                        <h3 class="text-lg font-bold text-gray-800 mb-5 flex items-center">
-                            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
-                                </svg>
-                            </div>
-                            Utilitários
-                        </h3>
-                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                            <!-- Alimentação -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openSubModal('feeding')">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-lime-500 to-lime-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Alimentação</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Concentrado e ração</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Sistema de Touros -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm hover:shadow-md transition-shadow" onclick="openBullsModal()">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M19.5 6c-1.3 0-2.5.8-3 2-.5-1.2-1.7-2-3-2s-2.5.8-3 2c-.5-1.2-1.7-2-3-2C5.5 6 4 7.5 4 9.5c0 1.3.7 2.4 1.7 3.1-.4.6-.7 1.3-.7 2.1 0 2.2 1.8 4 4 4h6c2.2 0 4-1.8 4-4 0-.8-.3-1.5-.7-2.1 1-.7 1.7-1.8 1.7-3.1 0-2-1.5-3.5-3.5-3.5zM9 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                                            <circle cx="12" cy="8" r="2" fill="white"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Sistema de Touros</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Touros e inseminações</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Controle de Novilhas -->
-                            <div class="app-item bg-white border border-gray-200 rounded-xl p-3 cursor-pointer shadow-sm" onclick="openHeiferOverlay()">
-                                <div class="flex flex-col items-center text-center space-y-2">
-                                    <div class="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 rounded-xl flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900 text-xs">Controle de Novilhas</p>
-                                        <p class="text-[10px] text-gray-600 mt-0.5">Custos de criação</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Submodais (Relatórios, Gestão de Rebanho, etc) -->
-        <?php
-        // Definir variáveis locais para uso nos modais (elas serão usadas no eval)
-        $total_production = $more_options_total_production;
-        $avg_daily_production = $more_options_avg_daily_production;
-        $lactating_cows = $more_options_lactating_cows;
-        $pregnant_cows = $more_options_pregnant_cows;
-        $total_animals = $more_options_total_animals;
-        $animals = $more_options_animals;
-        $milk_data = $more_options_milk_data;
-        
-        // Ler o arquivo modalmore.php como string (sem executar o PHP)
-        $modalmore_file_path = __DIR__ . '/includes/modalmore.php';
-        if (!file_exists($modalmore_file_path)) {
-            $modalmore_file_path = 'includes/modalmore.php';
-        }
-        
-        if (file_exists($modalmore_file_path)) {
-            $modalmore_file = file_get_contents($modalmore_file_path);
-            
-            // Extrair apenas os modais do modalmore.php (do comentário até antes do script)
-            // Procurar por todos os modais - pegar tudo entre "<!-- Modals -->" e "<script"
-            if (preg_match('/<!-- Modals -->(.*?)(<script|<\/body>|<\/html>)/s', $modalmore_file, $matches)) {
-                $modals_content = $matches[1];
-            } elseif (preg_match('/<!-- Added modals for all[^>]*>(.*?)(<script|<\/body>|<\/html>)/s', $modalmore_file, $matches)) {
-                $modals_content = $matches[1];
-            } elseif (preg_match('/<!-- Modal Relatórios -->(.*?)(<script|<\/body>|<\/html>)/s', $modalmore_file, $matches)) {
-                $modals_content = $matches[1];
-            } else {
-                $modals_content = null;
-            }
-            
-            if ($modals_content) {
-                // Substituir class="modal" por class="submodal"
-                $modals_content = preg_replace('/class="modal"/', 'class="submodal"', $modals_content);
-                // Substituir class="modal-content" por class="submodal-content"
-                $modals_content = preg_replace('/class="modal-content"/', 'class="submodal-content"', $modals_content);
-                // Substituir closeModal por closeSubModal
-                $modals_content = preg_replace('/closeModal\(/', 'closeSubModal(', $modals_content);
-                
-                // Processar o conteúdo PHP corretamente usando eval com variáveis do escopo atual
-                ob_start();
-                eval('?>' . $modals_content);
-                $processed_modals = ob_get_clean();
-                
-                echo $processed_modals;
-            } else {
-                // Fallback: criar modais básicos se não conseguir extrair
-                echo '<!-- Modais serão carregados aqui -->';
-            }
-        } else {
-            echo '<!-- Arquivo modalmore.php não encontrado -->';
-        }
-        ?>
-    </div>
+    <!-- Modal Mais Opções - REMOVIDO: Agora é uma página completa (mais-opcoes.php) -->
     
-    <script>
-        // Funções para gerenciar submodais dentro do modal Mais Opções
-        let currentSubModal = null;
-        
-        function openSubModal(modalName) {
-            debugLog('🔓 Abrindo submodal:', modalName);
-            
-            // Se for o modal de novilhas, abrir overlay diretamente
-            if (modalName === 'heifers') {
-                if (typeof window.openHeiferOverlay === 'function') {
-                    window.openHeiferOverlay();
-                } else if (document.getElementById('heiferOverlay')) {
-                    const overlay = document.getElementById('heiferOverlay');
-                    overlay.classList.remove('hidden');
-                    overlay.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    console.error('❌ Overlay de novilhas não encontrado!');
-                }
-                return; // Não procurar pelo modal, já que foi removido
-            }
-            
-            if (currentSubModal) {
-                currentSubModal.classList.remove('show');
-            }
-            
-            const modal = document.getElementById('modal-' + modalName);
-            if (modal) {
-                modal.classList.add('show');
-                currentSubModal = modal;
-                // Não bloquear o scroll do body aqui, pois o modal principal já está aberto
-                debugLog('✅ Submodal aberto:', modalName);
-                
-                // Se for o modal de animais, inicializar busca e filtros
-                if (modalName === 'animals') {
-                    setTimeout(() => {
-                        if (typeof window.initAnimalSearchAndFilters === 'function') {
-                            if (window.animalFiltersInitialized !== undefined) {
-                                window.animalFiltersInitialized = false; // Reset para reinicializar
-                            }
-                            window.initAnimalSearchAndFilters();
-                        } else {
-                            console.warn('⚠️ Função initAnimalSearchAndFilters não encontrada');
-                        }
-                    }, 400);
-                }
-            } else {
-                console.error('❌ Submodal não encontrado: modal-' + modalName);
-            }
-        }
-        
-        function closeSubModal(modalName) {
-            debugLog('🔒 Fechando submodal:', modalName || 'atual');
-            
-            // Se for o overlay de novilhas, fechar usando a função específica
-            if (modalName === 'heifers') {
-                if (typeof window.closeHeiferOverlay === 'function') {
-                    window.closeHeiferOverlay();
-                } else if (document.getElementById('heiferOverlay')) {
-                    const overlay = document.getElementById('heiferOverlay');
-                    overlay.classList.add('hidden');
-                    overlay.style.display = 'none';
-                    document.body.style.overflow = '';
-                }
-                return;
-            }
-            
-            const modal = modalName ? document.getElementById('modal-' + modalName) : currentSubModal;
-            if (modal) {
-                modal.classList.remove('show');
-                currentSubModal = null;
-                debugLog('✅ Submodal fechado');
-            }
-        }
-        
-        // Tornar funções globais
-        window.openSubModal = openSubModal;
-        window.closeSubModal = closeSubModal;
-        
-        // Fechar submodal ao clicar fora ou pressionar ESC
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('submodal')) {
-                closeSubModal();
-            }
-        });
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && currentSubModal) {
-                closeSubModal();
-            }
-        });
-        
-        // Também disponibilizar openModal e closeModal como aliases para compatibilidade
-        window.openModal = openSubModal;
-        window.closeModal = closeSubModal;
-    </script>
-    
-    <script>
-        // Teste direto para verificar se os elementos existem
-        document.addEventListener('DOMContentLoaded', function() {
-            debugLog('🔍 Verificando elementos...');
-            
-            const elements = [
-                'todayVolume',
-                'qualityAverage', 
-                'pendingPayments',
-                'activeUsers',
-                'monthlyProductionChart',
-                'recentActivities',
-                'lastUpdate'
-            ];
-            
-            elements.forEach(id => {
-                const el = document.getElementById(id);
-                debugLog(`${id}:`, el ? '✅ Encontrado' : '❌ Não encontrado');
-            });
-            
-            // Teste da API
-            debugLog('🧪 Testando API...');
-            fetch('./api/endpoints/dashboard.php')
-                .then(response => response.json())
-                .then(data => {
-                    debugLog('✅ API funcionando:', data);
-                })
-                .catch(error => {
-                    console.error('❌ Erro na API:', error);
-                });
-        });
-    </script>
     
     <script>
         // Sistema de navegação simplificado
@@ -5953,9 +4914,7 @@ $v = time();
             
             // Inicializar
             window.addEventListener('load', function() {
-                if (checkForReturnFromMoreOptions()) {
-                    debugLog('Dashboard restaurado - sem recarregamento');
-                }
+                checkForReturnFromMoreOptions();
             });
             
         })();
@@ -6582,14 +5541,9 @@ $v = time();
         
         // Sistema de controle de abas
         document.addEventListener('DOMContentLoaded', function() {
-            debugLog('🔧 Configurando controle das abas...');
-            
             // Selecionar todos os botões de navegação
             const navButtons = document.querySelectorAll('.nav-item[data-tab]');
             const tabContents = document.querySelectorAll('.tab-content');
-            
-            debugLog('🔍 Botões encontrados:', navButtons.length);
-            debugLog('🔍 Conteúdos encontrados:', tabContents.length);
             
             // Adicionar event listener para cada botão
             navButtons.forEach(button => {
@@ -6598,8 +5552,6 @@ $v = time();
                     switchTab(tabName);
                 });
             });
-            
-            debugLog('✅ Controle das abas configurado!');
         });
         
         // Função para mudar de aba (usada tanto pelo menu superior quanto inferior)
@@ -6802,67 +5754,14 @@ $v = time();
         window.switchBottomTab = switchBottomTab;
         window.handleMoreClick = handleMoreClick;
         
-        // Funções para o modal Mais Opções
+        // Função para abrir página Mais Opções (agora é uma página completa, não modal)
         function openMoreOptionsModal() {
-            debugLog('🔓 Tentando abrir modal Mais Opções...');
-            const modal = document.getElementById('moreOptionsModal');
-            if (!modal) {
-                console.error('❌ Modal maisOptionsModal não encontrado!');
-                showErrorToast('Modal não encontrado. Por favor, recarregue a página.', 'Erro');
-                return;
-            }
-            debugLog('✅ Modal encontrado, removendo classe hidden...');
-            // Remover hidden e garantir display block
-            modal.classList.remove('hidden');
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            debugLog('✅ Modal Mais Opções aberto!');
+            // Redirecionar para a página completa
+            window.location.href = 'mais-opcoes.php';
         }
         
-        function closeMoreOptionsModal() {
-            debugLog('🔒 Fechando modal Mais Opções...');
-            const modal = document.getElementById('moreOptionsModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-                debugLog('✅ Modal fechado!');
-            }
-        }
-        
-        // Tornar funções globais
+        // Tornar função global
         window.openMoreOptionsModal = openMoreOptionsModal;
-        window.closeMoreOptionsModal = closeMoreOptionsModal;
-        
-        // Fechar modal com ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const modal = document.getElementById('moreOptionsModal');
-                if (modal && !modal.classList.contains('hidden')) {
-                    closeMoreOptionsModal();
-                }
-            }
-        });
-        
-        // Verificar se o modal existe ao carregar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('moreOptionsModal');
-            if (modal) {
-                debugLog('✅ Modal Mais Opções encontrado e pronto!');
-                // Garantir que está oculto inicialmente
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
-            } else {
-                console.error('❌ Modal Mais Opções NÃO encontrado no DOM!');
-            }
-            
-            // Testar função
-            if (typeof window.openMoreOptionsModal === 'function') {
-                debugLog('✅ Função openMoreOptionsModal está disponível globalmente');
-            } else {
-                console.error('❌ Função openMoreOptionsModal NÃO está disponível globalmente!');
-            }
-        });
     </script>
     
     <!-- Modo Escuro - DESABILITADO -->
@@ -7418,14 +6317,9 @@ $v = time();
                             ? stats.semen.total_available 
                             : 0;
                     }
-                } else {
-                    debugLog('Erro ao carregar estatísticas:', result.error);
-                    // Não mostrar toast para erros de carregamento de estatísticas
-                    // para não incomodar o usuário
                 }
             } catch (error) {
                 console.error('Erro ao carregar estatísticas:', error);
-                debugLog('Erro crítico ao carregar estatísticas:', error);
             }
         }
 

@@ -105,8 +105,6 @@ function hideLoadingScreen() {
 
 // ==================== INICIALIZAÇÃO ====================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Inicializando Dashboard Gerente Completo...');
-    
     // Iniciar esconder tela de carregamento
     hideLoadingScreen();
     
@@ -116,7 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Aguardar Chart.js estar carregado antes de carregar dados
     function initializeDashboard() {
         if (typeof Chart !== 'undefined') {
-            console.log('✅ Chart.js carregado, inicializando dashboard...');
             loadDashboardData();
             startAutoRefresh();
             updateDateTime();
@@ -126,10 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setInterval(function() {
                 updateSessionActivity();
             }, 5 * 60 * 1000); // 5 minutos
-            
-            console.log('✅ Dashboard Gerente Completo inicializado com sucesso!');
         } else {
-            console.log('⏳ Aguardando Chart.js...');
             setTimeout(initializeDashboard, 100);
         }
     }
@@ -197,19 +191,14 @@ function switchTab(tabName) {
 
 // ==================== DASHBOARD ====================
 async function loadDashboardData() {
-    console.log('📊 Carregando dados do dashboard...');
-    
     try {
-        console.log('🔗 Fazendo requisição para: ./api/endpoints/dashboard.php');
         const response = await fetch('./api/endpoints/dashboard.php');
-        console.log('📡 Resposta recebida:', response.status, response.statusText);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const result = await response.json();
-        console.log('📊 Dados recebidos:', result);
         
         if (result.success && result.data) {
             const data = result.data;
@@ -225,7 +214,6 @@ async function loadDashboardData() {
             if (todayVolumeEl) {
                 const volume = n(data.today_production?.today_volume || 0);
                 todayVolumeEl.textContent = volume.toFixed(1) + ' L';
-                console.log('✅ Volume hoje (dashboard) atualizado:', volume);
             }
             
             // Atualizar métricas da aba Volume
@@ -233,7 +221,6 @@ async function loadDashboardData() {
             if (volumeTodayEl) {
                 const volume = n(data.today_production?.today_volume || 0);
                 volumeTodayEl.textContent = volume.toFixed(1) + ' L';
-                console.log('✅ Volume hoje (aba Volume) atualizado:', volume);
             }
             
             // Média semanal
@@ -241,7 +228,6 @@ async function loadDashboardData() {
             if (volumeWeekAvgEl) {
                 const weekAvg = n(data.week_production?.avg_daily_volume || 0);
                 volumeWeekAvgEl.textContent = weekAvg.toFixed(1) + ' L';
-                console.log('✅ Média semanal atualizada:', weekAvg);
             }
             
             // Total do mês
@@ -249,21 +235,18 @@ async function loadDashboardData() {
             if (volumeMonthTotalEl) {
                 const monthTotal = n(data.month_production?.month_volume || 0);
                 volumeMonthTotalEl.textContent = monthTotal.toFixed(0) + ' L';
-                console.log('✅ Total do mês atualizado:', monthTotal);
             }
             
             const qualityAverageEl = document.getElementById('qualityAverage');
             if (qualityAverageEl) {
                 const fat = n(data.quality?.avg_fat || 0);
                 qualityAverageEl.textContent = fat.toFixed(1) + '%';
-                console.log('✅ Qualidade média atualizada:', fat);
             }
             
             const pendingPaymentsEl = document.getElementById('pendingPayments');
             if (pendingPaymentsEl) {
                 const expenses = n(data.expenses?.month_expenses || 0);
                 pendingPaymentsEl.textContent = 'R$ ' + expenses.toFixed(2);
-                console.log('✅ Pagamentos pendentes atualizados:', expenses);
             }
             
             const activeUsersEl = document.getElementById('activeUsers');
@@ -274,7 +257,6 @@ async function loadDashboardData() {
                         const usersJson = await usersResp.json();
                         const usersCount = usersJson?.data?.stats?.active_users ?? 0;
                         activeUsersEl.textContent = String(n(usersCount).toFixed(0));
-                        console.log('✅ Usuários ativos atualizados:', usersCount);
                     } else {
                         activeUsersEl.textContent = '0';
                     }
@@ -285,11 +267,9 @@ async function loadDashboardData() {
             }
             
             // Atualizar gráficos
-            console.log('📊 Atualizando gráficos...');
             if (data.production_chart && Array.isArray(data.production_chart)) {
                 renderMonthlyVolumeChart(data.production_chart);
             } else {
-                console.warn('⚠️ Dados do gráfico mensal não disponíveis');
                 renderMonthlyVolumeChart([]);
             }
             
@@ -314,7 +294,6 @@ async function loadDashboardData() {
             if (data.recent_activities && Array.isArray(data.recent_activities)) {
                 updateRecentActivities(data.recent_activities);
             } else {
-                console.warn('⚠️ Atividades recentes não disponíveis');
                 updateRecentActivities([]);
             }
             
@@ -323,8 +302,6 @@ async function loadDashboardData() {
             if (lastUpdateEl) {
                 lastUpdateEl.textContent = new Date().toLocaleString('pt-BR');
             }
-            
-            console.log('✅ Dados do dashboard carregados com sucesso!');
         } else {
             console.error('❌ Erro na API:', result.error || 'Dados não retornados');
             // Definir valores padrão em caso de erro
@@ -364,7 +341,7 @@ async function loadDashboardData() {
 function createOrUpdateLineChart(canvasId, labels, data, color = '#10B981') {
     const canvas = document.getElementById(canvasId);
     if (!canvas) {
-        console.warn(`⚠️ Canvas não encontrado: ${canvasId}`);
+        // Canvas não encontrado
         return;
     }
     
@@ -442,7 +419,6 @@ function createOrUpdateLineChart(canvasId, labels, data, color = '#10B981') {
                 }
             }
         });
-        console.log(`✅ Gráfico ${canvasId} criado/atualizado com sucesso`);
     } catch (error) {
         console.error(`❌ Erro ao criar gráfico ${canvasId}:`, error);
     }
@@ -462,7 +438,6 @@ function renderMonthlyVolumeChart(chartData) {
 
 async function renderWeeklyVolumeCharts() {
     try {
-        console.log('📊 Carregando dados para gráfico semanal...');
         const res = await fetch('./api/endpoints/volume.php');
         
         if (!res.ok) {
@@ -470,7 +445,6 @@ async function renderWeeklyVolumeCharts() {
         }
         
         const json = await res.json();
-        console.log('📊 Dados do gráfico semanal recebidos:', json);
         
         // Buscar dados dos últimos 7 dias da semana
         const weekChart = Array.isArray(json?.data?.week?.chart) ? json.data.week.chart : [];
@@ -479,7 +453,6 @@ async function renderWeeklyVolumeCharts() {
         // Usar dados da semana se disponível, senão usar do gráfico geral
         const dataSource = weekChart.length > 0 ? weekChart : series;
         
-        console.log('📊 Séries encontradas:', dataSource.length);
         
         // Construir faixa dos últimos 7 dias e preencher faltantes com 0
         const dateKey = (d) => d.toISOString().slice(0,10);
@@ -503,12 +476,10 @@ async function renderWeeklyVolumeCharts() {
         const labels7 = last7Dates;
         const data7 = labels7.map(d => map[d] ?? 0);
         
-        console.log('📊 Labels:', labels7);
-        console.log('📊 Dados:', data7);
         
         // Garantir que temos dados válidos
         if (data7.every(v => v === 0)) {
-            console.warn('⚠️ Nenhum dado encontrado para os últimos 7 dias');
+            // Nenhum dado encontrado
         }
         
         // Garantir linha
@@ -520,7 +491,6 @@ async function renderWeeklyVolumeCharts() {
         createOrUpdateLineChart('volumeChart', labels7, data7, '#3B82F6');
         createOrUpdateLineChart('dashboardWeeklyChart', labels7, data7, '#6366F1');
         
-        console.log('✅ Gráficos semanais renderizados com sucesso');
     } catch (e) {
         console.error('❌ Erro ao renderizar gráficos semanais:', e);
         const labels7 = ['Sem dados'];
@@ -532,7 +502,6 @@ async function renderWeeklyVolumeCharts() {
 
 async function renderQualityWeeklyChart() {
     try {
-        console.log('📊 Carregando dados de qualidade dos últimos 7 dias...');
         const res = await fetch('./api/quality.php?action=get_dashboard_data');
         
         if (!res.ok) {
@@ -540,7 +509,6 @@ async function renderQualityWeeklyChart() {
         }
         
         const json = await res.json();
-        console.log('📊 Dados de qualidade recebidos:', json);
         
         if (!json.success || !json.data) {
             throw new Error('Dados não disponíveis');
@@ -576,10 +544,6 @@ async function renderQualityWeeklyChart() {
         const proteinData = labels7.map(d => proteinMap[d] ?? 0);
         const ccsData = labels7.map(d => ccsMap[d] ?? 0);
         
-        console.log('📊 Labels:', labels7);
-        console.log('📊 Gordura:', fatData);
-        console.log('📊 Proteína:', proteinData);
-        console.log('📊 CCS:', ccsData);
         
         // Criar gráfico com múltiplas séries
         const ctx = document.getElementById('qualityWeeklyChart');
@@ -663,7 +627,6 @@ async function renderQualityWeeklyChart() {
             }
         });
         
-        console.log('✅ Gráfico de qualidade renderizado com sucesso');
     } catch (e) {
         console.error('❌ Erro ao renderizar gráfico de qualidade:', e);
         // Criar gráfico vazio em caso de erro
@@ -689,7 +652,6 @@ async function renderQualityWeeklyChart() {
 
 async function renderTemperatureChart() {
     try {
-        console.log('🌡️ Carregando dados de temperatura...');
         const res = await fetch('./api/volume.php?action=get_temperature');
         
         if (!res.ok) {
@@ -697,7 +659,6 @@ async function renderTemperatureChart() {
         }
         
         const json = await res.json();
-        console.log('🌡️ Dados de temperatura recebidos:', json);
         
         let srcLabels = [];
         let srcData = [];
@@ -712,8 +673,6 @@ async function renderTemperatureChart() {
             srcData = json.data.map(item => Number(item.avg_temp || item.temperature || 0));
         }
         
-        console.log('🌡️ Labels:', srcLabels);
-        console.log('🌡️ Dados:', srcData);
         
         // Preencher últimos 30 dias
         const dateKey = (d) => d.toISOString().slice(0,10);
@@ -736,7 +695,7 @@ async function renderTemperatureChart() {
         
         // Se não há dados, mostrar mensagem
         if (data.every(v => v === 0)) {
-            console.warn('⚠️ Nenhum dado de temperatura encontrado');
+            // Nenhum dado de temperatura encontrado
             labels.length = 0;
             data.length = 0;
         }
@@ -747,7 +706,6 @@ async function renderTemperatureChart() {
         }
         
         createOrUpdateLineChart('temperatureChart', labels, data, '#F59E0B');
-        console.log('✅ Gráfico de temperatura renderizado com sucesso');
     } catch (e) {
         console.error('❌ Erro ao renderizar gráfico de temperatura:', e);
         createOrUpdateLineChart('temperatureChart', ['Sem dados'], [0], '#F59E0B');
@@ -773,7 +731,7 @@ function renderVolumeTabChart(series) {
 async function loadVolumeRecordsTable() {
     const tbody = document.getElementById('volumeRecordsTable');
     if (!tbody) {
-        console.warn('Tabela volumeRecordsTable não encontrada');
+        // Tabela não encontrada
         return;
     }
     
@@ -797,7 +755,6 @@ async function loadVolumeRecordsTable() {
         
         const json = await res.json();
         
-        console.log('📦 Resposta da API volume get_all:', json);
         
         // Verificar se há erro na resposta (mas não bloquear se success for false mas data existir)
         if (json.error && !json.data) {
@@ -807,7 +764,6 @@ async function loadVolumeRecordsTable() {
         // O método query() retorna um array diretamente, mas a API pode retornar em json.data
         const rows = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         
-        console.log('📊 Registros processados:', rows.length, rows);
         
         if (rows.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum registro encontrado</td></tr>';
@@ -864,9 +820,8 @@ async function loadVolumeRecordsTable() {
             
             // Log para debug
             if (!recordId || recordId <= 0) {
-                console.warn('⚠️ Registro sem ID válido (índice ' + index + '):', r);
+                // Registro sem ID válido
             } else {
-                console.log('✅ Registro com ID válido:', recordId, r);
             }
             
             // Usar apenas o ID real do banco, não usar fallback de índice
@@ -933,7 +888,6 @@ async function loadVolumeRecordsTable() {
         
         tbody.innerHTML = htmlRows;
         
-        console.log(`✅ ${rows.length} registros de volume carregados e exibidos`);
     } catch (e) {
         console.error('Erro ao carregar registros de volume:', e);
         if (tbody) {
@@ -945,7 +899,6 @@ async function loadVolumeRecordsTable() {
 // Função para visualizar detalhes de um registro
 async function viewVolumeDetails(id) {
     try {
-        console.log('🔍 Buscando detalhes do registro ID:', id);
         
         // Validar e converter ID
         const recordId = parseInt(id, 10);
@@ -955,7 +908,6 @@ async function viewVolumeDetails(id) {
             return;
         }
         
-        console.log('📡 Fazendo requisição para:', `./api/volume.php?action=get_by_id&id=${recordId}`);
         const response = await fetch(`./api/volume.php?action=get_by_id&id=${recordId}`);
         
         if (!response.ok) {
@@ -963,7 +915,6 @@ async function viewVolumeDetails(id) {
         }
         
         const result = await response.json();
-        console.log('📦 Resposta da API get_by_id:', result);
         
         if (!result.success || !result.data) {
             console.error('❌ Erro na resposta da API:', result);
@@ -972,7 +923,6 @@ async function viewVolumeDetails(id) {
         }
         
         const record = result.data;
-        console.log('✅ Registro encontrado:', record);
         
         // Formatar período
         const formatShift = (shift) => {
@@ -1328,11 +1278,10 @@ window.deleteVolumeRecord = deleteVolumeRecord;
 
 // Atualizar atividades recentes
 function updateRecentActivities(activities) {
-    console.log('📋 Atualizando atividades recentes...', activities);
     
     const container = document.getElementById('recentActivities');
     if (!container) {
-        console.warn('Container recentActivities não encontrado');
+        // Container não encontrado
         return;
     }
     
@@ -1364,13 +1313,11 @@ function updateRecentActivities(activities) {
         </div>
     `).join('');
     
-    console.log('✅ Atividades recentes atualizadas!');
 }
 
 // ==================== FUNÇÕES AUXILIARES ====================
 function initializeOverlays() {
     // Inicializar overlays se necessário
-    console.log('🔧 Inicializando overlays...');
 }
 
 function startAutoRefresh() {
@@ -1388,12 +1335,10 @@ function startAutoRefresh() {
 function updateDateTime() {
     const now = new Date();
     const timeString = now.toLocaleString('pt-BR');
-    console.log('🕐 Atualizando data/hora:', timeString);
 }
 
 // ==================== VOLUME ====================
 async function loadVolumeData() {
-    console.log('📊 Carregando dados de volume...');
     
     try {
         const response = await fetch('./api/endpoints/volume.php');
@@ -1423,7 +1368,6 @@ async function loadVolumeData() {
             // Tabela de registros
             await loadVolumeRecordsTable();
             
-            console.log('✅ Dados de volume carregados!');
         } else {
             console.error('Erro na API de volume:', result.error);
         }
@@ -1434,7 +1378,6 @@ async function loadVolumeData() {
 
 // ==================== QUALIDADE ====================
 async function loadQualityData() {
-    console.log('📊 Carregando dados de qualidade...');
     
     try {
         const response = await fetch('./api/endpoints/quality.php');
@@ -1476,7 +1419,6 @@ async function loadQualityData() {
             // Tabela de registros de qualidade
             await loadQualityRecordsTable();
             
-            console.log('✅ Dados de qualidade carregados!');
         } else {
             console.error('Erro na API de qualidade:', result.error);
         }
@@ -1819,7 +1761,6 @@ window.deleteQualityRecord = deleteQualityRecord;
 
 // ==================== FINANCEIRO ====================
 async function loadFinancialData() {
-    console.log('📊 Carregando dados financeiros...');
     
     try {
         const response = await fetch('./api/endpoints/financial.php');
@@ -1856,7 +1797,6 @@ async function loadFinancialData() {
             // Tabela de registros financeiros
             await loadFinancialRecordsTable();
             
-            console.log('✅ Dados financeiros carregados!');
         } else {
             console.error('Erro na API financeira:', result.error);
         }
@@ -2231,7 +2171,6 @@ window.deleteFinancialRecord = deleteFinancialRecord;
 
 // ==================== USUÁRIOS ====================
 async function loadUsersData() {
-    console.log('📊 Carregando dados de usuários...');
     
     try {
         const response = await fetch('./api/users.php?action=select');
@@ -2258,9 +2197,8 @@ async function loadUsersData() {
             
             // Debug se necessário
             if (activeUsersMetrics.length === 0) {
-                console.warn('Elemento activeUsers não encontrado');
+                // Elemento não encontrado
             } else {
-                console.log('✅ Usuários Ativos atualizado:', data.active, 'elementos encontrados:', activeUsersMetrics.length);
             }
             
             // Preencher tabela de usuários
@@ -2343,7 +2281,6 @@ async function loadUsersData() {
                 }
             }
             
-            console.log('✅ Dados de usuários carregados!');
         } else {
             console.error('Erro na API de usuários:', result.error);
         }
@@ -2468,7 +2405,7 @@ async function exportFinancialReport() {
         const json = await res.json();
         const rows = Array.isArray(json?.data?.recent_records) ? json.data.recent_records : [];
         if (rows.length === 0) {
-            console.warn('Sem registros financeiros para exportar');
+            // Sem registros para exportar
             return;
         }
         const header = ['Data','Tipo','Descrição','Valor'];
@@ -2524,7 +2461,7 @@ async function exportQualityReport() {
         const json = await res.json();
         const rows = Array.isArray(json?.data) ? json.data : [];
         if (rows.length === 0) {
-            console.warn('Sem registros de qualidade para exportar');
+            // Sem registros para exportar
             return;
         }
         const header = ['Data','Gordura','Proteína','CCS','Laboratório'];
@@ -3592,7 +3529,6 @@ window.openAddAnimalModal = function() {
         return;
     }
     
-    console.log('Modal encontrado, abrindo...');
     modal.classList.add('show');
     
     const form = document.getElementById('addAnimalForm');
@@ -3612,7 +3548,7 @@ window.openAddAnimalModal = function() {
             messageDiv.innerHTML = '';
         }
     } else {
-        console.warn('Formulário addAnimalForm não encontrado no modal');
+        // Formulário não encontrado
     }
 };
 
@@ -3716,9 +3652,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const addAnimalForm = document.getElementById('addAnimalForm');
     if (addAnimalForm) {
         addAnimalForm.addEventListener('submit', handleAddAnimalSubmit);
-        console.log('Formulário de adicionar animal configurado');
+        // Formulário configurado
     } else {
-        console.warn('Formulário addAnimalForm não encontrado');
+        // Formulário não encontrado
     }
 });
 
