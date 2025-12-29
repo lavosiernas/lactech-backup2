@@ -8,8 +8,14 @@ header('Access-Control-Allow-Headers: Content-Type');
 // Incluir configuração do banco
 require_once '../includes/Database.class.php';
 
+// Iniciar sessão se não estiver iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 try {
     $db = Database::getInstance();
+    $farm_id = $_SESSION['farm_id'] ?? 1; // Usar farm_id da sessão ou padrão 1
     $action = $_GET['action'] ?? $_POST['action'] ?? 'get_dashboard_data';
     
     switch ($action) {
@@ -207,6 +213,44 @@ try {
                 'data' => [
                     'message' => 'Registro excluído com sucesso',
                     'id' => $id
+                ],
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+            break;
+            
+        case 'delete_all':
+            // Excluir todos os registros financeiros da fazenda
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                $data = [
+                    'success' => false,
+                    'error' => 'Método não permitido'
+                ];
+                break;
+            }
+            
+            // Usar farm_id da sessão ou padrão
+            $farm_id = $_SESSION['farm_id'] ?? 1;
+            
+            // Contar quantos registros serão excluídos
+            $countResult = $db->query("SELECT COUNT(*) as total FROM financial_records WHERE farm_id = ?", [$farm_id]);
+            $count = is_array($countResult) && isset($countResult[0]) ? (int)($countResult[0]['total'] ?? 0) : 0;
+            
+            if ($count === 0) {
+                $data = [
+                    'success' => false,
+                    'error' => 'Nenhum registro encontrado para excluir'
+                ];
+                break;
+            }
+            
+            // Excluir todos os registros
+            $db->query("DELETE FROM financial_records WHERE farm_id = ?", [$farm_id]);
+            
+            $data = [
+                'success' => true,
+                'data' => [
+                    'message' => "Todos os registros financeiros foram excluídos com sucesso ($count registro(s))",
+                    'deleted_count' => $count
                 ],
                 'timestamp' => date('Y-m-d H:i:s')
             ];

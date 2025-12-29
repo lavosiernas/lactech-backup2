@@ -28,30 +28,40 @@
         overlay.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn';
         overlay.onclick = () => closeModal();
         
-        // Criar iframe
-        const iframe = document.createElement('iframe');
-        iframe.src = `subs/${page}.php`;
-        iframe.className = fullscreen 
-            ? 'fixed inset-0 w-full h-full border-0' 
-            : 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none';
-        iframe.style.pointerEvents = 'auto';
-        iframe.style.border = 'none';
-        iframe.style.background = fullscreen ? 'white' : 'transparent';
-        iframe.style.width = fullscreen ? '100%' : 'auto';
-        iframe.style.height = fullscreen ? '100%' : 'auto';
-        iframe.style.maxWidth = fullscreen ? '100%' : '90vw';
-        iframe.style.maxHeight = fullscreen ? '100%' : '90vh';
-        
-        // Container do modal
+        // Container do modal - centralizado
         const modalWrapper = document.createElement('div');
-        modalWrapper.className = fullscreen 
-            ? 'fixed inset-0 w-full h-full' 
-            : 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none';
-        modalWrapper.style.pointerEvents = 'auto';
-        
-        if (!fullscreen) {
+        if (fullscreen) {
+            modalWrapper.className = 'fixed inset-0 w-full h-full';
+        } else {
+            modalWrapper.className = 'fixed inset-0 flex items-center justify-center p-4';
+            modalWrapper.style.pointerEvents = 'auto';
+            modalWrapper.style.zIndex = '9999';
             modalWrapper.appendChild(overlay);
         }
+        
+        // Criar iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = `subs/${page}.php?iframe=1`;
+        iframe.style.border = 'none';
+        iframe.style.background = 'white';
+        iframe.style.pointerEvents = 'auto';
+        iframe.style.position = 'relative';
+        iframe.style.zIndex = '10000';
+        iframe.style.borderRadius = '8px';
+        iframe.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+        
+        if (fullscreen) {
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+        } else {
+            // Definir tamanhos fixos para o iframe aparecer
+            iframe.style.width = '500px';
+            iframe.style.height = '600px';
+            iframe.style.maxWidth = '90vw';
+            iframe.style.maxHeight = '90vh';
+            iframe.style.display = 'block';
+        }
+        
         modalWrapper.appendChild(iframe);
         
         // Adicionar ao container

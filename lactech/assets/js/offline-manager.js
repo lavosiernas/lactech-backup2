@@ -32,6 +32,18 @@ class OfflineManager {
         };
         
         this.init();
+        
+        // Ouvir mensagens do Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'SYNC_REQUESTED') {
+                    // Service Worker solicitou sincronização
+                    if (this.isOnline && !this.forceOffline) {
+                        this.sync();
+                    }
+                }
+            });
+        }
     }
     
     init() {
@@ -462,6 +474,16 @@ class OfflineManager {
             return;
         }
         
+        // Registrar background sync se disponível
+        if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.sync.register('sync-offline-queue');
+            } catch (err) {
+                console.log('Background sync não disponível:', err);
+            }
+        }
+        
         // Filtrar registros que ainda não podem ser tentados (backoff)
         const now = Date.now();
         const readyRecords = this.queue.filter(r => r.nextRetryTime <= now);
@@ -651,6 +673,32 @@ class OfflineManager {
         const indicator = document.getElementById('offline-indicator');
         const badge = document.getElementById('offline-badge');
         const offlineToggleBtn = document.getElementById('offline-toggle-btn');
+        const offlineBanner = document.getElementById('offline-status-banner');
+        const bannerMessage = document.getElementById('offline-banner-message');
+        const mainContent = document.getElementById('main-content');
+        
+        // Atualizar banner mobile
+        if (offlineBanner) {
+            if (this.forceOffline || !this.isOnline) {
+                offlineBanner.classList.remove('hidden');
+                if (bannerMessage) {
+                    if (this.queue.length > 0) {
+                        bannerMessage.textContent = `${this.queue.length} registro(s) aguardando sincronização`;
+                    } else {
+                        bannerMessage.textContent = 'Seus registros serão sincronizados automaticamente';
+                    }
+                }
+                // Adicionar padding-top ao main para compensar o banner
+                if (mainContent) {
+                    mainContent.style.paddingTop = '60px';
+                }
+            } else {
+                offlineBanner.classList.add('hidden');
+                if (mainContent) {
+                    mainContent.style.paddingTop = '';
+                }
+            }
+        }
         
         if (!indicator) {
             // Criar indicador se não existir

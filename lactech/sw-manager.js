@@ -3,58 +3,88 @@
  * Gerencia cache e funcionalidade offline
  */
 
-const CACHE_NAME = 'lactech-manager-v2';
-const RUNTIME_CACHE = 'lactech-runtime-v2';
+const CACHE_NAME = 'lactech-manager-v3';
+const RUNTIME_CACHE = 'lactech-runtime-v3';
+const IMAGE_CACHE = 'lactech-images-v3';
 const OFFLINE_PAGE = '/gerente-completo.php';
 
-// Arquivos estáticos para cache (apenas arquivos locais, sem CDN externo)
+// Versão do cache - incrementar quando houver mudanças significativas
+const CACHE_VERSION = 3;
+
+// Arquivos estáticos críticos para cache inicial
 const STATIC_CACHE_FILES = [
     '/gerente-completo.php',
     '/assets/js/gerente-completo.js',
-    '/assets/js/offline-manager.js'
+    '/assets/js/offline-manager.js',
+    '/manifest.json',
+    '/assets/img/lactech-logo.png'
+];
+
+// Recursos que devem ser cacheados em runtime
+const RUNTIME_CACHE_PATTERNS = [
+    /^\/api\//,
+    /^\/assets\//,
+    /\.(?:js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/
+];
+
+// Recursos que nunca devem ser cacheados
+const NO_CACHE_PATTERNS = [
+    /chrome-extension:/,
+    /\/api\/.*\/delete/,
+    /\/api\/.*\/delete_all/
 ];
 
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
-    // Service Worker instalando
+    console.log('[Service Worker] Instalando versão', CACHE_VERSION);
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                // Armazenando arquivos em cache
-                // Adicionar arquivos um por um para evitar falhas
+        Promise.all([
+            // Cache de arquivos estáticos
+            caches.open(CACHE_NAME).then((cache) => {
                 return Promise.allSettled(
                     STATIC_CACHE_FILES.map(url => {
                         return cache.add(url).catch(err => {
-                            // Não foi possível cachear
+                            console.warn('[Service Worker] Não foi possível cachear:', url, err);
                         });
                     })
                 );
-            })
-            .catch((err) => {
-                console.error('[Service Worker] Erro ao armazenar cache:', err);
-            })
+            }),
+            // Criar caches adicionais
+            caches.open(RUNTIME_CACHE),
+            caches.open(IMAGE_CACHE)
+        ]).then(() => {
+            console.log('[Service Worker] Cache instalado com sucesso');
+        }).catch((err) => {
+            console.error('[Service Worker] Erro ao instalar cache:', err);
+        })
     );
     self.skipWaiting(); // Ativar imediatamente
 });
 
 // Ativar Service Worker
 self.addEventListener('activate', (event) => {
-    // Service Worker ativando
+    console.log('[Service Worker] Ativando versão', CACHE_VERSION);
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames
-                    .filter((cacheName) => {
-                        return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
-                    })
-                    .map((cacheName) => {
-                        // Removendo cache antigo
-                        return caches.delete(cacheName);
-                    })
-            );
-        })
+        Promise.all([
+            // Limpar caches antigos
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames
+                        .filter((cacheName) => {
+                            return cacheName !== CACHE_NAME && 
+                                   cacheName !== RUNTIME_CACHE && 
+                                   cacheName !== IMAGE_CACHE;
+                        })
+                        .map((cacheName) => {
+                            console.log('[Service Worker] Removendo cache antigo:', cacheName);
+                            return caches.delete(cacheName);
+                        })
+                );
+            }),
+            // Assumir controle imediato de todas as páginas
+            self.clients.claim()
+        ])
     );
-    return self.clients.claim(); // Assumir controle imediato
 });
 
 // Interceptar requisições
@@ -159,16 +189,25 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Verificar se deve cachear este recurso
+    const shouldCache = RUNTIME_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname)) &&
+                       !NO_CACHE_PATTERNS.some(pattern => pattern.test(request.url)) &&
+                       request.method === 'GET';
+
+    // Determinar qual cache usar
+    const isImage = /\.(?:png|jpg|jpeg|gif|svg|webp)$/i.test(url.pathname);
+    const cacheToUse = isImage ? IMAGE_CACHE : RUNTIME_CACHE;
+
     // Para outros recursos, usar estratégia Network First com fallback para cache
     event.respondWith(
-        fetch(request)
+        fetch(request.clone())
             .then((response) => {
-                // Se a resposta é válida e não é chrome-extension, armazenar no cache
-                if (response.ok && request.method === 'GET' && !url.protocol.includes('chrome-extension')) {
+                // Se a resposta é válida e deve ser cacheada, armazenar
+                if (response.ok && shouldCache && !url.protocol.includes('chrome-extension')) {
                     const responseClone = response.clone();
-                    caches.open(RUNTIME_CACHE).then((cache) => {
-                        cache.put(request, responseClone).catch(() => {
-                            // Ignorar erros de cache (ex: chrome-extension)
+                    caches.open(cacheToUse).then((cache) => {
+                        cache.put(request, responseClone).catch((err) => {
+                            console.warn('[Service Worker] Erro ao cachear:', request.url, err);
                         });
                     });
                 }
@@ -178,11 +217,18 @@ self.addEventListener('fetch', (event) => {
                 // Se a requisição falhar, tentar buscar do cache
                 return caches.match(request).then((cachedResponse) => {
                     if (cachedResponse) {
+                        console.log('[Service Worker] Servindo do cache:', request.url);
                         return cachedResponse;
                     }
                     // Se não encontrar no cache e for uma página HTML, redirecionar para offline
-                    if (request.headers.get('accept').includes('text/html')) {
-                        return caches.match(OFFLINE_PAGE);
+                    if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
+                        return caches.match(OFFLINE_PAGE).then((offlinePage) => {
+                            return offlinePage || new Response('Modo offline - Página não disponível', {
+                                status: 503,
+                                statusText: 'Service Unavailable',
+                                headers: { 'Content-Type': 'text/html' }
+                            });
+                        });
                     }
                     return new Response('Recurso não disponível offline', {
                         status: 503,
@@ -202,11 +248,48 @@ self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'FORCE_OFFLINE') {
         // Modo offline forçado - sempre retornar sucesso para POSTs
         self.forceOffline = true;
+        // Notificar todos os clientes
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({ type: 'OFFLINE_MODE_ACTIVATED' });
+            });
+        });
     }
     
     if (event.data && event.data.type === 'FORCE_ONLINE') {
         // Voltar ao modo normal
         self.forceOffline = false;
+        // Notificar todos os clientes
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({ type: 'ONLINE_MODE_ACTIVATED' });
+            });
+        });
+    }
+    
+    if (event.data && event.data.type === 'CLEAR_CACHE') {
+        // Limpar todos os caches
+        caches.keys().then(cacheNames => {
+            return Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+        }).then(() => {
+            console.log('[Service Worker] Todos os caches foram limpos');
+        });
     }
 });
+
+// Background Sync (quando disponível)
+if ('sync' in self.registration) {
+    self.addEventListener('sync', (event) => {
+        if (event.tag === 'sync-offline-queue') {
+            event.waitUntil(
+                // Notificar cliente para sincronizar
+                self.clients.matchAll().then(clients => {
+                    clients.forEach(client => {
+                        client.postMessage({ type: 'SYNC_REQUESTED' });
+                    });
+                })
+            );
+        }
+    });
+}
 

@@ -237,70 +237,10 @@ function isLoggedIn() {
     return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 }
 
-// Função para corrigir URL automaticamente (adiciona .php se necessário)
-// Esta função detecta páginas do sistema e garante que tenham a extensão correta
-function fixRedirectUrl($url) {
-    // Se já tem .php, retornar como está
-    if (strpos($url, '.php') !== false) {
-        return $url;
-    }
-    
-    // Lista de páginas do sistema que podem ter .php
-    $systemPages = [
-        'inicio-login',
-        'gerente-completo',
-        'proprietario',
-        'funcionario',
-        'index',
-        'google-callback',
-        'sistema-touros',
-        'acesso-bloqueado'
-    ];
-    
-    // Extrair nome da página (sem query string)
-    $parsedUrl = parse_url($url);
-    $path = $parsedUrl['path'] ?? $url;
-    $query = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
-    $fragment = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
-    
-    // Remover barra inicial se existir e extrair nome do arquivo
-    $path = ltrim($path, '/');
-    $fileName = basename($path);
-    
-    // Verificar se é uma página do sistema
-    $isSystemPage = false;
-    foreach ($systemPages as $page) {
-        if ($fileName === $page || strpos($fileName, $page) === 0) {
-            $isSystemPage = true;
-            break;
-        }
-    }
-    
-    // Se é página do sistema e não tem .php, adicionar
-    if ($isSystemPage && strpos($fileName, '.php') === false) {
-        $directory = dirname($path);
-        if ($directory === '.' || $directory === '/') {
-            $fixedPath = $fileName . '.php';
-        } else {
-            $fixedPath = $directory . '/' . $fileName . '.php';
-        }
-        
-        // Manter estrutura completa se tinha caminho
-        if (strpos($url, '/') === 0) {
-            $fixedPath = '/' . $fixedPath;
-        }
-        
-        return $fixedPath . $query . $fragment;
-    }
-    
-    // Se não é página do sistema ou já tem extensão, retornar original
-    return $url;
-}
-
-// Função helper para redirecionamento seguro
+// Função para redirecionamento seguro (sem modificação de URL)
+// A URL é usada exatamente como fornecida, sem modificações
 function safeRedirect($url, $statusCode = 302) {
-    $fixedUrl = fixRedirectUrl($url);
-    header("Location: $fixedUrl", true, $statusCode);
+    header("Location: $url", true, $statusCode);
     exit();
 }
 

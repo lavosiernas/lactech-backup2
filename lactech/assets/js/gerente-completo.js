@@ -26,94 +26,18 @@ let refreshTimer = null;
 let charts = {};
 
 // ==================== TELA DE CARREGAMENTO ====================
-// Mensagens motivadoras para o carregamento
-const loadingMessages = [
-    { text: 'Preparando tudo para você! 🚀', time: 0 },
-    { text: 'Organizando seus dados... 📊', time: 600 },
-    { text: 'Quase lá! 💪', time: 1200 },
-    { text: 'Carregando informações... ⚡', time: 1800 },
-    { text: 'Tudo pronto! 🎉', time: 2400 }
-];
-
-let currentMessageIndex = 0;
-let loadingMessageInterval = null;
-
-// Função para atualizar mensagens de carregamento
-function updateLoadingMessage() {
-    const messageElement = document.getElementById('loadingMessage');
-    if (!messageElement) return;
-    
-    // Trocar mensagem
-    if (currentMessageIndex < loadingMessages.length - 1) {
-        currentMessageIndex++;
-        const message = loadingMessages[currentMessageIndex];
-        
-        // Efeito de fade
-        messageElement.style.opacity = '0';
-        messageElement.style.transform = 'translateY(10px)';
-        
-        setTimeout(function() {
-            messageElement.textContent = message.text;
-            messageElement.style.opacity = '1';
-            messageElement.style.transform = 'translateY(0)';
-        }, 200);
-    }
-}
-
-// Esconder tela de carregamento após 3 segundos
-function hideLoadingScreen() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const messageElement = document.getElementById('loadingMessage');
-    
-    if (!loadingScreen) return;
-    
-    // Trocar mensagens a cada 600ms
-    loadingMessages.forEach(function(message) {
-        if (message.time > 0) {
-            setTimeout(function() {
-                updateLoadingMessage();
-            }, message.time);
-        }
-    });
-    
-    // Esconder após 3 segundos
-    setTimeout(function() {
-        // Parar intervalo de mensagens
-        if (loadingMessageInterval) {
-            clearInterval(loadingMessageInterval);
-        }
-        
-        // Mensagem final
-        if (messageElement) {
-            messageElement.style.opacity = '0';
-            setTimeout(function() {
-                messageElement.textContent = 'Bem-vindo de volta! 👋';
-                messageElement.style.opacity = '1';
-            }, 200);
-        }
-        
-        // Fade out da tela
-        setTimeout(function() {
-            loadingScreen.style.opacity = '0';
-            loadingScreen.style.transition = 'opacity 0.8s ease-out';
-            setTimeout(function() {
-                loadingScreen.style.display = 'none';
-            }, 800);
-        }, 400);
-    }, 3000); // 3 segundos
-}
+// Removido - tela de carregamento foi removida
 
 // ==================== INICIALIZAÇÃO ====================
 document.addEventListener('DOMContentLoaded', function() {
-    // Iniciar esconder tela de carregamento
-    hideLoadingScreen();
-    
     initializeNavigation();
     initializeOverlays();
     
     // Aguardar Chart.js estar carregado antes de carregar dados
     function initializeDashboard() {
         if (typeof Chart !== 'undefined') {
+            // Marcar dashboard como carregado e carregar apenas ele
+            loadedTabs.add('dashboard');
             loadDashboardData();
             startAutoRefresh();
             updateDateTime();
@@ -145,6 +69,9 @@ function initializeNavigation() {
     });
 }
 
+// Rastrear quais tabs já foram carregadas (lazy loading)
+const loadedTabs = new Set();
+
 function switchTab(tabName) {
     if (isLoading) return;
     
@@ -162,30 +89,37 @@ function switchTab(tabName) {
     
     currentTab = tabName;
     
-    // Carregar dados específicos da aba
-    switch(tabName) {
-        case 'dashboard':
-            loadDashboardData();
-            break;
-        case 'volume':
-            loadVolumeData();
-            // Garantir que a tabela seja carregada mesmo se loadVolumeData falhar
-            setTimeout(() => {
-                const tbody = document.getElementById('volumeRecordsTable');
-                if (tbody && tbody.innerHTML.includes('Carregando')) {
-                    loadVolumeRecordsTable();
-                }
-            }, 500);
-            break;
-        case 'quality':
-            loadQualityData();
-            break;
-        case 'payments':
-            loadFinancialData();
-            break;
-        case 'users':
-            loadUsersData();
-            break;
+    // Lazy loading: carregar dados apenas se ainda não foram carregados
+    if (!loadedTabs.has(tabName)) {
+        loadedTabs.add(tabName);
+        
+        // Carregar dados específicos da aba
+        switch(tabName) {
+            case 'dashboard':
+                loadDashboardData();
+                break;
+            case 'volume':
+                loadVolumeData();
+                // Garantir que a tabela seja carregada mesmo se loadVolumeData falhar
+                setTimeout(() => {
+                    const tbody = document.getElementById('volumeRecordsTable');
+                    const cardsContainer = document.getElementById('volumeRecordsCards');
+                    if ((tbody && tbody.innerHTML.includes('Carregando')) || 
+                        (cardsContainer && cardsContainer.innerHTML.includes('Carregando'))) {
+                        loadVolumeRecordsTable();
+                    }
+                }, 500);
+                break;
+            case 'quality':
+                loadQualityData();
+                break;
+            case 'payments':
+                loadFinancialData();
+                break;
+            case 'users':
+                loadUsersData();
+                break;
+        }
     }
 }
 
@@ -730,13 +664,17 @@ function renderVolumeTabChart(series) {
 
 async function loadVolumeRecordsTable() {
     const tbody = document.getElementById('volumeRecordsTable');
-    if (!tbody) {
-        // Tabela não encontrada
+    const cardsContainer = document.getElementById('volumeRecordsCards');
+    
+    if (!tbody && !cardsContainer) {
         return;
     }
     
     // Mostrar loading
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Carregando registros...</td></tr>';
+    const loadingHtml = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Carregando registros...</td></tr>';
+    const loadingCards = '<div class="text-center py-8 text-gray-500">Carregando registros...</div>';
+    if (tbody) tbody.innerHTML = loadingHtml;
+    if (cardsContainer) cardsContainer.innerHTML = loadingCards;
     
     try {
         // Adicionar timestamp para evitar cache
@@ -755,7 +693,6 @@ async function loadVolumeRecordsTable() {
         
         const json = await res.json();
         
-        
         // Verificar se há erro na resposta (mas não bloquear se success for false mas data existir)
         if (json.error && !json.data) {
             throw new Error(json.error || 'Erro ao buscar registros');
@@ -764,16 +701,17 @@ async function loadVolumeRecordsTable() {
         // O método query() retorna um array diretamente, mas a API pode retornar em json.data
         const rows = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         
-        
         if (rows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum registro encontrado</td></tr>';
+            const emptyHtml = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum registro encontrado</td></tr>';
+            const emptyCards = '<div class="text-center py-8 text-gray-500">Nenhum registro encontrado</div>';
+            if (tbody) tbody.innerHTML = emptyHtml;
+            if (cardsContainer) cardsContainer.innerHTML = emptyCards;
             return;
         }
         
         // Função para formatar data corretamente (evitar problemas de timezone)
         const formatDate = (dateStr) => {
             if (!dateStr) return '-';
-            // Se a data está no formato YYYY-MM-DD, parsear como data local
             if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
                 const [year, month, day] = dateStr.split('-').map(Number);
                 const date = new Date(year, month - 1, day);
@@ -783,7 +721,6 @@ async function loadVolumeRecordsTable() {
                     year: 'numeric' 
                 });
             }
-            // Para outros formatos, usar o método padrão
             const date = new Date(dateStr);
             if (isNaN(date.getTime())) return '-';
             return date.toLocaleDateString('pt-BR', { 
@@ -814,17 +751,9 @@ async function loadVolumeRecordsTable() {
             return shifts[shift] || shift || '-';
         };
         
-        const htmlRows = rows.map((r, index) => {
-            // Validar que o ID existe - tentar diferentes formatos
+        // Gerar HTML para tabela (desktop)
+        const htmlRows = rows.map((r) => {
             const recordId = r.id || r.ID || r.Id || 0;
-            
-            // Log para debug
-            if (!recordId || recordId <= 0) {
-                // Registro sem ID válido
-            } else {
-            }
-            
-            // Usar apenas o ID real do banco, não usar fallback de índice
             const finalId = recordId && recordId > 0 ? recordId : null;
             
             const formattedDate = formatDate(r.record_date);
@@ -834,7 +763,6 @@ async function loadVolumeRecordsTable() {
             const animalsCount = r.total_animals || 0;
             const animalsText = animalsCount == 1 ? 'animal' : 'animais';
             
-            // Indicar se é registro individual por vaca
             const isIndividual = r.record_type === 'individual' || r.animal_id;
             const animalInfo = isIndividual && r.animal_name ? 
                 `<span class="text-xs text-gray-500 block">Vaca: ${r.animal_name}</span>` : '';
@@ -880,19 +808,78 @@ async function loadVolumeRecordsTable() {
         `;
         }).join('');
         
+        // Gerar HTML para cards (mobile)
+        const htmlCards = rows.map((r) => {
+            const recordId = r.id || r.ID || r.Id || 0;
+            const finalId = recordId && recordId > 0 ? recordId : null;
+            
+            const formattedDate = formatDate(r.record_date);
+            const formattedTime = formatTime(r.created_at);
+            const formattedShift = formatShift(r.shift);
+            const formattedVolume = (Number(r.total_volume)||0).toFixed(2);
+            const animalsCount = r.total_animals || 0;
+            const animalsText = animalsCount == 1 ? 'animal' : 'animais';
+            
+            const isIndividual = r.record_type === 'individual' || r.animal_id;
+            const animalInfo = isIndividual && r.animal_name ? 
+                `<div class="text-xs text-gray-500 mt-1">Vaca: ${r.animal_name}</div>` : '';
+            
+            return `
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">${formattedDate}</div>
+                        <div class="text-sm text-gray-500 mt-1">${formattedTime} • ${formattedShift}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-blue-600">${formattedVolume} L</div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600 mb-3">
+                    ${animalsCount} ${animalsText}
+                    ${animalInfo}
+                </div>
+                ${finalId ? `
+                <div class="flex gap-2 pt-3 border-t border-gray-100">
+                    <button onclick="viewVolumeDetails(${finalId})" 
+                        class="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                        Detalhes
+                    </button>
+                    <button onclick="confirmDeleteVolumeRecord(${finalId})" 
+                        class="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        data-date="${formattedDate}"
+                        data-shift="${formattedShift}"
+                        data-volume="${formattedVolume}"
+                        data-record-type="${r.record_type || 'general'}"
+                        data-animal-name="${r.animal_name || ''}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+                ` : '<div class="text-xs text-gray-400 text-center pt-2">Sem ID válido</div>'}
+            </div>
+        `;
+        }).join('');
+        
         if (htmlRows === '' || !htmlRows.trim()) {
             console.error('❌ Nenhum registro HTML gerado. Dados recebidos:', rows);
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro: Nenhum registro válido encontrado</td></tr>';
+            const errorHtml = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro: Nenhum registro válido encontrado</td></tr>';
+            const errorCards = '<div class="text-center py-8 text-red-500">Erro: Nenhum registro válido encontrado</div>';
+            if (tbody) tbody.innerHTML = errorHtml;
+            if (cardsContainer) cardsContainer.innerHTML = errorCards;
             return;
         }
         
-        tbody.innerHTML = htmlRows;
+        if (tbody) tbody.innerHTML = htmlRows;
+        if (cardsContainer) cardsContainer.innerHTML = htmlCards;
         
     } catch (e) {
         console.error('Erro ao carregar registros de volume:', e);
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro ao carregar registros: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
-        }
+        const errorHtml = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro ao carregar registros: ' + (e.message || 'Erro desconhecido') + '</td></tr>';
+        const errorCards = '<div class="text-center py-8 text-red-500">Erro ao carregar registros: ' + (e.message || 'Erro desconhecido') + '</div>';
+        if (tbody) tbody.innerHTML = errorHtml;
+        if (cardsContainer) cardsContainer.innerHTML = errorCards;
     }
 }
 
@@ -1428,16 +1415,30 @@ async function loadQualityData() {
 }
 
 async function loadQualityRecordsTable() {
+    const tbody = document.getElementById('qualityRecordsTable');
+    const cardsContainer = document.getElementById('qualityRecordsCards');
+    
+    if (!tbody && !cardsContainer) return;
+    
+    // Mostrar loading
+    const loadingHtml = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Carregando registros...</td></tr>';
+    const loadingCards = '<div class="text-center py-8 text-gray-500">Carregando registros...</div>';
+    if (tbody) tbody.innerHTML = loadingHtml;
+    if (cardsContainer) cardsContainer.innerHTML = loadingCards;
+    
     try {
         const res = await fetch('./api/quality.php?action=select');
         const json = await res.json();
         const rows = Array.isArray(json?.data) ? json.data : [];
-        const tbody = document.getElementById('qualityRecordsTable');
-        if (!tbody) return;
+        
         if (rows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum registro</td></tr>';
+            const emptyHtml = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum registro</td></tr>';
+            const emptyCards = '<div class="text-center py-8 text-gray-500">Nenhum registro</div>';
+            if (tbody) tbody.innerHTML = emptyHtml;
+            if (cardsContainer) cardsContainer.innerHTML = emptyCards;
             return;
         }
+        
         // Formatar data para exibição
         const formatDate = (dateStr) => {
             if (!dateStr) return '-';
@@ -1445,7 +1446,8 @@ async function loadQualityRecordsTable() {
             return date.toLocaleDateString('pt-BR');
         };
         
-        tbody.innerHTML = rows.map(r => {
+        // Gerar HTML para tabela (desktop)
+        const htmlRows = rows.map(r => {
             const formattedDate = formatDate(r.test_date);
             const fatContent = r.fat_content ? Number(r.fat_content).toFixed(2) : '-';
             const proteinContent = r.protein_content ? Number(r.protein_content).toFixed(2) : '-';
@@ -1481,9 +1483,62 @@ async function loadQualityRecordsTable() {
             </tr>
         `;
         }).join('');
+        
+        // Gerar HTML para cards (mobile)
+        const htmlCards = rows.map(r => {
+            const formattedDate = formatDate(r.test_date);
+            const fatContent = r.fat_content ? Number(r.fat_content).toFixed(2) : '-';
+            const proteinContent = r.protein_content ? Number(r.protein_content).toFixed(2) : '-';
+            const somaticCells = r.somatic_cells ?? '-';
+            
+            return `
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">${formattedDate}</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3 mb-3">
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 mb-1">Gordura</div>
+                        <div class="text-sm font-semibold text-gray-900">${fatContent}%</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 mb-1">Proteína</div>
+                        <div class="text-sm font-semibold text-gray-900">${proteinContent}%</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-500 mb-1">CCS</div>
+                        <div class="text-sm font-semibold text-gray-900">${somaticCells}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-3 border-t border-gray-100">
+                    <button onclick="viewQualityDetails(${r.id})" 
+                        class="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                        Detalhes
+                    </button>
+                    <button onclick="confirmDeleteQualityRecord(${r.id})" 
+                        class="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        data-date="${formattedDate}"
+                        data-fat="${fatContent}"
+                        data-protein="${proteinContent}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+        }).join('');
+        
+        if (tbody) tbody.innerHTML = htmlRows;
+        if (cardsContainer) cardsContainer.innerHTML = htmlCards;
     } catch (e) {
-        const tbody = document.getElementById('qualityRecordsTable');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros</td></tr>';
+        console.error('Erro ao carregar registros de qualidade:', e);
+        const errorHtml = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros</td></tr>';
+        const errorCards = '<div class="text-center py-8 text-red-500">Erro ao carregar registros</div>';
+        if (tbody) tbody.innerHTML = errorHtml;
+        if (cardsContainer) cardsContainer.innerHTML = errorCards;
     }
 }
 
@@ -1753,6 +1808,95 @@ async function deleteQualityRecord(id) {
     }
 }
 
+// Função para mostrar modal de exclusão de todos os registros de qualidade
+window.showDeleteAllQualityModal = function() {
+    const modal = document.getElementById('deleteAllQualityModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    const messageDiv = document.getElementById('deleteAllQualityMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Função para fechar modal de exclusão de todos os registros de qualidade
+window.closeDeleteAllQualityModal = function() {
+    const modal = document.getElementById('deleteAllQualityModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    const messageDiv = document.getElementById('deleteAllQualityMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Função para confirmar e excluir todos os registros de qualidade
+window.confirmDeleteAllQualityRecords = async function() {
+    const messageDiv = document.getElementById('deleteAllQualityMessage');
+    const confirmBtn = event.target;
+    const originalText = confirmBtn.innerHTML;
+    
+    // Desabilitar botão e mostrar loading
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Excluindo...';
+    
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('action', 'delete_all');
+        
+        const response = await fetch('./api/quality.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Mostrar mensagem de sucesso
+            if (messageDiv) {
+                messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
+                messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ' + (result.data?.message || 'Todos os registros foram excluídos com sucesso!');
+                messageDiv.classList.remove('hidden');
+            }
+            
+            // Fechar modal e recarregar dados após 1.5s
+            setTimeout(() => {
+                if (window.closeDeleteAllQualityModal) window.closeDeleteAllQualityModal();
+                if (typeof loadQualityRecordsTable === 'function') loadQualityRecordsTable();
+                if (typeof loadQualityData === 'function') loadQualityData();
+            }, 1500);
+        } else {
+            // Mostrar mensagem de erro
+            if (messageDiv) {
+                messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+                messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao excluir registros');
+                messageDiv.classList.remove('hidden');
+            }
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+        }
+    } catch (err) {
+        console.error('Erro ao excluir todos os registros de qualidade:', err);
+        if (messageDiv) {
+            messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro de conexão. Tente novamente.';
+            messageDiv.classList.remove('hidden');
+        }
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+    }
+};
+
 window.viewQualityDetails = viewQualityDetails;
 window.closeQualityDetailsModal = closeQualityDetailsModal;
 window.confirmDeleteQualityRecord = confirmDeleteQualityRecord;
@@ -1839,11 +1983,24 @@ async function loadFinancialRecordsTable() {
         const json = await res.json();
         const rows = Array.isArray(json?.data?.recent_records) ? json.data.recent_records : [];
         const tbody = document.getElementById('financialRecordsTable');
-        if (!tbody) return;
+        const cardsContainer = document.getElementById('financialRecordsCards');
+        
+        if (!tbody && !cardsContainer) return;
+        
+        // Mostrar loading
+        const loadingHtml = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Carregando registros...</td></tr>';
+        const loadingCards = '<div class="text-center py-8 text-gray-500">Carregando registros...</div>';
+        if (tbody) tbody.innerHTML = loadingHtml;
+        if (cardsContainer) cardsContainer.innerHTML = loadingCards;
+        
         if (rows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum registro</td></tr>';
+            const emptyHtml = '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum registro</td></tr>';
+            const emptyCards = '<div class="text-center py-8 text-gray-500">Nenhum registro</div>';
+            if (tbody) tbody.innerHTML = emptyHtml;
+            if (cardsContainer) cardsContainer.innerHTML = emptyCards;
             return;
         }
+        
         // Formatar data para exibição
         const formatDate = (dateStr) => {
             if (!dateStr) return '-';
@@ -1862,7 +2019,8 @@ async function loadFinancialRecordsTable() {
             return types[type] || type || '-';
         };
         
-        tbody.innerHTML = rows.map(r => {
+        // Gerar HTML para tabela (desktop)
+        const htmlRows = rows.map(r => {
             const formattedDate = formatDate(r.record_date);
             const formattedType = formatType(r.type);
             const description = r.description || '-';
@@ -1903,9 +2061,58 @@ async function loadFinancialRecordsTable() {
             </tr>
         `;
         }).join('');
+        
+        // Gerar HTML para cards (mobile)
+        const htmlCards = rows.map(r => {
+            const formattedDate = formatDate(r.record_date);
+            const formattedType = formatType(r.type);
+            const description = r.description || '-';
+            const amount = (Number(r.amount)||0).toFixed(2);
+            const isIncome = r.type === 'receita' || r.type === 'income';
+            
+            return `
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">${formattedDate}</div>
+                        <div class="text-sm text-gray-600 mt-1">${description}</div>
+                    </div>
+                    <div class="text-right ml-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} mb-2 block">
+                            ${formattedType}
+                        </span>
+                        <div class="text-lg font-bold ${isIncome ? 'text-green-600' : 'text-red-600'}">R$ ${amount}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-3 border-t border-gray-100">
+                    <button onclick="viewFinancialDetails(${r.id})" 
+                        class="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                        Detalhes
+                    </button>
+                    <button onclick="confirmDeleteFinancialRecord(${r.id})" 
+                        class="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        data-date="${formattedDate}"
+                        data-type="${formattedType}"
+                        data-amount="${amount}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+        }).join('');
+        
+        if (tbody) tbody.innerHTML = htmlRows;
+        if (cardsContainer) cardsContainer.innerHTML = htmlCards;
     } catch (e) {
+        console.error('Erro ao carregar registros financeiros:', e);
         const tbody = document.getElementById('financialRecordsTable');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros</td></tr>';
+        const cardsContainer = document.getElementById('financialRecordsCards');
+        const errorHtml = '<tr><td colspan="5" class="text-center py-8 text-red-500">Erro ao carregar registros</td></tr>';
+        const errorCards = '<div class="text-center py-8 text-red-500">Erro ao carregar registros</div>';
+        if (tbody) tbody.innerHTML = errorHtml;
+        if (cardsContainer) cardsContainer.innerHTML = errorCards;
     }
 }
 
@@ -2163,6 +2370,94 @@ async function deleteFinancialRecord(id) {
     }
 }
 
+// Função para mostrar modal de exclusão de todos os registros
+window.showDeleteAllFinancialModal = function() {
+    const modal = document.getElementById('deleteAllFinancialModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    const messageDiv = document.getElementById('deleteAllFinancialMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Função para fechar modal de exclusão de todos os registros
+window.closeDeleteAllFinancialModal = function() {
+    const modal = document.getElementById('deleteAllFinancialModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    const messageDiv = document.getElementById('deleteAllFinancialMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Função para confirmar e excluir todos os registros financeiros
+window.confirmDeleteAllFinancialRecords = async function() {
+    const messageDiv = document.getElementById('deleteAllFinancialMessage');
+    const confirmBtn = event.target;
+    const originalText = confirmBtn.innerHTML;
+    
+    // Desabilitar botão e mostrar loading
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Excluindo...';
+    
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('action', 'delete_all');
+        
+        const response = await fetch('./api/financial.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Mostrar mensagem de sucesso
+            if (messageDiv) {
+                messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
+                messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ' + (result.data?.message || 'Todos os registros foram excluídos com sucesso!');
+                messageDiv.classList.remove('hidden');
+            }
+            
+            // Fechar modal e recarregar dados após 1.5s
+            setTimeout(() => {
+                if (window.closeDeleteAllFinancialModal) window.closeDeleteAllFinancialModal();
+                if (typeof loadFinancialData === 'function') loadFinancialData();
+            }, 1500);
+        } else {
+            // Mostrar mensagem de erro
+            if (messageDiv) {
+                messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+                messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao excluir registros');
+                messageDiv.classList.remove('hidden');
+            }
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+        }
+    } catch (err) {
+        console.error('Erro ao excluir todos os registros financeiros:', err);
+        if (messageDiv) {
+            messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro de conexão. Tente novamente.';
+            messageDiv.classList.remove('hidden');
+        }
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+    }
+};
+
 window.viewFinancialDetails = viewFinancialDetails;
 window.closeFinancialDetailsModal = closeFinancialDetailsModal;
 window.confirmDeleteFinancialRecord = confirmDeleteFinancialRecord;
@@ -2201,84 +2496,151 @@ async function loadUsersData() {
             } else {
             }
             
-            // Preencher tabela de usuários
+            // Preencher tabela e cards de usuários
             const tbody = document.getElementById('usersTable');
-            if (tbody) {
-                const rows = Array.isArray(data.users) ? data.users : [];
-                if (rows.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum usuário</td></tr>';
-                } else {
-                    tbody.innerHTML = rows.map(u => {
-                        // Foto do usuário ou ícone padrão
-                        const photoUrl = u.profile_photo ? `./uploads/profiles/${u.profile_photo.split('/').pop()}` : null;
-                        const photoHtml = photoUrl ? 
-                            `<img src="${photoUrl}?t=${Date.now()}" alt="${u.name}" class="w-10 h-10 rounded-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                             <svg class="w-10 h-10 text-gray-400 hidden" fill="currentColor" viewBox="0 0 24 24">
-                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                             </svg>` :
-                            `<svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                             </svg>`;
+            const cardsContainer = document.getElementById('usersCards');
+            const rows = Array.isArray(data.users) ? data.users : [];
+            
+            if (rows.length === 0) {
+                const emptyHtml = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum usuário</td></tr>';
+                const emptyCards = '<div class="text-center py-8 text-gray-500">Nenhum usuário</div>';
+                if (tbody) tbody.innerHTML = emptyHtml;
+                if (cardsContainer) cardsContainer.innerHTML = emptyCards;
+            } else {
+                // Função auxiliar para gerar foto HTML
+                const getPhotoHtml = (u) => {
+                    const photoUrl = u.profile_photo ? `./uploads/profiles/${u.profile_photo.split('/').pop()}` : null;
+                    return photoUrl ? 
+                        `<img src="${photoUrl}?t=${Date.now()}" alt="${u.name}" class="w-10 h-10 rounded-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <svg class="w-10 h-10 text-gray-400 hidden" fill="currentColor" viewBox="0 0 24 24">
+                             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                         </svg>` :
+                        `<svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                         </svg>`;
+                };
+                
+                // Função auxiliar para gerar ações HTML
+                const getActionsHtml = (u) => {
+                    let actionsHtml = '<div class="flex items-center gap-2">';
+                    
+                    if (u.can_block) {
+                        const blockIcon = u.is_active ? 
+                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>' :
+                            '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+                        const blockColor = u.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600';
+                        const blockText = u.is_active ? 'Bloquear' : 'Desbloquear';
                         
-                        // Status badge
-                        const statusBadge = u.is_active ? 
-                            '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Ativo</span>' :
-                            '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Bloqueado</span>';
-                        
-                        // Ações (bloquear/desbloquear e excluir)
-                        let actionsHtml = '<div class="flex items-center gap-2">';
-                        
-                        if (u.can_block) {
-                            const blockAction = u.is_active ? 'bloquear' : 'desbloquear';
-                            const blockIcon = u.is_active ? 
-                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>' :
-                                '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
-                            const blockColor = u.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600';
-                            const blockText = u.is_active ? 'Bloquear' : 'Desbloquear';
-                            
-                            actionsHtml += `<button onclick="toggleUserBlock(${u.id}, ${u.is_active ? 0 : 1})" 
-                                class="${blockColor} text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" 
-                                title="${blockText} usuário">
-                                ${blockIcon}
-                                ${blockText}
-                            </button>`;
-                        }
-                        
-                        if (u.can_delete) {
-                            actionsHtml += `<button onclick="deleteUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" 
-                                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" 
-                                title="Excluir usuário">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                                Excluir
-                            </button>`;
-                        }
-                        
-                        if (!u.can_block && !u.can_delete) {
-                            actionsHtml += '<span class="text-gray-400 text-xs">Sem ações disponíveis</span>';
-                        }
-                        
-                        actionsHtml += '</div>';
-                        
-                        return `
-                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors"> 
-                                <td class="py-3 px-4">
-                                    <div class="flex items-center justify-center">
-                                        ${photoHtml}
+                        actionsHtml += `<button onclick="toggleUserBlock(${u.id}, ${u.is_active ? 0 : 1})" 
+                            class="${blockColor} text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" 
+                            title="${blockText} usuário">
+                            ${blockIcon}
+                            ${blockText}
+                        </button>`;
+                    }
+                    
+                    if (u.can_delete) {
+                        actionsHtml += `<button onclick="deleteUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" 
+                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1" 
+                            title="Excluir usuário">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Excluir
+                        </button>`;
+                    }
+                    
+                    if (!u.can_block && !u.can_delete) {
+                        actionsHtml += '<span class="text-gray-400 text-xs">Sem ações disponíveis</span>';
+                    }
+                    
+                    actionsHtml += '</div>';
+                    return actionsHtml;
+                };
+                
+                // Gerar HTML para tabela (desktop)
+                const htmlRows = rows.map(u => {
+                    const photoHtml = getPhotoHtml(u);
+                    const statusBadge = u.is_active ? 
+                        '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Ativo</span>' :
+                        '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Bloqueado</span>';
+                    const actionsHtml = getActionsHtml(u);
+                    
+                    return `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors"> 
+                            <td class="py-3 px-4">
+                                <div class="flex items-center justify-center">
+                                    ${photoHtml}
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 font-medium">${u.name}</td>
+                            <td class="py-3 px-4 text-gray-600">${u.email}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold capitalize">${u.role}</span>
+                            </td>
+                            <td class="py-3 px-4">${statusBadge}</td>
+                            <td class="py-3 px-4">${actionsHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                // Gerar HTML para cards (mobile)
+                const htmlCards = rows.map(u => {
+                    const photoHtml = getPhotoHtml(u);
+                    const statusBadge = u.is_active ? 
+                        '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Ativo</span>' :
+                        '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Bloqueado</span>';
+                    const roleBadge = `<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold capitalize">${u.role}</span>`;
+                    
+                    // Ações para mobile (botões menores)
+                    let actionsHtml = '<div class="flex gap-2 pt-3 border-t border-gray-100">';
+                    
+                    if (u.can_block) {
+                        const blockColor = u.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600';
+                        const blockText = u.is_active ? 'Bloquear' : 'Desbloquear';
+                        actionsHtml += `<button onclick="toggleUserBlock(${u.id}, ${u.is_active ? 0 : 1})" 
+                            class="flex-1 ${blockColor} text-white px-3 py-2 rounded-lg text-xs font-semibold transition-colors">
+                            ${blockText}
+                        </button>`;
+                    }
+                    
+                    if (u.can_delete) {
+                        actionsHtml += `<button onclick="deleteUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" 
+                            class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-semibold transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>`;
+                    }
+                    
+                    if (!u.can_block && !u.can_delete) {
+                        actionsHtml += '<span class="text-gray-400 text-xs text-center w-full">Sem ações disponíveis</span>';
+                    }
+                    
+                    actionsHtml += '</div>';
+                    
+                    return `
+                        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-start gap-3 mb-3">
+                                <div class="flex-shrink-0">
+                                    ${photoHtml}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-gray-900 truncate">${u.name}</div>
+                                    <div class="text-sm text-gray-600 truncate">${u.email}</div>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        ${roleBadge}
+                                        ${statusBadge}
                                     </div>
-                                </td>
-                                <td class="py-3 px-4 font-medium">${u.name}</td>
-                                <td class="py-3 px-4 text-gray-600">${u.email}</td>
-                                <td class="py-3 px-4">
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold capitalize">${u.role}</span>
-                                </td>
-                                <td class="py-3 px-4">${statusBadge}</td>
-                                <td class="py-3 px-4">${actionsHtml}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
+                                </div>
+                            </div>
+                            ${actionsHtml}
+                        </div>
+                    `;
+                }).join('');
+                
+                if (tbody) tbody.innerHTML = htmlRows;
+                if (cardsContainer) cardsContainer.innerHTML = htmlCards;
             }
             
         } else {
@@ -2356,49 +2718,135 @@ window.loadQualityData = loadQualityData;
 window.loadFinancialData = loadFinancialData;
 window.loadUsersData = loadUsersData;
 window.switchTab = switchTab;
-// Abrir modal de usuário (compatível com onclick="showUserOverlay()")
-function showUserOverlay() {
-    if (typeof openAddUserModal === 'function') {
-        openAddUserModal();
-    } else {
-        // fallback: exibir modal por id
-        const modal = document.getElementById('addUserModal') || document.getElementById('userOverlay');
-        if (modal) {
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-    }
-}
-window.showUserOverlay = showUserOverlay;
-
-// Finance: abrir modal de venda
-function showSalesOverlay() {
-    const modal = document.getElementById('salesOverlay');
-    const form = document.getElementById('salesForm');
-    const messageDiv = document.getElementById('salesMessage');
+// Abrir tela full screen de adicionar usuário
+window.showAddUserFullScreen = function() {
+    const listView = document.getElementById('usersListView');
+    const fullScreen = document.getElementById('addUserFullScreen');
     
-    if (modal) {
-        // Resetar formulário e mensagens
+    if (listView && fullScreen) {
+        listView.classList.add('hidden');
+        fullScreen.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Resetar formulário
+        const form = document.getElementById('addUserForm');
         if (form) {
             form.reset();
-            // Definir data padrão como hoje (usando timezone local)
-            const dateInput = form.querySelector('input[name="sale_date"]');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = getLocalDateString();
-            }
         }
+        const messageDiv = document.getElementById('addUserMessage');
         if (messageDiv) {
             messageDiv.classList.add('hidden');
-            messageDiv.className = 'hidden p-4 rounded-xl border';
+            messageDiv.textContent = '';
         }
+    }
+};
+
+// Fechar tela full screen de adicionar usuário
+window.closeAddUserFullScreen = function() {
+    const listView = document.getElementById('usersListView');
+    const fullScreen = document.getElementById('addUserFullScreen');
+    
+    if (listView && fullScreen) {
+        fullScreen.classList.add('hidden');
+        listView.classList.remove('hidden');
+        document.body.style.overflow = 'auto';
         
+        // Resetar formulário
+        const form = document.getElementById('addUserForm');
+        if (form) {
+            form.reset();
+        }
+        const messageDiv = document.getElementById('addUserMessage');
+        if (messageDiv) {
+            messageDiv.classList.add('hidden');
+            messageDiv.textContent = '';
+        }
+    }
+};
+
+// Manter compatibilidade
+window.showUserOverlay = window.showAddUserFullScreen;
+
+// Abrir modal de despesa
+window.showExpenseOverlay = function() {
+    const modal = document.getElementById('expenseOverlay');
+    if (modal) {
+        const form = document.getElementById('expenseForm');
+        if (form) {
+            form.reset();
+            const dateInput = form.querySelector('input[type="date"]');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
+        const messageDiv = document.getElementById('expenseMessage');
+        if (messageDiv) {
+            messageDiv.classList.add('hidden');
+            messageDiv.textContent = '';
+        }
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
-}
-window.showSalesOverlay = showSalesOverlay;
+};
 
-// Finance: exportar CSV
+// Fechar modal de despesa
+window.closeExpenseModal = function() {
+    const modal = document.getElementById('expenseOverlay');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    const form = document.getElementById('expenseForm');
+    if (form) form.reset();
+    const messageDiv = document.getElementById('expenseMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Abrir modal de venda
+window.showSalesOverlay = function() {
+    const modal = document.getElementById('salesOverlay');
+    if (modal) {
+        const form = document.getElementById('salesForm');
+        if (form) {
+            form.reset();
+            const dateInput = form.querySelector('input[name="sale_date"]');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
+        const messageDiv = document.getElementById('salesMessage');
+        if (messageDiv) {
+            messageDiv.classList.add('hidden');
+            messageDiv.textContent = '';
+        }
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+};
+
+// Fechar modal de venda
+window.closeSalesModal = function() {
+    const modal = document.getElementById('salesOverlay');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    const form = document.getElementById('salesForm');
+    if (form) form.reset();
+    const messageDiv = document.getElementById('salesMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Manter compatibilidade com código antigo
+window.closeSalesOverlay = window.closeSalesModal;
+
+// Finance: exportar CSV (mantido para compatibilidade, mas não será usado)
 async function exportFinancialReport() {
     try {
         const res = await fetch('./api/endpoints/financial.php');
@@ -2428,32 +2876,27 @@ async function exportFinancialReport() {
 }
 window.exportFinancialReport = exportFinancialReport;
 
-// Quality: abrir modal
-function showQualityOverlay() {
+// Abrir modal de qualidade
+window.showQualityOverlay = function() {
     const modal = document.getElementById('qualityOverlay');
-    const form = document.getElementById('qualityForm');
-    const messageDiv = document.getElementById('qualityMessage');
-    
     if (modal) {
-        // Resetar formulário e mensagens
+        const form = document.getElementById('qualityForm');
         if (form) {
             form.reset();
-            // Definir data padrão como hoje (usando timezone local)
             const dateInput = form.querySelector('input[name="test_date"]');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = getLocalDateString();
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
             }
         }
+        const messageDiv = document.getElementById('qualityMessage');
         if (messageDiv) {
             messageDiv.classList.add('hidden');
-            messageDiv.className = 'hidden p-4 rounded-xl border';
+            messageDiv.textContent = '';
         }
-        
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
-}
-window.showQualityOverlay = showQualityOverlay;
+};
 
 async function exportQualityReport() {
     try {
@@ -2484,7 +2927,112 @@ async function exportQualityReport() {
 }
 window.exportQualityReport = exportQualityReport;
 
+// ==================== MODAIS DE VOLUME ====================
+
+// Abrir modal Volume Geral
+window.showGeneralVolumeOverlay = function() {
+    const modal = document.getElementById('generalVolumeOverlay');
+    if (modal) {
+        const form = document.getElementById('generalVolumeForm');
+        if (form) {
+            form.reset();
+            const dateInput = form.querySelector('input[type="date"]');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
+        const messageDiv = document.getElementById('generalVolumeMessage');
+        if (messageDiv) {
+            messageDiv.classList.add('hidden');
+            messageDiv.textContent = '';
+        }
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+};
+
+// Fechar modal Volume Geral
+window.closeGeneralVolumeModal = function() {
+    const modal = document.getElementById('generalVolumeOverlay');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    const form = document.getElementById('generalVolumeForm');
+    if (form) form.reset();
+    const messageDiv = document.getElementById('generalVolumeMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Abrir modal Volume por Animal
+window.showVolumeOverlay = function() {
+    const modal = document.getElementById('volumeOverlay');
+    if (modal) {
+        const form = document.getElementById('volumeForm');
+        if (form) {
+            form.reset();
+            const dateInput = form.querySelector('input[type="date"]');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
+        const messageDiv = document.getElementById('volumeMessage');
+        if (messageDiv) {
+            messageDiv.classList.add('hidden');
+            messageDiv.textContent = '';
+        }
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        populateVolumeAnimalSelect();
+    }
+};
+
+// Fechar modal Volume por Animal
+window.closeVolumeModal = function() {
+    const modal = document.getElementById('volumeOverlay');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    const form = document.getElementById('volumeForm');
+    if (form) form.reset();
+    const messageDiv = document.getElementById('volumeMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = '';
+    }
+};
+
+// Preencher select de animais
+async function populateVolumeAnimalSelect() {
+    const select = document.getElementById('volumeAnimalSelect');
+    if (!select) return;
+    
+    try {
+        const res = await fetch('./api/animals.php?action=get_active_lactating');
+        const result = await res.json();
+        
+        select.innerHTML = '<option value="">Selecione uma vaca...</option>';
+        
+        if (result.success && Array.isArray(result.data)) {
+            result.data.forEach(animal => {
+                const option = document.createElement('option');
+                option.value = animal.id;
+                option.textContent = `${animal.name || 'Sem nome'} (${animal.animal_number || 'N/A'})`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar animais:', error);
+    }
+}
+
+// Event listeners para formulários
 document.addEventListener('DOMContentLoaded', () => {
+    // Formulário Volume Geral
     const generalVolumeForm = document.getElementById('generalVolumeForm');
     if (generalVolumeForm) {
         generalVolumeForm.addEventListener('submit', async (e) => {
@@ -2493,72 +3041,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageDiv = document.getElementById('generalVolumeMessage');
             const originalText = submitBtn.innerHTML;
 
-            // Desabilitar botão e mostrar loading
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Registrando...';
 
-            // Esconder mensagem anterior
-            if (messageDiv) {
-                messageDiv.classList.add('hidden');
-            }
+            if (messageDiv) messageDiv.classList.add('hidden');
 
             const formData = new FormData(generalVolumeForm);
-            
-            // Validar número de vacas antes de enviar
-            const totalAnimals = parseInt(formData.get('total_animals')) || 0;
-            if (totalAnimals < 1) {
-                if (messageDiv) {
-                    messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
-                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Informe o número de vacas participantes';
-                    messageDiv.classList.remove('hidden');
-                }
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-                return;
-            }
-            
             formData.append('action', 'add_volume_general');
+            
             try {
                 const result = await offlineFetch('./api/actions.php', formData, 'volume_general');
                 if (result.success) {
-                    // Mostrar mensagem de sucesso
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
-                        if (result.offline) {
-                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> ' + (result.message || 'Registro salvo offline. Será sincronizado quando a conexão for restaurada.');
-                        } else {
-                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
-                        }
+                        messageDiv.innerHTML = result.offline 
+                            ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> Registro salvo offline. Será sincronizado quando a conexão for restaurada.'
+                            : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
                         messageDiv.classList.remove('hidden');
                     }
-
-                    // Resetar formulário
                     generalVolumeForm.reset();
-
-                    // Fechar modal após 1.5s (apenas se estiver online)
                     if (!result.offline) {
                         setTimeout(() => {
-                            if (window.closeGeneralVolumeOverlay) window.closeGeneralVolumeOverlay();
-                            
-                            // Recarregar dados de volume
-                            if (typeof loadVolumeData === 'function') {
-                                loadVolumeData();
+                            closeGeneralVolumeModal();
+                            if (typeof loadVolumeData === 'function') loadVolumeData();
+                            if (typeof loadVolumeRecordsTable === 'function') {
+                                setTimeout(() => loadVolumeRecordsTable(), 800);
                             }
-                            
-                            // Recarregar tabela de registros diretamente após um delay
-                            setTimeout(() => {
-                                if (typeof loadVolumeRecordsTable === 'function') {
-                                    loadVolumeRecordsTable();
-                                }
-                            }, 800);
                         }, 1500);
                     } else {
-                        setTimeout(() => {
-                            if (window.closeGeneralVolumeOverlay) window.closeGeneralVolumeOverlay();
-                        }, 2000);
+                        setTimeout(() => closeGeneralVolumeModal(), 2000);
                     }
                 } else {
-                    // Mostrar mensagem de erro
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
                         messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao registrar volume');
@@ -2568,10 +3081,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitBtn.innerHTML = originalText;
                 }
             } catch (err) {
-                console.error('Falha ao registrar volume geral:', err);
+                console.error('Erro ao registrar volume geral:', err);
                 if (messageDiv) {
                     messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
-                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro ao processar registro. ' + (err.message || 'Tente novamente.');
+                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro ao processar registro. Tente novamente.';
                     messageDiv.classList.remove('hidden');
                 }
                 submitBtn.disabled = false;
@@ -2580,7 +3093,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Volume por animal
+    // Formulário Volume por Animal
     const volumeForm = document.getElementById('volumeForm');
     if (volumeForm) {
         volumeForm.addEventListener('submit', async (e) => {
@@ -2589,47 +3102,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageDiv = document.getElementById('volumeMessage');
             const originalText = submitBtn.innerHTML;
 
-            // Desabilitar botão e mostrar loading
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Registrando...';
 
-            // Esconder mensagem anterior
-            if (messageDiv) {
-                messageDiv.classList.add('hidden');
-            }
+            if (messageDiv) messageDiv.classList.add('hidden');
 
             const formData = new FormData(volumeForm);
             formData.append('action', 'add_volume_by_animal');
+            
             try {
                 const result = await offlineFetch('./api/actions.php', formData, 'volume_animal');
                 if (result.success) {
-                    // Mostrar mensagem de sucesso
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-800 flex items-center gap-2';
-                        if (result.offline) {
-                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> ' + (result.message || 'Registro salvo offline. Será sincronizado quando a conexão for restaurada.');
-                        } else {
-                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
-                        }
+                        messageDiv.innerHTML = result.offline
+                            ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> Registro salvo offline. Será sincronizado quando a conexão for restaurada.'
+                            : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
                         messageDiv.classList.remove('hidden');
                     }
-
-                    // Resetar formulário
                     volumeForm.reset();
-
-                    // Fechar modal após 1.5s (apenas se estiver online)
                     if (!result.offline) {
                         setTimeout(() => {
-                            if (window.closeVolumeOverlay) window.closeVolumeOverlay();
-                            loadVolumeData();
+                            closeVolumeModal();
+                            if (typeof loadVolumeData === 'function') loadVolumeData();
                         }, 1500);
                     } else {
-                        setTimeout(() => {
-                            if (window.closeVolumeOverlay) window.closeVolumeOverlay();
-                        }, 2000);
+                        setTimeout(() => closeVolumeModal(), 2000);
                     }
                 } else {
-                    // Mostrar mensagem de erro
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
                         messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao registrar volume');
@@ -2639,7 +3139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitBtn.innerHTML = originalText;
                 }
             } catch (err) {
-                console.error('Falha ao registrar volume por vaca:', err);
+                console.error('Erro ao registrar volume por animal:', err);
                 if (messageDiv) {
                     messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
                     messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro de conexão. Tente novamente.';
@@ -2691,12 +3191,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Fechar modal após 1.5s (apenas se estiver online)
                     if (!result.offline) {
                         setTimeout(() => {
-                            if (window.closeQualityOverlay) window.closeQualityOverlay();
-                            loadQualityData();
+                            if (window.closeQualityModal) window.closeQualityModal();
+                            if (typeof loadQualityData === 'function') loadQualityData();
                         }, 1500);
                     } else {
                         setTimeout(() => {
-                            if (window.closeQualityOverlay) window.closeQualityOverlay();
+                            if (window.closeQualityModal) window.closeQualityModal();
                         }, 2000);
                     }
                 } else {
@@ -2722,7 +3222,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Financeiro
+    // Formulário Despesa
+    const expenseForm = document.getElementById('expenseForm');
+    if (expenseForm) {
+        expenseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = expenseForm.querySelector('button[type="submit"]');
+            const messageDiv = document.getElementById('expenseMessage');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Registrando...';
+
+            if (messageDiv) messageDiv.classList.add('hidden');
+
+            const formData = new FormData(expenseForm);
+            formData.append('action', 'add_financial_record');
+            formData.append('type', 'despesa');
+            
+            try {
+                const result = await offlineFetch('./api/actions.php', formData, 'financial');
+                if (result.success) {
+                    if (messageDiv) {
+                        messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+                        messageDiv.innerHTML = result.offline
+                            ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg> Registro salvo offline. Será sincronizado quando a conexão for restaurada.'
+                            : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Despesa registrada com sucesso!';
+                        messageDiv.classList.remove('hidden');
+                    }
+                    expenseForm.reset();
+                    if (!result.offline) {
+                        setTimeout(() => {
+                            if (window.closeExpenseModal) window.closeExpenseModal();
+                            if (typeof loadFinancialData === 'function') loadFinancialData();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            if (window.closeExpenseModal) window.closeExpenseModal();
+                        }, 2000);
+                    }
+                } else {
+                    if (messageDiv) {
+                        messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao registrar despesa');
+                        messageDiv.classList.remove('hidden');
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            } catch (err) {
+                console.error('Erro ao registrar despesa:', err);
+                if (messageDiv) {
+                    messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro de conexão. Tente novamente.';
+                    messageDiv.classList.remove('hidden');
+                }
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    }
+
+    // Financeiro - Venda
     const salesForm = document.getElementById('salesForm');
     if (salesForm) {
         salesForm.addEventListener('submit', async (e) => {
@@ -2766,12 +3327,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Fechar modal após 1.5s (apenas se estiver online)
                     if (!result.offline) {
                         setTimeout(() => {
-                            if (window.closeSalesOverlay) window.closeSalesOverlay();
-                            loadFinancialData();
+                            if (window.closeSalesModal) window.closeSalesModal();
+                            if (typeof loadFinancialData === 'function') loadFinancialData();
                         }, 1500);
                     } else {
                         setTimeout(() => {
-                            if (window.closeSalesOverlay) window.closeSalesOverlay();
+                            if (window.closeSalesModal) window.closeSalesModal();
                         }, 2000);
                     }
                 } else {
@@ -2877,10 +3438,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Resetar formulário
                     addUserForm.reset();
 
-                    // Fechar modal após 1.5s
+                    // Fechar tela full screen após 1.5s
                     setTimeout(() => {
-                        if (window.closeAddUserModal) window.closeAddUserModal();
-                        loadUsersData();
+                        if (window.closeAddUserFullScreen) window.closeAddUserFullScreen();
+                        if (typeof loadUsersData === 'function') loadUsersData();
                     }, 1500);
                 } else {
                     // Mostrar mensagem de erro
@@ -2906,105 +3467,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Volume: abrir modais
-function showGeneralVolumeOverlay() {
-    const modal = document.getElementById('generalVolumeOverlay');
-    const form = document.getElementById('generalVolumeForm');
-    const messageDiv = document.getElementById('generalVolumeMessage');
-    
-    if (modal) {
-        // Resetar formulário e mensagens
-        if (form) {
-            form.reset();
-            // Definir data padrão como hoje (usando timezone local)
-            const dateInput = form.querySelector('input[name="collection_date"]');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = getLocalDateString();
-            }
-        }
-        if (messageDiv) {
-            messageDiv.classList.add('hidden');
-            messageDiv.className = 'hidden p-4 rounded-xl border';
-        }
-        
-        // Resetar cálculo de média por vaca
-        const averageDisplay = document.getElementById('averagePerCowDisplay');
-        if (averageDisplay) {
-            averageDisplay.textContent = 'Média por vaca: -- L';
-            averageDisplay.classList.remove('text-green-600', 'font-semibold');
-            averageDisplay.classList.add('text-slate-500');
-        }
-        
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Calcular média por vaca em tempo real
-function updateAveragePerCow() {
-    const totalAnimalsInput = document.getElementById('totalAnimalsInput');
-    const totalVolumeInput = document.getElementById('totalVolumeInput');
-    const averageDisplay = document.getElementById('averagePerCowDisplay');
-    
-    if (totalAnimalsInput && totalVolumeInput && averageDisplay) {
-        const totalAnimals = parseFloat(totalAnimalsInput.value) || 0;
-        const totalVolume = parseFloat(totalVolumeInput.value) || 0;
-        
-        if (totalAnimals > 0 && totalVolume > 0) {
-            const average = totalVolume / totalAnimals;
-            averageDisplay.textContent = `Média por vaca: ${average.toFixed(2)} L`;
-            averageDisplay.classList.remove('text-slate-500');
-            averageDisplay.classList.add('text-green-600', 'font-semibold');
-        } else {
-            averageDisplay.textContent = 'Média por vaca: -- L';
-            averageDisplay.classList.remove('text-green-600', 'font-semibold');
-            averageDisplay.classList.add('text-slate-500');
-        }
-    }
-}
-
-// Adicionar event listeners para calcular média em tempo real quando o modal abrir
-document.addEventListener('DOMContentLoaded', function() {
-    // Usar delegação de eventos para funcionar mesmo quando os elementos são criados dinamicamente
-    document.addEventListener('input', function(e) {
-        if (e.target.id === 'totalAnimalsInput' || e.target.id === 'totalVolumeInput') {
-            updateAveragePerCow();
-        }
-    });
-    
-    document.addEventListener('change', function(e) {
-        if (e.target.id === 'totalAnimalsInput' || e.target.id === 'totalVolumeInput') {
-            updateAveragePerCow();
-        }
-    });
-});
-function showVolumeOverlay() {
-    const modal = document.getElementById('volumeOverlay');
-    const form = document.getElementById('volumeForm');
-    const messageDiv = document.getElementById('volumeMessage');
-    
-    if (modal) {
-        // Resetar formulário e mensagens
-        if (form) {
-            form.reset();
-            // Definir data padrão como hoje (usando timezone local)
-            const dateInput = form.querySelector('input[name="collection_date"]');
-            if (dateInput && !dateInput.value) {
-                dateInput.value = getLocalDateString();
-            }
-        }
-        if (messageDiv) {
-            messageDiv.classList.add('hidden');
-            messageDiv.className = 'hidden p-4 rounded-xl border';
-        }
-        
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        populateVolumeAnimalSelect();
-    }
-}
-window.showGeneralVolumeOverlay = showGeneralVolumeOverlay;
-window.showVolumeOverlay = showVolumeOverlay;
 
 // Variável global para armazenar a chave de backup
 let volumeBackupKey = null;
@@ -3417,85 +3879,24 @@ window.closeRestoreVolumeSuccessModal = closeRestoreVolumeSuccessModal;
 window.showRestoreVolumeErrorModal = showRestoreVolumeErrorModal;
 window.closeRestoreVolumeErrorModal = closeRestoreVolumeErrorModal;
 
-// Helpers para fechar modais (garantir que os onClick funcionem)
-function closeGeneralVolumeOverlay() {
-    const modal = document.getElementById('generalVolumeOverlay');
-    const form = document.getElementById('generalVolumeForm');
-    const messageDiv = document.getElementById('generalVolumeMessage');
-    
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    // Limpar formulário e mensagens
-    if (form) {
-        form.reset();
-    }
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-        messageDiv.className = 'hidden p-4 rounded-xl border';
-    }
-}
-function closeVolumeOverlay() {
-    const modal = document.getElementById('volumeOverlay');
-    const form = document.getElementById('volumeForm');
-    const messageDiv = document.getElementById('volumeMessage');
-    
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    // Limpar formulário e mensagens
-    if (form) {
-        form.reset();
-    }
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-        messageDiv.className = 'hidden p-4 rounded-xl border';
-    }
-}
-function closeQualityOverlay() {
+// Fechar modal de qualidade
+window.closeQualityModal = function() {
     const modal = document.getElementById('qualityOverlay');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
     const form = document.getElementById('qualityForm');
+    if (form) form.reset();
     const messageDiv = document.getElementById('qualityMessage');
-    
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    // Limpar formulário e mensagens
-    if (form) {
-        form.reset();
-    }
     if (messageDiv) {
         messageDiv.classList.add('hidden');
-        messageDiv.className = 'hidden p-4 rounded-xl border';
+        messageDiv.textContent = '';
     }
-}
-function closeSalesOverlay() {
-    const modal = document.getElementById('salesOverlay');
-    const form = document.getElementById('salesForm');
-    const messageDiv = document.getElementById('salesMessage');
-    
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-    
-    // Limpar formulário e mensagens
-    if (form) {
-        form.reset();
-    }
-    if (messageDiv) {
-        messageDiv.classList.add('hidden');
-        messageDiv.className = 'hidden p-4 rounded-xl border';
-    }
-}
-window.closeGeneralVolumeOverlay = closeGeneralVolumeOverlay;
-window.closeVolumeOverlay = closeVolumeOverlay;
+};
+
+// Manter compatibilidade com código antigo
+window.closeQualityOverlay = window.closeQualityModal;
 
 // ==================== FUNÇÕES PARA GESTÃO DE REBANHO ====================
 
@@ -5600,7 +6001,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 window.closeQualityOverlay = closeQualityOverlay;
-window.closeSalesOverlay = closeSalesOverlay;
 
 // Volume: exportar CSV
 async function exportVolumeReport() {

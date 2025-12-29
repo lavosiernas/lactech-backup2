@@ -209,6 +209,50 @@ try {
             sendJSONResponse(['status' => 'online', 'timestamp' => date('Y-m-d H:i:s')]);
             break;
             
+        case 'delete':
+            // Excluir registro individual
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+            $id = isset($input['id']) ? (int)$input['id'] : 0;
+            
+            if ($id <= 0) {
+                sendJSONResponse(null, 'ID inválido');
+            }
+            
+            $db->query("DELETE FROM quality_tests WHERE id = ? AND farm_id = 1", [$id]);
+            sendJSONResponse(['id' => $id, 'message' => 'Registro excluído com sucesso']);
+            break;
+            
+        case 'delete_all':
+            // Excluir todos os registros de qualidade da fazenda
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                sendJSONResponse(null, 'Método não permitido');
+            }
+            
+            // Iniciar sessão se não estiver iniciada
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            // Usar farm_id da sessão ou padrão
+            $farm_id = $_SESSION['farm_id'] ?? 1;
+            
+            // Contar quantos registros serão excluídos
+            $countResult = $db->query("SELECT COUNT(*) as total FROM quality_tests WHERE farm_id = ?", [$farm_id]);
+            $count = is_array($countResult) && isset($countResult[0]) ? (int)($countResult[0]['total'] ?? 0) : 0;
+            
+            if ($count === 0) {
+                sendJSONResponse(null, 'Nenhum registro encontrado para excluir');
+            }
+            
+            // Excluir todos os registros
+            $db->query("DELETE FROM quality_tests WHERE farm_id = ?", [$farm_id]);
+            
+            sendJSONResponse([
+                'message' => "Todos os registros de qualidade foram excluídos com sucesso ($count registro(s))",
+                'deleted_count' => $count
+            ]);
+            break;
+            
         default:
             sendJSONResponse(null, 'Ação não encontrada');
     }

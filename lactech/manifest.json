@@ -1,14 +1,47 @@
 {
-  "name": "LacTech - Sistema de Gestão",
+  "name": "LacTech - Sistema de Gestão Leiteira",
   "short_name": "LacTech",
-  "description": "Sistema completo de gestão para fazendas leiteiras",
+  "description": "Sistema completo de gestão para fazendas leiteiras - Funciona offline",
   "start_url": "/gerente-completo.php",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "orientation": "portrait-primary",
+  "background_color": "#10b981",
+  "theme_color": "#10b981",
+  "display_override": ["standalone", "minimal-ui", "fullscreen"],
+  "orientation": "any",
+  "dir": "ltr",
+  "lang": "pt-BR",
   "icons": [
+    {
+      "src": "./assets/img/lactech-logo.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/img/lactech-logo.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/img/lactech-logo.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/img/lactech-logo.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/img/lactech-logo.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "./assets/img/lactech-logo.png",
       "sizes": "192x192",
@@ -17,19 +50,49 @@
     },
     {
       "src": "./assets/img/lactech-logo.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/img/lactech-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "business"],
+  "categories": ["productivity", "business", "agriculture"],
   "screenshots": [],
   "shortcuts": [
     {
       "name": "Adicionar Volume",
       "short_name": "Volume",
       "description": "Registrar volume de leite",
-      "url": "/gerente-completo.php?action=add_volume",
+      "url": "/gerente-completo.php?tab=volume&action=add",
+      "icons": [
+        {
+          "src": "./assets/img/lactech-logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Teste de Qualidade",
+      "short_name": "Qualidade",
+      "description": "Registrar teste de qualidade",
+      "url": "/gerente-completo.php?tab=quality&action=add",
+      "icons": [
+        {
+          "src": "./assets/img/lactech-logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Registrar Venda",
+      "short_name": "Venda",
+      "description": "Registrar venda financeira",
+      "url": "/gerente-completo.php?tab=payments&action=sale",
       "icons": [
         {
           "src": "./assets/img/lactech-logo.png",
@@ -38,5 +101,7 @@
       ]
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "iarc_rating_id": "",
+  "related_applications": []
 }

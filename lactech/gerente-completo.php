@@ -15,9 +15,10 @@
 // SEÇÃO 1: CONFIGURAÇÃO E AUTENTICAÇÃO
 // ============================================
 
-// Headers de cache otimizado
-header("Cache-Control: private, max-age=300");
-header("Pragma: cache");
+// Headers de cache - SEM CACHE para páginas dinâmicas
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 // Incluir configuração e iniciar sessão
 require_once __DIR__ . '/includes/config_login.php';
@@ -214,10 +215,12 @@ $v = time();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#10b981">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="LacTech">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <meta name="description" content="Sistema completo de gestão para fazendas leiteiras">
     <title>LacTech - Dashboard Gerente</title>
     
@@ -238,12 +241,90 @@ $v = time();
     <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
     
     <!-- Apple Touch Startup Images (Splash Screen) - Logo sem fundo preto -->
-    <!-- A splash screen do PWA usa o background_color do manifest (branco) e a logo centralizada -->
+    <!-- A splash screen do PWA usa o background_color do manifest (verde) e a logo centralizada -->
     <style>
-        /* Estilo para splash screen do PWA - logo sem fundo preto */
+        /* Estilo para splash screen do PWA - App-like experience */
         @media all and (display-mode: standalone) {
             body {
-                background-color: #ffffff !important;
+                background-color: #10b981 !important;
+                overscroll-behavior-y: contain;
+            }
+            
+            /* Prevenir pull-to-refresh padrão do navegador */
+            html {
+                overscroll-behavior-y: contain;
+            }
+            
+            /* Melhorar scroll em mobile */
+            * {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        /* Indicador de pull-to-refresh customizado */
+        #pull-to-refresh-indicator {
+            position: fixed;
+            top: -60px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #10b981, #059669);
+            color: white;
+            z-index: 9999;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .pull-indicator-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .pull-indicator-icon {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s ease;
+        }
+        
+        .pull-indicator-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* Melhorar área de toque em mobile */
+        @media (hover: none) and (pointer: coarse) {
+            button, a, [role="button"], input[type="button"], input[type="submit"] {
+                min-height: 44px;
+                min-width: 44px;
+                touch-action: manipulation;
+            }
+        }
+        
+        /* Prevenir zoom duplo toque */
+        * {
+            touch-action: pan-y pinch-zoom;
+        }
+        
+        input, select, textarea {
+            touch-action: manipulation;
+        }
+        
+        /* Banner offline mobile */
+        #offline-status-banner {
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
             }
         }
     </style>
@@ -324,6 +405,28 @@ $v = time();
         @keyframes skeleton-loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
+        }
+        
+        /* Skeleton Loader Styles */
+        #skeletonLoader {
+            background: #ffffff;
+        }
+        
+        #skeletonLoader [class*="bg-gray"] {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        #skeletonLoader.fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+            pointer-events: none;
         }
         
         /* Chart containers */
@@ -633,38 +736,6 @@ $v = time();
             }
         }
         
-        /* Estilos para tela de carregamento */
-        #loadingMessage {
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .loading-dot {
-            animation: bounce 1.4s infinite ease-in-out;
-        }
-        
-        .loading-dot:nth-child(1) {
-            animation-delay: 0s;
-        }
-        
-        .loading-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .loading-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        
         /* Garantir que os labels dos indicadores sejam pretos */
         .metric-label {
             color: #111827 !important; /* gray-900 */
@@ -775,23 +846,6 @@ $v = time();
         /* Welcome section - REMOVER GRADIENTE */
         .dark-mode .gradient-forest {
             background: #1e1e1e !important;
-        }
-        
-        /* Loading screen - sempre branco para PWA */
-        #loadingScreen {
-            background: #ffffff !important;
-        }
-        
-        .dark-mode #loadingScreen {
-            background: #ffffff !important;
-        }
-        
-        .dark-mode #loadingScreen .text-gray-800 {
-            color: #1f2937 !important;
-        }
-        
-        .dark-mode #loadingScreen .text-gray-600 {
-            color: #4b5563 !important;
         }
         
         /* Botão toggle modo escuro */
@@ -1692,45 +1746,134 @@ $v = time();
                 margin: -12px;
             }
         }
+        /* Skeleton Loader Styles */
+        #skeletonLoader {
+            background: #ffffff;
+        }
+        
+        #skeletonLoader [class*="bg-gray"] {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        #skeletonLoader.fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-inter" id="mainBody">
     <!-- Skip to main content link para acessibilidade -->
     <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
     
-    <!-- Tela de Carregamento -->
-    <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-white flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando página">
-        <div class="flex flex-col items-center justify-center space-y-8">
-            <!-- Círculo de carregamento -->
-            <div class="relative" aria-hidden="true">
-                <div class="w-24 h-24 border-8 border-green-100 border-t-green-600 rounded-full animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
-                        <svg class="w-8 h-8 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                    </div>
+    <!-- Container de Notificações Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <!-- Skeleton Loader -->
+    <div id="skeletonLoader" class="fixed inset-0 z-[9999] bg-white overflow-y-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <!-- Welcome Section Skeleton -->
+            <div class="bg-gray-200 rounded-2xl p-6 mb-6" style="height: 120px;"></div>
+            
+            <!-- Key Metrics Skeleton -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                    <div class="w-12 h-12 bg-gray-300 rounded-xl mx-auto mb-3"></div>
+                    <div class="h-6 bg-gray-300 rounded w-20 mx-auto mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-24 mx-auto mb-1"></div>
+                    <div class="h-3 bg-gray-200 rounded w-16 mx-auto"></div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                    <div class="w-12 h-12 bg-gray-300 rounded-xl mx-auto mb-3"></div>
+                    <div class="h-6 bg-gray-300 rounded w-20 mx-auto mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-24 mx-auto mb-1"></div>
+                    <div class="h-3 bg-gray-200 rounded w-16 mx-auto"></div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                    <div class="w-12 h-12 bg-gray-300 rounded-xl mx-auto mb-3"></div>
+                    <div class="h-6 bg-gray-300 rounded w-20 mx-auto mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-24 mx-auto mb-1"></div>
+                    <div class="h-3 bg-gray-200 rounded w-16 mx-auto"></div>
+                </div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                    <div class="w-12 h-12 bg-gray-300 rounded-xl mx-auto mb-3"></div>
+                    <div class="h-6 bg-gray-300 rounded w-20 mx-auto mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-24 mx-auto mb-1"></div>
+                    <div class="h-3 bg-gray-200 rounded w-16 mx-auto"></div>
                 </div>
             </div>
             
-            <!-- Mensagens rotativas -->
-            <div class="text-center space-y-4">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Carregando...</h2>
-                <p id="loadingMessage" class="text-lg text-gray-600 font-medium min-h-[32px] transition-all duration-500">
-                    Preparando tudo para você! 🚀
-                </p>
-                <div class="flex items-center justify-center space-x-2 mt-4" aria-hidden="true">
-                    <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
-                    <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
-                    <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+            <!-- Charts Section Skeleton -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                    <div class="h-5 bg-gray-300 rounded w-32 mb-4"></div>
+                    <div class="h-64 bg-gray-200 rounded"></div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                    <div class="h-5 bg-gray-300 rounded w-40 mb-4"></div>
+                    <div class="h-64 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+            
+            <!-- Quality Chart Skeleton -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                    <div class="h-5 bg-gray-300 rounded w-48 mb-4"></div>
+                    <div class="h-64 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+            
+            <!-- Temperature Chart Skeleton -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-6">
+                <div class="h-5 bg-gray-300 rounded w-40 mb-4"></div>
+                <div class="h-64 bg-gray-200 rounded"></div>
+            </div>
+            
+            <!-- Monthly Production Chart Skeleton -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 mb-6">
+                <div class="h-5 bg-gray-300 rounded w-48 mb-4"></div>
+                <div class="h-64 bg-gray-200 rounded"></div>
+            </div>
+            
+            <!-- Recent Activities Skeleton -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="h-5 bg-gray-300 rounded w-40"></div>
+                    <div class="h-4 bg-gray-200 rounded w-20"></div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <span class="sr-only">Carregando conteúdo da página, por favor aguarde</span>
     </div>
-    
-    <!-- Container de Notificações Toast -->
-    <div id="toastContainer" class="toast-container"></div>
     
     <!-- ============================================ -->
     <!-- HEADER - NAVEGAÇÃO PRINCIPAL -->
@@ -1835,7 +1978,25 @@ $v = time();
     <!-- ============================================ -->
     <!-- CONTEÚDO PRINCIPAL -->
     <!-- ============================================ -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Banner de Status Offline (Mobile) -->
+    <div id="offline-status-banner" class="hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div>
+                    <div class="font-semibold text-sm">Modo Offline Ativo</div>
+                    <div class="text-xs opacity-90" id="offline-banner-message">Seus registros serão sincronizados automaticamente</div>
+                </div>
+            </div>
+            <button onclick="if(typeof toggleOfflineMode === 'function') toggleOfflineMode()" class="text-white/90 hover:text-white text-sm font-medium underline">
+                Ativar Online
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" id="main-content">
         <!-- Dashboard Tab -->
         <div id="dashboard-tab" class="tab-content">
             <!-- Welcome Section -->
@@ -1990,28 +2151,22 @@ $v = time();
                             <p class="text-slate-600 text-sm">Monitore a produção de leite em tempo real</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <select id="volumePeriod" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white">
+                            <select id="volumePeriod" class="px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white shadow-sm hover:shadow transition-all">
                                 <option value="today">Hoje</option>
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
-                            <button onclick="showGeneralVolumeOverlay()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <button onclick="showGeneralVolumeOverlay()" class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transition-all duration-200 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-105">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
                                 </svg>
-                                + Volume
+                                Volume Geral
                             </button>
-                            <button onclick="showVolumeOverlay()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                            <button onclick="showVolumeOverlay()" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 hover:shadow-xl transition-all duration-200 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-105">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                                 </svg>
-                                Por Vaca
-                            </button>
-                            <button id="exportVolumeBtn" onclick="exportVolumeReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-4-4m4 4l4-4m3 8H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1"></path>
-                                </svg>
-                                Exportar
+                                Volume por Animal
                             </button>
                         </div>
                     </div>
@@ -2072,7 +2227,13 @@ $v = time();
                             Excluir Todos
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
+                    <!-- Cards Mobile (visível apenas em telas < 768px) -->
+                    <div id="volumeRecordsCards" class="md:hidden space-y-3">
+                        <div class="text-center py-8 text-gray-500">Carregando registros...</div>
+                    </div>
+                    
+                    <!-- Tabela Desktop (visível apenas em telas >= 768px) -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
@@ -2106,22 +2267,16 @@ $v = time();
                             <p class="text-slate-600 text-sm">Monitore a qualidade do leite produzido</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <select id="qualityPeriod" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white">
+                            <select id="qualityPeriod" class="px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white shadow-sm hover:shadow transition-all">
                                 <option value="today">Hoje</option>
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
-                            <button onclick="showQualityOverlay()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <button onclick="showQualityOverlay()" class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transition-all duration-200 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-105">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                + Teste
-                            </button>
-                            <button id="exportQualityBtn" onclick="exportQualityReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-4-4m4 4l4-4m3 8H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1"></path>
-                                </svg>
-                                Exportar
+                                Teste
                             </button>
                         </div>
                     </div>
@@ -2184,8 +2339,22 @@ $v = time();
 
                 <!-- Quality Records Table -->
                 <div class="data-card rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Registros de Qualidade</h3>
-                    <div class="overflow-x-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-900">Registros de Qualidade</h3>
+                        <button onclick="showDeleteAllQualityModal()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:shadow-lg transition-all font-semibold text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Excluir Tudo
+                        </button>
+                    </div>
+                    <!-- Cards Mobile (visível apenas em telas < 768px) -->
+                    <div id="qualityRecordsCards" class="md:hidden space-y-3">
+                        <div class="text-center py-8 text-gray-500">Carregando registros...</div>
+                    </div>
+                    
+                    <!-- Tabela Desktop (visível apenas em telas >= 768px) -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
@@ -2218,22 +2387,22 @@ $v = time();
                             <p class="text-slate-600 text-sm">Gerencie receitas e despesas</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <select id="financialPeriod" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white">
+                            <select id="financialPeriod" class="px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-forest-500 focus:outline-none bg-white shadow-sm hover:shadow transition-all">
                                 <option value="today">Hoje</option>
                                 <option value="week">Esta Semana</option>
                                 <option value="month">Este Mês</option>
                             </select>
-                            <button onclick="showSalesOverlay()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <button onclick="showSalesOverlay()" class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transition-all duration-200 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-105">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                                 </svg>
-                                + Venda
+                                Venda
                             </button>
-                            <button id="exportFinancialBtn" onclick="exportFinancialReport()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-4-4m4 4l4-4m3 8H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1"></path>
+                            <button onclick="showExpenseOverlay()" class="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 hover:shadow-xl transition-all duration-200 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-105">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
-                                Exportar
+                                Despesa
                             </button>
                         </div>
                     </div>
@@ -2296,8 +2465,22 @@ $v = time();
 
                 <!-- Financial Records Table -->
                 <div class="data-card rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-slate-900 mb-4">Registros Financeiros</h3>
-                    <div class="overflow-x-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-slate-900">Registros Financeiros</h3>
+                        <button onclick="showDeleteAllFinancialModal()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:shadow-lg transition-all font-semibold text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Excluir Tudo
+                        </button>
+                    </div>
+                    <!-- Cards Mobile (visível apenas em telas < 768px) -->
+                    <div id="financialRecordsCards" class="md:hidden space-y-3">
+                        <div class="text-center py-8 text-gray-500">Carregando registros...</div>
+                    </div>
+                    
+                    <!-- Tabela Desktop (visível apenas em telas >= 768px) -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
@@ -2321,7 +2504,8 @@ $v = time();
 
         <!-- Users Tab -->
         <div id="users-tab" class="tab-content hidden">
-            <div class="space-y-6">
+            <!-- View: Lista de Usuários -->
+            <div id="usersListView" class="space-y-6">
                 <!-- Users Header -->
                 <div class="data-card rounded-2xl p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
@@ -2330,9 +2514,9 @@ $v = time();
                             <p class="text-slate-600 text-sm">Gerencie funcionários e suas permissões</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <button onclick="showUserOverlay()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold text-sm">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <button onclick="showAddUserFullScreen()" class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 hover:shadow-xl transition-all duration-200 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:scale-105">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                                 </svg>
                                 Adicionar Usuário
                             </button>
@@ -2365,7 +2549,14 @@ $v = time();
 
                 <div class="data-card rounded-2xl p-6">
                     <h3 class="text-lg font-bold text-slate-900 mb-4">Lista de Usuários</h3>
-                    <div class="overflow-x-auto">
+                    
+                    <!-- Cards Mobile (visível apenas em telas < 768px) -->
+                    <div id="usersCards" class="md:hidden space-y-3">
+                        <div class="text-center py-8 text-gray-500">Carregando usuários...</div>
+                    </div>
+                    
+                    <!-- Tabela Desktop (visível apenas em telas >= 768px) -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
@@ -2384,6 +2575,163 @@ $v = time();
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- View: Adicionar Usuário Full Screen -->
+            <div id="addUserFullScreen" class="hidden fixed inset-0 z-50 bg-white overflow-y-auto">
+                <!-- Header Sticky -->
+                <div class="sticky top-0 z-10 bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <button onclick="closeAddUserFullScreen()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                    </svg>
+                                </button>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white">Adicionar Novo Usuário</h2>
+                                    <p class="text-sm text-white/90">Criar nova conta no sistema</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <form id="addUserForm" class="space-y-6">
+                        <!-- Mensagem de sucesso/erro -->
+                        <div id="addUserMessage" class="hidden p-4 rounded-xl border"></div>
+
+                        <!-- Informações Pessoais -->
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6">
+                            <div class="flex items-center gap-2 mb-5">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <h3 class="text-lg font-bold text-slate-800">Informações Pessoais</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                            Nome Completo
+                                        </span>
+                                    </label>
+                                    <input type="text" name="name" required placeholder="Nome completo do usuário" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                            </svg>
+                                            Email
+                                        </span>
+                                    </label>
+                                    <input type="email" name="email" required placeholder="usuario@email.com" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                </div>
+                            </div>
+                            <div class="mt-5">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                        </svg>
+                                        Telefone
+                                        <span class="text-xs font-normal text-slate-500">(opcional)</span>
+                                    </span>
+                                </label>
+                                <input type="tel" name="phone" placeholder="(00) 00000-0000" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                            </div>
+                        </div>
+
+                        <!-- Credenciais -->
+                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-xl p-6">
+                            <div class="flex items-center gap-2 mb-5">
+                                <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <h3 class="text-lg font-bold text-slate-800">Credenciais de Acesso</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                            Senha
+                                        </span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" name="password" id="userPassword" required placeholder="Mínimo 6 caracteres" class="w-full px-4 py-3 pr-12 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                        <button type="button" onclick="toggleUserPasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors" id="userPasswordToggle">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                            </svg>
+                                            Confirmar Senha
+                                        </span>
+                                    </label>
+                                    <input type="password" name="confirm_password" required placeholder="Digite a senha novamente" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Permissões -->
+                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-6">
+                            <div class="flex items-center gap-2 mb-5">
+                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                                <h3 class="text-lg font-bold text-slate-800">Permissões e Papel</h3>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                        </svg>
+                                        Papel no Sistema
+                                    </span>
+                                </label>
+                                <select name="role" required class="w-full px-4 py-3 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white">
+                                    <option value="">Selecione o papel...</option>
+                                    <option value="funcionario">Funcionário</option>
+                                    <option value="gerente">Gerente</option>
+                                    <option value="proprietario">Proprietário</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="sticky bottom-0 bg-white border-t border-slate-200 px-4 py-4 flex justify-end gap-3 shadow-lg">
+                            <button type="button" onclick="closeAddUserFullScreen()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Adicionar Usuário
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -2437,7 +2785,128 @@ $v = time();
     <!-- NOTA: Modais principais foram movidos para páginas separadas em subs/ -->
     <!-- O sistema modal-loader.js carrega essas páginas dinamicamente -->
     
-    <!-- Modais principais foram movidos para subs/ (volume-geral.php, volume-vaca.php, teste-qualidade.php, registrar-venda.php) -->
+    <!-- Modal Volume Geral -->
+    <div id="generalVolumeOverlay" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeGeneralVolumeModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Registrar Volume Geral</h3>
+                        <p class="text-sm text-white/90">Volume total da produção</p>
+                    </div>
+                    <button type="button" onclick="closeGeneralVolumeModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="generalVolumeForm" class="p-6 space-y-4">
+                    <div id="generalVolumeMessage" class="hidden p-3 rounded"></div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Data</label>
+                            <input type="date" name="collection_date" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Período</label>
+                            <select name="period" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                                <option value="manha">Manhã</option>
+                                <option value="tarde">Tarde</option>
+                                <option value="noite">Noite</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Volume Total (L)</label>
+                        <input type="number" name="total_volume" step="0.1" min="0" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Temperatura (°C) <span class="text-xs font-normal text-gray-500">(opcional)</span></label>
+                        <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeGeneralVolumeModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-lg hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg">
+                            Registrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Volume por Animal -->
+    <div id="volumeOverlay" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeVolumeModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Registrar Volume por Animal</h3>
+                        <p class="text-sm text-white/90">Volume individual da vaca</p>
+                    </div>
+                    <button type="button" onclick="closeVolumeModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="volumeForm" class="p-6 space-y-4">
+                    <div id="volumeMessage" class="hidden p-3 rounded"></div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Animal</label>
+                        <select name="animal_id" id="volumeAnimalSelect" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Selecione uma vaca...</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Data</label>
+                            <input type="date" name="collection_date" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Período</label>
+                            <select name="period" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="manha">Manhã</option>
+                                <option value="tarde">Tarde</option>
+                                <option value="noite">Noite</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Volume (L)</label>
+                        <input type="number" name="volume" step="0.1" min="0" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Temperatura (°C) <span class="text-xs font-normal text-gray-500">(opcional)</span></label>
+                        <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeVolumeModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg">
+                            Registrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Confirmar Exclusão de Todos os Registros de Volume -->
     <div id="deleteAllVolumeModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
@@ -2653,7 +3122,273 @@ $v = time();
         </div>
     </div>
 
-    <!-- Modais antigos removidos - usar subs/volume-vaca.php, subs/teste-qualidade.php, subs/registrar-venda.php -->
+    <!-- Modal Registrar Despesa -->
+    <div id="expenseOverlay" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeExpenseModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Registrar Despesa</h3>
+                        <p class="text-sm text-white/90">Registro de despesa financeira</p>
+                    </div>
+                    <button type="button" onclick="closeExpenseModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="expenseForm" class="p-6 space-y-4">
+                    <div id="expenseMessage" class="hidden p-3 rounded"></div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Despesa</label>
+                        <input type="date" name="record_date" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Descrição</label>
+                        <input type="text" name="description" placeholder="Descrição da despesa" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Valor (R$)</label>
+                        <input type="number" name="amount" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Observações <span class="text-xs font-normal text-gray-500">(opcional)</span></label>
+                        <textarea name="notes" rows="3" placeholder="Informações adicionais sobre a despesa" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeExpenseModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg">
+                            Registrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Exclusão de Todos os Registros Financeiros -->
+    <div id="deleteAllFinancialModal" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeDeleteAllFinancialModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Confirmar Exclusão</h3>
+                        <p class="text-sm text-white/90">Atenção: Esta ação não pode ser desfeita</p>
+                    </div>
+                    <button type="button" onclick="closeDeleteAllFinancialModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <div>
+                                <h4 class="font-bold text-red-900 mb-2">Tem certeza que deseja excluir TODOS os registros financeiros?</h4>
+                                <p class="text-sm text-red-700">
+                                    Esta ação irá <strong>permanentemente</strong> excluir todos os registros de receitas e despesas. 
+                                    Esta operação <strong>não pode ser desfeita</strong>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="deleteAllFinancialMessage" class="hidden p-3 rounded"></div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeDeleteAllFinancialModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="button" onclick="confirmDeleteAllFinancialRecords()" class="flex-1 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Sim, Excluir Tudo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Exclusão de Todos os Registros de Qualidade -->
+    <div id="deleteAllQualityModal" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeDeleteAllQualityModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Confirmar Exclusão</h3>
+                        <p class="text-sm text-white/90">Atenção: Esta ação não pode ser desfeita</p>
+                    </div>
+                    <button type="button" onclick="closeDeleteAllQualityModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <div>
+                                <h4 class="font-bold text-red-900 mb-2">Tem certeza que deseja excluir TODOS os registros de qualidade?</h4>
+                                <p class="text-sm text-red-700">
+                                    Esta ação irá <strong>permanentemente</strong> excluir todos os testes de qualidade (gordura, proteína, CCS, etc.). 
+                                    Esta operação <strong>não pode ser desfeita</strong>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="deleteAllQualityMessage" class="hidden p-3 rounded"></div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeDeleteAllQualityModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="button" onclick="confirmDeleteAllQualityRecords()" class="flex-1 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Sim, Excluir Tudo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registrar Venda -->
+    <div id="salesOverlay" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeSalesModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Registrar Venda</h3>
+                        <p class="text-sm text-white/90">Registro de receita financeira</p>
+                    </div>
+                    <button type="button" onclick="closeSalesModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="salesForm" class="p-6 space-y-4">
+                    <div id="salesMessage" class="hidden p-3 rounded"></div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Venda</label>
+                        <input type="date" name="sale_date" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Cliente</label>
+                        <input type="text" name="customer" placeholder="Nome do cliente" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Valor Total (R$)</label>
+                        <input type="number" name="total_amount" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Observações <span class="text-xs font-normal text-gray-500">(opcional)</span></label>
+                        <textarea name="notes" rows="3" placeholder="Informações adicionais sobre a venda" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeSalesModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-lg hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg">
+                            Registrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Teste de Qualidade -->
+    <div id="qualityOverlay" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeQualityModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pointer-events-auto">
+                <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Registrar Teste de Qualidade</h3>
+                        <p class="text-sm text-white/90">Análise da qualidade do leite</p>
+                    </div>
+                    <button type="button" onclick="closeQualityModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="qualityForm" class="p-6 space-y-4">
+                    <div id="qualityMessage" class="hidden p-3 rounded"></div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data do Teste</label>
+                        <input type="date" name="test_date" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Gordura (%)</label>
+                            <input type="number" name="fat_content" step="0.01" min="0" max="100" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Proteína (%)</label>
+                            <input type="number" name="protein_content" step="0.01" min="0" max="100" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">CBT (CFU/mL)</label>
+                            <input type="number" name="bacteria_count" step="1" min="0" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Células Somáticas (células/mL) <span class="text-xs font-normal text-gray-500">(opcional)</span></label>
+                            <input type="number" name="somatic_cells" step="1" min="0" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeQualityModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-lg hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg">
+                            Registrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Notifications Drawer (lateral) -->
     <div id="notificationsDrawer" class="fixed inset-0 z-50 hidden">
@@ -2682,57 +3417,6 @@ $v = time();
         </div>
     </div>
 
-    <!-- User Overlay -->
-    <div id="userOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Adicionar Usuário</h3>
-                <button onclick="closeUserOverlay()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            <form id="userForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-                    <input type="text" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input type="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
-                    <input type="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Senha</label>
-                    <input type="password" name="confirm_password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
-                    <select name="role" id="userRoleSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                        <option value="funcionario" selected>Funcionário</option>
-                        <option value="gerente" disabled style="color:#9CA3AF;">Gerente (desativado)</option>
-                        <option value="proprietario" disabled style="color:#9CA3AF;">Proprietário (desativado)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                    <input type="tel" name="phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                </div>
-                <div class="flex space-x-3">
-                    <button type="button" onclick="closeUserOverlay()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                        Adicionar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     
 
@@ -3239,170 +3923,6 @@ $v = time();
         </div>
     </div>
 
-    <!-- Modal de Adicionar Usuário -->
-    <!-- Modal Adicionar Novo Usuário - Melhorado -->
-    <div id="addUserModal" class="fixed inset-0 z-50 hidden animate-fadeIn">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAddUserModal()"></div>
-        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto animate-slideUp">
-                <!-- Header -->
-                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Adicionar Novo Usuário</h3>
-                            <p class="text-sm text-white/90">Criar nova conta no sistema</p>
-                        </div>
-                    </div>
-                    <button onclick="closeAddUserModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Form -->
-                <form id="addUserForm" class="overflow-y-auto max-h-[calc(90vh-200px)]">
-                    <div class="p-6 space-y-6">
-                        <!-- Mensagem de sucesso/erro -->
-                        <div id="addUserMessage" class="hidden p-4 rounded-xl border"></div>
-
-                        <!-- Informações Pessoais -->
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Informações Pessoais</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                            </svg>
-                                            Nome Completo
-                                        </span>
-                                    </label>
-                                    <input type="text" name="name" required placeholder="Nome completo do usuário" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                            </svg>
-                                            Email
-                                        </span>
-                                    </label>
-                                    <input type="email" name="email" required placeholder="usuario@email.com" class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                    <span class="flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                        </svg>
-                                        Telefone
-                                        <span class="text-xs font-normal text-slate-500">(opcional)</span>
-                                    </span>
-                                </label>
-                                <input type="tel" name="phone" placeholder="(00) 00000-0000" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
-                            </div>
-                        </div>
-
-                        <!-- Credenciais -->
-                        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Credenciais de Acesso</h4>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                            </svg>
-                                            Senha
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="password" name="password" id="userPassword" required placeholder="Mínimo 6 caracteres" class="w-full px-4 py-3 pr-12 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
-                                        <button type="button" onclick="toggleUserPasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors" id="userPasswordToggle">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                        <span class="flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                            </svg>
-                                            Confirmar Senha
-                                        </span>
-                                    </label>
-                                    <input type="password" name="confirm_password" required placeholder="Digite a senha novamente" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Permissões -->
-                        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-5">
-                            <div class="flex items-center gap-2 mb-4">
-                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                </svg>
-                                <h4 class="text-base font-bold text-slate-800">Permissões e Papel</h4>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                    <span class="flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                        </svg>
-                                        Papel no Sistema
-                                    </span>
-                                </label>
-                                <select name="role" required class="w-full px-4 py-3 border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white">
-                                    <option value="">Selecione o papel...</option>
-                                    <option value="funcionario">Funcionário</option>
-                                    <option value="gerente">Gerente</option>
-                                    <option value="proprietario">Proprietário</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex justify-end gap-3">
-                        <button type="button" onclick="closeAddUserModal()" class="px-6 py-3 text-sm font-semibold border-2 border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-all">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Adicionar Usuário
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal de Gerenciar Dispositivos / Sessões -->
     <div id="devicesModal" class="fixed inset-0 z-50 hidden">
         <div class="w-full h-full bg-white p-0 overflow-y-auto">
@@ -3859,9 +4379,100 @@ $v = time();
     <script src="assets/js/offline-manager.js?v=<?php echo $v; ?>"></script>
     <script src="assets/js/gerente-completo.js?v=<?php echo $v; ?>"></script>
     
+    <!-- Script inline para garantir que as funções de fechar modais estejam disponíveis -->
+    <script>
+        // Garantir que as funções estejam disponíveis imediatamente
+        if (typeof window.closeGeneralVolumeModal === 'undefined') {
+            window.closeGeneralVolumeModal = function() {
+                const modal = document.getElementById('generalVolumeOverlay');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+                const form = document.getElementById('generalVolumeForm');
+                if (form) form.reset();
+                const msg = document.getElementById('generalVolumeMessage');
+                if (msg) {
+                    msg.classList.add('hidden');
+                    msg.textContent = '';
+                }
+            };
+        }
+        
+        if (typeof window.closeVolumeModal === 'undefined') {
+            window.closeVolumeModal = function() {
+                const modal = document.getElementById('volumeOverlay');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+                const form = document.getElementById('volumeForm');
+                if (form) form.reset();
+                const msg = document.getElementById('volumeMessage');
+                if (msg) {
+                    msg.classList.add('hidden');
+                    msg.textContent = '';
+                }
+            };
+        }
+        
+        if (typeof window.closeQualityModal === 'undefined') {
+            window.closeQualityModal = function() {
+                const modal = document.getElementById('qualityOverlay');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+                const form = document.getElementById('qualityForm');
+                if (form) form.reset();
+                const msg = document.getElementById('qualityMessage');
+                if (msg) {
+                    msg.classList.add('hidden');
+                    msg.textContent = '';
+                }
+            };
+        }
+        
+        if (typeof window.closeSalesModal === 'undefined') {
+            window.closeSalesModal = function() {
+                const modal = document.getElementById('salesOverlay');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+                const form = document.getElementById('salesForm');
+                if (form) form.reset();
+                const msg = document.getElementById('salesMessage');
+                if (msg) {
+                    msg.classList.add('hidden');
+                    msg.textContent = '';
+                }
+            };
+        }
+        
+        if (typeof window.closeExpenseModal === 'undefined') {
+            window.closeExpenseModal = function() {
+                const modal = document.getElementById('expenseOverlay');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+                const form = document.getElementById('expenseForm');
+                if (form) form.reset();
+                const msg = document.getElementById('expenseMessage');
+                if (msg) {
+                    msg.classList.add('hidden');
+                    msg.textContent = '';
+                }
+            };
+        }
+    </script>
+    
     <!-- Módulos JavaScript organizados -->
     <script src="assets/js/toast-notifications.js?v=<?php echo $v; ?>"></script>
     <script src="assets/js/modal-loader.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/native-features.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/native-features.js?v=<?php echo $v; ?>"></script>
     
     <!-- ============================================ -->
     <!-- JAVASCRIPT INLINE - FUNCIONALIDADES ESPECÍFICAS -->
@@ -4568,12 +5179,37 @@ $v = time();
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw-manager.js')
+                navigator.serviceWorker.register('./sw-manager.js', { scope: './' })
                     .then((registration) => {
+                        console.log('Service Worker registrado com sucesso:', registration.scope);
+                        
                         // Verificar atualizações periodicamente
                         setInterval(() => {
                             registration.update();
                         }, 60000); // A cada minuto
+                        
+                        // Ouvir mensagens do Service Worker
+                        navigator.serviceWorker.addEventListener('message', (event) => {
+                            if (event.data && event.data.type === 'SYNC_REQUESTED') {
+                                // Service Worker solicitou sincronização
+                                if (typeof offlineManager !== 'undefined' && offlineManager.isOnline && !offlineManager.forceOffline) {
+                                    offlineManager.sync();
+                                }
+                            }
+                        });
+                        
+                        // Verificar se há atualização disponível
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Nova versão disponível
+                                    if (typeof showToast === 'function') {
+                                        showToast('Nova versão disponível! Recarregue a página para atualizar.', 'info', null, 10000);
+                                    }
+                                }
+                            });
+                        });
                     })
                     .catch((error) => {
                         console.error('Erro ao registrar Service Worker:', error);
@@ -4941,42 +5577,14 @@ $v = time();
         }
         
         function openAddUserModal() {
-            const modal = document.getElementById('addUserModal');
-            const form = document.getElementById('addUserForm');
-            const messageDiv = document.getElementById('addUserMessage');
-            
-            if (modal) {
-                // Resetar formulário e mensagens
-                if (form) {
-                    form.reset();
-                }
-                if (messageDiv) {
-                    messageDiv.classList.add('hidden');
-                    messageDiv.className = 'hidden p-4 rounded-xl border';
-                }
-                
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+            if (typeof window.showAddUserFullScreen === 'function') {
+                window.showAddUserFullScreen();
             }
         }
         
         function closeAddUserModal() {
-            const modal = document.getElementById('addUserModal');
-            const form = document.getElementById('addUserForm');
-            const messageDiv = document.getElementById('addUserMessage');
-            
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-            }
-            
-            // Limpar formulário e mensagens
-            if (form) {
-                form.reset();
-            }
-            if (messageDiv) {
-                messageDiv.classList.add('hidden');
-                messageDiv.className = 'hidden p-4 rounded-xl border';
+            if (typeof window.closeAddUserFullScreen === 'function') {
+                window.closeAddUserFullScreen();
             }
         }
         
@@ -5457,7 +6065,7 @@ $v = time();
                             addUserForm.querySelectorAll('.form-group').forEach(el => {
                                 el.classList.remove('has-error', 'has-success');
                             });
-                            closeAddUserModal();
+                            if (typeof window.closeAddUserFullScreen === 'function') window.closeAddUserFullScreen();
                         } else {
                             showErrorToast(result.error || 'Erro ao adicionar usuário', 'Erro');
                         }
@@ -5596,6 +6204,17 @@ $v = time();
                 switch (tabName) {
                     case 'volume':
                         if (typeof loadVolumeData === 'function') loadVolumeData();
+                        // Adicionar event listener para o select de período
+                        setTimeout(() => {
+                            const volumePeriodSelect = document.getElementById('volumePeriod');
+                            if (volumePeriodSelect) {
+                                volumePeriodSelect.addEventListener('change', function() {
+                                    if (typeof loadVolumeData === 'function') {
+                                        loadVolumeData();
+                                    }
+                                });
+                            }
+                        }, 100);
                         break;
                     case 'quality':
                         if (typeof loadQualityData === 'function') loadQualityData();
@@ -5786,6 +6405,31 @@ $v = time();
 
     <!-- Proteção contra cópia de código no console -->
     <script src="./assets/js/console-protection.js"></script>
+    
+    <!-- Skeleton Loader Script -->
+    <script>
+        // Esconder skeleton loader após 1.5 segundos
+        (function() {
+            function hideSkeletonLoader() {
+                const skeletonLoader = document.getElementById('skeletonLoader');
+                if (skeletonLoader) {
+                    setTimeout(function() {
+                        skeletonLoader.classList.add('fade-out');
+                        setTimeout(function() {
+                            skeletonLoader.style.display = 'none';
+                        }, 300);
+                    }, 1500); // 1.5 segundos
+                }
+            }
+            
+            // Iniciar quando DOM estiver pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', hideSkeletonLoader);
+            } else {
+                hideSkeletonLoader();
+            }
+        })();
+    </script>
 
     <!-- Modal Sistema de Touros Full Screen -->
     <div id="bulls-modal-fullscreen" class="fixed inset-0 bg-gray-50 z-[9999] hidden overflow-y-auto">
