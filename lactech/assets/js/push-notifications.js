@@ -27,10 +27,15 @@ class PushNotifications {
      */
     async setupServiceWorker() {
         try {
-            this.registration = await navigator.serviceWorker.register('/sw.js');
-            console.log('Service Worker registrado:', this.registration);
+            // Usar o service worker principal do sistema
+            this.registration = await navigator.serviceWorker.ready;
+            if (!this.registration) {
+                // Se não estiver pronto, tentar registrar
+                this.registration = await navigator.serviceWorker.register('./sw-manager.js', { scope: './' });
+            }
+            console.log('✅ Service Worker para Push registrado:', this.registration);
         } catch (error) {
-            console.error('Erro ao registrar Service Worker:', error);
+            console.error('❌ Erro ao registrar Service Worker:', error);
         }
     }
 
@@ -165,23 +170,28 @@ class PushNotifications {
      */
     async removeSubscriptionFromServer() {
         try {
-            const response = await fetch('api/push-subscription.php', {
+            const endpoint = this.subscription ? this.subscription.endpoint : null;
+            const response = await fetch('./api/push-subscription.php', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    user_id: this.getCurrentUserId()
+                    endpoint: endpoint
                 })
             });
 
-            if (response.ok) {
-                console.log('Subscription removida do servidor');
+            const result = await response.json();
+            if (response.ok && result.success) {
+                console.log('✅ Subscription removida do servidor');
+                return true;
             } else {
-                console.error('Erro ao remover subscription do servidor');
+                console.error('❌ Erro ao remover subscription:', result.error);
+                return false;
             }
         } catch (error) {
-            console.error('Erro ao remover subscription:', error);
+            console.error('❌ Erro ao remover subscription:', error);
+            return false;
         }
     }
 

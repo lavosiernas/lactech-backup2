@@ -92,9 +92,6 @@ class OfflineManager {
             }, 10000); // A cada 10 segundos
         }, 2000); // Aguardar 2 segundos antes da primeira verificação
         
-        // Mostrar status inicial
-        this.updateUI();
-        
         // Tentar sincronizar ao carregar (se estiver online e não forçado offline)
         if (this.isOnline && !this.forceOffline) {
             this.sync();
@@ -102,40 +99,9 @@ class OfflineManager {
         
         // Verificar conexão periodicamente com intervalo adaptativo
         this.startAdaptiveSyncInterval();
-        
-        // Iniciar timer de notificações offline (a cada 5 minutos)
-        this.startOfflineNotificationTimer();
     }
     
-    startOfflineNotificationTimer() {
-        // Limpar timer anterior se existir
-        if (this.offlineNotificationInterval) {
-            clearInterval(this.offlineNotificationInterval);
-        }
-        
-        // Verificar se está offline e iniciar timer
-        if (!this.isOnline || this.forceOffline) {
-            // Mostrar primeira notificação imediatamente se estiver offline
-            this.showOfflineNotification();
-            
-            // Configurar timer para mostrar a cada 5 minutos (300000ms)
-            this.offlineNotificationInterval = setInterval(() => {
-                if (!this.isOnline || this.forceOffline) {
-                    this.showOfflineNotification();
-                } else {
-                    // Se voltar a ficar online, parar o timer
-                    this.stopOfflineNotificationTimer();
-                }
-            }, 300000); // 5 minutos
-        }
-    }
-    
-    stopOfflineNotificationTimer() {
-        if (this.offlineNotificationInterval) {
-            clearInterval(this.offlineNotificationInterval);
-            this.offlineNotificationInterval = null;
-        }
-    }
+    // Funções de notificação removidas - modo totalmente silencioso
     
     startAdaptiveSyncInterval() {
         // Limpar intervalo anterior se existir
@@ -206,11 +172,8 @@ class OfflineManager {
     }
     
     showOfflineNotification() {
-        const statusText = this.queue.length > 0 
-            ? `Você está offline. ${this.queue.length} registro(s) aguardando sincronização.`
-            : 'Você está offline. Os registros serão salvos localmente e sincronizados quando a conexão for restaurada.';
-        
-        this.showNotification(statusText, 'warning');
+        // Notificações removidas - modo totalmente silencioso
+        // Registros são salvos e sincronizados automaticamente sem interromper o usuário
     }
     
     async checkConnectionQuality() {
@@ -262,17 +225,39 @@ class OfflineManager {
                         if (recentPoor >= 2) {
                             this.forceOffline = true;
                             localStorage.setItem('lactech_force_offline', 'true');
-                            this.showNotification('Conexão lenta detectada. Modo offline ativado automaticamente.', 'warning');
+                            // Modo silencioso - sem notificações
                             this.updateUI();
                             this.startAdaptiveSyncInterval(); // Atualizar intervalo
                         }
                     }
                 } else {
                     this.connectionQuality = 'good';
-                    // Se estava forçado offline mas agora a conexão melhorou, desativar modo offline
-                    // Mas só se não houver registros pendentes (para não interromper sincronização)
-                    if (this.forceOffline && avgLatency < 1000 && this.queue.length === 0) {
-                        this.toggleOfflineMode(false);
+                    // Se estava forçado offline mas agora a conexão melhorou, desativar modo offline automaticamente
+                    // Verificar se conexão está estável (latência baixa por pelo menos 3 verificações)
+                    if (this.forceOffline && avgLatency < 1000) {
+                        // Verificar se as últimas 3 medições foram boas
+                        const recentGood = this.latencyHistory.slice(-3).filter(l => l < 1000).length;
+                        if (recentGood >= 3) {
+                            // Conexão estável - voltar online automaticamente
+                            this.forceOffline = false;
+                            localStorage.setItem('lactech_force_offline', 'false');
+                            
+                            // Informar Service Worker
+                            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                                navigator.serviceWorker.controller.postMessage({
+                                    type: 'FORCE_ONLINE'
+                                });
+                            }
+                            
+                            this.updateUI();
+                            
+                            // Sincronizar imediatamente se houver registros pendentes
+                            if (this.queue.length > 0) {
+                                setTimeout(() => {
+                                    this.sync();
+                                }, 1000);
+                            }
+                        }
                     }
                     // Atualizar intervalo de sincronização
                     this.startAdaptiveSyncInterval();
@@ -291,7 +276,7 @@ class OfflineManager {
                 if (!this.forceOffline && this.connectionCheckInterval && !navigator.onLine) {
                     this.forceOffline = true;
                     localStorage.setItem('lactech_force_offline', 'true');
-                    this.showNotification('Conexão lenta detectada. Modo offline ativado automaticamente.', 'warning');
+                    // Modo silencioso - sem notificações
                     this.updateUI();
                 }
             } else {
@@ -301,49 +286,15 @@ class OfflineManager {
                 if (!this.forceOffline && !navigator.onLine) {
                     this.forceOffline = true;
                     localStorage.setItem('lactech_force_offline', 'true');
+                    // Modo silencioso - sem notificações
                     this.updateUI();
                 }
             }
         }
     }
     
-    toggleOfflineMode(force = null) {
-        if (force === null) {
-            this.forceOffline = !this.forceOffline;
-        } else {
-            this.forceOffline = force;
-        }
-        
-        localStorage.setItem('lactech_force_offline', this.forceOffline ? 'true' : 'false');
-        
-        // Informar Service Worker
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-                type: this.forceOffline ? 'FORCE_OFFLINE' : 'FORCE_ONLINE'
-            });
-        }
-        
-        this.updateUI();
-        
-        if (this.forceOffline) {
-            this.showNotification('Modo offline ativado manualmente', 'info');
-            // Iniciar timer de notificações offline
-            this.startOfflineNotificationTimer();
-        } else {
-            this.showNotification('Modo online restaurado', 'success');
-            // Parar timer de notificações offline
-            this.stopOfflineNotificationTimer();
-            // Tentar sincronizar imediatamente
-            if (this.queue.length > 0) {
-                // Aguardar um pouco para garantir que a conexão está estável
-                setTimeout(() => {
-                    this.sync();
-                }, 1000);
-            }
-            // Atualizar intervalo de sincronização
-            this.startAdaptiveSyncInterval();
-        }
-    }
+    // Função removida - modo offline agora é totalmente automático
+    // Não há mais controle manual, tudo é gerenciado automaticamente
     
     loadQueue() {
         try {
@@ -406,7 +357,6 @@ class OfflineManager {
             } else {
                 // Mesmo online, se estiver forçado offline, manter modo offline e iniciar timer
                 this.updateUI();
-                this.startOfflineNotificationTimer();
             }
         }, 1000);
     }
@@ -417,8 +367,7 @@ class OfflineManager {
         this.forceOffline = true; // Ativar modo offline automaticamente
         localStorage.setItem('lactech_force_offline', 'true');
         this.updateUI();
-        // Iniciar timer de notificações offline
-        this.startOfflineNotificationTimer();
+            // Modo silencioso - sem notificações
     }
     
     async addToQueue(type, data, endpoint) {
@@ -670,107 +619,19 @@ class OfflineManager {
     }
     
     updateUI() {
-        const indicator = document.getElementById('offline-indicator');
-        const badge = document.getElementById('offline-badge');
-        const offlineToggleBtn = document.getElementById('offline-toggle-btn');
-        const offlineBanner = document.getElementById('offline-status-banner');
-        const bannerMessage = document.getElementById('offline-banner-message');
-        const mainContent = document.getElementById('main-content');
+        // UI simplificada - sem banner, sem botão toggle
+        // Apenas sincronização silenciosa em background
+        // Não mostrar nada visualmente para não atrapalhar o usuário
         
-        // Atualizar banner mobile
-        if (offlineBanner) {
-            if (this.forceOffline || !this.isOnline) {
-                offlineBanner.classList.remove('hidden');
-                if (bannerMessage) {
-                    if (this.queue.length > 0) {
-                        bannerMessage.textContent = `${this.queue.length} registro(s) aguardando sincronização`;
-                    } else {
-                        bannerMessage.textContent = 'Seus registros serão sincronizados automaticamente';
-                    }
-                }
-                // Adicionar padding-top ao main para compensar o banner
-                if (mainContent) {
-                    mainContent.style.paddingTop = '60px';
-                }
-            } else {
-                offlineBanner.classList.add('hidden');
-                if (mainContent) {
-                    mainContent.style.paddingTop = '';
-                }
-            }
+        // Log apenas para debug (remover em produção se necessário)
+        if (this.queue.length > 0) {
+            console.log(`[Offline Manager] ${this.queue.length} registro(s) aguardando sincronização`);
         }
         
-        if (!indicator) {
-            // Criar indicador se não existir
-            this.createIndicator();
-            return;
-        }
-        
-        // Atualizar botão de toggle (switch)
-        if (offlineToggleBtn) {
-            const thumb = document.getElementById('offline-toggle-thumb');
-            const iconOnline = document.getElementById('offline-icon-online');
-            const iconOffline = document.getElementById('offline-icon-offline');
-            const statusText = document.getElementById('offline-status-text');
-            const pendingBadge = document.getElementById('offline-pending-badge');
-            
-            if (this.forceOffline) {
-                // Modo offline ativo
-                offlineToggleBtn.classList.remove('bg-gray-300');
-                offlineToggleBtn.classList.add('bg-yellow-500');
-                if (thumb) {
-                    thumb.classList.remove('translate-x-1');
-                    thumb.classList.add('translate-x-7');
-                }
-                offlineToggleBtn.setAttribute('aria-checked', 'true');
-                
-                if (iconOnline) iconOnline.classList.add('hidden');
-                if (iconOffline) iconOffline.classList.remove('hidden');
-                if (statusText) {
-                    statusText.textContent = this.queue.length > 0 
-                        ? `${this.queue.length} registro(s) aguardando sincronização`
-                        : 'Modo offline ativo';
-                    statusText.classList.remove('text-gray-600');
-                    statusText.classList.add('text-yellow-600');
-                }
-                
-                if (pendingBadge) {
-                    if (this.queue.length > 0) {
-                        pendingBadge.textContent = this.queue.length;
-                        pendingBadge.classList.remove('hidden');
-                    } else {
-                        pendingBadge.classList.add('hidden');
-                    }
-                }
-            } else {
-                // Modo online
-                offlineToggleBtn.classList.remove('bg-yellow-500');
-                offlineToggleBtn.classList.add('bg-gray-300');
-                if (thumb) {
-                    thumb.classList.remove('translate-x-7');
-                    thumb.classList.add('translate-x-1');
-                }
-                offlineToggleBtn.setAttribute('aria-checked', 'false');
-                
-                if (iconOnline) iconOnline.classList.remove('hidden');
-                if (iconOffline) iconOffline.classList.add('hidden');
-                if (statusText) {
-                    statusText.textContent = this.queue.length > 0 
-                        ? `${this.queue.length} registro(s) na fila`
-                        : 'Sincronização automática ativada';
-                    statusText.classList.remove('text-yellow-600');
-                    statusText.classList.add('text-gray-600');
-                }
-                
-                if (pendingBadge) {
-                    if (this.queue.length > 0) {
-                        pendingBadge.textContent = this.queue.length;
-                        pendingBadge.classList.remove('hidden');
-                    } else {
-                        pendingBadge.classList.add('hidden');
-                    }
-                }
-            }
+        // Se houver registros pendentes e estiver online, sincronizar silenciosamente
+        if (this.isOnline && !this.forceOffline && this.queue.length > 0 && !this.syncInProgress) {
+            // Sincronizar em background sem notificar o usuário
+            this.sync();
         }
         
         // Atualizar indicador no topo (apenas quando há registros pendentes ou sincronizando)

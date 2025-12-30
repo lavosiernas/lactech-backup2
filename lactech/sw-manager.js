@@ -6,18 +6,19 @@
 const CACHE_NAME = 'lactech-manager-v3';
 const RUNTIME_CACHE = 'lactech-runtime-v3';
 const IMAGE_CACHE = 'lactech-images-v3';
-const OFFLINE_PAGE = '/gerente-completo.php';
+const OFFLINE_PAGE = './gerente-completo.php';
+const MAIN_PAGE = './gerente-completo.php';
 
 // Versão do cache - incrementar quando houver mudanças significativas
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 5; // Incrementado para melhorias de PWA e cache
 
 // Arquivos estáticos críticos para cache inicial
+// NÃO incluir páginas PHP dinâmicas - apenas recursos estáticos
 const STATIC_CACHE_FILES = [
-    '/gerente-completo.php',
-    '/assets/js/gerente-completo.js',
-    '/assets/js/offline-manager.js',
-    '/manifest.json',
-    '/assets/img/lactech-logo.png'
+    './assets/js/gerente-completo.js',
+    './assets/js/offline-manager.js',
+    './manifest.json',
+    './assets/img/lactech-logo.png'
 ];
 
 // Recursos que devem ser cacheados em runtime
@@ -31,7 +32,10 @@ const RUNTIME_CACHE_PATTERNS = [
 const NO_CACHE_PATTERNS = [
     /chrome-extension:/,
     /\/api\/.*\/delete/,
-    /\/api\/.*\/delete_all/
+    /\/api\/.*\/delete_all/,
+    /mais-opcoes\.php/,
+    /relatorios\.php/,
+    /config\.php/
 ];
 
 // Instalar Service Worker
@@ -112,12 +116,14 @@ self.addEventListener('fetch', (event) => {
                         JSON.stringify({
                             success: true,
                             offline: true,
-                            message: 'Registro salvo localmente. Será sincronizado quando a conexão for restaurada.'
+                            message: 'Registro salvo localmente. Sera sincronizado quando a conexao for restaurada.'
                         }),
                         {
                             status: 200,
                             statusText: 'OK',
-                            headers: { 'Content-Type': 'application/json' }
+                            headers: { 
+                                'Content-Type': 'application/json; charset=UTF-8'
+                            }
                         }
                     )
                 );
@@ -141,12 +147,14 @@ self.addEventListener('fetch', (event) => {
                             JSON.stringify({
                                 success: true,
                                 offline: true,
-                                message: 'Registro salvo localmente. Será sincronizado quando a conexão for restaurada.'
+                                message: 'Registro salvo localmente. Sera sincronizado quando a conexao for restaurada.'
                             }),
                             {
                                 status: 200,
                                 statusText: 'OK',
-                                headers: { 'Content-Type': 'application/json' }
+                                headers: { 
+                                    'Content-Type': 'application/json; charset=UTF-8'
+                                }
                             }
                         );
                     })
@@ -179,7 +187,9 @@ self.addEventListener('fetch', (event) => {
                                 {
                                     status: 503,
                                     statusText: 'Service Unavailable',
-                                    headers: { 'Content-Type': 'application/json' }
+                                    headers: { 
+                                        'Content-Type': 'application/json; charset=UTF-8'
+                                    }
                                 }
                             );
                         });
@@ -190,13 +200,111 @@ self.addEventListener('fetch', (event) => {
     }
 
     // Verificar se deve cachear este recurso
-    const shouldCache = RUNTIME_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname)) &&
+    // Não cachear páginas PHP dinâmicas (exceto a principal quando offline)
+    const isPHPPage = url.pathname.endsWith('.php') && !url.pathname.includes('gerente-completo.php');
+    const shouldCache = !isPHPPage && 
+                       RUNTIME_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname)) &&
                        !NO_CACHE_PATTERNS.some(pattern => pattern.test(request.url)) &&
                        request.method === 'GET';
 
     // Determinar qual cache usar
     const isImage = /\.(?:png|jpg|jpeg|gif|svg|webp)$/i.test(url.pathname);
     const cacheToUse = isImage ? IMAGE_CACHE : RUNTIME_CACHE;
+
+    // Para páginas HTML, verificar se é a página principal ou outra página
+    const isHTML = request.headers.get('accept') && request.headers.get('accept').includes('text/html');
+    const isMainPage = url.pathname.includes('gerente-completo.php') || url.pathname === '/' || url.pathname.endsWith('/');
+    
+    if (isHTML) {
+        // Para páginas diferentes da principal, usar Network First (não cachear navegação)
+        if (!isMainPage) {
+            event.respondWith(
+                fetch(request.clone())
+                    .then((response) => {
+                        // Não cachear outras páginas PHP - permitir navegação normal
+                        return response;
+                    })
+                    .catch(() => {
+                        // Se offline e não for página principal, retornar erro
+                        return new Response('Página não disponível offline', {
+                            status: 503,
+                            statusText: 'Service Unavailable',
+                            headers: { 
+                                'Content-Type': 'text/plain; charset=UTF-8'
+                            }
+                        });
+                    })
+            );
+            return;
+        }
+        
+        // Para página principal, usar Network First com fallback para cache (apenas quando offline)
+        event.respondWith(
+            fetch(request.clone())
+                .then((response) => {
+                    // Se online, sempre buscar da rede e atualizar cache em background
+                    if (response.ok && shouldCache) {
+                        const responseClone = response.clone();
+                        caches.open(cacheToUse).then((cache) => {
+                            cache.put(request, responseClone).catch(() => {});
+                        });
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    // Só usar cache se realmente estiver offline
+                    return caches.match(request).then((cachedResponse) => {
+                        if (cachedResponse) {
+                            console.log('[Service Worker] Servindo página principal do cache (offline)');
+                            return cachedResponse;
+                        }
+                        
+                        // Tentar variações de URL apenas se realmente offline
+                        const urlWithoutQuery = new URL(request.url);
+                        urlWithoutQuery.search = '';
+                        const cleanUrl = urlWithoutQuery.toString();
+                        
+                        const searchUrls = [
+                            MAIN_PAGE,
+                            './gerente-completo.php',
+                            '/gerente-completo.php',
+                            'gerente-completo.php',
+                            cleanUrl
+                        ];
+                        
+                        return caches.keys().then((cacheNames) => {
+                            return Promise.all(
+                                cacheNames.map((cacheName) => {
+                                    return caches.open(cacheName).then((cache) => {
+                                        return Promise.all(
+                                            searchUrls.map(url => cache.match(url))
+                                        ).then((matches) => {
+                                            return matches.find(m => m !== undefined);
+                                        });
+                                    });
+                                })
+                            ).then((responses) => {
+                                const foundResponse = responses.find(r => r !== undefined);
+                                if (foundResponse) {
+                                    console.log('[Service Worker] Página encontrada no cache (offline)');
+                                    return foundResponse;
+                                }
+                                
+                                // Se não encontrar, retornar erro
+                                return new Response('Página não disponível offline', {
+                                    status: 503,
+                                    statusText: 'Service Unavailable',
+                                    headers: { 
+                                        'Content-Type': 'text/plain; charset=UTF-8'
+                                    }
+                                });
+                            });
+                        });
+                    });
+                })
+        );
+        return;
+    }
 
     // Para outros recursos, usar estratégia Network First com fallback para cache
     event.respondWith(
@@ -220,19 +328,13 @@ self.addEventListener('fetch', (event) => {
                         console.log('[Service Worker] Servindo do cache:', request.url);
                         return cachedResponse;
                     }
-                    // Se não encontrar no cache e for uma página HTML, redirecionar para offline
-                    if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
-                        return caches.match(OFFLINE_PAGE).then((offlinePage) => {
-                            return offlinePage || new Response('Modo offline - Página não disponível', {
-                                status: 503,
-                                statusText: 'Service Unavailable',
-                                headers: { 'Content-Type': 'text/html' }
-                            });
-                        });
-                    }
-                    return new Response('Recurso não disponível offline', {
+                    
+                    return new Response('Recurso nao disponivel offline', {
                         status: 503,
-                        statusText: 'Service Unavailable'
+                        statusText: 'Service Unavailable',
+                        headers: { 
+                            'Content-Type': 'text/plain; charset=UTF-8'
+                        }
                     });
                 });
             })
@@ -243,6 +345,12 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
+        // Notificar clientes sobre atualização
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({ type: 'SW_UPDATED' });
+            });
+        });
     }
     
     if (event.data && event.data.type === 'FORCE_OFFLINE') {
@@ -292,4 +400,107 @@ if ('sync' in self.registration) {
         }
     });
 }
+
+// Push Notifications - NOTIFICAÇÕES NATIVAS (funcionam mesmo com app fechado)
+self.addEventListener('push', function(event) {
+    console.log('[Service Worker] Push notification recebida');
+    
+    let data = {
+        title: 'LacTech - Nova Notificação',
+        body: 'Você tem uma nova notificação',
+        icon: './assets/img/lactech-logo.png',
+        badge: './assets/img/lactech-logo.png',
+        tag: 'lactech-push',
+        requireInteraction: false,
+        data: {
+            url: './gerente-completo.php'
+        }
+    };
+    
+    // Tentar parsear dados do push
+    if (event.data) {
+        try {
+            const pushData = event.data.json();
+            data = {
+                title: pushData.title || data.title,
+                body: pushData.body || pushData.message || data.body,
+                icon: pushData.icon || data.icon,
+                badge: pushData.badge || data.badge,
+                tag: pushData.tag || data.tag,
+                requireInteraction: pushData.requireInteraction !== undefined ? pushData.requireInteraction : data.requireInteraction,
+                data: {
+                    url: pushData.url || pushData.link || data.data.url,
+                    notificationId: pushData.notificationId || pushData.id,
+                    action: pushData.action
+                }
+            };
+        } catch (e) {
+            // Se não for JSON, usar como texto
+            data.body = event.data.text() || data.body;
+        }
+    }
+    
+    const options = {
+        body: data.body,
+        icon: data.icon,
+        badge: data.badge,
+        tag: data.tag,
+        requireInteraction: data.requireInteraction,
+        vibrate: [200, 100, 200], // Vibração no mobile
+        data: data.data,
+        actions: [
+            {
+                action: 'open',
+                title: 'Abrir',
+                icon: './assets/img/lactech-logo.png'
+            },
+            {
+                action: 'close',
+                title: 'Fechar'
+            }
+        ]
+    };
+    
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+// Notification Click - quando usuário clica na notificação
+self.addEventListener('notificationclick', function(event) {
+    console.log('[Service Worker] Notificação clicada:', event.notification);
+    
+    event.notification.close();
+    
+    const notificationData = event.notification.data || {};
+    const action = event.action || notificationData.action;
+    
+    if (action === 'close') {
+        // Apenas fechar
+        return;
+    }
+    
+    // Abrir ou focar na aplicação
+    const urlToOpen = notificationData.url || './gerente-completo.php';
+    
+    event.waitUntil(
+        clients.matchAll({
+            type: 'window',
+            includeUncontrolled: true
+        }).then(function(clientList) {
+            // Verificar se já existe uma janela aberta
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
+                if (client.url === urlToOpen && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            
+            // Se não houver janela aberta, abrir nova
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
+        })
+    );
+});
 

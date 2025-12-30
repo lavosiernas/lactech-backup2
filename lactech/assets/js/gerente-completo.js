@@ -33,6 +33,30 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNavigation();
     initializeOverlays();
     
+    // Observar mudanças na aba de controle de animais
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const animalsControlTab = document.getElementById('animals-control-tab');
+                if (animalsControlTab && !animalsControlTab.classList.contains('hidden')) {
+                    // Aba foi exibida, carregar dados
+                    setTimeout(() => {
+                        loadAnimalsControlData();
+                    }, 100);
+                }
+            }
+        });
+    });
+    
+    // Observar a aba de controle de animais
+    const animalsControlTab = document.getElementById('animals-control-tab');
+    if (animalsControlTab) {
+        observer.observe(animalsControlTab, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    }
+    
     // Aguardar Chart.js estar carregado antes de carregar dados
     function initializeDashboard() {
         if (typeof Chart !== 'undefined') {
@@ -79,26 +103,33 @@ function switchTab(tabName) {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    const navItem = document.querySelector(`[data-tab="${tabName}"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
     
     // Mostrar conteúdo da aba
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.add('hidden');
     });
-    document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+    const tabContent = document.getElementById(`${tabName}-tab`);
+    if (tabContent) {
+        tabContent.classList.remove('hidden');
+    }
     
     currentTab = tabName;
     
-    // Lazy loading: carregar dados apenas se ainda não foram carregados
-    if (!loadedTabs.has(tabName)) {
-        loadedTabs.add(tabName);
-        
-        // Carregar dados específicos da aba
-        switch(tabName) {
-            case 'dashboard':
+    // Carregar dados específicos da aba (sempre, não apenas na primeira vez)
+    switch(tabName) {
+        case 'dashboard':
+            if (!loadedTabs.has(tabName)) {
+                loadedTabs.add(tabName);
                 loadDashboardData();
-                break;
-            case 'volume':
+            }
+            break;
+        case 'volume':
+            if (!loadedTabs.has(tabName)) {
+                loadedTabs.add(tabName);
                 loadVolumeData();
                 // Garantir que a tabela seja carregada mesmo se loadVolumeData falhar
                 setTimeout(() => {
@@ -109,17 +140,32 @@ function switchTab(tabName) {
                         loadVolumeRecordsTable();
                     }
                 }, 500);
-                break;
-            case 'quality':
+            }
+            break;
+        case 'animals-control':
+            // Sempre carregar quando a aba for aberta (não usar lazy loading)
+            setTimeout(() => {
+                loadAnimalsControlData();
+            }, 200);
+            break;
+        case 'quality':
+            if (!loadedTabs.has(tabName)) {
+                loadedTabs.add(tabName);
                 loadQualityData();
-                break;
-            case 'payments':
+            }
+            break;
+        case 'payments':
+            if (!loadedTabs.has(tabName)) {
+                loadedTabs.add(tabName);
                 loadFinancialData();
-                break;
-            case 'users':
+            }
+            break;
+        case 'users':
+            if (!loadedTabs.has(tabName)) {
+                loadedTabs.add(tabName);
                 loadUsersData();
-                break;
-        }
+            }
+            break;
     }
 }
 
@@ -958,15 +1004,29 @@ async function viewVolumeDetails(id) {
             });
         };
         
-        // Criar modal de detalhes
+        // Criar modal de detalhes com diferenciação visual
+        const isIndividual = record.record_type === 'individual';
+        const headerColor = isIndividual ? 'from-indigo-500 to-indigo-600' : 'from-green-500 to-emerald-600';
+        const headerIcon = isIndividual ? 
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>' :
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>';
+        const title = isIndividual ? 'Detalhes do Registro Individual' : 'Detalhes do Registro Geral';
+        
         const modalHtml = `
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="closeVolumeDetailsModal()">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
                     <!-- Header -->
-                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 flex items-center justify-between sticky top-0">
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Detalhes do Registro de Volume</h3>
-                            <p class="text-sm text-blue-100">ID: #${record.id}</p>
+                    <div class="bg-gradient-to-r ${headerColor} px-6 py-4 flex items-center justify-between sticky top-0 rounded-t-2xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    ${headerIcon}
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">${title}</h3>
+                                <p class="text-sm text-white/90">ID: #${record.id}</p>
+                            </div>
                         </div>
                         <button onclick="closeVolumeDetailsModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1056,6 +1116,28 @@ async function viewVolumeDetails(id) {
                                     </p>
                                 </div>
                                 ` : ''}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${record.record_type === 'general' && record.animals && record.animals.length > 0 ? `
+                        <!-- Lista de Animais da Ordenha (Registro Geral) -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
+                            <h4 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Animais da Ordenha (${record.animals.length} ${record.animals.length === 1 ? 'animal' : 'animais'})
+                            </h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto">
+                                ${record.animals.map(animal => `
+                                    <div class="bg-white rounded-lg p-3 border border-green-200 text-center">
+                                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <span class="text-lg font-bold text-green-600">${animal.animal_number || 'N/A'}</span>
+                                        </div>
+                                        <p class="text-xs font-semibold text-slate-700">${animal.total_volume.toFixed(2)} L</p>
+                                    </div>
+                                `).join('')}
                             </div>
                         </div>
                         ` : ''}
@@ -2959,12 +3041,92 @@ window.closeGeneralVolumeModal = function() {
         document.body.style.overflow = 'auto';
     }
     const form = document.getElementById('generalVolumeForm');
-    if (form) form.reset();
+    if (form) {
+        form.reset();
+        const absentInput = document.getElementById('absentAnimalsInput');
+        if (absentInput) absentInput.value = '';
+    }
     const messageDiv = document.getElementById('generalVolumeMessage');
     if (messageDiv) {
         messageDiv.classList.add('hidden');
         messageDiv.textContent = '';
     }
+};
+
+// Variável global para armazenar animais ausentes
+let absentAnimalsList = [];
+let allAnimalsList = [];
+
+// Abrir modal de animais ausentes
+window.openAbsentAnimalsModal = async function() {
+    const modal = document.getElementById('absentAnimalsOverlay');
+    if (!modal) return;
+    
+    const listDiv = document.getElementById('absentAnimalsList');
+    if (!listDiv) return;
+    
+    listDiv.innerHTML = '<p class="text-center text-gray-500 py-8">Carregando animais...</p>';
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    try {
+        // Buscar todos os animais ativos
+        const response = await fetch('./api/animals.php?action=get_active_lactating');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            allAnimalsList = result.data;
+            const absentInput = document.getElementById('absentAnimalsInput');
+            absentAnimalsList = absentInput ? JSON.parse(absentInput.value || '[]') : [];
+            
+            if (allAnimalsList.length === 0) {
+                listDiv.innerHTML = '<p class="text-center text-gray-500 py-8">Nenhum animal cadastrado</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = allAnimalsList.map(animal => {
+                const isAbsent = absentAnimalsList.includes(animal.id);
+                return `
+                    <label class="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all ${isAbsent ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-gray-300'}">
+                        <input type="checkbox" value="${animal.id}" ${isAbsent ? 'checked' : ''} 
+                            onchange="toggleAbsentAnimal(${animal.id}, this.checked)"
+                            class="w-5 h-5 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                        <div class="flex-1">
+                            <p class="font-semibold text-slate-900">${animal.name || 'Sem nome'}</p>
+                            <p class="text-sm text-slate-500">Nº ${animal.animal_number || 'N/A'}</p>
+                        </div>
+                        ${isAbsent ? '<span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded">Ausente</span>' : ''}
+                    </label>
+                `;
+            }).join('');
+        } else {
+            listDiv.innerHTML = '<p class="text-center text-red-500 py-8">Erro ao carregar animais</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar animais:', error);
+        listDiv.innerHTML = '<p class="text-center text-red-500 py-8">Erro ao carregar animais</p>';
+    }
+};
+
+// Fechar modal de animais ausentes
+window.closeAbsentAnimalsModal = function() {
+    const modal = document.getElementById('absentAnimalsOverlay');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+};
+
+// Salvar seleção de animais ausentes (do modal antigo - manter para compatibilidade)
+window.saveAbsentAnimals = function() {
+    const absentInput = document.getElementById('absentAnimalsInput');
+    if (absentInput) {
+        absentInput.value = JSON.stringify(absentAnimalsList);
+    }
+    closeAbsentAnimalsModal();
+    
+    // Atualizar select de animais no modal de volume por animal (remover ausentes)
+    populateVolumeAnimalSelect();
 };
 
 // Abrir modal Volume por Animal
@@ -3012,18 +3174,34 @@ async function populateVolumeAnimalSelect() {
     if (!select) return;
     
     try {
-        const res = await fetch('./api/animals.php?action=get_active_lactating');
+        const res = await fetch('./api/animals.php?action=get_all');
         const result = await res.json();
         
         select.innerHTML = '<option value="">Selecione uma vaca...</option>';
         
+        // Obter lista de animais ausentes do dia atual
+        const today = new Date().toISOString().split('T')[0];
+        const storageKey = `absentAnimals_${today}`;
+        const storedData = localStorage.getItem(storageKey);
+        const absentAnimals = storedData ? JSON.parse(storedData) : [];
+        
         if (result.success && Array.isArray(result.data)) {
-            result.data.forEach(animal => {
-                const option = document.createElement('option');
-                option.value = animal.id;
-                option.textContent = `${animal.name || 'Sem nome'} (${animal.animal_number || 'N/A'})`;
-                select.appendChild(option);
-            });
+            // Filtrar apenas animais ativos e em lactação, e que não estão ausentes
+            result.data
+                .filter(animal => {
+                    const isActive = animal.is_active !== 0 && animal.is_active !== '0';
+                    const isLactating = !animal.status || 
+                                      animal.status.toLowerCase().includes('lactação') || 
+                                      animal.status.toLowerCase().includes('lactacao') ||
+                                      animal.status.toLowerCase().includes('lactante');
+                    return isActive && isLactating && !absentAnimals.includes(animal.id);
+                })
+                .forEach(animal => {
+                    const option = document.createElement('option');
+                    option.value = animal.id;
+                    option.textContent = `${animal.name || 'Sem nome'} (${animal.animal_number || 'N/A'})`;
+                    select.appendChild(option);
+                });
         }
     } catch (error) {
         console.error('Erro ao carregar animais:', error);
@@ -3051,6 +3229,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 const result = await offlineFetch('./api/actions.php', formData, 'volume_general');
+                
+                // Sempre reabilitar o botão, independente do resultado
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
                 if (result.success) {
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
@@ -3060,6 +3243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         messageDiv.classList.remove('hidden');
                     }
                     generalVolumeForm.reset();
+                    document.getElementById('absentAnimalsInput').value = '';
                     if (!result.offline) {
                         setTimeout(() => {
                             closeGeneralVolumeModal();
@@ -3077,18 +3261,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao registrar volume');
                         messageDiv.classList.remove('hidden');
                     }
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
                 }
             } catch (err) {
                 console.error('Erro ao registrar volume geral:', err);
+                // Sempre reabilitar o botão em caso de erro
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
                 if (messageDiv) {
                     messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
                     messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro ao processar registro. Tente novamente.';
                     messageDiv.classList.remove('hidden');
                 }
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
             }
         });
     }
@@ -3112,6 +3295,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 const result = await offlineFetch('./api/actions.php', formData, 'volume_animal');
+                
+                // Sempre reabilitar o botão, independente do resultado
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
                 if (result.success) {
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-blue-200 bg-blue-50 text-blue-800 flex items-center gap-2';
@@ -3135,18 +3323,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao registrar volume');
                         messageDiv.classList.remove('hidden');
                     }
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
                 }
             } catch (err) {
                 console.error('Erro ao registrar volume por animal:', err);
+                // Sempre reabilitar o botão em caso de erro
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
                 if (messageDiv) {
                     messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
                     messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro de conexão. Tente novamente.';
                     messageDiv.classList.remove('hidden');
                 }
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
             }
         });
     }
@@ -9894,3 +10081,317 @@ function formatCurrency(value) {
         currency: 'BRL'
     }).format(value || 0);
 }
+
+// Carregar dados do controle de animais
+async function loadAnimalsControlData() {
+    console.log('loadAnimalsControlData chamada');
+    
+    // Definir data atual (não editável) - fazer isso primeiro e sempre
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const dateFormatted = today.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        weekday: 'long'
+    });
+    
+    console.log('Data formatada:', dateFormatted);
+    
+    // Sempre atualizar a data imediatamente
+    const dateDisplay = document.getElementById('animalsControlDate');
+    const dateInput = document.getElementById('animalsControlDateValue');
+    
+    if (dateDisplay) {
+        const formattedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+        dateDisplay.textContent = formattedDate;
+        console.log('Data exibida:', formattedDate);
+    } else {
+        console.error('Elemento animalsControlDate não encontrado');
+        // Tentar novamente após um pequeno delay
+        setTimeout(() => {
+            const retryDateDisplay = document.getElementById('animalsControlDate');
+            if (retryDateDisplay) {
+                const formattedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+                retryDateDisplay.textContent = formattedDate;
+            }
+        }, 100);
+    }
+    
+    if (dateInput) {
+        dateInput.value = dateStr;
+        console.log('Data salva no input:', dateStr);
+    } else {
+        console.error('Elemento animalsControlDateValue não encontrado');
+        // Tentar novamente após um pequeno delay
+        setTimeout(() => {
+            const retryDateInput = document.getElementById('animalsControlDateValue');
+            if (retryDateInput) {
+                retryDateInput.value = dateStr;
+            }
+        }, 100);
+    }
+    
+    const listDiv = document.getElementById('animalsControlList');
+    if (!listDiv) {
+        console.error('Elemento animalsControlList não encontrado');
+        // Tentar novamente após um delay
+        setTimeout(() => {
+            loadAnimalsControlData();
+        }, 500);
+        return;
+    }
+    
+    listDiv.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+            <svg class="w-12 h-12 mx-auto mb-3 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <p>Carregando animais...</p>
+        </div>
+    `;
+    
+    try {
+        const response = await fetch('./api/animals.php?action=get_all');
+        const result = await response.json();
+        
+        console.log('Resultado da API:', result);
+        
+        if (result.success && result.data && Array.isArray(result.data)) {
+            console.log('Total de animais recebidos:', result.data.length);
+            
+            // Filtrar apenas animais ativos (menos restritivo - aceitar null/undefined como ativo)
+            allAnimalsList = result.data.filter(animal => {
+                // Se is_active não existir ou for null/undefined, considerar como ativo
+                // Apenas excluir se explicitamente for 0 ou '0'
+                if (animal.is_active === 0 || animal.is_active === '0') {
+                    return false;
+                }
+                return true; // Todos os outros casos são considerados ativos
+            });
+            
+            console.log('Total de animais recebidos:', result.data.length);
+            console.log('Animais ativos após filtro:', allAnimalsList.length);
+            console.log('Primeiros 3 animais:', allAnimalsList.slice(0, 3));
+            
+            // Carregar animais ausentes do localStorage por data
+            const storageKey = `absentAnimals_${dateStr}`;
+            const storedData = localStorage.getItem(storageKey);
+            absentAnimalsList = storedData ? JSON.parse(storedData) : [];
+            
+            const absentInput = document.getElementById('absentAnimalsInput');
+            if (absentInput) {
+                absentInput.value = JSON.stringify(absentAnimalsList);
+            }
+            
+            if (allAnimalsList.length === 0) {
+                listDiv.innerHTML = '<p class="text-center text-gray-500 py-8">Nenhum animal cadastrado</p>';
+                return;
+            }
+            
+            console.log('Renderizando', allAnimalsList.length, 'animais');
+            console.log('Animais ausentes:', absentAnimalsList);
+            
+            // Atualizar contador
+            updateAbsentAnimalsCounter(absentAnimalsList.length, allAnimalsList.length);
+            
+            listDiv.innerHTML = allAnimalsList.map(animal => {
+                const animalId = parseInt(animal.id);
+                const isAbsent = absentAnimalsList.includes(animalId);
+                return `
+                    <label class="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${isAbsent ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-gray-300 bg-white'}">
+                        <input type="checkbox" value="${animalId}" ${isAbsent ? 'checked' : ''} 
+                            onchange="toggleAbsentAnimal(${animalId}, this.checked)"
+                            class="w-5 h-5 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                        <div class="flex-1">
+                            <p class="font-semibold text-slate-900">${animal.name || 'Sem nome'}</p>
+                            <p class="text-sm text-slate-500">Nº ${animal.animal_number || 'N/A'}</p>
+                        </div>
+                        ${isAbsent ? '<span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">Ausente</span>' : '<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Disponível</span>'}
+                    </label>
+                `;
+            }).join('');
+        } else {
+            console.error('Erro na resposta da API:', result);
+            listDiv.innerHTML = '<p class="text-center text-red-500 py-8">Erro ao carregar animais. Verifique o console para mais detalhes.</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar animais:', error);
+        listDiv.innerHTML = '<p class="text-center text-red-500 py-8">Erro ao carregar animais: ' + error.message + '</p>';
+    }
+}
+
+// Atualizar contador de animais ausentes
+function updateAbsentAnimalsCounter(absentCount, totalCount) {
+    const countElement = document.getElementById('absentAnimalsCount');
+    const totalElement = document.getElementById('totalAnimalsCount');
+    if (countElement) {
+        countElement.textContent = absentCount;
+    }
+    if (totalElement) {
+        totalElement.textContent = totalCount;
+    }
+}
+
+// Toggle animal ausente
+window.toggleAbsentAnimal = function(animalId, isAbsent) {
+    const animalIdInt = parseInt(animalId);
+    if (isAbsent) {
+        if (!absentAnimalsList.includes(animalIdInt)) {
+            absentAnimalsList.push(animalIdInt);
+        }
+    } else {
+        absentAnimalsList = absentAnimalsList.filter(id => id !== animalIdInt);
+    }
+    console.log('Animais ausentes atualizados:', absentAnimalsList);
+    
+    // Atualizar contador
+    updateAbsentAnimalsCounter(absentAnimalsList.length, allAnimalsList.length);
+};
+
+// Selecionar todos os animais como ausentes
+window.selectAllAbsentAnimals = function() {
+    if (allAnimalsList.length === 0) {
+        alert('Nenhum animal disponível para selecionar');
+        return;
+    }
+    
+    // Adicionar todos os IDs à lista de ausentes
+    absentAnimalsList = allAnimalsList.map(animal => parseInt(animal.id));
+    
+    // Atualizar todos os checkboxes
+    const checkboxes = document.querySelectorAll('#animalsControlList input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    
+    // Atualizar visual dos labels
+    const labels = document.querySelectorAll('#animalsControlList label');
+    labels.forEach(label => {
+        label.classList.remove('border-gray-200', 'bg-white');
+        label.classList.add('border-amber-400', 'bg-amber-50');
+        
+        // Atualizar badge
+        const badge = label.querySelector('span:last-child');
+        if (badge) {
+            badge.className = 'px-3 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full';
+            badge.textContent = 'Ausente';
+        }
+    });
+    
+    // Atualizar contador
+    updateAbsentAnimalsCounter(absentAnimalsList.length, allAnimalsList.length);
+    
+    console.log('Todos os animais selecionados como ausentes:', absentAnimalsList);
+};
+
+// Deselecionar todos os animais (remover todos da lista de ausentes)
+window.deselectAllAbsentAnimals = function() {
+    if (allAnimalsList.length === 0) {
+        return;
+    }
+    
+    // Limpar lista de ausentes
+    absentAnimalsList = [];
+    
+    // Desmarcar todos os checkboxes
+    const checkboxes = document.querySelectorAll('#animalsControlList input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // Atualizar visual dos labels
+    const labels = document.querySelectorAll('#animalsControlList label');
+    labels.forEach(label => {
+        label.classList.remove('border-amber-400', 'bg-amber-50');
+        label.classList.add('border-gray-200', 'bg-white');
+        
+        // Atualizar badge
+        const badge = label.querySelector('span:last-child');
+        if (badge) {
+            badge.className = 'px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full';
+            badge.textContent = 'Disponível';
+        }
+    });
+    
+    // Atualizar contador
+    updateAbsentAnimalsCounter(0, allAnimalsList.length);
+    
+    console.log('Todos os animais deselecionados');
+};
+
+// Salvar alterações do controle de animais
+window.saveAbsentAnimalsFromControl = function() {
+    const dateInput = document.getElementById('animalsControlDateValue');
+    const dateStr = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+    
+    // Salvar no localStorage por data
+    const storageKey = `absentAnimals_${dateStr}`;
+    localStorage.setItem(storageKey, JSON.stringify(absentAnimalsList));
+    
+    const absentInput = document.getElementById('absentAnimalsInput');
+    if (absentInput) {
+        absentInput.value = JSON.stringify(absentAnimalsList);
+    }
+    
+    // Atualizar select de animais no modal de volume por animal
+    populateVolumeAnimalSelect();
+    
+    // Mostrar mensagem de sucesso
+    const successMsg = document.createElement('div');
+    successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+    successMsg.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Alterações salvas com sucesso para ${new Date(dateStr).toLocaleDateString('pt-BR')}!
+    `;
+    document.body.appendChild(successMsg);
+    setTimeout(() => {
+        successMsg.remove();
+    }, 3000);
+};
+
+// Limpar seleção de animais ausentes
+window.clearAbsentAnimals = function() {
+    const dateInput = document.getElementById('animalsControlDateValue');
+    const dateStr = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+    
+    if (confirm('Tem certeza que deseja limpar a seleção de animais ausentes para hoje? Todos os animais voltarão a estar disponíveis.')) {
+        absentAnimalsList = [];
+        
+        // Remover do localStorage
+        const storageKey = `absentAnimals_${dateStr}`;
+        localStorage.removeItem(storageKey);
+        
+        const absentInput = document.getElementById('absentAnimalsInput');
+        if (absentInput) {
+            absentInput.value = '';
+        }
+        
+        // Desmarcar todos os checkboxes
+        const checkboxes = document.querySelectorAll('#animalsControlList input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Atualizar visual dos labels
+        const labels = document.querySelectorAll('#animalsControlList label');
+        labels.forEach(label => {
+            label.classList.remove('border-amber-400', 'bg-amber-50');
+            label.classList.add('border-gray-200', 'bg-white');
+            
+            // Atualizar badge
+            const badge = label.querySelector('span:last-child');
+            if (badge) {
+                badge.className = 'px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full';
+                badge.textContent = 'Disponível';
+            }
+        });
+        
+        // Atualizar contador
+        updateAbsentAnimalsCounter(0, allAnimalsList.length);
+        
+        populateVolumeAnimalSelect();
+    }
+};

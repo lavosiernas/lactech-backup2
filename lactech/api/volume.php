@@ -309,6 +309,51 @@ try {
                 WHERE id = ? AND farm_id = 1
             ", [$id]);
             
+            $animals = []; // Lista de animais para registro geral
+            
+            // Se encontrou registro geral, buscar todos os animais da ordenha
+            if (!empty($rows)) {
+                $r = $rows[0];
+                $recordDate = $r['date'];
+                $recordShift = $r['shift'];
+                
+                // Buscar todos os animais que foram ordenhados na mesma data e período
+                // Garantir que a data está no formato correto (YYYY-MM-DD)
+                $dateFormatted = is_string($recordDate) ? $recordDate : date('Y-m-d', strtotime($recordDate));
+                
+                $animalsRows = $db->query("
+                    SELECT DISTINCT
+                        a.id as animal_id,
+                        a.animal_number,
+                        a.name as animal_name,
+                        a.breed as animal_breed,
+                        a.status as animal_status,
+                        a.gender as animal_gender,
+                        COALESCE(SUM(mp.volume), 0) as total_volume,
+                        COUNT(mp.id) as milking_count
+                    FROM milk_production mp
+                    INNER JOIN animals a ON mp.animal_id = a.id
+                    WHERE mp.farm_id = 1
+                    AND DATE(mp.production_date) = DATE(?)
+                    AND mp.shift = ?
+                    GROUP BY a.id, a.animal_number, a.name, a.breed, a.status, a.gender
+                    ORDER BY a.animal_number ASC, a.name ASC
+                ", [$dateFormatted, $recordShift]);
+                
+                $animals = array_map(function($a) {
+                    return [
+                        'id' => (int)$a['animal_id'],
+                        'animal_number' => $a['animal_number'],
+                        'name' => $a['animal_name'],
+                        'breed' => $a['animal_breed'],
+                        'status' => $a['animal_status'],
+                        'gender' => $a['animal_gender'],
+                        'total_volume' => (float)$a['total_volume'],
+                        'milking_count' => (int)$a['milking_count']
+                    ];
+                }, $animalsRows);
+            }
+            
             // Se não encontrou, buscar em milk_production (registro individual por vaca)
             if (empty($rows)) {
                 $rows = $db->query("
@@ -358,7 +403,8 @@ try {
                 'animal_age_days' => isset($r['animal_age_days']) ? (int)$r['animal_age_days'] : null,
                 'animal_status' => $r['animal_status'] ?? null,
                 'animal_gender' => $r['animal_gender'] ?? null,
-                'temperature' => isset($r['temperature']) ? (float)$r['temperature'] : null
+                'temperature' => isset($r['temperature']) ? (float)$r['temperature'] : null,
+                'animals' => $animals // Lista de animais para registro geral
             ];
             sendJSONResponse($data);
             break;
