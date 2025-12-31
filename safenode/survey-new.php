@@ -26,10 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $first_feature = $_POST['first_feature'] ?? '';
     $use_ai_analysis = $_POST['use_ai_analysis'] ?? '';
     $price_willing = $_POST['price_willing'] ?? '';
-    $price_reason = trim($_POST['price_reason'] ?? '');
-    $priority_choice = $_POST['priority_choice'] ?? '';
-    $nps_score = isset($_POST['nps_score']) ? (int)$_POST['nps_score'] : null;
-    $current_tools = trim($_POST['current_tools'] ?? '');
     $use_in_production = $_POST['use_in_production'] ?? '';
     $recommend_to_team = $_POST['recommend_to_team'] ?? '';
     $decision_maker = $_POST['decision_maker'] ?? '';
@@ -43,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else if (empty($dev_level) || empty($work_type) || empty($main_stack) || 
                empty($time_wasted_per_week) || empty($platform_help) || 
                empty($first_feature) || empty($use_ai_analysis) || empty($price_willing) ||
-               empty($priority_choice) || $nps_score === null ||
                empty($use_in_production) || empty($recommend_to_team) || empty($decision_maker)) {
         $message = 'Por favor, responda todas as perguntas obrigatórias';
         $messageType = 'error';
@@ -53,19 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else if ($main_stack === 'outra' && empty($main_stack_other)) {
         $message = 'Por favor, especifique qual stack você usa';
         $messageType = 'error';
-    } else if ($nps_score < 0 || $nps_score > 10) {
-        $message = 'Por favor, escolha um valor de 0 a 10 para a recomendação';
-        $messageType = 'error';
     } else {
         // Salvar no banco de dados
         try {
             $stmt = $db->prepare("
                 INSERT INTO safenode_survey_responses 
                 (email, dev_level, work_type, main_stack, main_stack_other, pain_points, time_wasted_per_week,
-                 platform_help, first_feature, use_ai_analysis, price_willing, price_reason, priority_choice,
-                 nps_score, current_tools, use_in_production, recommend_to_team, decision_maker, 
-                 switch_reasons, must_have_features, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                 platform_help, first_feature, use_ai_analysis, price_willing, use_in_production,
+                 recommend_to_team, decision_maker, switch_reasons, must_have_features, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ");
             
             $stmt->execute([
@@ -80,10 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $first_feature,
                 $use_ai_analysis,
                 $price_willing,
-                $price_reason ?: null,
-                $priority_choice ?: null,
-                $nps_score,
-                $current_tools ?: null,
                 $use_in_production,
                 $recommend_to_team,
                 $decision_maker,
@@ -185,7 +172,7 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
             <!-- Seção 1: PERFIL DO DEV -->
             <section>
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">PERFIL DO DEV</h2>
+                    <h2 class="text-2xl font-bold mb-2">👤 PERFIL DO DEV (segmentação)</h2>
                     <p class="text-zinc-400 text-sm">Nos ajude a entender quem você é</p>
                 </div>
 
@@ -277,8 +264,8 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
             <!-- Seção 2: DOR REAL -->
             <section>
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">PRINCIPAIS DESAFIOS</h2>
-                    <p class="text-zinc-400 text-sm">O que mais te incomoda no dia a dia como desenvolvedor?</p>
+                    <h2 class="text-2xl font-bold mb-2">🧱 DOR REAL (ESSA É OURO)</h2>
+                    <p class="text-zinc-400 text-sm">O que mais te incomoda no dia a dia?</p>
                 </div>
 
                 <!-- Pontos de dor -->
@@ -289,22 +276,12 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         <?php 
                         $painPoints = [
-                            'Configurar e-mails transacionais (SMTP, DNS, SPF, DKIM)',
-                            'Configurar e gerenciar infraestrutura',
-                            'Deploy e configuração de ambientes',
-                            'Integração de serviços com hospedagem/VPS',
-                            'Segurança e proteção (DDoS, WAF)',
-                            'Monitoramento e analytics',
-                            'Custos de serviços cloud',
-                            'Documentação e manutenção',
-                            'Debug em produção',
-                            'Comunicação entre serviços'
+                            'Infraestrutura', 'Deploy', 'Configuração de ambientes', 'E-mails transacionais',
+                            'Monitoramento', 'Custos cloud', 'Documentação ruim', 'Debug em produção',
+                            'Organização do projeto', 'Comunicação entre serviços'
                         ];
                         foreach ($painPoints as $point): 
-                            $value = strtolower($point);
-                            $value = preg_replace('/[^a-z0-9]/', '_', $value);
-                            $value = preg_replace('/_+/', '_', $value);
-                            $value = trim($value, '_');
+                            $value = strtolower(str_replace(' ', '_', $point));
                             $checked = isset($_POST['pain_points']) && in_array($value, $_POST['pain_points']);
                         ?>
                         <label class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-700 transition-colors">
@@ -319,7 +296,7 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
                 <!-- Tempo perdido -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-zinc-300 mb-3">
-                        Quanto tempo por semana você perde com infraestrutura, configuração e integração de serviços? <span class="text-red-400">*</span>
+                        Quanto tempo por semana você perde com infra/configuração? <span class="text-red-400">*</span>
                     </label>
                     <div class="space-y-2">
                         <?php 
@@ -338,17 +315,17 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
 
             <div class="section-divider"></div>
 
-            <!-- Seção 3: SAFE NODE -->
+            <!-- Seção 3: SAFE NODE (VALIDAÇÃO) -->
             <section>
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">SAFE NODE</h2>
-                    <p class="text-zinc-400 text-sm">SafeNode é uma camada completa de comunicação e automação que se conecta direto à sua hospedagem e aplicação: Mail (API REST de e-mails), Relay (editor visual), SafeCode IDE e integração pronta com hospedagem.</p>
+                    <h2 class="text-2xl font-bold mb-2">🧠 SAFE NODE (VALIDAÇÃO DE IDEIA)</h2>
+                    <p class="text-zinc-400 text-sm">O que você acha da nossa ideia?</p>
                 </div>
 
                 <!-- Plataforma ajudaria -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-zinc-300 mb-3">
-                        Uma plataforma completa que integra e-mails, infraestrutura e hospedagem te ajudaria? <span class="text-red-400">*</span>
+                        Uma plataforma visual para modelar infraestrutura e fluxos te ajudaria? <span class="text-red-400">*</span>
                     </label>
                     <div class="space-y-2">
                         <?php 
@@ -367,23 +344,20 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
                 <!-- Primeira feature -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-zinc-300 mb-3">
-                        Qual dessas funcionalidades da SafeNode você usaria primeiro? <span class="text-red-400">*</span>
+                        Qual dessas features você usaria primeiro? <span class="text-red-400">*</span>
                     </label>
                     <div class="space-y-2">
                         <?php 
                         $features = [
-                            'API REST de e-mails transacionais',
-                            'Integração automática com hospedagem/VPS',
-                            'Editor visual de templates (Relay)',
-                            'IDE SafeCode para desenvolvimento',
-                            'Dashboard com analytics e monitoramento',
-                            'Proteção e segurança (DDoS, WAF)'
+                            'IDE com IA focada em backend/infra',
+                            'Infra visual (estilo Figma)',
+                            'Automação de fluxos',
+                            'E-mail transacional integrado',
+                            'Monitoramento unificado',
+                            'Templates prontos'
                         ];
                         foreach ($features as $feature): 
-                            $value = strtolower(str_replace(['/', '(', ')'], ['-', '', ''], $feature));
-                            $value = preg_replace('/[^a-z0-9]/', '_', $value);
-                            $value = preg_replace('/_+/', '_', $value);
-                            $value = trim($value, '_');
+                            $value = strtolower(str_replace(['/', ' '], ['-', '_'], $feature));
                         ?>
                         <label class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-700 transition-colors">
                             <input type="radio" name="first_feature" value="<?php echo $value; ?>" required <?php echo ($_POST['first_feature'] ?? '') === $value ? 'checked' : ''; ?> class="w-4 h-4 text-white bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-white">
@@ -393,14 +367,14 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
                     </div>
                 </div>
 
-                <!-- Analytics/Dashboard -->
+                <!-- IA de análise -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-zinc-300 mb-3">
-                        Você usaria um dashboard centralizado com analytics, monitoramento e métricas? <span class="text-red-400">*</span>
+                        Você usaria uma IA que analisasse sua arquitetura e sugerisse melhorias? <span class="text-red-400">*</span>
                     </label>
                     <div class="space-y-2">
                         <?php 
-                        $aiOptions = ['Sim, com certeza', 'Talvez', 'Não preciso disso'];
+                        $aiOptions = ['Sim, com certeza', 'Talvez', 'Não confio nisso'];
                         foreach ($aiOptions as $ai): 
                             $value = strtolower(str_replace([' ', ','], ['_', ''], $ai));
                         ?>
@@ -418,8 +392,8 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
             <!-- Seção 4: PREÇO -->
             <section>
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">PREÇO</h2>
-                    <p class="text-zinc-400 text-sm">Quanto você pagaria por mês por uma plataforma completa como a SafeNode?</p>
+                    <h2 class="text-2xl font-bold mb-2">💸 PREÇO (SEM MEDO)</h2>
+                    <p class="text-zinc-400 text-sm">Quanto você pagaria por uma plataforma assim?</p>
                 </div>
 
                 <div class="mb-6">
@@ -439,85 +413,14 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
                         <?php endforeach; ?>
                     </div>
                 </div>
-
-                <!-- Motivo da escolha de preço -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-zinc-300 mb-2">
-                        Por que você escolheu essa faixa de preço?
-                        <span class="text-zinc-500 text-xs font-normal">(opcional)</span>
-                    </label>
-                    <textarea 
-                        name="price_reason"
-                        rows="3"
-                        class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
-                        placeholder="Ex: Está no meu orçamento atual, valor percebido alto, etc."
-                    ><?php echo htmlspecialchars($_POST['price_reason'] ?? ''); ?></textarea>
-                </div>
             </section>
 
             <div class="section-divider"></div>
 
-            <!-- Seção 4B: PRIORIDADE -->
+            <!-- Seção 5: USO PROFISSIONAL -->
             <section>
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">PRIORIDADE</h2>
-                    <p class="text-zinc-400 text-sm">Se tivesse que escolher, qual dessas prioridades importa mais para você?</p>
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-zinc-300 mb-3">
-                        Qual dessas prioridades é mais importante para você? <span class="text-red-400">*</span>
-                    </label>
-                    <div class="space-y-2">
-                        <?php 
-                        $priorities = [
-                            'Redução de tempo com configuração e setup',
-                            'Automação total de processos',
-                            'Redução de custos',
-                            'Facilidade de uso e simplicidade'
-                        ];
-                        foreach ($priorities as $priority): 
-                            $value = strtolower(str_replace([' ', 'ç', 'ã'], ['_', 'c', 'a'], $priority));
-                            $value = preg_replace('/[^a-z0-9_]/', '', $value);
-                        ?>
-                        <label class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-800 rounded-lg cursor-pointer hover:border-zinc-700 transition-colors">
-                            <input type="radio" name="priority_choice" value="<?php echo $value; ?>" required <?php echo ($_POST['priority_choice'] ?? '') === $value ? 'checked' : ''; ?> class="w-4 h-4 text-white bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-white">
-                            <span class="text-zinc-300"><?php echo $priority; ?></span>
-                        </label>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </section>
-
-            <div class="section-divider"></div>
-
-            <!-- Seção 5: FERRAMENTAS ATUAIS -->
-            <section>
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">FERRAMENTAS ATUAIS</h2>
-                    <p class="text-zinc-400 text-sm">Quais ferramentas você usa hoje para infraestrutura e deploy?</p>
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-zinc-300 mb-2">
-                        Quais ferramentas você usa hoje para infra e deploy?
-                        <span class="text-zinc-500 text-xs font-normal">(opcional)</span>
-                    </label>
-                    <textarea 
-                        name="current_tools"
-                        rows="3"
-                        class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
-                        placeholder="Ex: AWS, Docker, Kubernetes, Vercel, DigitalOcean, etc."
-                    ><?php echo htmlspecialchars($_POST['current_tools'] ?? ''); ?></textarea>
-                </div>
-            </section>
-
-            <div class="section-divider"></div>
-
-            <!-- Seção 6: USO PROFISSIONAL -->
-            <section>
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">USO PROFISSIONAL</h2>
+                    <h2 class="text-2xl font-bold mb-2">🏢 USO PROFISSIONAL</h2>
                     <p class="text-zinc-400 text-sm">Como você usaria isso no seu trabalho?</p>
                 </div>
 
@@ -581,75 +484,37 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
 
             <div class="section-divider"></div>
 
-            <!-- Seção 7: FECHAMENTO -->
+            <!-- Seção 6: FECHAMENTO -->
             <section>
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">OPINIÃO E SUGESTÕES</h2>
-                    <p class="text-zinc-400 text-sm">O que realmente faria diferença para você?</p>
+                    <h2 class="text-2xl font-bold mb-2">🚀 FECHAMENTO (INSIGHT BRUTO)</h2>
+                    <p class="text-zinc-400 text-sm">O que realmente faria diferença?</p>
                 </div>
 
                 <!-- Motivos para trocar -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-zinc-300 mb-2">
-                        O que faria você trocar sua stack/solução atual por uma plataforma como a SafeNode?
+                        O que faria você trocar sua stack atual por algo como a SafeNode?
                     </label>
                     <textarea 
                         name="switch_reasons" 
                         rows="4"
                         class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
-                        placeholder="O que seria necessário para você considerar uma mudança? O que falta na solução atual?"
+                        placeholder="O que seria necessário para você considerar uma mudança?"
                     ><?php echo htmlspecialchars($_POST['switch_reasons'] ?? ''); ?></textarea>
                 </div>
 
                 <!-- O que não pode faltar -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-zinc-300 mb-2">
-                        O que você acha que NÃO pode faltar numa plataforma como a SafeNode?
+                        O que você acha que NÃO pode faltar numa plataforma dessas?
                     </label>
                     <textarea 
                         name="must_have_features" 
                         rows="4"
                         class="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
-                        placeholder="Quais funcionalidades são essenciais? Ex: API REST, templates, analytics, integração com hospedagem, segurança, monitoramento, etc."
+                        placeholder="Quais funcionalidades são essenciais?"
                     ><?php echo htmlspecialchars($_POST['must_have_features'] ?? ''); ?></textarea>
-                </div>
-            </section>
-
-            <div class="section-divider"></div>
-
-            <!-- Seção 8: SATISFAÇÃO/NPS (POR ÚLTIMO) -->
-            <section>
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold mb-2">SATISFAÇÃO</h2>
-                    <p class="text-zinc-400 text-sm">Por último, de 0 a 10, o quanto você recomendaria uma solução como a SafeNode?</p>
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-zinc-300 mb-3">
-                        De 0 a 10, o quanto você recomendaria essa solução? <span class="text-red-400">*</span>
-                    </label>
-                    <div class="mb-4">
-                        <input 
-                            type="range" 
-                            name="nps_score" 
-                            id="nps_score"
-                            min="0" 
-                            max="10" 
-                            value="<?php echo htmlspecialchars($_POST['nps_score'] ?? '5'); ?>"
-                            required
-                            class="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
-                            oninput="document.getElementById('nps_value').textContent = this.value"
-                        >
-                        <div class="flex justify-between mt-2 text-xs text-zinc-500">
-                            <span>0</span>
-                            <span>5</span>
-                            <span>10</span>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <span class="text-3xl font-bold text-white" id="nps_value"><?php echo htmlspecialchars($_POST['nps_score'] ?? '5'); ?></span>
-                        <span class="text-zinc-400 text-sm ml-2">/ 10</span>
-                    </div>
                 </div>
             </section>
 
@@ -731,3 +596,4 @@ $pageTitle = 'Pesquisa SafeNode - Validação de Produto';
 
 </body>
 </html>
+

@@ -2514,7 +2514,7 @@ hv.<span class="code-syntax-function">init</span>().<span class="code-syntax-fun
                         <a href="#" class="hover:text-zinc-400 transition-colors">Termos</a>
                         <a href="#" class="hover:text-zinc-400 transition-colors">Cookies</a>
                         <a href="#" class="hover:text-zinc-400 transition-colors">Segurança</a>
-                        <a href="admin-emails.php" class="hover:text-zinc-400 transition-colors opacity-50 hover:opacity-100">Admin</a>
+                        <a href="survey-admin.php" class="hover:text-zinc-400 transition-colors opacity-50 hover:opacity-100">Admin</a>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-zinc-600">
