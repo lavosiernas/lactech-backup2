@@ -1,25 +1,51 @@
 /**
- * Service Worker para PWA do Gerente
+ * Service Worker para PWA do LacTech
+ * Suporta Gerente e Funcionário com filtro de usuário
  * Gerencia cache e funcionalidade offline
  */
 
-const CACHE_NAME = 'lactech-manager-v3';
-const RUNTIME_CACHE = 'lactech-runtime-v3';
-const IMAGE_CACHE = 'lactech-images-v3';
-const OFFLINE_PAGE = './gerente-completo.php';
-const MAIN_PAGE = './gerente-completo.php';
+// Detectar tipo de usuário baseado na URL
+function getUserType(url) {
+    if (url.includes('gerente-completo.php')) {
+        return 'manager';
+    } else if (url.includes('funcionario.php')) {
+        return 'employee';
+    }
+    return 'manager'; // Default
+}
+
+// Configurações por tipo de usuário
+const USER_CONFIGS = {
+    manager: {
+        CACHE_NAME: 'lactech-manager-v2.1.0',
+        RUNTIME_CACHE: 'lactech-runtime-v2.1.0',
+        IMAGE_CACHE: 'lactech-images-v2.1.0',
+        MAIN_PAGE: './gerente-completo.php',
+        STATIC_FILES: [
+            './assets/js/gerente-completo.js',
+            './assets/js/offline-manager.js',
+            './manifest.json',
+            './assets/img/lactech-logo.png'
+        ]
+    },
+    employee: {
+        CACHE_NAME: 'lactech-employee-v2.1.0',
+        RUNTIME_CACHE: 'lactech-runtime-employee-v2.1.0',
+        IMAGE_CACHE: 'lactech-images-employee-v2.1.0',
+        MAIN_PAGE: './funcionario.php',
+        STATIC_FILES: [
+            './assets/js/offline-manager.js',
+            './manifest.json',
+            './assets/img/lactech-logo.png'
+        ]
+    }
+};
+
+// Variável global para armazenar tipo de usuário atual
+let currentUserType = 'manager';
 
 // Versão do cache - incrementar quando houver mudanças significativas
-const CACHE_VERSION = 5; // Incrementado para melhorias de PWA e cache
-
-// Arquivos estáticos críticos para cache inicial
-// NÃO incluir páginas PHP dinâmicas - apenas recursos estáticos
-const STATIC_CACHE_FILES = [
-    './assets/js/gerente-completo.js',
-    './assets/js/offline-manager.js',
-    './manifest.json',
-    './assets/img/lactech-logo.png'
-];
+const CACHE_VERSION = 6; // Versão 2.1.0 - Limpeza de cache melhorada
 
 // Recursos que devem ser cacheados em runtime
 const RUNTIME_CACHE_PATTERNS = [
@@ -41,25 +67,39 @@ const NO_CACHE_PATTERNS = [
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
     console.log('[Service Worker] Instalando versão', CACHE_VERSION);
+    
+    // Detectar tipo de usuário baseado na URL do cliente
     event.waitUntil(
-        Promise.all([
-            // Cache de arquivos estáticos
-            caches.open(CACHE_NAME).then((cache) => {
-                return Promise.allSettled(
-                    STATIC_CACHE_FILES.map(url => {
-                        return cache.add(url).catch(err => {
-                            console.warn('[Service Worker] Não foi possível cachear:', url, err);
-                        });
-                    })
-                );
-            }),
-            // Criar caches adicionais
-            caches.open(RUNTIME_CACHE),
-            caches.open(IMAGE_CACHE)
-        ]).then(() => {
-            console.log('[Service Worker] Cache instalado com sucesso');
-        }).catch((err) => {
-            console.error('[Service Worker] Erro ao instalar cache:', err);
+        self.clients.matchAll().then(clients => {
+            if (clients.length > 0) {
+                const clientUrl = clients[0].url;
+                currentUserType = getUserType(clientUrl);
+                console.log('[Service Worker] Tipo de usuário detectado:', currentUserType);
+            }
+            
+            const config = USER_CONFIGS[currentUserType];
+            
+            return Promise.all([
+                // Cache de arquivos estáticos
+                caches.open(config.CACHE_NAME).then((cache) => {
+                    return Promise.allSettled(
+                        config.STATIC_FILES.map(url => {
+                            return cache.add(url).catch(err => {
+                                console.warn('[Service Worker] Não foi possível cachear:', url, err);
+                            });
+                        })
+                    );
+                }),
+                // Criar caches adicionais para ambos os tipos
+                caches.open(USER_CONFIGS.manager.RUNTIME_CACHE),
+                caches.open(USER_CONFIGS.manager.IMAGE_CACHE),
+                caches.open(USER_CONFIGS.employee.RUNTIME_CACHE),
+                caches.open(USER_CONFIGS.employee.IMAGE_CACHE)
+            ]).then(() => {
+                console.log('[Service Worker] Cache instalado com sucesso para', currentUserType);
+            }).catch((err) => {
+                console.error('[Service Worker] Erro ao instalar cache:', err);
+            });
         })
     );
     self.skipWaiting(); // Ativar imediatamente
@@ -70,15 +110,20 @@ self.addEventListener('activate', (event) => {
     console.log('[Service Worker] Ativando versão', CACHE_VERSION);
     event.waitUntil(
         Promise.all([
-            // Limpar caches antigos
+            // Limpar caches antigos (exceto os atuais de ambos os tipos)
             caches.keys().then((cacheNames) => {
+                const validCaches = [
+                    USER_CONFIGS.manager.CACHE_NAME,
+                    USER_CONFIGS.manager.RUNTIME_CACHE,
+                    USER_CONFIGS.manager.IMAGE_CACHE,
+                    USER_CONFIGS.employee.CACHE_NAME,
+                    USER_CONFIGS.employee.RUNTIME_CACHE,
+                    USER_CONFIGS.employee.IMAGE_CACHE
+                ];
+                
                 return Promise.all(
                     cacheNames
-                        .filter((cacheName) => {
-                            return cacheName !== CACHE_NAME && 
-                                   cacheName !== RUNTIME_CACHE && 
-                                   cacheName !== IMAGE_CACHE;
-                        })
+                        .filter((cacheName) => !validCaches.includes(cacheName))
                         .map((cacheName) => {
                             console.log('[Service Worker] Removendo cache antigo:', cacheName);
                             return caches.delete(cacheName);
@@ -100,6 +145,18 @@ self.addEventListener('fetch', (event) => {
     if (url.protocol.includes('chrome-extension')) {
         return;
     }
+    
+    // Detectar tipo de usuário baseado na URL da requisição ou referrer
+    let userType = 'manager'; // Default
+    if (url.pathname.includes('funcionario.php') || 
+        (request.referrer && request.referrer.includes('funcionario.php'))) {
+        userType = 'employee';
+    } else if (url.pathname.includes('gerente-completo.php') || 
+               (request.referrer && request.referrer.includes('gerente-completo.php'))) {
+        userType = 'manager';
+    }
+    
+    const config = USER_CONFIGS[userType];
 
     // Tratar requisições para APIs
     if (url.pathname.startsWith('/api/')) {
@@ -167,7 +224,7 @@ self.addEventListener('fetch', (event) => {
                         // Armazenar resposta no cache para uso offline (apenas se não for chrome-extension)
                         if (response.ok && !url.protocol.includes('chrome-extension')) {
                             const responseClone = response.clone();
-                            caches.open(RUNTIME_CACHE).then((cache) => {
+                            caches.open(config.RUNTIME_CACHE).then((cache) => {
                                 cache.put(request, responseClone).catch(() => {
                                     // Ignorar erros de cache
                                 });
@@ -201,7 +258,9 @@ self.addEventListener('fetch', (event) => {
 
     // Verificar se deve cachear este recurso
     // Não cachear páginas PHP dinâmicas (exceto a principal quando offline)
-    const isPHPPage = url.pathname.endsWith('.php') && !url.pathname.includes('gerente-completo.php');
+    const isPHPPage = url.pathname.endsWith('.php') && 
+                     !url.pathname.includes('gerente-completo.php') && 
+                     !url.pathname.includes('funcionario.php');
     const shouldCache = !isPHPPage && 
                        RUNTIME_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname)) &&
                        !NO_CACHE_PATTERNS.some(pattern => pattern.test(request.url)) &&
@@ -209,11 +268,14 @@ self.addEventListener('fetch', (event) => {
 
     // Determinar qual cache usar
     const isImage = /\.(?:png|jpg|jpeg|gif|svg|webp)$/i.test(url.pathname);
-    const cacheToUse = isImage ? IMAGE_CACHE : RUNTIME_CACHE;
+    const cacheToUse = isImage ? config.IMAGE_CACHE : config.RUNTIME_CACHE;
 
     // Para páginas HTML, verificar se é a página principal ou outra página
     const isHTML = request.headers.get('accept') && request.headers.get('accept').includes('text/html');
-    const isMainPage = url.pathname.includes('gerente-completo.php') || url.pathname === '/' || url.pathname.endsWith('/');
+    const isMainPage = url.pathname.includes('gerente-completo.php') || 
+                      url.pathname.includes('funcionario.php') || 
+                      url.pathname === '/' || 
+                      url.pathname.endsWith('/');
     
     if (isHTML) {
         // Para páginas diferentes da principal, usar Network First (não cachear navegação)
@@ -265,10 +327,13 @@ self.addEventListener('fetch', (event) => {
                         const cleanUrl = urlWithoutQuery.toString();
                         
                         const searchUrls = [
-                            MAIN_PAGE,
+                            config.MAIN_PAGE,
                             './gerente-completo.php',
                             '/gerente-completo.php',
                             'gerente-completo.php',
+                            './funcionario.php',
+                            '/funcionario.php',
+                            'funcionario.php',
                             cleanUrl
                         ];
                         
@@ -413,7 +478,7 @@ self.addEventListener('push', function(event) {
         tag: 'lactech-push',
         requireInteraction: false,
         data: {
-            url: './gerente-completo.php'
+            url: './gerente-completo.php' // Será atualizado baseado no tipo de usuário
         }
     };
     
@@ -481,7 +546,12 @@ self.addEventListener('notificationclick', function(event) {
     }
     
     // Abrir ou focar na aplicação
-    const urlToOpen = notificationData.url || './gerente-completo.php';
+    // Detectar tipo de usuário baseado na URL do cliente
+    let defaultUrl = './gerente-completo.php';
+    if (event.notification.data && event.notification.data.userType === 'employee') {
+        defaultUrl = './funcionario.php';
+    }
+    const urlToOpen = notificationData.url || defaultUrl;
     
     event.waitUntil(
         clients.matchAll({

@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # Aplicação PHP (opcional, se você já tem uma aplicação PHP)
+  app:
+    image: php:8.1-fpm-alpine
+    container_name: safenode-mail-app
+    volumes:
+      - ./app:/var/www/html
+      - ./config/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    working_dir: /var/www/html
+    depends_on:
+      - mysql
+    networks:
+      - safenode-network
+    restart: unless-stopped
+    environment:
+      - SAFENODE_API_URL=${SAFENODE_API_URL:-https://safenode.cloud/api/mail}
+      - SAFENODE_API_TOKEN=${SAFENODE_API_TOKEN}
+      - DB_HOST=mysql
+      - DB_NAME=${DB_NAME:-safenode_mail}
+      - DB_USER=${DB_USER:-safenode}
+      - DB_PASS=${DB_PASS}
+
+  # Nginx como reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: safenode-mail-nginx
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./app:/var/www/html:ro
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./logs/nginx:/var/log/nginx
+      - ./config/ssl:/etc/nginx/ssl:ro  # Para certificados SSL (opcional)
+    depends_on:
+      - app
+    networks:
+      - safenode-network
+    restart: unless-stopped
+
+  # MySQL para dados da aplicação (opcional)
+  mysql:
+    image: mysql:8.0
+    container_name: safenode-mail-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-root_password_change_me}
+      MYSQL_DATABASE: ${DB_NAME:-safenode_mail}
+      MYSQL_USER: ${DB_USER:-safenode}
+      MYSQL_PASSWORD: ${DB_PASS:-change_this_password}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
+      - ./database/init:/docker-entrypoint-initdb.d:ro  # Scripts SQL iniciais (opcional)
+    networks:
+      - safenode-network
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS:-root_password_change_me}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para cache (opcional, mas recomendado)
+  redis:
+    image: redis:7-alpine
+    container_name: safenode-mail-redis
+    volumes:
+      - redis-data:/data
+    networks:
+      - safenode-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  safenode-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+

@@ -7190,12 +7190,12 @@
         // Registrar service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('./sw-manager.js', { scope: './' })
                     .then((registration) => {
-                        console.log('SW registrado: ', registration);
+                        console.log('[Service Worker] Registrado para funcionário:', registration);
                     })
                     .catch((registrationError) => {
-                        console.log('SW falhou: ', registrationError);
+                        console.error('[Service Worker] Falha ao registrar:', registrationError);
                     });
             });
         }

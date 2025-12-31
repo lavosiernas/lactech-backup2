@@ -850,6 +850,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-1">
                     <a href="#features" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Recursos</a>
+                    <a href="integration-docs.php" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Integração</a>
                     <a href="#network" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Rede Global</a>
                     <a href="#pricing" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Planos</a>
                     <a href="#contact" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Contato</a>
@@ -887,6 +888,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
              class="md:hidden bg-black/95 backdrop-blur-xl border-b border-zinc-800" x-cloak>
             <div class="px-4 pt-2 pb-6 space-y-2">
                 <a href="#features" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Recursos</a>
+                <a href="integration-docs.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Integração</a>
                 <a href="#network" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Rede Global</a>
                 <a href="#pricing" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Planos</a>
                 <a href="#contact" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Contato</a>
@@ -928,12 +930,12 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
             </div>
             
             <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-gradient max-w-5xl mx-auto leading-tight glow-text relative z-10" style="text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);">
-                Segurança que Protege<br class="hidden md:block" /> Sem Interromper.
+                A camada que conecta<br class="hidden md:block" /> código e infraestrutura.
             </h1>
             
             <p class="mt-6 text-xl text-zinc-400 max-w-2xl mx-auto mb-10 font-light leading-relaxed">
-                Proteja suas aplicações, APIs e infraestrutura com nossa rede global de borda. 
-                Implementação em segundos, proteção para sempre.
+                SafeNode é a camada de comunicação e automação que se conecta direto à sua hospedagem e aplicação. 
+                Sem complicação. Sem configurar SMTP manualmente. E-mails funcionando em 10 minutos.
             </p>
             
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1617,6 +1619,400 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                         <p class="text-sm text-zinc-500 mt-1">Seguro & Otimizado</p>
                     </div>
 
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Network Map Section -->
+    <section id="network" class="py-24 bg-black relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-6 tracking-tight text-white">
+                    Rede Global
+                </h2>
+                <p class="text-sm md:text-lg text-zinc-400 max-w-2xl mx-auto">
+                    Conecte-se com equipes e clientes em todo o mundo. Nossa plataforma permite colaboração perfeita entre continentes, trazendo o mundo para o seu workspace.
+                </p>
+            </div>
+
+            <div class="relative w-full" style="aspect-ratio: 2/1; min-height: 400px; max-height: 600px;">
+                <!-- World Map Container -->
+                <div id="world-map-container" class="w-full h-full bg-black rounded-2xl border border-zinc-800 relative overflow-hidden" style="position: relative;">
+                    <!-- Map Background (SVG with dots pattern) -->
+                    <svg id="world-map-svg" class="w-full h-full" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <pattern id="map-dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <circle cx="10" cy="10" r="0.5" fill="rgba(255,255,255,0.15)" />
+                            </pattern>
+                            <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0" />
+                                <stop offset="10%" stop-color="#0ea5e9" stop-opacity="1" />
+                                <stop offset="90%" stop-color="#0ea5e9" stop-opacity="1" />
+                                <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
+                            </linearGradient>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <rect width="800" height="400" fill="#000000" />
+                        <rect width="800" height="400" fill="url(#map-dots)" />
+                        
+                        <!-- Connection paths will be added here by JavaScript -->
+                        <g id="connections-group"></g>
+                        
+                        <!-- City markers will be added here by JavaScript -->
+                        <g id="cities-group"></g>
+                    </svg>
+
+                    <!-- Tooltip for mobile -->
+                    <div id="map-tooltip" class="absolute bottom-4 left-4 bg-black/90 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm sm:hidden border border-zinc-700 opacity-0 transition-opacity pointer-events-none z-50">
+                        <span id="tooltip-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            @keyframes pathDraw {
+                0% {
+                    stroke-dashoffset: 1000;
+                }
+                100% {
+                    stroke-dashoffset: 0;
+                }
+            }
+
+            .map-path {
+                stroke-dasharray: 1000;
+                stroke-dashoffset: 1000;
+                animation: pathDraw 2s ease-in-out forwards;
+            }
+        </style>
+
+        <script>
+            (function() {
+                // World Map Configuration
+                const mapConfig = {
+                    width: 800,
+                    height: 400,
+                    lineColor: '#0ea5e9',
+                    animationDuration: 2000, // ms
+                    staggerDelay: 400, // ms
+                    pauseTime: 2500 // ms
+                };
+
+                // Cities/Locations data
+                const connections = [
+                    {
+                        start: { lat: 64.2008, lng: -149.4937, label: "Fairbanks" },
+                        end: { lat: 34.0522, lng: -118.2437, label: "Los Angeles" }
+                    },
+                    {
+                        start: { lat: 64.2008, lng: -149.4937, label: "Fairbanks" },
+                        end: { lat: -15.7975, lng: -47.8919, label: "Brasília" }
+                    },
+                    {
+                        start: { lat: -15.7975, lng: -47.8919, label: "Brasília" },
+                        end: { lat: 38.7223, lng: -9.1393, label: "Lisboa" }
+                    },
+                    {
+                        start: { lat: 51.5074, lng: -0.1278, label: "Londres" },
+                        end: { lat: 28.6139, lng: 77.209, label: "Nova Delhi" }
+                    },
+                    {
+                        start: { lat: 28.6139, lng: 77.209, label: "Nova Delhi" },
+                        end: { lat: 43.1332, lng: 131.9113, label: "Vladivostok" }
+                    },
+                    {
+                        start: { lat: 28.6139, lng: 77.209, label: "Nova Delhi" },
+                        end: { lat: -1.2921, lng: 36.8219, label: "Nairóbi" }
+                    }
+                ];
+
+                // Convert lat/lng to SVG coordinates
+                function projectPoint(lat, lng) {
+                    const x = ((lng + 180) / 360) * mapConfig.width;
+                    const y = ((90 - lat) / 180) * mapConfig.height;
+                    return { x, y };
+                }
+
+                // Create curved path between two points
+                function createCurvedPath(start, end) {
+                    const midX = (start.x + end.x) / 2;
+                    const midY = Math.min(start.y, end.y) - 50;
+                    return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
+                }
+
+                // Get path length
+                function getPathLength(pathElement) {
+                    return pathElement.getTotalLength();
+                }
+
+                // Initialize map
+                function initWorldMap() {
+                    console.log('Initializing world map...');
+                    const svg = document.getElementById('world-map-svg');
+                    const connectionsGroup = document.getElementById('connections-group');
+                    const citiesGroup = document.getElementById('cities-group');
+                    const tooltip = document.getElementById('map-tooltip');
+                    const tooltipText = document.getElementById('tooltip-text');
+
+                    if (!svg || !connectionsGroup || !citiesGroup) {
+                        console.error('World map elements not found', { svg: !!svg, connectionsGroup: !!connectionsGroup, citiesGroup: !!citiesGroup });
+                        return;
+                    }
+                    
+                    console.log('World map elements found, creating connections...');
+
+                    // Create connections
+                    connections.forEach((conn, index) => {
+                        const startPoint = projectPoint(conn.start.lat, conn.start.lng);
+                        const endPoint = projectPoint(conn.end.lat, conn.end.lng);
+                        const pathData = createCurvedPath(startPoint, endPoint);
+
+                        // Create path element
+                        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path.setAttribute('d', pathData);
+                        path.setAttribute('fill', 'none');
+                        path.setAttribute('stroke', mapConfig.lineColor);
+                        path.setAttribute('stroke-width', '1.5');
+                        path.setAttribute('filter', 'url(#glow)');
+                        path.setAttribute('opacity', '0.8');
+                        
+                        connectionsGroup.appendChild(path);
+
+                        // Calculate path length after DOM update
+                        setTimeout(() => {
+                            const pathLength = getPathLength(path);
+                            if (pathLength > 0 && !isNaN(pathLength)) {
+                                path.style.strokeDasharray = pathLength;
+                                path.style.strokeDashoffset = pathLength;
+
+                                // Initial animation with stagger
+                                setTimeout(() => {
+                                    path.style.transition = `stroke-dashoffset ${mapConfig.animationDuration}ms ease-in-out`;
+                                    path.style.strokeDashoffset = '0';
+                                }, index * mapConfig.staggerDelay + 100);
+
+                                // Loop animation
+                                const totalAnimationTime = connections.length * mapConfig.staggerDelay + mapConfig.animationDuration;
+                                const cycleTime = totalAnimationTime + mapConfig.pauseTime;
+
+                                function resetAndAnimate() {
+                                    path.style.transition = 'none';
+                                    path.style.strokeDashoffset = pathLength;
+                                    setTimeout(() => {
+                                        path.style.transition = `stroke-dashoffset ${mapConfig.animationDuration}ms ease-in-out`;
+                                        setTimeout(() => {
+                                            path.style.strokeDashoffset = '0';
+                                        }, index * mapConfig.staggerDelay);
+                                    }, 10);
+                                }
+
+                                // Start loop after initial animation completes
+                                setTimeout(() => {
+                                    setInterval(resetAndAnimate, cycleTime);
+                                }, totalAnimationTime + 500);
+                            } else {
+                                console.warn('Path length invalid for connection', index, pathLength);
+                            }
+                        }, 50);
+                    });
+
+                    // Create city markers
+                    const allCities = new Map();
+                    connections.forEach(conn => {
+                        if (!allCities.has(conn.start.label)) {
+                            allCities.set(conn.start.label, { lat: conn.start.lat, lng: conn.start.lng });
+                        }
+                        if (!allCities.has(conn.end.label)) {
+                            allCities.set(conn.end.label, { lat: conn.end.lat, lng: conn.end.lng });
+                        }
+                    });
+
+                    allCities.forEach((coords, label) => {
+                        const point = projectPoint(coords.lat, coords.lng);
+                        const cityGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        cityGroup.setAttribute('data-city', label);
+
+                        // Outer pulsing circle
+                        const pulseCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        pulseCircle.setAttribute('cx', point.x);
+                        pulseCircle.setAttribute('cy', point.y);
+                        pulseCircle.setAttribute('r', '3');
+                        pulseCircle.setAttribute('fill', mapConfig.lineColor);
+                        pulseCircle.setAttribute('opacity', '0.4');
+
+                        const animateRadius = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+                        animateRadius.setAttribute('attributeName', 'r');
+                        animateRadius.setAttribute('from', '3');
+                        animateRadius.setAttribute('to', '14');
+                        animateRadius.setAttribute('dur', '2.5s');
+                        animateRadius.setAttribute('repeatCount', 'indefinite');
+
+                        const animateOpacity = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+                        animateOpacity.setAttribute('attributeName', 'opacity');
+                        animateOpacity.setAttribute('from', '0.6');
+                        animateOpacity.setAttribute('to', '0');
+                        animateOpacity.setAttribute('dur', '2.5s');
+                        animateOpacity.setAttribute('repeatCount', 'indefinite');
+
+                        pulseCircle.appendChild(animateRadius);
+                        pulseCircle.appendChild(animateOpacity);
+                        cityGroup.appendChild(pulseCircle);
+
+                        // Main circle
+                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        circle.setAttribute('cx', point.x);
+                        circle.setAttribute('cy', point.y);
+                        circle.setAttribute('r', '4');
+                        circle.setAttribute('fill', mapConfig.lineColor);
+                        circle.setAttribute('filter', 'url(#glow)');
+                        circle.style.cursor = 'pointer';
+                        circle.style.transition = 'r 0.2s ease, opacity 0.2s ease';
+
+                        circle.addEventListener('mouseenter', () => {
+                            circle.setAttribute('r', '6');
+                            circle.setAttribute('opacity', '1');
+                            if (tooltip && tooltipText) {
+                                tooltipText.textContent = label;
+                                tooltip.style.opacity = '1';
+                            }
+                        });
+
+                        circle.addEventListener('mouseleave', () => {
+                            circle.setAttribute('r', '4');
+                            circle.setAttribute('opacity', '0.9');
+                            if (tooltip) {
+                                tooltip.style.opacity = '0';
+                            }
+                        });
+
+                        cityGroup.appendChild(circle);
+                        citiesGroup.appendChild(cityGroup);
+
+                        // Label
+                        const labelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        labelGroup.setAttribute('class', 'city-label');
+                        const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+                        foreignObject.setAttribute('x', point.x - 50);
+                        foreignObject.setAttribute('y', point.y - 35);
+                        foreignObject.setAttribute('width', '100');
+                        foreignObject.setAttribute('height', '30');
+
+                        // Use a text element instead of foreignObject for better compatibility
+                        const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        textElement.setAttribute('x', point.x);
+                        textElement.setAttribute('y', point.y - 12);
+                        textElement.setAttribute('text-anchor', 'middle');
+                        textElement.setAttribute('fill', 'white');
+                        textElement.setAttribute('font-size', '11');
+                        textElement.setAttribute('font-weight', '500');
+                        textElement.setAttribute('class', 'city-label-text');
+                        textElement.style.pointerEvents = 'none';
+                        textElement.textContent = label;
+                        
+                        // Background rectangle for text
+                        const textBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        const textBBox = { width: label.length * 6.5, height: 18 };
+                        textBg.setAttribute('x', point.x - textBBox.width / 2 - 4);
+                        textBg.setAttribute('y', point.y - 26);
+                        textBg.setAttribute('width', textBBox.width + 8);
+                        textBg.setAttribute('height', textBBox.height);
+                        textBg.setAttribute('rx', '4');
+                        textBg.setAttribute('fill', 'rgba(0,0,0,0.85)');
+                        textBg.setAttribute('stroke', 'rgba(63,63,70,1)');
+                        textBg.setAttribute('stroke-width', '1');
+                        textBg.style.pointerEvents = 'none';
+                        
+                        labelGroup.appendChild(textBg);
+                        labelGroup.appendChild(textElement);
+                        citiesGroup.appendChild(labelGroup);
+                    });
+                }
+
+                // Initialize when DOM is ready
+                function startMap() {
+                    // Wait a bit to ensure SVG is rendered
+                    setTimeout(() => {
+                        try {
+                            initWorldMap();
+                        } catch (error) {
+                            console.error('Error initializing world map:', error);
+                        }
+                    }, 200);
+                }
+                
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', startMap);
+                } else {
+                    startMap();
+                }
+            })();
+        </script>
+    </section>
+
+    <!-- Hosting Integration CTA Section -->
+    <section class="py-16 bg-gradient-to-b from-black via-zinc-900 to-black border-y border-zinc-800 relative overflow-hidden">
+        <div class="absolute inset-0 bg-grid-pattern bg-grid-white opacity-5 pointer-events-none"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 md:p-12 backdrop-blur-sm">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 mb-6">
+                            <i data-lucide="plug" class="w-4 h-4 text-white"></i>
+                            <span class="text-xs font-medium text-zinc-300">SafeNode Hosting Integration</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">E-mails funcionando em qualquer VPS em 10 minutos</h2>
+                        <p class="text-lg text-zinc-400 mb-6">
+                            Script automatizado. Docker pronto. Zero configuração de SMTP/DNS. 
+                            Integre SafeNode Mail direto na sua hospedagem.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="integration-docs.php" class="px-6 py-3 bg-white text-black rounded-lg font-semibold hover:bg-zinc-100 transition-all flex items-center justify-center gap-2">
+                                <span>Ver Documentação</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </a>
+                            <a href="survey.php" class="px-6 py-3 bg-zinc-800 text-white border border-zinc-700 rounded-lg font-semibold hover:bg-zinc-700 transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="message-square" class="w-4 h-4"></i>
+                                <span>Responder Pesquisa</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="check" class="w-4 h-4 text-green-400"></i>
+                                </div>
+                                <span class="text-sm font-medium text-zinc-300">Funciona em qualquer hospedagem</span>
+                            </div>
+                            <p class="text-xs text-zinc-500 ml-11">DigitalOcean, AWS, Hostinger, cPanel, Plesk...</p>
+                        </div>
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="zap" class="w-4 h-4 text-blue-400"></i>
+                                </div>
+                                <span class="text-sm font-medium text-zinc-300">Setup automatizado</span>
+                            </div>
+                            <p class="text-xs text-zinc-500 ml-11">Script bash + Docker compose pronto para usar</p>
+                        </div>
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="mail" class="w-4 h-4 text-purple-400"></i>
+                                </div>
+                                <span class="text-sm font-medium text-zinc-300">API REST simples</span>
+                            </div>
+                            <p class="text-xs text-zinc-500 ml-11">Envie e-mails com uma requisição HTTP</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

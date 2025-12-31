@@ -161,10 +161,10 @@ function switchTab(tabName) {
             }
             break;
         case 'users':
-            if (!loadedTabs.has(tabName)) {
-                loadedTabs.add(tabName);
+            // Sempre carregar quando a aba for aberta (especialmente importante no mobile)
+            setTimeout(() => {
                 loadUsersData();
-            }
+            }, 200);
             break;
     }
 }
@@ -2548,9 +2548,24 @@ window.deleteFinancialRecord = deleteFinancialRecord;
 
 // ==================== USUÁRIOS ====================
 async function loadUsersData() {
+    // Mostrar estado de carregamento
+    const tbody = document.getElementById('usersTable');
+    const cardsContainer = document.getElementById('usersCards');
+    
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Carregando usuários...</td></tr>';
+    }
+    if (cardsContainer) {
+        cardsContainer.innerHTML = '<div class="text-center py-8 text-gray-500">Carregando usuários...</div>';
+    }
     
     try {
         const response = await fetch('./api/users.php?action=select');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const result = await response.json();
         
         if (result.success) {
@@ -2572,20 +2587,12 @@ async function loadUsersData() {
                 el.textContent = String(activeCount.toFixed(0));
             });
             
-            // Debug se necessário
-            if (activeUsersMetrics.length === 0) {
-                // Elemento não encontrado
-            } else {
-            }
-            
             // Preencher tabela e cards de usuários
-            const tbody = document.getElementById('usersTable');
-            const cardsContainer = document.getElementById('usersCards');
             const rows = Array.isArray(data.users) ? data.users : [];
             
             if (rows.length === 0) {
-                const emptyHtml = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum usuário</td></tr>';
-                const emptyCards = '<div class="text-center py-8 text-gray-500">Nenhum usuário</div>';
+                const emptyHtml = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Nenhum usuário encontrado</td></tr>';
+                const emptyCards = '<div class="text-center py-8 text-gray-500">Nenhum usuário encontrado</div>';
                 if (tbody) tbody.innerHTML = emptyHtml;
                 if (cardsContainer) cardsContainer.innerHTML = emptyCards;
             } else {
@@ -2721,15 +2728,35 @@ async function loadUsersData() {
                     `;
                 }).join('');
                 
-                if (tbody) tbody.innerHTML = htmlRows;
-                if (cardsContainer) cardsContainer.innerHTML = htmlCards;
+                if (tbody) {
+                    tbody.innerHTML = htmlRows;
+                }
+                if (cardsContainer) {
+                    cardsContainer.innerHTML = htmlCards;
+                } else {
+                    // Se cardsContainer não foi encontrado, tentar novamente após um pequeno delay
+                    setTimeout(() => {
+                        const retryCardsContainer = document.getElementById('usersCards');
+                        if (retryCardsContainer) {
+                            retryCardsContainer.innerHTML = htmlCards;
+                        }
+                    }, 100);
+                }
             }
             
         } else {
-            console.error('Erro na API de usuários:', result.error);
+            console.error('Erro na API de usuários:', result.error || result.message);
+            const errorHtml = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro ao carregar usuários: ' + (result.error || result.message || 'Erro desconhecido') + '</td></tr>';
+            const errorCards = '<div class="text-center py-8 text-red-500">Erro ao carregar usuários: ' + (result.error || result.message || 'Erro desconhecido') + '</div>';
+            if (tbody) tbody.innerHTML = errorHtml;
+            if (cardsContainer) cardsContainer.innerHTML = errorCards;
         }
     } catch (error) {
         console.error('Erro na requisição de usuários:', error);
+        const errorHtml = '<tr><td colspan="6" class="text-center py-8 text-red-500">Erro ao carregar usuários. Tente novamente.</td></tr>';
+        const errorCards = '<div class="text-center py-8 text-red-500">Erro ao carregar usuários. Tente novamente.</div>';
+        if (tbody) tbody.innerHTML = errorHtml;
+        if (cardsContainer) cardsContainer.innerHTML = errorCards;
     }
 }
 
@@ -2814,11 +2841,58 @@ window.showAddUserFullScreen = function() {
         const form = document.getElementById('addUserForm');
         if (form) {
             form.reset();
+            
+            // Resetar preview da foto
+            const previewImg = document.getElementById('newUserPhotoImg');
+            const previewIcon = document.getElementById('newUserPhotoIcon');
+            const photoInput = document.getElementById('newUserPhotoInput');
+            const photoCameraInput = document.getElementById('newUserPhotoCameraInput');
+            
+            if (previewImg && previewIcon) {
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+                previewIcon.classList.remove('hidden');
+            }
+            if (photoInput) {
+                photoInput.value = '';
+            }
+            if (photoCameraInput) {
+                photoCameraInput.value = '';
+            }
+            
+            // Remover classes de validação
+            form.querySelectorAll('.valid, .invalid').forEach(el => {
+                el.classList.remove('valid', 'invalid');
+            });
+            form.querySelectorAll('.form-group').forEach(el => {
+                el.classList.remove('has-error', 'has-success');
+            });
+            
+            // Remover mensagens de erro dos campos
+            form.querySelectorAll('.error-message').forEach(el => {
+                el.remove();
+            });
+            
+            // Resetar estado "touched" dos campos
+            form.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input.dataset) {
+                    input.dataset.touched = 'false';
+                }
+            });
+            
+            // Ocultar botões de limpar (X)
+            form.querySelectorAll('[id^="clear"]').forEach(btn => {
+                if (btn.style) {
+                    btn.style.display = 'none';
+                }
+            });
         }
+        
         const messageDiv = document.getElementById('addUserMessage');
         if (messageDiv) {
             messageDiv.classList.add('hidden');
             messageDiv.textContent = '';
+            messageDiv.className = 'hidden';
         }
     }
 };
@@ -2837,11 +2911,58 @@ window.closeAddUserFullScreen = function() {
         const form = document.getElementById('addUserForm');
         if (form) {
             form.reset();
+            
+            // Resetar preview da foto
+            const previewImg = document.getElementById('newUserPhotoImg');
+            const previewIcon = document.getElementById('newUserPhotoIcon');
+            const photoInput = document.getElementById('newUserPhotoInput');
+            const photoCameraInput = document.getElementById('newUserPhotoCameraInput');
+            
+            if (previewImg && previewIcon) {
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+                previewIcon.classList.remove('hidden');
+            }
+            if (photoInput) {
+                photoInput.value = '';
+            }
+            if (photoCameraInput) {
+                photoCameraInput.value = '';
+            }
+            
+            // Remover classes de validação
+            form.querySelectorAll('.valid, .invalid').forEach(el => {
+                el.classList.remove('valid', 'invalid');
+            });
+            form.querySelectorAll('.form-group').forEach(el => {
+                el.classList.remove('has-error', 'has-success');
+            });
+            
+            // Remover mensagens de erro dos campos
+            form.querySelectorAll('.error-message').forEach(el => {
+                el.remove();
+            });
+            
+            // Resetar estado "touched" dos campos
+            form.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input.dataset) {
+                    input.dataset.touched = 'false';
+                }
+            });
+            
+            // Ocultar botões de limpar (X)
+            form.querySelectorAll('[id^="clear"]').forEach(btn => {
+                if (btn.style) {
+                    btn.style.display = 'none';
+                }
+            });
         }
+        
         const messageDiv = document.getElementById('addUserMessage');
         if (messageDiv) {
             messageDiv.classList.add('hidden');
             messageDiv.textContent = '';
+            messageDiv.className = 'hidden';
         }
     }
 };

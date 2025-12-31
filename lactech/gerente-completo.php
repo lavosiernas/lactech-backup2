@@ -245,8 +245,8 @@ $v = time();
     <style>
         /* Estilo para splash screen do PWA - App-like experience */
         @media all and (display-mode: standalone) {
+            /* Removido background-color verde - mantém o fundo padrão do body (bg-gray-50) */
             body {
-                background-color: #10b981 !important;
                 overscroll-behavior-y: contain;
             }
             
@@ -259,41 +259,6 @@ $v = time();
             * {
                 -webkit-overflow-scrolling: touch;
             }
-        }
-        
-        /* Indicador de pull-to-refresh customizado */
-        #pull-to-refresh-indicator {
-            position: fixed;
-            top: -60px;
-            left: 0;
-            right: 0;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(to bottom, #10b981, #059669);
-            color: white;
-            z-index: 9999;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .pull-indicator-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .pull-indicator-icon {
-            width: 24px;
-            height: 24px;
-            transition: transform 0.3s ease;
-        }
-        
-        .pull-indicator-text {
-            font-size: 14px;
-            font-weight: 600;
         }
         
         /* Melhorar área de toque em mobile */
@@ -486,6 +451,32 @@ $v = time();
             }
         }
         
+        /* PWA Install Banner (Mobile) */
+        /* Refresh FAB Button */
+        #refreshFAB {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #refreshFAB:hover {
+            transform: scale(1.1) rotate(15deg);
+        }
+        
+        #refreshFAB:active {
+            transform: scale(0.95);
+        }
+        
+        #refreshFAB:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            #refreshFAB {
+                bottom: 80px !important;
+            }
+        }
+        
+        
         /* Bottom Navigation Bar (Mobile) */
         .bottom-nav {
             position: fixed;
@@ -493,6 +484,7 @@ $v = time();
             left: 0;
             right: 0;
             z-index: 40;
+            transition: bottom 0.3s ease-in-out;
             background: linear-gradient(135deg, rgba(31, 122, 90, 0.75), rgba(26, 98, 73, 0.75));
             border-top-left-radius: 1.5rem;
             border-top-right-radius: 1.5rem;
@@ -1373,6 +1365,8 @@ $v = time();
             display: none;
             margin-top: 0.5rem;
             font-size: 0.875rem;
+            position: relative;
+            z-index: 1;
             color: #ef4444;
             display: flex;
             align-items: center;
@@ -1757,9 +1751,6 @@ $v = time();
     </style>
 </head>
 <body class="bg-gray-50 font-inter" id="mainBody">
-    <!-- Skip to main content link para acessibilidade -->
-    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
-    
     <!-- Container de Notificações Toast -->
     <div id="toastContainer" class="toast-container"></div>
     
@@ -1887,9 +1878,6 @@ $v = time();
                     </button>
                     <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="volume" aria-label="Ir para Volume">
                         Volume
-                    </button>
-                    <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="animals-control" aria-label="Ir para Controle de Animais">
-                        Controle de Animais
                     </button>
                     <button class="nav-item px-3 py-2 text-sm font-semibold text-white hover:text-forest-200 transition-all rounded-lg" data-tab="quality" aria-label="Ir para Qualidade">
                         Qualidade
@@ -2228,76 +2216,6 @@ $v = time();
             </div>
         </div>
 
-        <!-- Animals Control Tab -->
-        <div id="animals-control-tab" class="tab-content hidden">
-            <div class="space-y-6">
-                <!-- Animals Control Header -->
-                <div class="data-card rounded-2xl p-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-                        <div>
-                            <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-1">Controle de Animais</h2>
-                            <p class="text-slate-600 text-sm">Gerencie quais animais estão disponíveis para ordenha</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg px-4 py-2">
-                                <label class="block text-xs font-semibold text-amber-700 mb-1">Data</label>
-                                <p id="animalsControlDate" class="text-base font-bold text-amber-900"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Absent Animals Section -->
-                <div class="data-card rounded-2xl p-6">
-                    <input type="hidden" id="absentAnimalsInput" value="">
-                    <input type="hidden" id="animalsControlDateValue" value="">
-                    <div class="mb-6">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-lg font-bold text-slate-900">Animais Ausentes da Ordenha</h3>
-                            <div class="flex items-center gap-3">
-                                <div class="bg-amber-100 border-2 border-amber-300 rounded-lg px-4 py-2">
-                                    <span class="text-sm font-semibold text-amber-800">
-                                        <span id="absentAnimalsCount">0</span> de <span id="totalAnimalsCount">0</span> marcados como ausentes
-                                    </span>
-                                </div>
-                                <button onclick="selectAllAbsentAnimals()" class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all font-semibold text-sm flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                    Selecionar Todos
-                                </button>
-                                <button onclick="deselectAllAbsentAnimals()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all font-semibold text-sm flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                    Deselecionar Todos
-                                </button>
-                            </div>
-                        </div>
-                        <p class="text-sm text-slate-600 mb-4">Marque os animais que NÃO estão participando da ordenha de hoje. Estes animais não aparecerão no registro de volume por animal.</p>
-                    </div>
-
-                    <div id="animalsControlList" class="space-y-3">
-                        <div class="text-center py-8 text-gray-500">
-                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            <p>Carregando animais...</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 pt-6 border-t flex justify-end gap-3">
-                        <button onclick="clearAbsentAnimals()" class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
-                            Limpar Seleção
-                        </button>
-                        <button onclick="saveAbsentAnimalsFromControl()" class="px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all font-semibold">
-                            Salvar Alterações
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Quality Tab -->
         <div id="quality-tab" class="tab-content hidden">
             <div class="space-y-6">
@@ -2571,7 +2489,7 @@ $v = time();
                     <div class="data-card rounded-2xl p-4 sm:p-6 text-center metric-card-responsive">
                         <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                             </svg>
                         </div>
                         <div class="text-xl sm:text-2xl font-bold text-slate-900 mb-1" id="totalUsers">--</div>
@@ -2652,25 +2570,80 @@ $v = time();
                             <div>
                                 <h3 class="text-base font-semibold text-gray-900 mb-4">Informações Pessoais</h3>
                                 <div class="space-y-4">
+                                    <!-- Foto de Perfil (Opcional) -->
+                                    <div class="flex flex-col items-center gap-4 pb-4 border-b border-gray-200">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Foto de Perfil <span class="text-gray-400 font-normal">(opcional)</span>
+                                        </label>
+                                        <div class="flex flex-col items-center gap-3">
+                                            <div id="newUserPhotoPreview" class="w-28 h-28 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden">
+                                                <svg id="newUserPhotoIcon" class="w-14 h-14 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                </svg>
+                                                <img id="newUserPhotoImg" src="" alt="Preview" class="w-full h-full object-cover hidden">
+                                            </div>
+                                            <!-- Botões de ação melhorados - posicionados abaixo da foto -->
+                                            <div class="flex gap-2 bg-white rounded-full px-2 py-1.5 shadow-lg border border-gray-200">
+                                                <label for="newUserPhotoInput" class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-full cursor-pointer transition-all text-xs font-medium text-gray-700 border border-gray-200" title="Escolher da galeria">
+                                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                    </svg>
+                                                    <span>Galeria</span>
+                                                    <input type="file" id="newUserPhotoInput" name="profile_photo" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" class="hidden" onchange="handleNewUserPhotoUpload(event)">
+                                                </label>
+                                                <label for="newUserPhotoCameraInput" class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full cursor-pointer transition-all text-xs font-medium text-blue-700 border border-blue-200" title="Tirar foto com câmera">
+                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    </svg>
+                                                    <span>Câmera</span>
+                                                    <input type="file" id="newUserPhotoCameraInput" name="profile_photo" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" capture="environment" class="hidden" onchange="handleNewUserPhotoUpload(event)">
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 text-center max-w-xs">Formatos aceitos: JPG, PNG, GIF, WEBP<br>Tamanho máximo: 5MB</p>
+                                    </div>
+                                    
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
+                                        <div class="relative">
                                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                                 Nome Completo
                                             </label>
-                                            <input type="text" name="name" id="userNameInput" required placeholder="Nome completo" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
+                                            <div class="relative">
+                                                <input type="text" name="name" id="userNameInput" required placeholder="Nome completo" class="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
+                                                <button type="button" onclick="clearInput('userNameInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden group" id="clearUserNameInputBtn">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div>
+                                        <div class="relative">
                                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                                 Email
                                             </label>
-                                            <input type="email" name="email" id="userEmailInput" required placeholder="usuario@lactech.com" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
+                                            <div class="relative">
+                                                <input type="email" name="email" id="userEmailInput" required placeholder="usuario@lactech.com" class="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
+                                                <button type="button" onclick="clearInput('userEmailInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden group" id="clearUserEmailInputBtn">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div>
+                                    <div class="relative">
                                         <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                             Telefone <span class="text-gray-400 font-normal">(opcional)</span>
                                         </label>
-                                        <input type="tel" name="phone" placeholder="(00) 00000-0000" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
+                                        <div class="relative">
+                                            <input type="tel" name="phone" id="userPhoneInput" placeholder="(00) 00000-0000" class="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
+                                            <button type="button" onclick="clearInput('userPhoneInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors hidden group" id="clearUserPhoneBtn">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2686,7 +2659,7 @@ $v = time();
                                             </label>
                                             <div class="relative">
                                                 <input type="password" name="password" id="userPassword" required placeholder="Mínimo 6 caracteres" class="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
-                                                <button type="button" onclick="toggleUserPasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" id="userPasswordToggle">
+                                                <button type="button" onclick="toggleUserPasswordVisibility('userPassword', 'userPasswordToggle')" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-gray-600 transition-colors pointer-events-auto" id="userPasswordToggle">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -2700,7 +2673,7 @@ $v = time();
                                             </label>
                                             <div class="relative">
                                                 <input type="password" name="confirm_password" id="userConfirmPassword" required placeholder="Digite a senha novamente" class="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all bg-white text-gray-900 placeholder-gray-400">
-                                                <button type="button" onclick="toggleUserPasswordVisibility('userConfirmPassword', 'userConfirmPasswordToggle')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" id="userConfirmPasswordToggle">
+                                                <button type="button" onclick="toggleUserPasswordVisibility('userConfirmPassword', 'userConfirmPasswordToggle')" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-gray-600 transition-colors pointer-events-auto" id="userConfirmPasswordToggle">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -2776,7 +2749,7 @@ $v = time();
             </button>
             <button class="bottom-nav-item" data-tab="users" onclick="switchBottomTab('users')">
                 <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
                 <span class="bottom-nav-label">Usuários</span>
             </button>
@@ -2788,6 +2761,16 @@ $v = time();
             </button>
         </div>
     </nav>
+
+    <!-- Refresh Button (FAB) - Oculto por padrão, aparece apenas quando necessário -->
+    <button id="refreshFAB" onclick="refreshAllData()" class="hidden fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full shadow-2xl hover:shadow-green-500/50 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 group" aria-label="Atualizar dados">
+        <svg id="refreshIcon" class="w-6 h-6 md:w-7 md:h-7 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        <svg id="refreshSpinner" class="w-6 h-6 md:w-7 md:h-7 hidden animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+    </button>
 
     <!-- ============================================ -->
     <!-- MODAIS - FORMULÁRIOS E DIÁLOGOS -->
@@ -2831,12 +2814,6 @@ $v = time();
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Número de Animais na Ordenha</label>
-                        <input type="number" name="total_animals" id="totalAnimalsInput" min="1" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
-                        <p class="text-xs text-gray-500 mt-1">Quantos animais participaram desta ordenha?</p>
-                    </div>
-
-                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Volume Total (L)</label>
                         <input type="number" name="total_volume" step="0.1" min="0" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
                     </div>
@@ -2845,8 +2822,6 @@ $v = time();
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Temperatura (°C) <span class="text-xs font-normal text-gray-500">(opcional)</span></label>
                         <input type="number" name="temperature" step="0.1" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                     </div>
-
-                    <input type="hidden" name="absent_animals" id="absentAnimalsInput" value="">
 
                     <div class="flex gap-3 pt-4 border-t">
                         <button type="button" onclick="closeGeneralVolumeModal()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
@@ -2857,41 +2832,6 @@ $v = time();
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Animais Ausentes -->
-    <div id="absentAnimalsOverlay" class="fixed inset-0 z-[60] hidden">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAbsentAnimalsModal()"></div>
-        <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden pointer-events-auto flex flex-col">
-                <div class="bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-xl font-bold text-white">Animais Ausentes da Ordenha</h3>
-                        <p class="text-sm text-white/90">Marque os animais que NÃO estão participando desta ordenha</p>
-                    </div>
-                    <button type="button" onclick="closeAbsentAnimalsModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-6 overflow-y-auto flex-1">
-                    <div id="absentAnimalsList" class="space-y-2">
-                        <p class="text-center text-gray-500 py-8">Carregando animais...</p>
-                    </div>
-                </div>
-
-                <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
-                    <button type="button" onclick="closeAbsentAnimalsModal()" class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
-                        Cancelar
-                    </button>
-                    <button type="button" onclick="saveAbsentAnimals()" class="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-700 text-white rounded-lg hover:from-amber-700 hover:to-orange-800 transition-all">
-                        Salvar Seleção
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -3845,7 +3785,7 @@ $v = time();
                         <span class="text-sm font-medium text-gray-700">Notificações Push</span>
                                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="pushNotifications" class="sr-only peer" onchange="togglePushNotifications(this.checked)">
+                                            <input type="checkbox" id="pushNotifications" class="sr-only peer" checked>
                                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                         </label>
                                     </div>
@@ -3860,21 +3800,23 @@ $v = time();
                                             Ver Histórico
                                         </button>
                                     </div>
-                                    <div id="pwa-install-container" class="hidden flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                                        <div class="flex items-center gap-3">
-                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                            </svg>
-                                            <div>
-                                                <span class="text-sm font-medium text-gray-900 block">Instalar App</span>
-                                                <span class="text-xs text-gray-600">Baixe o aplicativo para acesso offline</span>
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <div id="pwa-status-icon" class="flex-shrink-0">
+                                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <span class="text-sm font-medium text-gray-900 block" id="pwa-status-title">Verificar App</span>
+                                                <span class="text-xs text-gray-600" id="pwa-status-desc">Verificar se o app está instalado no dispositivo</span>
                                             </div>
                                         </div>
-                                        <button id="pwa-install-btn" onclick="installPWA()" class="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                        <button id="pwa-check-install-btn" onclick="checkAndInstallPWA()" class="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 flex-shrink-0">
+                                            <svg id="pwa-check-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            Instalar
+                                            <span id="pwa-check-btn-text">Verificar</span>
                                         </button>
                                     </div>
                                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
@@ -4507,7 +4449,6 @@ $v = time();
     <script src="assets/js/toast-notifications.js?v=<?php echo $v; ?>"></script>
     <script src="assets/js/modal-loader.js?v=<?php echo $v; ?>"></script>
     <script src="assets/js/native-features.js?v=<?php echo $v; ?>"></script>
-    <script src="assets/js/push-notifications.js?v=<?php echo $v; ?>"></script>
     
     <!-- ============================================ -->
     <!-- JAVASCRIPT INLINE - FUNCIONALIDADES ESPECÍFICAS -->
@@ -4926,12 +4867,29 @@ $v = time();
             };
             
             // Validar campo individual
-            function validateField(input, rules = {}) {
+            function validateField(input, rules = {}, options = {}) {
+                const { showErrors = true, forceValidation = false } = options;
                 const value = input.value;
                 const fieldName = input.name || input.id;
                 const formGroup = input.closest('.form-group') || input.parentElement;
                 let isValid = true;
                 let errorMessage = '';
+                
+                // Se o campo está vazio e não foi forçado a validar, não mostrar erro
+                // (só validar se o usuário digitou algo ou se é validação forçada no submit)
+                if (!forceValidation && !value.trim() && !input.dataset.touched) {
+                    // Remover classes de erro se não há valor
+                    input.classList.remove('valid', 'invalid');
+                    formGroup?.classList.remove('has-error', 'has-success');
+                    
+                    // Remover mensagens e ícones
+                    const existingError = formGroup?.querySelector('.form-error-message');
+                    const existingIcon = formGroup?.querySelector('.form-input-icon');
+                    if (existingError) existingError.remove();
+                    if (existingIcon) existingIcon.remove();
+                    
+                    return true; // Não é inválido se está vazio e não foi tocado
+                }
                 
                 // Remover classes anteriores
                 input.classList.remove('valid', 'invalid');
@@ -4943,7 +4901,7 @@ $v = time();
                 if (existingError) existingError.remove();
                 if (existingSuccess) existingSuccess.remove();
                 
-                // Remover ícones anteriores
+                // Remover ícones anteriores (se houver)
                 const existingIcon = formGroup?.querySelector('.form-input-icon');
                 if (existingIcon) existingIcon.remove();
                 
@@ -5000,36 +4958,21 @@ $v = time();
                     }
                 }
                 
-                // Aplicar feedback visual
+                // Aplicar feedback visual (apenas cores, sem ícones)
                 if (value && isValid) {
                     input.classList.add('valid');
                     formGroup?.classList.add('has-success');
-                    
-                    // Adicionar ícone de sucesso
-                    const successIcon = document.createElement('div');
-                    successIcon.className = 'form-input-icon valid-icon show';
-                    successIcon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-                    formGroup?.appendChild(successIcon);
-                } else if (!isValid) {
+                    // Não adicionar ícone de sucesso - apenas cor verde na borda
+                } else if (!isValid && showErrors) {
                     input.classList.add('invalid');
                     formGroup?.classList.add('has-error');
                     
-                    // Adicionar mensagem de erro
+                    // Adicionar mensagem de erro (sem ícone)
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'form-error-message show';
-                    errorDiv.innerHTML = `
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span>${errorMessage}</span>
-                    `;
+                    errorDiv.innerHTML = `<span>${errorMessage}</span>`;
                     formGroup?.appendChild(errorDiv);
-                    
-                    // Adicionar ícone de erro
-                    const errorIcon = document.createElement('div');
-                    errorIcon.className = 'form-input-icon invalid-icon show';
-                    errorIcon.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-                    formGroup?.appendChild(errorIcon);
+                    // Não adicionar ícone de erro - apenas cor vermelha na borda
                 }
                 
                 return isValid;
@@ -5054,7 +4997,8 @@ $v = time();
                     }
                     
                     if (Object.keys(fieldRules).length > 0) {
-                        const isValid = validateField(input, fieldRules);
+                        // No submit, forçar validação de todos os campos
+                        const isValid = validateField(input, fieldRules, { showErrors: true, forceValidation: true });
                         if (!isValid) {
                             isFormValid = false;
                         }
@@ -5096,9 +5040,39 @@ $v = time();
                         });
                     }
                     
+                    // Marcar campo como tocado quando o usuário digita
+                    input.addEventListener('input', function() {
+                        input.dataset.touched = 'true';
+                        // Validar enquanto digita (mas sem mostrar erro se estiver vazio)
+                        if (input.value.trim().length > 0) {
+                            validateField(input, fieldRules, { showErrors: true });
+                        } else {
+                            // Se apagou tudo, remover erros
+                            input.classList.remove('invalid');
+                            const formGroup = input.closest('.form-group') || input.parentElement;
+                            formGroup?.classList.remove('has-error');
+                            const existingError = formGroup?.querySelector('.form-error-message');
+                            const existingIcon = formGroup?.querySelector('.form-input-icon');
+                            if (existingError) existingError.remove();
+                            if (existingIcon) existingIcon.remove();
+                        }
+                    });
+                    
                     if (validateOnBlur) {
                         input.addEventListener('blur', function() {
-                            validateField(input, fieldRules);
+                            // Só validar no blur se o campo foi tocado (digitado algo) ou tem valor
+                            if (input.dataset.touched === 'true' || input.value.trim().length > 0) {
+                                validateField(input, fieldRules, { showErrors: true });
+                            } else {
+                                // Se não foi tocado e está vazio, não mostrar erro
+                                input.classList.remove('invalid');
+                                const formGroup = input.closest('.form-group') || input.parentElement;
+                                formGroup?.classList.remove('has-error');
+                                const existingError = formGroup?.querySelector('.form-error-message');
+                                const existingIcon = formGroup?.querySelector('.form-input-icon');
+                                if (existingError) existingError.remove();
+                                if (existingIcon) existingIcon.remove();
+                            }
                         });
                     }
                 });
@@ -5211,19 +5185,17 @@ $v = time();
             window.safeAsyncOperation = safeAsyncOperation;
         })();
         
-        // Registrar Service Worker com melhorias
+        // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw-manager.js', { scope: './' })
                     .then((registration) => {
-                        console.log('✅ Service Worker registrado com sucesso:', registration.scope);
+                        console.log('Service Worker registrado com sucesso:', registration.scope);
                         
-                        // Verificar atualizações periodicamente (otimizado)
-                        let updateCheckInterval = setInterval(() => {
-                            registration.update().catch(err => {
-                                console.warn('Erro ao verificar atualização do SW:', err);
-                            });
-                        }, 300000); // A cada 5 minutos (reduzido de 1 minuto para economizar recursos)
+                        // Verificar atualizações periodicamente
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000); // A cada minuto
                         
                         // Ouvir mensagens do Service Worker
                         navigator.serviceWorker.addEventListener('message', (event) => {
@@ -5232,245 +5204,540 @@ $v = time();
                                 if (typeof offlineManager !== 'undefined' && offlineManager.isOnline && !offlineManager.forceOffline) {
                                     offlineManager.sync();
                                 }
-                            } else if (event.data && event.data.type === 'SW_UPDATED') {
-                                // Service Worker atualizado - notificar usuário
-                                if (typeof showToast === 'function') {
-                                    showToast('Nova versão disponível! Recarregue a página para atualizar.', 'info', null, 10000);
-                                }
                             }
                         });
                         
                         // Verificar se há atualização disponível
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
-                            if (!newWorker) return;
-                            
                             newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed') {
-                                    if (navigator.serviceWorker.controller) {
-                                        // Nova versão disponível - notificar usuário
-                                        if (typeof showToast === 'function') {
-                                            showToast('Nova versão disponível! Recarregue a página para atualizar.', 'info', null, 10000);
-                                        }
-                                        
-                                        // Notificar Service Worker
-                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                    } else {
-                                        // Primeira instalação
-                                        console.log('✅ Service Worker instalado pela primeira vez');
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Nova versão disponível
+                                    if (typeof showToast === 'function') {
+                                        showToast('Nova versão disponível! Recarregue a página para atualizar.', 'info', null, 10000);
                                     }
                                 }
                             });
                         });
-                        
-                        // Verificar atualização imediatamente ao carregar
-                        registration.update().catch(err => {
-                            console.warn('Erro ao verificar atualização inicial:', err);
-                        });
                     })
                     .catch((error) => {
-                        console.error('❌ Erro ao registrar Service Worker:', error);
-                        // Tentar novamente após 30 segundos
-                        setTimeout(() => {
-                            navigator.serviceWorker.register('./sw-manager.js', { scope: './' })
-                                .then(() => console.log('✅ Service Worker registrado após retry'))
-                                .catch(err => console.error('❌ Erro no retry do Service Worker:', err));
-                        }, 30000);
+                        console.error('Erro ao registrar Service Worker:', error);
                     });
             });
         }
         
-        // Detectar se PWA pode ser instalada (melhorado)
-        let deferredPrompt;
-        let installButton = null;
-        let pwaInstallContainer = null;
-        let installPromptShown = false;
+        // ==================== SISTEMA PWA LACTECH - NOVO E LIMPO ====================
         
-        // Verificar se já está instalada ao carregar
-        function checkIfInstalled() {
+        // Limpar dados antigos do localStorage
+        (function() {
+            const oldKeys = ['pwa-banner-dismissed', 'pwa_installed_version', 'pwa_install_timestamp', 'pwa_version'];
+            oldKeys.forEach(key => {
+                if (localStorage.getItem(key)) {
+                    localStorage.removeItem(key);
+                    console.log('[PWA] Removido dado antigo:', key);
+                }
+            });
+        })();
+        
+        // Variável global para armazenar o prompt de instalação
+        let pwaDeferredPrompt = null;
+        
+        // Verificar se o app está instalado
+        function checkIfPWAInstalled() {
+            // Verificar display mode (modo standalone)
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            
+            // Verificar iOS standalone
             const isIOSStandalone = window.navigator.standalone === true;
-            const isInWebView = window.navigator.userAgent.includes('wv');
             
-            if (isStandalone || isIOSStandalone || isInWebView) {
-                hideInstallButton();
-                return true;
-            }
-            return false;
-        }
-        
-        // Verificar imediatamente
-        if (checkIfInstalled()) {
-            console.log('✅ PWA já está instalada');
-        }
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevenir o prompt padrão
-            e.preventDefault();
-            deferredPrompt = e;
+            // Verificar se está rodando em modo PWA (não em navegador)
+            const isInBrowser = window.matchMedia('(display-mode: browser)').matches;
             
-            // Mostrar botão de instalação no perfil (apenas se não estiver instalada)
-            if (!checkIfInstalled()) {
-                showInstallButton();
+            // Verificar service worker
+            const hasServiceWorker = 'serviceWorker' in navigator;
+            
+            // Considerar instalado se estiver em modo standalone
+            const installed = isStandalone || isIOSStandalone;
+            
+            return {
+                installed,
+                isStandalone,
+                isIOSStandalone,
+                isInBrowser,
+                hasServiceWorker
+            };
+        }
+        
+        // Função principal para verificar e instalar PWA
+        window.checkAndInstallPWA = async function() {
+            const btn = document.getElementById('pwa-check-install-btn');
+            const btnText = document.getElementById('pwa-check-btn-text');
+            const btnIcon = document.getElementById('pwa-check-icon');
+            const statusTitle = document.getElementById('pwa-status-title');
+            const statusDesc = document.getElementById('pwa-status-desc');
+            const statusIcon = document.getElementById('pwa-status-icon');
+            
+            if (!btn) {
+                console.error('[PWA] Botão não encontrado');
+                return;
             }
             
-            // Analytics de instalação disponível
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'pwa_install_prompt_available', {
-                    'event_category': 'PWA',
-                    'event_label': 'Install Prompt Available'
-                });
-            }
-        });
-        
-        function showInstallButton() {
-            // Mostrar container no perfil
-            pwaInstallContainer = document.getElementById('pwa-install-container');
-            if (pwaInstallContainer) {
-                pwaInstallContainer.classList.remove('hidden');
-            }
-        }
-        
-        function hideInstallButton() {
-            if (pwaInstallContainer) {
-                pwaInstallContainer.classList.add('hidden');
-            }
-            if (installButton) {
-                installButton.style.display = 'none';
-            }
-        }
-        
-        window.installPWA = async function installPWA() {
-            if (!deferredPrompt) {
-                // Se não houver deferredPrompt, pode ser que já esteja instalada
-                if (checkIfInstalled()) {
+            // Mostrar loading
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.textContent = 'Verificando...';
+            btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>';
+            btnIcon.classList.add('animate-spin');
+            
+            try {
+                // Verificar status de instalação
+                const status = checkIfPWAInstalled();
+                
+                console.log('[PWA] Status de verificação:', status);
+                
+                // Verificar service worker
+                let hasActiveSW = false;
+                if ('serviceWorker' in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.getRegistration();
+                        hasActiveSW = !!registration;
+                    } catch (e) {
+                        console.warn('[PWA] Erro ao verificar service worker:', e);
+                    }
+                }
+                
+                // Atualizar UI
+                if (status.installed) {
+                    // App está instalado
+                    statusTitle.textContent = 'App Instalado';
+                    statusDesc.textContent = 'O app LacTech está instalado neste dispositivo';
+                    statusIcon.innerHTML = '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+                    
+                    btnText.textContent = 'Instalar Novamente';
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    
+                    // Mostrar aviso
                     if (typeof showToast === 'function') {
-                        showToast('O aplicativo já está instalado!', 'info');
+                        showToast('App já está instalado. Você pode instalar novamente se desejar.', 'info');
+                    }
+                    
+                    // Tentar instalar mesmo se já estiver instalado
+                    if (pwaDeferredPrompt) {
+                        setTimeout(() => {
+                            installPWADirectly();
+                        }, 500);
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast('Prompt de instalação não disponível no momento', 'info');
+                        }
                     }
                 } else {
-                    if (typeof showToast === 'function') {
-                        showToast('Instalação não disponível no momento. Tente novamente mais tarde.', 'warning');
+                    // App não está instalado
+                    statusTitle.textContent = 'App Não Instalado';
+                    statusDesc.textContent = 'O app LacTech não está instalado neste dispositivo';
+                    statusIcon.innerHTML = '<svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+                    
+                    btnText.textContent = 'Instalar App';
+                    btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    
+                    // Tentar instalar
+                    if (pwaDeferredPrompt) {
+                        setTimeout(() => {
+                            installPWADirectly();
+                        }, 500);
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast('Aguardando disponibilidade de instalação... Tente novamente em alguns segundos.', 'info');
+                        }
                     }
+                }
+                
+            } catch (error) {
+                console.error('[PWA] Erro ao verificar:', error);
+                statusTitle.textContent = 'Erro na Verificação';
+                statusDesc.textContent = 'Não foi possível verificar o status do app';
+                statusIcon.innerHTML = '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+                
+                if (typeof showErrorToast === 'function') {
+                    showErrorToast('Erro ao verificar status do app', 'Erro');
+                }
+            } finally {
+                // Restaurar botão
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnIcon.classList.remove('animate-spin');
+                btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>';
+            }
+        };
+        
+        // Função para instalar PWA diretamente
+        async function installPWADirectly() {
+            if (!pwaDeferredPrompt) {
+                if (typeof showErrorToast === 'function') {
+                    showErrorToast('Instalação não disponível no momento. Tente novamente mais tarde.', 'Erro');
                 }
                 return;
             }
             
             try {
-                // Mostrar prompt de instalação
-                deferredPrompt.prompt();
+                // Mostrar prompt nativo do navegador
+                pwaDeferredPrompt.prompt();
                 
                 // Aguardar resposta do usuário
-                const { outcome } = await deferredPrompt.userChoice;
-                
-                // Analytics
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'pwa_install_' + outcome, {
-                        'event_category': 'PWA',
-                        'event_label': 'Install ' + outcome
-                    });
-                }
+                const { outcome } = await pwaDeferredPrompt.userChoice;
                 
                 if (outcome === 'accepted') {
-                    hideInstallButton();
-                    if (typeof showToast === 'function') {
-                        showToast('Aplicativo instalado com sucesso!', 'success');
+                    if (typeof showSuccessToast === 'function') {
+                        showSuccessToast('App instalado com sucesso!', 'Sucesso');
                     }
+                    
+                    // Atualizar status após instalação
+                    setTimeout(() => {
+                        if (typeof checkAndInstallPWA === 'function') {
+                            checkAndInstallPWA();
+                        }
+                    }, 1000);
                 } else {
-                    console.log('Usuário recusou instalação');
+                    if (typeof showToast === 'function') {
+                        showToast('Instalação cancelada', 'info');
+                    }
                 }
                 
-                deferredPrompt = null;
+                // Limpar prompt após uso
+                pwaDeferredPrompt = null;
+                
             } catch (error) {
-                console.error('Erro ao instalar PWA:', error);
-                if (typeof showToast === 'function') {
-                    showToast('Erro ao instalar aplicativo. Tente novamente.', 'error');
+                console.error('[PWA] Erro ao instalar:', error);
+                if (typeof showErrorToast === 'function') {
+                    showErrorToast('Erro ao instalar o app: ' + error.message, 'Erro');
                 }
             }
-        };
+        }
         
-        // Esconder botão se já estiver instalada
-        window.addEventListener('appinstalled', (e) => {
-            console.log('✅ PWA instalada com sucesso');
-            hideInstallButton();
-            deferredPrompt = null;
-            
-            // Analytics
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'pwa_installed', {
-                    'event_category': 'PWA',
-                    'event_label': 'PWA Installed'
-                });
-            }
-            
-            if (typeof showToast === 'function') {
-                showToast('Aplicativo instalado com sucesso!', 'success');
-            }
+        // Capturar evento beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('[PWA] Evento beforeinstallprompt capturado');
+            // Prevenir o prompt padrão
+            e.preventDefault();
+            // Armazenar o evento
+            pwaDeferredPrompt = e;
+            console.log('[PWA] Prompt de instalação disponível');
         });
         
-        // Verificar periodicamente se foi instalada (para casos onde o evento não dispara)
-        setInterval(() => {
-            if (!checkIfInstalled() && deferredPrompt) {
-                // Ainda não instalada e prompt disponível
-            } else if (checkIfInstalled()) {
-                hideInstallButton();
-            }
-        }, 5000);
-        
-        // Função para toggle de Push Notifications
-        window.togglePushNotifications = async function togglePushNotifications(enabled) {
-            if (!window.pushNotifications) {
-                console.warn('Push Notifications não inicializado');
-                if (typeof showToast === 'function') {
-                    showToast('Push Notifications não disponível no momento', 'warning');
+        // Detectar quando o app é instalado
+        window.addEventListener('appinstalled', () => {
+            console.log('[PWA] App instalado com sucesso');
+            pwaDeferredPrompt = null;
+            
+            // Atualizar status no perfil
+            setTimeout(() => {
+                if (typeof checkAndInstallPWA === 'function') {
+                    checkAndInstallPWA();
                 }
-                // Reverter checkbox
-                document.getElementById('pushNotifications').checked = !enabled;
+            }, 1000);
+        });
+        
+        // Verificar status ao abrir o perfil
+        if (typeof window.openProfileOverlay === 'function') {
+            const originalOpenProfile = window.openProfileOverlay;
+            window.openProfileOverlay = function() {
+                originalOpenProfile();
+                // Verificar status do PWA após abrir perfil
+                setTimeout(() => {
+                    if (typeof checkAndInstallPWA === 'function') {
+                        checkAndInstallPWA();
+                    }
+                }, 300);
+            };
+        }
+        
+        // Variável para rastrear se há dados para atualizar
+        let hasDataToRefresh = false;
+        let lastDataCheck = 0;
+        const DATA_CHECK_INTERVAL = 30000; // 30 segundos
+        
+        // Verificar se há dados para atualizar
+        async function checkIfDataNeedsRefresh() {
+            const now = Date.now();
+            // Só verificar a cada 30 segundos
+            if (now - lastDataCheck < DATA_CHECK_INTERVAL) {
+                return hasDataToRefresh;
+            }
+            
+            lastDataCheck = now;
+            
+            try {
+                let needsRefresh = false;
+                
+                // Verificar se há dados pendentes no cache offline
+                if (typeof offlineManager !== 'undefined') {
+                    const queueCount = offlineManager.getQueueCount ? offlineManager.getQueueCount() : 
+                                      (offlineManager.queue ? offlineManager.queue.length : 0);
+                    
+                    if (queueCount > 0) {
+                        needsRefresh = true;
+                        console.log(`[Refresh] ${queueCount} registro(s) pendentes na fila offline`);
+                    }
+                }
+                
+                // Verificar localStorage para fila offline
+                const offlineQueue = localStorage.getItem('lactech_offline_queue');
+                if (offlineQueue) {
+                    try {
+                        const queue = JSON.parse(offlineQueue);
+                        if (Array.isArray(queue) && queue.length > 0) {
+                            needsRefresh = true;
+                            console.log(`[Refresh] ${queue.length} registro(s) pendentes no localStorage`);
+                        }
+                    } catch (e) {
+                        // Ignorar erro de parse
+                    }
+                }
+                
+                // Verificar última atualização vs tempo atual (só se estiver online)
+                if (navigator.onLine && (!offlineManager || !offlineManager.forceOffline)) {
+                    const lastUpdate = localStorage.getItem('lastDataUpdate');
+                    if (lastUpdate) {
+                        const timeSinceUpdate = now - parseInt(lastUpdate);
+                        // Se passou mais de 5 minutos, pode ter dados novos
+                        if (timeSinceUpdate > 300000) {
+                            needsRefresh = true;
+                            console.log(`[Refresh] Passaram ${Math.round(timeSinceUpdate / 60000)} minutos desde última atualização`);
+                        }
+                    } else {
+                        // Nunca atualizou, mostrar botão
+                        needsRefresh = true;
+                    }
+                }
+                
+                hasDataToRefresh = needsRefresh;
+                updateRefreshButtonVisibility();
+                return needsRefresh;
+            } catch (error) {
+                console.error('Erro ao verificar dados:', error);
+                return false;
+            }
+        }
+        
+        // Atualizar visibilidade do botão de refresh
+        function updateRefreshButtonVisibility() {
+            const refreshBtn = document.getElementById('refreshFAB');
+            if (refreshBtn) {
+                if (hasDataToRefresh) {
+                    refreshBtn.classList.remove('hidden');
+                } else {
+                    refreshBtn.classList.add('hidden');
+                }
+            }
+        }
+        
+        // Verificar periodicamente se há dados para atualizar
+        setInterval(() => {
+            checkIfDataNeedsRefresh();
+        }, 60000); // Verificar a cada minuto
+        
+        // Verificar imediatamente ao carregar
+        setTimeout(() => {
+            checkIfDataNeedsRefresh();
+        }, 2000); // Após 2 segundos do carregamento
+        
+        // Função de limpeza de cache periódica (só quando online)
+        async function clearCachePeriodically() {
+            // Só limpar se estiver online
+            if (!navigator.onLine) {
+                console.log('[Cache] Offline - mantendo cache para sincronização');
+                return;
+            }
+            
+            // Verificar se está em modo offline forçado
+            if (typeof offlineManager !== 'undefined' && offlineManager.forceOffline) {
+                console.log('[Cache] Modo offline forçado - mantendo cache');
+                return;
+            }
+            
+            // Verificar se há dados pendentes para sincronizar
+            let hasPendingData = false;
+            
+            // Verificar offline manager
+            if (typeof offlineManager !== 'undefined') {
+                const queueCount = offlineManager.getQueueCount ? offlineManager.getQueueCount() : 
+                                  (offlineManager.queue ? offlineManager.queue.length : 0);
+                if (queueCount > 0) {
+                    hasPendingData = true;
+                }
+            }
+            
+            // Verificar localStorage
+            const offlineQueue = localStorage.getItem('lactech_offline_queue');
+            if (offlineQueue) {
+                try {
+                    const queue = JSON.parse(offlineQueue);
+                    if (Array.isArray(queue) && queue.length > 0) {
+                        hasPendingData = true;
+                    }
+                } catch (e) {
+                    // Ignorar erro
+                }
+            }
+            
+            // Verificar outras chaves de dados pendentes
+            if (localStorage.getItem('offline_queue') || localStorage.getItem('pending_sync')) {
+                hasPendingData = true;
+            }
+            
+            if (hasPendingData) {
+                console.log('[Cache] Há dados pendentes - mantendo cache para sincronização');
                 return;
             }
             
             try {
-                if (enabled) {
-                    // Solicitar permissão e subscrever
-                    const permission = await window.pushNotifications.requestPermission();
-                    if (permission) {
-                        await window.pushNotifications.subscribe();
-                        if (typeof showToast === 'function') {
-                            showToast('Notificações Push ativadas! Você receberá notificações mesmo com o app fechado.', 'success');
-                        }
-                    } else {
-                        // Reverter checkbox se permissão negada
-                        document.getElementById('pushNotifications').checked = false;
-                        if (typeof showToast === 'function') {
-                            showToast('Permissão para notificações negada', 'warning');
+                console.log('[Cache] Limpando cache (online e sem dados pendentes)');
+                
+                // Limpar cache do Service Worker
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+                }
+                
+                // Limpar caches do navegador
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    const oldCaches = cacheNames.filter(name => 
+                        !name.includes('v2.1.0') && 
+                        !name.includes('lactech-manager-v2.1.0') &&
+                        !name.includes('lactech-runtime-v2.1.0') &&
+                        !name.includes('lactech-images-v2.1.0')
+                    );
+                    
+                    await Promise.all(oldCaches.map(name => {
+                        console.log('[Cache] Removendo cache antigo:', name);
+                        return caches.delete(name);
+                    }));
+                }
+                
+                // Limpar localStorage de dados antigos (manter dados importantes)
+                const keysToKeep = [
+                    'lastDataUpdate',
+                    'offline_queue',
+                    'pending_sync',
+                    'pwa-banner-dismissed',
+                    'user_preferences',
+                    'theme'
+                ];
+                
+                const allKeys = Object.keys(localStorage);
+                allKeys.forEach(key => {
+                    if (!keysToKeep.includes(key) && key.startsWith('cache_')) {
+                        localStorage.removeItem(key);
+                        console.log('[Cache] Removendo chave do localStorage:', key);
+                    }
+                });
+                
+                console.log('[Cache] Limpeza de cache concluída');
+            } catch (error) {
+                console.error('[Cache] Erro ao limpar cache:', error);
+            }
+        }
+        
+        // Limpar cache a cada 5 minutos (só quando online)
+        setInterval(() => {
+            clearCachePeriodically();
+        }, 300000); // 5 minutos
+        
+        // Limpar cache imediatamente ao carregar (se online e sem dados pendentes)
+        setTimeout(() => {
+            clearCachePeriodically();
+        }, 10000); // Após 10 segundos do carregamento
+        
+        // Função para atualizar todos os dados
+        window.refreshAllData = async function() {
+            const refreshBtn = document.getElementById('refreshFAB');
+            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshSpinner = document.getElementById('refreshSpinner');
+            
+            if (!refreshBtn) return;
+            
+            // Mostrar loading
+            refreshIcon.classList.add('hidden');
+            refreshSpinner.classList.remove('hidden');
+            refreshBtn.disabled = true;
+            refreshBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            try {
+                // Atualizar dados em paralelo
+                const promises = [];
+                
+                if (typeof loadDashboardData === 'function') {
+                    promises.push(loadDashboardData());
+                }
+                if (typeof loadVolumeData === 'function') {
+                    promises.push(loadVolumeData());
+                }
+                if (typeof loadQualityData === 'function') {
+                    promises.push(loadQualityData());
+                }
+                if (typeof loadFinancialData === 'function') {
+                    promises.push(loadFinancialData());
+                }
+                if (typeof loadUsersData === 'function') {
+                    promises.push(loadUsersData());
+                }
+                
+                // Recarregar dados da tab atual se houver função específica
+                const currentTab = document.querySelector('[data-tab].active, .bottom-nav-item.active');
+                if (currentTab) {
+                    const tabName = currentTab.getAttribute('data-tab');
+                    if (tabName) {
+                        switch(tabName) {
+                            case 'volume':
+                                if (typeof loadVolumeRecordsTable === 'function') {
+                                    promises.push(loadVolumeRecordsTable());
+                                }
+                                break;
+                            case 'quality':
+                                if (typeof loadQualityRecordsTable === 'function') {
+                                    promises.push(loadQualityRecordsTable());
+                                }
+                                break;
                         }
                     }
-                } else {
-                    // Desinscrever
-                    await window.pushNotifications.unsubscribe();
-                    if (typeof showToast === 'function') {
-                        showToast('Notificações Push desativadas', 'info');
-                    }
+                }
+                
+                await Promise.allSettled(promises);
+                
+                // Atualizar timestamp da última atualização
+                localStorage.setItem('lastDataUpdate', Date.now().toString());
+                hasDataToRefresh = false;
+                updateRefreshButtonVisibility();
+                
+                // Feedback visual
+                if (typeof showSuccessToast === 'function') {
+                    showSuccessToast('Dados atualizados!', 'Sucesso');
+                } else if (typeof showToast === 'function') {
+                    showToast('Dados atualizados!', 'success');
                 }
             } catch (error) {
-                console.error('Erro ao toggle push notifications:', error);
-                // Reverter checkbox em caso de erro
-                document.getElementById('pushNotifications').checked = !enabled;
-                if (typeof showToast === 'function') {
-                    showToast('Erro ao alterar configuração de notificações', 'error');
+                console.error('Erro ao atualizar dados:', error);
+                if (typeof showErrorToast === 'function') {
+                    showErrorToast('Erro ao atualizar dados', 'Erro');
+                } else if (typeof showToast === 'function') {
+                    showToast('Erro ao atualizar dados', 'error');
                 }
+            } finally {
+                // Restaurar botão
+                refreshIcon.classList.remove('hidden');
+                refreshSpinner.classList.add('hidden');
+                refreshBtn.disabled = false;
+                refreshBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                
+                // Animação de rotação no ícone
+                refreshIcon.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    refreshIcon.style.transform = 'rotate(0deg)';
+                }, 300);
             }
         };
-        
-        // Verificar status inicial de push notifications após carregar
-        setTimeout(() => {
-            if (window.pushNotifications) {
-                const status = window.pushNotifications.getSubscriptionStatus();
-                const checkbox = document.getElementById('pushNotifications');
-                if (checkbox) {
-                    checkbox.checked = status.isSubscribed && status.hasPermission;
-                }
-            }
-        }, 2000);
         
         // Função global para toggle modo offline
         
@@ -5935,6 +6202,54 @@ $v = time();
         // Função saveProfile está definida em gerente-completo.js
         // Não definir aqui para não sobrescrever a função correta
         
+        // Função para lidar com upload de foto do novo usuário
+        function handleNewUserPhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validar tipo de arquivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Tipo de arquivo não permitido. Use JPG, PNG, GIF ou WEBP.');
+                event.target.value = '';
+                return;
+            }
+            
+            // Validar tamanho (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Arquivo muito grande. Tamanho máximo: 5MB.');
+                event.target.value = '';
+                return;
+            }
+            
+            // Sincronizar ambos os inputs de arquivo (galeria e câmera)
+            const otherInput = event.target.id === 'newUserPhotoInput' 
+                ? document.getElementById('newUserPhotoCameraInput')
+                : document.getElementById('newUserPhotoInput');
+            if (otherInput) {
+                // Criar um novo FileList com o arquivo selecionado
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                otherInput.files = dataTransfer.files;
+            }
+            
+            // Mostrar preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImg = document.getElementById('newUserPhotoImg');
+                const previewIcon = document.getElementById('newUserPhotoIcon');
+                
+                if (previewImg && previewIcon) {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                    previewIcon.classList.add('hidden');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        window.handleNewUserPhotoUpload = handleNewUserPhotoUpload;
+        
         function toggleUserPasswordVisibility(inputId, buttonId) {
             const input = document.getElementById(inputId);
             const button = document.getElementById(buttonId);
@@ -6171,70 +6486,88 @@ $v = time();
         }
         
         // Formulário de adicionar usuário
+        // Função para limpar input
+        function clearInput(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = '';
+                input.dispatchEvent(new Event('input'));
+                input.focus();
+                
+                // Esconder botão de limpar - mapear IDs corretos
+                const clearBtnMap = {
+                    'userNameInput': 'clearUserNameInputBtn',
+                    'userEmailInput': 'clearUserEmailInputBtn',
+                    'userPhoneInput': 'clearUserPhoneBtn',
+                    'userPassword': 'clearUserPasswordBtn',
+                    'userConfirmPassword': 'clearUserConfirmPasswordBtn'
+                };
+                
+                const clearBtnId = clearBtnMap[inputId] || 'clear' + inputId.charAt(0).toUpperCase() + inputId.slice(1) + 'Btn';
+                const clearBtn = document.getElementById(clearBtnId);
+                if (clearBtn) {
+                    clearBtn.classList.add('hidden');
+                }
+                
+                // Remover validação visual
+                input.classList.remove('invalid');
+                const formGroup = input.closest('.form-group') || input.parentElement;
+                formGroup?.classList.remove('has-error');
+                const existingError = formGroup?.querySelector('.form-error-message');
+                const existingIcon = formGroup?.querySelector('.form-input-icon');
+                if (existingError) existingError.remove();
+                if (existingIcon) existingIcon.remove();
+            }
+        }
+        
+        window.clearInput = clearInput;
+        
         // Inicializar validação do formulário de adicionar usuário
         document.addEventListener('DOMContentLoaded', function() {
             const addUserForm = document.getElementById('addUserForm');
             if (addUserForm) {
-                // Função para gerar email automaticamente baseado no nome
-                function generateEmailFromName(name) {
-                    if (!name || name.trim() === '') {
-                        return '';
+                // Adicionar funcionalidade de mostrar/esconder botão X nos inputs
+                const inputConfig = [
+                    { inputId: 'userNameInput', btnId: 'clearUserNameInputBtn' },
+                    { inputId: 'userEmailInput', btnId: 'clearUserEmailInputBtn' },
+                    { inputId: 'userPhoneInput', btnId: 'clearUserPhoneBtn' },
+                    { inputId: 'userPassword', btnId: 'clearUserPasswordBtn' },
+                    { inputId: 'userConfirmPassword', btnId: 'clearUserConfirmPasswordBtn' }
+                ];
+                
+                inputConfig.forEach(config => {
+                    const input = document.getElementById(config.inputId);
+                    const clearBtn = document.getElementById(config.btnId);
+                    
+                    if (input && clearBtn) {
+                        // Para campos de senha, não mostrar botão X (só o ícone de olho)
+                        const isPasswordField = input.type === 'password' || config.inputId.includes('Password');
+                        
+                        if (!isPasswordField) {
+                            // Mostrar/esconder botão X baseado no conteúdo (apenas para campos não-senha)
+                            function toggleClearButton() {
+                                if (input.value.trim().length > 0) {
+                                    clearBtn.classList.remove('hidden');
+                                } else {
+                                    clearBtn.classList.add('hidden');
+                                }
+                            }
+                            
+                            input.addEventListener('input', toggleClearButton);
+                            input.addEventListener('focus', toggleClearButton);
+                            input.addEventListener('blur', function() {
+                                // Manter visível por um momento após blur
+                                setTimeout(toggleClearButton, 100);
+                            });
+                            
+                            // Inicializar estado
+                            toggleClearButton();
+                        } else {
+                            // Para campos de senha, sempre esconder o botão X
+                            clearBtn.classList.add('hidden');
+                        }
                     }
-                    
-                    // Remover acentos e caracteres especiais
-                    let email = name.toLowerCase()
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-                        .replace(/[^a-z0-9\s]/g, '') // Remove caracteres especiais
-                        .trim()
-                        .replace(/\s+/g, '.') // Substitui espaços por pontos
-                        .replace(/\.+/g, '.') // Remove pontos duplicados
-                        .replace(/^\.|\.$/g, ''); // Remove pontos no início/fim
-                    
-                    // Adicionar domínio
-                    return email ? email + '@lactech.com' : '';
-                }
-                
-                // Gerar email automaticamente quando o nome mudar
-                const nameInput = document.getElementById('userNameInput');
-                const emailInput = document.getElementById('userEmailInput');
-                
-                if (nameInput && emailInput) {
-                    let isUserTypingEmail = false;
-                    
-                    // Detectar se usuário está editando o email manualmente
-                    emailInput.addEventListener('focus', function() {
-                        isUserTypingEmail = true;
-                    });
-                    
-                    emailInput.addEventListener('blur', function() {
-                        // Se o email estiver vazio ou igual ao gerado, permitir regenerar
-                        if (!this.value || this.value === generateEmailFromName(nameInput.value)) {
-                            isUserTypingEmail = false;
-                        }
-                    });
-                    
-                    // Gerar email quando o nome mudar
-                    nameInput.addEventListener('input', function() {
-                        if (!isUserTypingEmail) {
-                            const generatedEmail = generateEmailFromName(this.value);
-                            if (generatedEmail) {
-                                emailInput.value = generatedEmail;
-                            }
-                        }
-                    });
-                    
-                    // Gerar email quando o campo de nome perder o foco (se email estiver vazio)
-                    nameInput.addEventListener('blur', function() {
-                        if (!isUserTypingEmail && (!emailInput.value || emailInput.value === '')) {
-                            const generatedEmail = generateEmailFromName(this.value);
-                            if (generatedEmail) {
-                                emailInput.value = generatedEmail;
-                            }
-                        }
-                    });
-                }
-                
+                });
                 // Regras de validação
                 const validationRules = {
                     name: { required: true, minLength: 3 },
@@ -6310,24 +6643,44 @@ $v = time();
                     }
                     
                     try {
-                        // Preparar dados
-                        const data = {
-                            name: formData.get('name'),
-                            email: formData.get('email'),
-                            phone: formData.get('phone') || null,
-                            password: formData.get('password'),
-                            role: formData.get('role')
-                        };
+                        // Preparar FormData com foto se houver
+                        const submitFormData = new FormData();
+                        submitFormData.append('action', 'create_user');
+                        submitFormData.append('name', formData.get('name'));
+                        submitFormData.append('email', formData.get('email'));
+                        submitFormData.append('phone', formData.get('phone') || '');
+                        submitFormData.append('password', formData.get('password'));
+                        submitFormData.append('role', formData.get('role'));
                         
-                        // Enviar para API
-                        const result = await safeFetch('./api/actions.php?action=add_user', {
+                        // Adicionar foto se foi selecionada
+                        const photoFile = formData.get('profile_photo');
+                        if (photoFile && photoFile.size > 0) {
+                            submitFormData.append('profile_photo', photoFile);
+                        }
+                        
+                        // Enviar para API usando FormData
+                        const result = await safeFetch('./api/actions.php', {
                             method: 'POST',
-                            body: JSON.stringify(data)
+                            body: submitFormData
                         });
                         
                         if (result.success && result.data) {
                             showSuccessToast('Usuário adicionado com sucesso!', 'Sucesso');
                             addUserForm.reset();
+                            
+                            // Resetar preview da foto
+                            const previewImg = document.getElementById('newUserPhotoImg');
+                            const previewIcon = document.getElementById('newUserPhotoIcon');
+                            const photoInput = document.getElementById('newUserPhotoInput');
+                            if (previewImg && previewIcon) {
+                                previewImg.src = '';
+                                previewImg.classList.add('hidden');
+                                previewIcon.classList.remove('hidden');
+                            }
+                            if (photoInput) {
+                                photoInput.value = '';
+                            }
+                            
                             // Remover classes de validação
                             addUserForm.querySelectorAll('.valid, .invalid').forEach(el => {
                                 el.classList.remove('valid', 'invalid');
@@ -6367,6 +6720,12 @@ $v = time();
             if (typeof offlineManager !== 'undefined' && offlineManager.updateUI) {
                 offlineManager.updateUI();
             }
+            // Verificar status do PWA ao abrir o perfil
+            setTimeout(() => {
+                if (typeof checkAndInstallPWA === 'function') {
+                    checkAndInstallPWA();
+                }
+            }, 300);
         };
         
         // Verificar resultados de vinculação Google e carregar status
@@ -6493,7 +6852,14 @@ $v = time();
                         if (typeof loadFinancialData === 'function') loadFinancialData();
                         break;
                     case 'users':
-                        if (typeof loadUsersData === 'function') loadUsersData();
+                        // Sempre carregar dados de usuários quando a tab for aberta
+                        setTimeout(() => {
+                            if (typeof loadUsersData === 'function') {
+                                loadUsersData();
+                            } else {
+                                console.error('loadUsersData não está disponível');
+                            }
+                        }, 200);
                         break;
                 }
             }

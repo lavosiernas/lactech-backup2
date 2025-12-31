@@ -243,6 +243,7 @@ try {
             break;
 
         case 'create_user':
+        case 'add_user':
             // Criar usuário (users)
             $userData = [
                 'name' => $_POST['name'] ?? '',
@@ -253,7 +254,60 @@ try {
                 'cpf' => $_POST['cpf'] ?? null,
                 'phone' => $_POST['phone'] ?? null,
             ];
+            
+            // Processar upload de foto se fornecido
+            if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = __DIR__ . '/../uploads/profiles/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                $file = $_FILES['profile_photo'];
+                $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                $maxSize = 5 * 1024 * 1024; // 5MB
+                
+                if (!in_array($file['type'], $allowedTypes)) {
+                    echo json_encode(['success' => false, 'error' => 'Tipo de arquivo não permitido. Use JPG, PNG, GIF ou WEBP.']);
+                    exit;
+                }
+                
+                if ($file['size'] > $maxSize) {
+                    echo json_encode(['success' => false, 'error' => 'Arquivo muito grande. Tamanho máximo: 5MB.']);
+                    exit;
+                }
+                
+                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                // Usar timestamp para nome único (o ID do usuário será adicionado depois)
+                $filename = 'profile_' . time() . '_' . uniqid() . '.' . $extension;
+                $filepath = $uploadDir . $filename;
+                
+                if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                    $userData['profile_photo'] = 'uploads/profiles/' . $filename;
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Erro ao salvar a foto.']);
+                    exit;
+                }
+            }
+            
             $result = $db->createUser($userData);
+            
+            // Se o usuário foi criado com sucesso e há foto, atualizar o nome do arquivo com o ID do usuário
+            if ($result['success'] && isset($result['data']['user_id']) && isset($userData['profile_photo'])) {
+                $userId = $result['data']['user_id'];
+                $oldPath = __DIR__ . '/../' . $userData['profile_photo'];
+                $extension = pathinfo($userData['profile_photo'], PATHINFO_EXTENSION);
+                $newFilename = 'profile_' . $userId . '_' . time() . '.' . $extension;
+                $newPath = __DIR__ . '/../uploads/profiles/' . $newFilename;
+                
+                if (file_exists($oldPath) && rename($oldPath, $newPath)) {
+                    $newPhotoPath = 'uploads/profiles/' . $newFilename;
+                    $pdo = $db->getConnection();
+                    $updateStmt = $pdo->prepare("UPDATE users SET profile_photo = :photo WHERE id = :id");
+                    $updateStmt->execute([':photo' => $newPhotoPath, ':id' => $userId]);
+                    $result['data']['profile_photo'] = $newPhotoPath;
+                }
+            }
+            
             echo json_encode($result);
             break;
 

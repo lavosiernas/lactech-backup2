@@ -6,7 +6,7 @@
 class NativeFeatures {
     constructor() {
         this.pullToRefresh = {
-            enabled: true,
+            enabled: false,
             threshold: 80,
             startY: 0,
             currentY: 0,
@@ -28,7 +28,8 @@ class NativeFeatures {
 
     init() {
         if (this.isMobile()) {
-            this.initPullToRefresh();
+            // Pull-to-refresh desabilitado - estava causando problemas
+            // this.initPullToRefresh();
             this.initSwipeGestures();
             this.initHapticFeedback();
             this.initAppLikeBehavior();
