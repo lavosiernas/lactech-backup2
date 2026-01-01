@@ -75,3 +75,4 @@ Essas configurações já foram aplicadas no arquivo `survey-admin.php`.
 - Os dados existentes na tabela não serão afetados.
 - A coluna `thanked_at` será NULL para todas as respostas antigas (o que é esperado).
 
+

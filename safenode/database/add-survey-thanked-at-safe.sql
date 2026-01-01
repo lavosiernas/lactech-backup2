@@ -14,3 +14,4 @@ ADD INDEX IF NOT EXISTS `idx_thanked_at` (`thanked_at`);
 -- Nota: Se o MySQL não suportar IF NOT EXISTS, execute o script add-survey-thanked-at.sql
 -- e ignore qualquer erro de "Duplicate column name" ou "Duplicate key name"
 
+

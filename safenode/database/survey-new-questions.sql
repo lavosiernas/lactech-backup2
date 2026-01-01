@@ -57,3 +57,4 @@ ADD COLUMN `must_have_features` TEXT NULL COMMENT 'O que não pode faltar' AFTER
 -- Nota: Os campos antigos (uses_hosting, biggest_pain, etc) serão mantidos para compatibilidade
 -- Se quiser removê-los depois, execute comandos DROP COLUMN separadamente
 
+

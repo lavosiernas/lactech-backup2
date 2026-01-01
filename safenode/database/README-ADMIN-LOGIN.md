@@ -47,3 +47,4 @@ O script vai mostrar o hash gerado. Use o SQL fornecido para atualizar no banco.
 - Não há senha em texto plano no código
 - A sessão PHP é usada para manter o usuário logado
 
+

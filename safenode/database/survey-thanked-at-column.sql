@@ -56,3 +56,4 @@ WHERE TABLE_SCHEMA = DATABASE()
 AND TABLE_NAME = 'safenode_survey_responses'
 ORDER BY ORDINAL_POSITION;
 
+

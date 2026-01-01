@@ -90,3 +90,4 @@ try {
     echo json_encode(['error' => 'Erro ao verificar novas respostas']);
 }
 
+

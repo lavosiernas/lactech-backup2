@@ -26,3 +26,4 @@ CREATE TABLE IF NOT EXISTS `safenode_survey_responses` (
   KEY `idx_thanked_at` (`thanked_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+

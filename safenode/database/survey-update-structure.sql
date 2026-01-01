@@ -56,3 +56,4 @@ CHANGE COLUMN `would_pay_integration` `would_pay_integration_old` VARCHAR(50) NU
 CHANGE COLUMN `wants_beta` `wants_beta_old` TINYINT(1) NULL COMMENT 'DEPRECATED',
 CHANGE COLUMN `additional_info` `additional_info_old` TEXT NULL COMMENT 'DEPRECATED';
 
+
