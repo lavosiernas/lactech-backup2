@@ -44,7 +44,14 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LacTech">
     <title>LacTech - Sistema de Gestão Leiteira</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
     
     <!-- Preconnect para recursos externos (melhora velocidade) -->
     <link rel="preconnect" href="https://i.postimg.cc">
@@ -81,8 +88,6 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
     <!-- Preload de recursos críticos -->
     <link rel="preload" href="assets/css/style.css" as="style">
     
-    <!-- Cloudflare Turnstile -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         .error-message {
             background-color: #fef2f2;
@@ -346,15 +351,6 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                     <a href="esqueceu-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                 </div>
 
-                <!-- Cloudflare Turnstile Widget -->
-                <?php if (defined('TURNSTILE_SITE_KEY') && !empty(TURNSTILE_SITE_KEY)): ?>
-                <div class="cf-turnstile" 
-                     data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>" 
-                     data-theme="light" 
-                     data-callback="onTurnstileSuccess"
-                     data-error-callback="onTurnstileError"
-                     id="turnstile-widget"></div>
-                <?php endif; ?>
 
                 <button type="submit" id="loginBtn" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
                     <span class="loading-spinner" id="loadingSpinner" style="display: none;"></span>
@@ -471,15 +467,6 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         <a href="esqueceu-senha.php" class="text-sm text-forest-600 hover:text-forest-700 font-medium">Esqueceu a senha?</a>
                     </div>
 
-                    <!-- Cloudflare Turnstile Widget -->
-                    <?php if (defined('TURNSTILE_SITE_KEY') && !empty(TURNSTILE_SITE_KEY)): ?>
-                    <div class="cf-turnstile" 
-                         data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>" 
-                         data-theme="light" 
-                         data-callback="onTurnstileSuccessDesktop"
-                         data-error-callback="onTurnstileErrorDesktop"
-                         id="turnstile-widget-desktop"></div>
-                    <?php endif; ?>
 
                     <button type="submit" id="loginBtnDesktop" class="w-full gradient-forest text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg transition-all">
                         <span class="loading-spinner" id="loadingSpinnerDesktop" style="display: none;"></span>
@@ -522,38 +509,17 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         // Global variables for authentication state
         let isAuthenticating = false;
         
-        // Variáveis para armazenar tokens do Turnstile
-        let turnstileToken = '';
-        let turnstileTokenDesktop = '';
-        
-        // Callbacks do Turnstile para mobile
-        function onTurnstileSuccess(token) {
-            turnstileToken = token;
-            console.log('✅ Turnstile verificado (mobile)');
-        }
-        
-        function onTurnstileError(error) {
-            turnstileToken = '';
-            console.error('❌ Erro no Turnstile (mobile):', error);
-        }
-        
-        // Callbacks do Turnstile para desktop
-        function onTurnstileSuccessDesktop(token) {
-            turnstileTokenDesktop = token;
-            console.log('✅ Turnstile verificado (desktop)');
-        }
-        
-        function onTurnstileErrorDesktop(error) {
-            turnstileTokenDesktop = '';
-            console.error('❌ Erro no Turnstile (desktop):', error);
-        }
-
         // Sistema MySQL - Conexão direta com banco de dados
 
         // Password toggle functions
         function togglePassword() {
             const password = document.getElementById('password');
             const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (!password || !eyeIcon) {
+                console.error('Elementos não encontrados para togglePassword');
+                return;
+            }
             
             if (password.type === 'password') {
                 password.type = 'text';
@@ -572,6 +538,11 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         function togglePasswordDesktop() {
             const password = document.getElementById('passwordDesktop');
             const eyeIcon = document.getElementById('eyeIconDesktop');
+            
+            if (!password || !eyeIcon) {
+                console.error('Elementos não encontrados para togglePasswordDesktop');
+                return;
+            }
             
             if (password.type === 'password') {
                 password.type = 'text';
@@ -641,14 +612,11 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         }
 
         // Authenticate user with direct database login
-        async function authenticateUser(email, password, turnstileToken = '') {
+        async function authenticateUser(email, password) {
             try {
                 console.log('🔐 Tentando login MySQL:', email);
                 
                 const requestBody = { email, password };
-                if (turnstileToken) {
-                    requestBody.turnstile_token = turnstileToken;
-                }
                 
                 const response = await fetch('api/login.php', {
                     method: 'POST',
@@ -724,16 +692,32 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             return redirectMap[userType] || 'gerente-completo.php'; // Default fallback
         }
 
-        // Handle form submission
-        document.getElementById('loginForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleLogin(this, false);
-        });
-
-        document.getElementById('loginFormDesktop')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleLogin(this, true);
-        });
+        // Handle form submission - garantir que está no DOM antes de adicionar listeners
+        function setupFormListeners() {
+            const loginForm = document.getElementById('loginForm');
+            const loginFormDesktop = document.getElementById('loginFormDesktop');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleLogin(this, false);
+                });
+            }
+            
+            if (loginFormDesktop) {
+                loginFormDesktop.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleLogin(this, true);
+                });
+            }
+        }
+        
+        // Executar quando o DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupFormListeners);
+        } else {
+            setupFormListeners();
+        }
 
         async function handleLogin(form, isDesktop) {
             if (isAuthenticating) return;
@@ -749,65 +733,16 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 return;
             }
             
-            // Verificar se o Turnstile está configurado e obter o token
-            const currentToken = isDesktop ? turnstileTokenDesktop : turnstileToken;
-            const turnstileWidgetId = isDesktop ? 'turnstile-widget-desktop' : 'turnstile-widget';
-            const turnstileWidget = document.getElementById(turnstileWidgetId);
-            let tokenToSend = currentToken;
-            
-            // Se o widget existe e está visível, verificar se precisa do token
-            if (turnstileWidget) {
-                const siteKey = turnstileWidget.getAttribute('data-sitekey');
-                
-                // Se o Turnstile está configurado mas não temos token, verificar se foi resolvido
-                if (siteKey && !tokenToSend) {
-                    // Tentar obter o token diretamente do widget
-                    if (window.turnstile) {
-                        const widgetElement = turnstileWidget.querySelector('.cf-turnstile');
-                        if (widgetElement) {
-                            const widgetId = widgetElement.getAttribute('data-widget-id');
-                            if (widgetId) {
-                                tokenToSend = window.turnstile.getResponse(widgetId);
-                            }
-                        }
-                    }
-                    
-                    // Se ainda não tiver token, mostrar erro
-                    if (!tokenToSend) {
-                        showError('Por favor, complete a verificação de segurança.', isDesktop);
-                        return;
-                    }
-                }
-            }
-            
             // Hide previous messages and show loading
             hideMessages(isDesktop);
             setLoadingState(true, isDesktop);
             
             try {
                 // Attempt authentication
-                const userData = await authenticateUser(email, password, tokenToSend);
+                const userData = await authenticateUser(email, password);
                 
                 // Store session data
                 storeUserSession(userData, remember);
-                
-                // Reset Turnstile após login bem-sucedido
-                if (turnstileWidget && window.turnstile) {
-                    const widgetElement = turnstileWidget.querySelector('.cf-turnstile');
-                    if (widgetElement) {
-                        const widgetId = widgetElement.getAttribute('data-widget-id');
-                        if (widgetId) {
-                            window.turnstile.reset(widgetId);
-                        }
-                    }
-                }
-                
-                // Limpar tokens
-                if (isDesktop) {
-                    turnstileTokenDesktop = '';
-                } else {
-                    turnstileToken = '';
-                }
                 
                 // Show success message
                 showSuccess('Login realizado com sucesso! Redirecionando...', isDesktop);
@@ -823,24 +758,6 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 console.error('Login error:', error);
                 setLoadingState(false, isDesktop);
                 
-                // Reset Turnstile em caso de erro
-                if (turnstileWidget && window.turnstile) {
-                    const widgetElement = turnstileWidget.querySelector('.cf-turnstile');
-                    if (widgetElement) {
-                        const widgetId = widgetElement.getAttribute('data-widget-id');
-                        if (widgetId) {
-                            window.turnstile.reset(widgetId);
-                        }
-                    }
-                }
-                
-                // Limpar tokens
-                if (isDesktop) {
-                    turnstileTokenDesktop = '';
-                } else {
-                    turnstileToken = '';
-                }
-                
                 // Show specific error messages
                 if (error.message.includes('Invalid login credentials')) {
                     showError('Email ou senha incorretos. Tente novamente.', isDesktop);
@@ -851,8 +768,6 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                         handleLogin(form, isDesktop);
                     }, 2000);
                     return;
-                } else if (error.message.includes('verificação') || error.message.includes('Turnstile')) {
-                    showError(error.message, isDesktop);
                 } else {
                     showError(error.message || 'Erro no servidor. Tente novamente em alguns minutos.', isDesktop);
                 }
@@ -862,9 +777,16 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         // Função para login com Google
         async function loginWithGoogle() {
             try {
+                console.log('🔵 Iniciando login com Google...');
                 // Obter URL de autorização do Google para login
                 const response = await fetch('api/google-login.php?action=get_auth_url');
+                
+                if (!response.ok) {
+                    throw new Error('Erro na resposta do servidor: ' + response.status);
+                }
+                
                 const result = await response.json();
+                console.log('🔵 Resposta do servidor:', result);
                 
                 if (!result.success) {
                     // Se for erro de ambiente local, mostrar mensagem mais detalhada
@@ -1104,6 +1026,20 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                 const newUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, newUrl);
             }
+        });
+    </script>
+    
+    <!-- Garantir que as funções estão no escopo global para onclick -->
+    <script>
+        // Tornar funções globais para funcionar com onclick
+        window.togglePassword = togglePassword;
+        window.togglePasswordDesktop = togglePasswordDesktop;
+        window.loginWithGoogle = loginWithGoogle;
+        
+        console.log('✅ Funções globais configuradas:', {
+            togglePassword: typeof window.togglePassword,
+            togglePasswordDesktop: typeof window.togglePasswordDesktop,
+            loginWithGoogle: typeof window.loginWithGoogle
         });
     </script>
 

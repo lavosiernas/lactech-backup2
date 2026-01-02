@@ -1,85 +1,51 @@
 {
-  "name": "LacTech - Sistema de Gestão Leiteira",
-  "short_name": "LacTech",
-  "description": "Sistema completo de gestão para fazendas leiteiras - Funciona offline",
-  "start_url": "./gerente-completo.php?v=2.1.0",
-  "scope": "./",
-  "display": "standalone",
   "background_color": "#10b981",
-  "theme_color": "#10b981",
-  "version": "2.1.0",
-  "display_override": ["standalone", "minimal-ui", "fullscreen"],
-  "orientation": "any",
   "dir": "ltr",
+  "display": "standalone",
+  "name": "LacTech - Sistema de Gestão Leiteira",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "LacTech",
+  "start_url": "/inicio-login.php",
+  "theme_color": "#10b981",
+  "id": "lactech",
+  "description": "Sistema completo de gestão para fazendas leiteiras - funciona offline",
   "lang": "pt-BR",
+  "display_override": [
+    "fullscreen",
+    "minimal-ui",
+    "standalone",
+    "window-controls-overlay"
+  ],
+  "categories": [
+    "business",
+    "productivity",
+    "agriculture"
+  ],
   "icons": [
     {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "72x72",
+      "src": "/assets/img/lactech-logo.png",
+      "sizes": "500x500",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/img/lactech-logo.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./assets/img/lactech-logo.png",
+      "src": "/assets/img/lactech-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "business", "agriculture"],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "Adicionar Volume",
       "short_name": "Volume",
       "description": "Registrar volume de leite",
-      "url": "./gerente-completo.php?tab=volume&action=add",
+      "url": "/gerente-completo.php?tab=volume&action=add",
       "icons": [
         {
-          "src": "./assets/img/lactech-logo.png",
-          "sizes": "192x192"
+          "src": "/assets/img/lactech-logo.png",
+          "sizes": "500x500"
         }
       ]
     },
@@ -87,11 +53,11 @@
       "name": "Teste de Qualidade",
       "short_name": "Qualidade",
       "description": "Registrar teste de qualidade",
-      "url": "./gerente-completo.php?tab=quality&action=add",
+      "url": "/gerente-completo.php?tab=quality&action=add",
       "icons": [
         {
-          "src": "./assets/img/lactech-logo.png",
-          "sizes": "192x192"
+          "src": "/assets/img/lactech-logo.png",
+          "sizes": "500x500"
         }
       ]
     },
@@ -99,25 +65,15 @@
       "name": "Registrar Venda",
       "short_name": "Venda",
       "description": "Registrar venda financeira",
-      "url": "./gerente-completo.php?tab=payments&action=sale",
+      "url": "/gerente-completo.php?tab=payments&action=sale",
       "icons": [
         {
-          "src": "./assets/img/lactech-logo.png",
-          "sizes": "192x192"
+          "src": "/assets/img/lactech-logo.png",
+          "sizes": "500x500"
         }
       ]
     }
   ],
   "prefer_related_applications": false,
-  "iarc_rating_id": "",
-  "related_applications": [],
-  "share_target": {
-    "action": "./gerente-completo.php",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  "related_applications": []
 }

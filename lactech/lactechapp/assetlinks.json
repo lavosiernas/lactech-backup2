@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.lactechsys.twa",
+        "sha256_cert_fingerprints": ["7E:8A:49:72:16:4E:E8:D7:A7:56:76:09:45:70:6A:96:D9:59:7F:BD:8D:34:BC:FD:60:63:BD:9B:12:E3:57:F3"]
+      }
+    }]

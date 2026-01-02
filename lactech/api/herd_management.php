@@ -673,6 +673,35 @@ try {
             sendResponse(['id' => $id, 'message' => 'Registro de pedigree excluído com sucesso']);
             break;
             
+        // ==========================================
+        // DELETAR ANIMAL (SOFT DELETE)
+        // ==========================================
+        case 'animal_delete':
+            if ($method !== 'DELETE' && $method !== 'POST') {
+                sendResponse(null, 'Método não permitido', 405);
+            }
+            
+            $id = $input['id'] ?? $_GET['id'] ?? null;
+            if (!$id) {
+                sendResponse(null, 'ID do animal não fornecido', 400);
+            }
+            
+            // Verificar se o animal existe e pertence à fazenda
+            $stmt = $conn->prepare("SELECT id FROM animals WHERE id = ? AND farm_id = ? AND is_active = 1");
+            $stmt->execute([$id, $farm_id]);
+            $animal = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$animal) {
+                sendResponse(null, 'Animal não encontrado ou já foi excluído', 404);
+            }
+            
+            // Soft delete: marcar como inativo
+            $stmt = $conn->prepare("UPDATE animals SET is_active = 0, updated_at = NOW() WHERE id = ? AND farm_id = ?");
+            $stmt->execute([$id, $farm_id]);
+            
+            sendResponse(['id' => $id, 'message' => 'Animal excluído do rebanho com sucesso']);
+            break;
+            
         default:
             sendResponse(null, 'Ação não encontrada', 404);
     }

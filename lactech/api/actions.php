@@ -1652,7 +1652,7 @@ try {
                 
                 // Registrar na tabela de auditoria se existir
                 try {
-                    $ipAddress = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+                    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
                     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
                     
                     $checkStmt = $db->getConnection()->prepare("SHOW TABLES LIKE 'security_audit_log'");

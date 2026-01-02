@@ -24,6 +24,10 @@
     <link rel="apple-touch-icon" href="./assets/img/lactech-logo.png">
     <meta name="apple-mobile-web-app-title" content="LacTech">
     <meta name="application-name" content="LacTech">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
     <!-- Preconnect para recursos externos (melhora velocidade) -->
     <link rel="preconnect" href="https://i.postimg.cc">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -545,6 +549,12 @@
                     <a href="#features" class="px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-sm sm:text-base text-center">
                         Ver Funcionalidades
                     </a>
+                    <a href="baixar-app.php" class="px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg text-sm sm:text-base text-center flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Baixar App
+                    </a>
                 </div>
             </div>
         </div>
@@ -594,6 +604,12 @@
                     </a>
                     <a href="#features" class="px-8 py-4 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-center">
                         Ver Funcionalidades
+                    </a>
+                    <a href="baixar-app.php" class="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg text-center flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Baixar App
                     </a>
                 </div>
             </div>
@@ -1471,10 +1487,6 @@
                             <span class="text-white font-semibold">SafeNode</span>
                         </div>
                         <span class="text-gray-400">|</span>
-                        <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
-                            <img src="./assets/video/cloudflare_icon_130969-removebg-preview.png" alt="Cloudflare" class="w-6 h-6 object-contain">
-                            <span class="text-white font-semibold">Cloudflare</span>
-                        </a>
                     </div>
                 </div>
             </div>

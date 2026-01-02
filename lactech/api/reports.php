@@ -112,6 +112,10 @@ try {
             $date_to = $input['date_to'] ?? date('Y-m-d');
             $filters = $input['filters'] ?? [];
             
+            // Validar e normalizar datas
+            $date_from = date('Y-m-d', strtotime($date_from));
+            $date_to = date('Y-m-d', strtotime($date_to));
+            
             if (!$report_type) {
                 sendResponse(null, 'Tipo de relatório não especificado', 400);
             }
@@ -131,7 +135,8 @@ try {
                             AVG(mp.somatic_cells) as avg_somatic_cells
                         FROM milk_production mp
                         WHERE mp.farm_id = ? 
-                        AND DATE(mp.production_date) BETWEEN ? AND ?
+                        AND DATE(mp.production_date) >= ? 
+                        AND DATE(mp.production_date) <= ?
                         GROUP BY DATE(mp.production_date)
                         ORDER BY date DESC
                     ");
@@ -148,7 +153,8 @@ try {
                             AVG(mp.protein_content) as avg_protein
                         FROM milk_production mp
                         WHERE mp.farm_id = ? 
-                        AND DATE(mp.production_date) BETWEEN ? AND ?
+                        AND DATE(mp.production_date) >= ? 
+                        AND DATE(mp.production_date) <= ?
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
                     $data['summary'] = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -195,7 +201,8 @@ try {
                         FROM health_records hr
                         LEFT JOIN animals a ON hr.animal_id = a.id
                         WHERE hr.farm_id = ? 
-                        AND hr.record_date BETWEEN ? AND ?
+                        AND DATE(hr.record_date) >= ? 
+                        AND DATE(hr.record_date) <= ?
                         ORDER BY hr.record_date DESC
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
@@ -209,7 +216,8 @@ try {
                             SUM(cost) as total_cost
                         FROM health_records
                         WHERE farm_id = ? 
-                        AND record_date BETWEEN ? AND ?
+                        AND DATE(record_date) >= ? 
+                        AND DATE(record_date) <= ?
                         GROUP BY record_type
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
@@ -217,7 +225,7 @@ try {
                     break;
                     
                 case 'reproduction':
-                    // Inseminações
+                    // Inseminações - usar DATE() para garantir comparação correta
                     $stmt = $conn->prepare("
                         SELECT 
                             i.*,
@@ -228,7 +236,8 @@ try {
                         LEFT JOIN animals a ON i.animal_id = a.id
                         LEFT JOIN bulls b ON i.bull_id = b.id
                         WHERE i.farm_id = ? 
-                        AND i.insemination_date BETWEEN ? AND ?
+                        AND DATE(i.insemination_date) >= ? 
+                        AND DATE(i.insemination_date) <= ?
                         ORDER BY i.insemination_date DESC
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
@@ -243,8 +252,9 @@ try {
                         FROM pregnancy_controls pc
                         LEFT JOIN animals a ON pc.animal_id = a.id
                         WHERE pc.farm_id = ? 
-                        AND pc.test_date BETWEEN ? AND ?
-                        ORDER BY pc.test_date DESC
+                        AND DATE(pc.pregnancy_date) >= ? 
+                        AND DATE(pc.pregnancy_date) <= ?
+                        ORDER BY pc.pregnancy_date DESC
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
                     $data['pregnancies'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -258,7 +268,8 @@ try {
                         FROM births b
                         LEFT JOIN animals a ON b.animal_id = a.id
                         WHERE b.farm_id = ? 
-                        AND b.birth_date BETWEEN ? AND ?
+                        AND DATE(b.birth_date) >= ? 
+                        AND DATE(b.birth_date) <= ?
                         ORDER BY b.birth_date DESC
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
@@ -306,7 +317,8 @@ try {
                             COUNT(DISTINCT animal_id) as animals_count
                         FROM milk_production
                         WHERE farm_id = ? 
-                        AND production_date BETWEEN ? AND ?
+                        AND DATE(production_date) >= ? 
+                        AND DATE(production_date) <= ?
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
                     $data['production'] = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -317,7 +329,7 @@ try {
                             COUNT(*) as total,
                             COUNT(CASE WHEN status = 'Lactante' THEN 1 END) as lactating,
                             COUNT(CASE WHEN status = 'Seca' THEN 1 END) as dry,
-                            COUNT(CASE WHEN health_status = 'Doente' THEN 1 END) as sick
+                            COUNT(CASE WHEN health_status = 'doente' THEN 1 END) as sick
                         FROM animals
                         WHERE farm_id = ? AND (is_active = 1 OR is_active IS NULL)
                     ");
@@ -331,10 +343,38 @@ try {
                             SUM(cost) as total_cost
                         FROM health_records
                         WHERE farm_id = ? 
-                        AND record_date BETWEEN ? AND ?
+                        AND DATE(record_date) >= ? 
+                        AND DATE(record_date) <= ?
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
                     $data['health'] = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    // Reprodutivo
+                    $stmt = $conn->prepare("
+                        SELECT 
+                            COUNT(*) as total_inseminations,
+                            COUNT(CASE WHEN pregnancy_result = 'prenha' THEN 1 END) as positive_pregnancies,
+                            (SELECT COUNT(id) FROM births WHERE farm_id = ? AND birth_date BETWEEN ? AND ?) as total_births
+                        FROM inseminations
+                        WHERE farm_id = ? 
+                        AND DATE(insemination_date) >= ? 
+                        AND DATE(insemination_date) <= ?
+                    ");
+                    $stmt->execute([$farm_id, $date_from, $date_to, $farm_id, $date_from, $date_to]);
+                    $data['reproduction'] = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    // Alimentação
+                    $stmt = $conn->prepare("
+                        SELECT 
+                            SUM(total_cost) as total_cost,
+                            COUNT(DISTINCT animal_id) as animals_fed
+                        FROM feed_records
+                        WHERE farm_id = ? 
+                        AND DATE(feed_date) >= ? 
+                        AND DATE(feed_date) <= ?
+                    ");
+                    $stmt->execute([$farm_id, $date_from, $date_to]);
+                    $data['feeding'] = $stmt->fetch(PDO::FETCH_ASSOC);
                     break;
             }
             

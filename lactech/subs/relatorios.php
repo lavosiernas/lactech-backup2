@@ -414,6 +414,56 @@ $v = time();
                     }
                     break;
                     
+                case 'summary':
+                    let summaryHtml = '<div class="space-y-6">';
+                    
+                    // Produção
+                    if (data.production) {
+                        summaryHtml += '<div class="bg-blue-50 p-4 rounded-lg"><h3 class="font-bold text-gray-900 mb-3">Produção de Leite</h3>';
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Volume Total:</strong> ${parseFloat(data.production.total_volume || 0).toFixed(2)} L</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Média por Animal:</strong> ${parseFloat(data.production.avg_volume || 0).toFixed(2)} L</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Animais em Produção:</strong> ${data.production.animals_count || 0}</p>`;
+                        summaryHtml += '</div>';
+                    }
+                    
+                    // Animais
+                    if (data.animals) {
+                        summaryHtml += '<div class="bg-green-50 p-4 rounded-lg"><h3 class="font-bold text-gray-900 mb-3">Rebanho</h3>';
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Total de Animais:</strong> ${data.animals.total || 0}</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Lactantes:</strong> ${data.animals.lactating || 0}</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Secas:</strong> ${data.animals.dry || 0}</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Doentes:</strong> ${data.animals.sick || 0}</p>`;
+                        summaryHtml += '</div>';
+                    }
+                    
+                    // Saúde
+                    if (data.health) {
+                        summaryHtml += '<div class="bg-red-50 p-4 rounded-lg"><h3 class="font-bold text-gray-900 mb-3">Saúde</h3>';
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Total de Registros:</strong> ${data.health.total_records || 0}</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Custo Total:</strong> R$ ${parseFloat(data.health.total_cost || 0).toFixed(2)}</p>`;
+                        summaryHtml += '</div>';
+                    }
+                    
+                    // Reprodutivo
+                    if (data.reproduction) {
+                        summaryHtml += '<div class="bg-yellow-50 p-4 rounded-lg"><h3 class="font-bold text-gray-900 mb-3">Reprodutivo</h3>';
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Total de Inseminações:</strong> ${data.reproduction.total_inseminations || 0}</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Resultados Positivos:</strong> ${data.reproduction.positive_results || 0}</p>`;
+                        summaryHtml += '</div>';
+                    }
+                    
+                    // Alimentação
+                    if (data.feeding) {
+                        summaryHtml += '<div class="bg-purple-50 p-4 rounded-lg"><h3 class="font-bold text-gray-900 mb-3">Alimentação</h3>';
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Custo Total:</strong> R$ ${parseFloat(data.feeding.total_cost || 0).toFixed(2)}</p>`;
+                        summaryHtml += `<p class="text-sm text-gray-700"><strong>Animais Alimentados:</strong> ${data.feeding.animals_fed || 0}</p>`;
+                        summaryHtml += '</div>';
+                    }
+                    
+                    summaryHtml += '</div>';
+                    contentDiv.innerHTML = summaryHtml;
+                    break;
+                    
                 default:
                     contentDiv.innerHTML = '<p class="text-gray-500 text-center py-8">Pré-visualização não disponível para este tipo de relatório</p>';
                     break;

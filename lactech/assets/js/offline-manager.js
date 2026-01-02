@@ -776,10 +776,49 @@ async function offlineFetch(endpoint, formData, type) {
         clearTimeout(timeoutId);
         
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            // Tentar ler o corpo da resposta antes de lançar erro
+            let errorMessage = `HTTP ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.error) {
+                    errorMessage = errorData.error;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                }
+            } catch (e) {
+                // Se não conseguir parsear, usar mensagem padrão
+            }
+            throw new Error(errorMessage);
         }
         
-        return await response.json();
+        // Tentar parsear JSON
+        const text = await response.text();
+        if (!text || text.trim() === '') {
+            // Resposta vazia - pode ser que o registro foi salvo mas não retornou resposta
+            // Verificar se o status é 200 ou 201 (sucesso)
+            if (response.status === 200 || response.status === 201) {
+                return {
+                    success: true,
+                    message: 'Registro processado com sucesso'
+                };
+            }
+            throw new Error('Resposta vazia do servidor');
+        }
+        
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            // Se não conseguir parsear JSON, mas status é 200/201, considerar sucesso
+            if (response.status === 200 || response.status === 201) {
+                console.warn('Resposta não é JSON válido, mas status é sucesso:', text);
+                return {
+                    success: true,
+                    message: 'Registro processado com sucesso',
+                    rawResponse: text
+                };
+            }
+            throw new Error('Resposta inválida do servidor: ' + text.substring(0, 100));
+        }
     } catch (error) {
         // Se falhar, verificar se é erro de conexão
         const isConnectionError = !navigator.onLine || 

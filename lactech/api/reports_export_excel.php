@@ -20,6 +20,10 @@ $date_from = $_GET['date_from'] ?? date('Y-m-d', strtotime('-30 days'));
 $date_to = $_GET['date_to'] ?? date('Y-m-d');
 $filters = json_decode($_GET['filters'] ?? '[]', true);
 
+// Validar e normalizar datas
+$date_from = date('Y-m-d', strtotime($date_from));
+$date_to = date('Y-m-d', strtotime($date_to));
+
 // Função para escapar CSV
 function escapeCSV($value) {
     if (is_null($value)) return '';
@@ -141,7 +145,8 @@ switch ($report_type) {
             FROM health_records hr
             LEFT JOIN animals a ON hr.animal_id = a.id
             WHERE hr.farm_id = ? 
-            AND hr.record_date BETWEEN ? AND ?
+            AND DATE(hr.record_date) >= ? 
+            AND DATE(hr.record_date) <= ?
             ORDER BY hr.record_date DESC
         ");
         $stmt->execute([$farm_id, $date_from, $date_to]);
@@ -171,13 +176,14 @@ switch ($report_type) {
                 i.insemination_date as data,
                 CONCAT(a.animal_number, ' - ', COALESCE(a.name, '')) as animal,
                 COALESCE(b.name, '') as touro,
-                i.result as resultado,
+                COALESCE(i.pregnancy_result, 'pendente') as resultado,
                 i.notes as observacoes
             FROM inseminations i
             LEFT JOIN animals a ON i.animal_id = a.id
             LEFT JOIN bulls b ON i.bull_id = b.id
             WHERE i.farm_id = ? 
-            AND i.insemination_date BETWEEN ? AND ?
+            AND DATE(i.insemination_date) >= ? 
+            AND DATE(i.insemination_date) <= ?
         ");
         $stmt->execute([$farm_id, $date_from, $date_to]);
         
@@ -204,7 +210,8 @@ switch ($report_type) {
             FROM births b
             LEFT JOIN animals a ON b.animal_id = a.id
             WHERE b.farm_id = ? 
-            AND b.birth_date BETWEEN ? AND ?
+            AND DATE(b.birth_date) >= ? 
+            AND DATE(b.birth_date) <= ?
         ");
         $stmt->execute([$farm_id, $date_from, $date_to]);
         
@@ -236,7 +243,8 @@ switch ($report_type) {
             FROM feed_records fr
             LEFT JOIN animals a ON fr.animal_id = a.id
             WHERE fr.farm_id = ? 
-            AND fr.feed_date BETWEEN ? AND ?
+            AND DATE(fr.feed_date) >= ? 
+            AND DATE(fr.feed_date) <= ?
             ORDER BY fr.feed_date DESC
         ");
         $stmt->execute([$farm_id, $date_from, $date_to]);
@@ -253,6 +261,110 @@ switch ($report_type) {
                 number_format($row['total_cost'], 2, ',', '.')
             ], ';');
         }
+        break;
+        
+    case 'summary':
+        // Cabeçalho do resumo
+        fputcsv($output, ['Categoria', 'Indicador', 'Valor'], ';');
+        fputcsv($output, [], ';'); // Linha em branco
+        
+        // Produção
+        $stmt = $conn->prepare("
+            SELECT 
+                SUM(volume) as total_volume,
+                AVG(volume) as avg_volume,
+                COUNT(DISTINCT animal_id) as animals_count
+            FROM milk_production
+            WHERE farm_id = ? 
+            AND production_date BETWEEN ? AND ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $production = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        fputcsv($output, ['Produção de Leite', 'Volume Total (L)', number_format($production['total_volume'] ?? 0, 2, ',', '.')], ';');
+        fputcsv($output, ['Produção de Leite', 'Média por Animal (L)', number_format($production['avg_volume'] ?? 0, 2, ',', '.')], ';');
+        fputcsv($output, ['Produção de Leite', 'Animais em Produção', $production['animals_count'] ?? 0], ';');
+        fputcsv($output, [], ';'); // Linha em branco
+        
+        // Animais
+        $stmt = $conn->prepare("
+            SELECT 
+                COUNT(*) as total,
+                COUNT(CASE WHEN status = 'Lactante' THEN 1 END) as lactating,
+                COUNT(CASE WHEN status = 'Seca' THEN 1 END) as dry,
+                COUNT(CASE WHEN health_status = 'doente' THEN 1 END) as sick
+            FROM animals
+            WHERE farm_id = ? AND (is_active = 1 OR is_active IS NULL)
+        ");
+        $stmt->execute([$farm_id]);
+        $animals = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        fputcsv($output, ['Rebanho', 'Total de Animais', $animals['total'] ?? 0], ';');
+        fputcsv($output, ['Rebanho', 'Lactantes', $animals['lactating'] ?? 0], ';');
+        fputcsv($output, ['Rebanho', 'Secas', $animals['dry'] ?? 0], ';');
+        fputcsv($output, ['Rebanho', 'Doentes', $animals['sick'] ?? 0], ';');
+        fputcsv($output, [], ';'); // Linha em branco
+        
+        // Saúde
+        $stmt = $conn->prepare("
+            SELECT 
+                COUNT(*) as total_records,
+                SUM(cost) as total_cost
+            FROM health_records
+            WHERE farm_id = ? 
+            AND DATE(record_date) >= ? 
+            AND DATE(record_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $health = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        fputcsv($output, ['Saúde', 'Total de Registros', $health['total_records'] ?? 0], ';');
+        fputcsv($output, ['Saúde', 'Custo Total (R$)', number_format($health['total_cost'] ?? 0, 2, ',', '.')], ';');
+        fputcsv($output, [], ';'); // Linha em branco
+        
+        // Reprodutivo
+        $stmt = $conn->prepare("
+            SELECT 
+                COUNT(*) as total_inseminations,
+                COUNT(CASE WHEN pregnancy_result = 'prenha' THEN 1 END) as positive_pregnancies
+            FROM inseminations
+            WHERE farm_id = ? 
+            AND DATE(insemination_date) >= ? 
+            AND DATE(insemination_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $reproduction = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $stmt = $conn->prepare("
+            SELECT COUNT(id) as total_births 
+            FROM births 
+            WHERE farm_id = ? 
+            AND DATE(birth_date) >= ? 
+            AND DATE(birth_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $birth_summary = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        fputcsv($output, ['Reprodutivo', 'Total de Inseminações', $reproduction['total_inseminations'] ?? 0], ';');
+        fputcsv($output, ['Reprodutivo', 'Prenhezes Positivas', $reproduction['positive_pregnancies'] ?? 0], ';');
+        fputcsv($output, ['Reprodutivo', 'Total de Partos', $birth_summary['total_births'] ?? 0], ';');
+        fputcsv($output, [], ';'); // Linha em branco
+        
+        // Alimentação
+        $stmt = $conn->prepare("
+            SELECT 
+                SUM(total_cost) as total_cost,
+                COUNT(DISTINCT animal_id) as animals_fed
+            FROM feed_records
+            WHERE farm_id = ? 
+            AND DATE(feed_date) >= ? 
+            AND DATE(feed_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $feeding = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        fputcsv($output, ['Alimentação', 'Custo Total (R$)', number_format($feeding['total_cost'] ?? 0, 2, ',', '.')], ';');
+        fputcsv($output, ['Alimentação', 'Animais Alimentados', $feeding['animals_fed'] ?? 0], ';');
         break;
 }
 

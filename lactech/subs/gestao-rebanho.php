@@ -153,58 +153,23 @@ $v = time();
                     <p class="text-sm text-gray-500" id="animal-details-subtitle">Carregando...</p>
                 </div>
             </div>
-            <button onclick="closeAnimalDetails()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
-                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-        
-        <!-- Hero Section com Imagem -->
-        <div id="animal-hero-section" class="flex-shrink-0 relative bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-200">
-            <div class="container mx-auto px-6 py-6">
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <!-- Imagem do Animal -->
-                    <div class="flex-shrink-0">
-                        <div class="w-48 h-48 md:w-64 md:h-64 rounded-2xl bg-white shadow-xl border-4 border-white overflow-hidden">
-                            <img id="animal-details-image" src="../assets/video/vaca.png" alt="Animal" class="w-full h-full object-contain p-4">
-                        </div>
-                    </div>
-                    
-                    <!-- Informações Principais -->
-                    <div class="flex-1 text-center md:text-left">
-                        <h2 id="animal-details-name" class="text-3xl font-bold text-gray-900 mb-2">-</h2>
-                        <p id="animal-details-number" class="text-lg text-gray-600 mb-4">#-</p>
-                        <div class="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                            <span id="animal-details-status-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
-                            <span id="animal-details-health-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
-                            <span id="animal-details-breed-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">-</span>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                            <div class="bg-white rounded-lg p-3 shadow-sm">
-                                <p class="text-xs text-gray-500 mb-1">Idade</p>
-                                <p id="animal-details-age" class="text-lg font-bold text-gray-900">-</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 shadow-sm">
-                                <p class="text-xs text-gray-500 mb-1">Status Reprodutivo</p>
-                                <p id="animal-details-reproductive" class="text-lg font-bold text-gray-900">-</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 shadow-sm">
-                                <p class="text-xs text-gray-500 mb-1">Grupo</p>
-                                <p id="animal-details-group" class="text-lg font-bold text-gray-900">-</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 shadow-sm">
-                                <p class="text-xs text-gray-500 mb-1">Último BCS</p>
-                                <p id="animal-details-bcs" class="text-lg font-bold text-gray-900">-</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex items-center gap-2">
+                <button onclick="deleteAnimalFromDetails()" class="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Excluir
+                </button>
+                <button onclick="closeAnimalDetails()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
         </div>
         
         <!-- Tabs -->
-        <div class="flex-shrink-0 bg-white border-b border-gray-200 z-10 shadow-sm">
+        <div class="flex-shrink-0 bg-white border-b border-gray-200 z-10 shadow-sm sticky top-0">
             <div class="container mx-auto px-6">
                 <nav class="flex -mb-px overflow-x-auto">
                     <button onclick="switchAnimalTab('info', null, this)" class="animal-tab-button active px-6 py-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600 whitespace-nowrap transition-colors" data-tab="info">
@@ -227,7 +192,57 @@ $v = time();
         </div>
         
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto">
+        <div id="animal-details-content-wrapper" class="flex-1 overflow-y-auto">
+            <!-- Hero Section com Imagem -->
+            <div id="animal-hero-section" class="relative bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-200">
+                <div class="container mx-auto px-6 py-6">
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <!-- Imagem do Animal -->
+                        <div class="flex-shrink-0">
+                            <div class="w-48 h-48 md:w-64 md:h-64 rounded-2xl bg-white shadow-xl border-4 border-white overflow-hidden">
+                                <img id="animal-details-image" src="../assets/video/vaca.png" alt="Animal" class="w-full h-full object-contain p-4">
+                            </div>
+                        </div>
+                        
+                        <!-- Informações Principais -->
+                        <div class="flex-1 text-center md:text-left">
+                            <h2 id="animal-details-name" class="text-3xl font-bold text-gray-900 mb-2">-</h2>
+                            <p id="animal-details-number" class="text-lg text-gray-600 mb-4">#-</p>
+                            <div class="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
+                                <span id="animal-details-status-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
+                                <span id="animal-details-health-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
+                                <span id="animal-details-breed-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">-</span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-xs text-gray-500 mb-1">Idade</p>
+                                    <p id="animal-details-age" class="text-lg font-bold text-gray-900">-</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-xs text-gray-500 mb-1">Status Reprodutivo</p>
+                                    <p id="animal-details-reproductive" class="text-lg font-bold text-gray-900">-</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-xs text-gray-500 mb-1">Grupo</p>
+                                    <p id="animal-details-group" class="text-lg font-bold text-gray-900">-</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-xs text-gray-500 mb-1">Último BCS</p>
+                                    <p id="animal-details-bcs" class="text-lg font-bold text-gray-900">-</p>
+                                </div>
+                            </div>
+                            <!-- Composição Racial -->
+                            <div id="animal-blood-composition" class="mt-6 bg-white rounded-lg p-4 shadow-sm border border-gray-200 hidden">
+                                <p class="text-xs font-semibold text-gray-500 mb-3 uppercase">Composição Racial</p>
+                                <div id="animal-blood-percentages" class="flex flex-wrap gap-2">
+                                    <!-- Será preenchido dinamicamente -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="container mx-auto px-6 py-6">
                 <div id="animal-details-content" class="max-w-6xl mx-auto">
                     <p class="text-gray-500 text-center py-8">Carregando detalhes...</p>
@@ -329,6 +344,164 @@ $v = time();
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: Formulário de Pedigree -->
+    <div id="pedigree-form-modal" class="fixed inset-0 z-[60] hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                <h3 class="text-xl font-bold text-gray-900">Editar Pedigree</h3>
+                <button onclick="closePedigreeForm()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-6">
+                <p class="text-sm text-gray-600">Preencha as informações dos ancestrais do animal. Os campos são opcionais.</p>
+                
+                <!-- Geração 1: Pais -->
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Geração 1 - Pais</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Pai -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h5 class="font-medium text-gray-700 mb-3">Pai</h5>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Número do Animal</label>
+                                    <input type="text" id="pedigree-pai-number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                                    <input type="text" id="pedigree-pai-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Raça</label>
+                                    <input type="text" id="pedigree-pai-breed" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Mãe -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h5 class="font-medium text-gray-700 mb-3">Mãe</h5>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Número do Animal</label>
+                                    <input type="text" id="pedigree-mae-number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                                    <input type="text" id="pedigree-mae-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Raça</label>
+                                    <input type="text" id="pedigree-mae-breed" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geração 2: Avós -->
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Geração 2 - Avós</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-600 mb-3">Lado Paterno</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Avô Paterno -->
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <h6 class="font-medium text-gray-700 mb-3">Avô Paterno</h6>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                                            <input type="text" id="pedigree-avo-paterno-number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                                            <input type="text" id="pedigree-avo-paterno-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Raça</label>
+                                            <input type="text" id="pedigree-avo-paterno-breed" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Avó Paterna -->
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <h6 class="font-medium text-gray-700 mb-3">Avó Paterna</h6>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                                            <input type="text" id="pedigree-avo-paterno-mae-number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                                            <input type="text" id="pedigree-avo-paterno-mae-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Raça</label>
+                                            <input type="text" id="pedigree-avo-paterno-mae-breed" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-600 mb-3">Lado Materno</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Avô Materno -->
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <h6 class="font-medium text-gray-700 mb-3">Avô Materno</h6>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                                            <input type="text" id="pedigree-avo-materno-number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                                            <input type="text" id="pedigree-avo-materno-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Raça</label>
+                                            <input type="text" id="pedigree-avo-materno-breed" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Avó Materna -->
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <h6 class="font-medium text-gray-700 mb-3">Avó Materna</h6>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
+                                            <input type="text" id="pedigree-avo-materno-mae-number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                                            <input type="text" id="pedigree-avo-materno-mae-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Raça</label>
+                                            <input type="text" id="pedigree-avo-materno-mae-breed" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-gray-200">
+                    <button onclick="savePedigree()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Salvar Pedigree
+                    </button>
+                    <button onclick="closePedigreeForm()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -458,6 +631,9 @@ $v = time();
                                             <button onclick="event.stopPropagation(); editAnimal(${a.id})" class="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700">
                                                 Editar
                                             </button>
+                                            <button onclick="event.stopPropagation(); deleteAnimal(${a.id}, '${a.animal_number || ''}', '${(a.name || '').replace(/'/g, "\\'")}')" class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700">
+                                                Excluir
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -479,6 +655,7 @@ $v = time();
             currentAnimalTab = 'info';
             document.getElementById('animal-details-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden'; // Prevenir scroll do body
+            
             loadAnimalDetails();
         }
 
@@ -486,6 +663,35 @@ $v = time();
             document.getElementById('animal-details-modal').classList.add('hidden');
             document.body.style.overflow = ''; // Restaurar scroll do body
             currentAnimalId = null;
+        }
+
+        async function deleteAnimalFromDetails() {
+            if (!currentAnimalId) return;
+            
+            // Buscar dados do animal para exibir na confirmação
+            try {
+                const response = await fetch(`${API_BASE}?action=animal_get&id=${currentAnimalId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const animal = result.data;
+                    const animalLabel = animal.name || animal.animal_number || 'este animal';
+                    
+                    if (confirm(`Tem certeza que deseja excluir ${animalLabel} do rebanho?\n\nEsta ação não pode ser desfeita.`)) {
+                        await deleteAnimal(currentAnimalId, animal.animal_number, animal.name);
+                    }
+                } else {
+                    if (typeof window.showErrorToast === 'function') {
+                        window.showErrorToast('Erro ao carregar dados do animal');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao buscar dados do animal:', error);
+                // Mesmo assim, tentar excluir se tiver o ID
+                if (confirm('Tem certeza que deseja excluir este animal do rebanho?\n\nEsta ação não pode ser desfeita.')) {
+                    await deleteAnimal(currentAnimalId, '', '');
+                }
+            }
         }
 
         async function loadAnimalDetails() {
@@ -501,12 +707,238 @@ $v = time();
                 if (result.success && result.data) {
                     const animal = result.data;
                     updateAnimalHero(animal);
+                    
+                    // Carregar e calcular composição racial
+                    await calculateAndDisplayBloodComposition(animal);
+                    
                     switchAnimalTab(currentAnimalTab, animal);
                 }
             } catch (error) {
                 console.error('Erro ao carregar detalhes:', error);
                 content.innerHTML = '<div class="text-center text-red-500 py-8">Erro ao carregar detalhes</div>';
             }
+        }
+        
+        async function calculateAndDisplayBloodComposition(animal) {
+            try {
+                // Buscar pedigree
+                const response = await fetch(`${API_BASE}?action=pedigree&animal_id=${currentAnimalId}`);
+                const result = await response.json();
+                
+                const pedigree = result.success && result.data ? result.data : [];
+                const organized = organizePedigree(pedigree, animal);
+                
+                // Calcular porcentagens
+                const percentages = calculateBloodPercentages(organized, animal);
+                
+                // Exibir composição
+                displayBloodComposition(percentages);
+            } catch (error) {
+                console.error('Erro ao calcular composição racial:', error);
+                // Se não tiver pedigree, mostrar apenas a raça do animal
+                if (animal.breed) {
+                    displayBloodComposition({[animal.breed]: 100});
+                }
+            }
+        }
+        
+        function calculateBloodPercentages(organized, currentAnimal) {
+            const percentages = {};
+            
+            // Função auxiliar para normalizar nomes de raças para siglas padrão
+            const normalizeBreed = (breed) => {
+                if (!breed) return null;
+                // Normalizar acentos e converter para maiúsculas
+                const normalized = breed.toString()
+                    .toUpperCase()
+                    .trim()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
+                
+                // Leiteiras
+                if (normalized.includes('HOLANDES') || normalized === 'HO' || normalized.startsWith('HO ') || normalized === 'HOLSTEIN') {
+                    return 'HO';
+                }
+                if (normalized.includes('JERSEY') || normalized === 'JE') {
+                    return 'JE';
+                }
+                if ((normalized.includes('GIR') && !normalized.includes('GIROLANDO')) || normalized === 'GI') {
+                    return 'GI';
+                }
+                if (normalized.includes('GUZERA') || normalized.includes('GUZER') || normalized === 'GU') {
+                    return 'GU';
+                }
+                if (normalized.includes('AYRSHIRE') || normalized === 'AY') {
+                    return 'AY';
+                }
+                if (normalized.includes('BROWN SWISS') || normalized.includes('PARDO SUICO') || normalized.includes('PARDO SUISSO') || normalized === 'BS') {
+                    return 'BS';
+                }
+                if (normalized.includes('NORMANDO') || normalized === 'NR') {
+                    return 'NR';
+                }
+                
+                // Corte
+                if (normalized.includes('NELORE') || normalized.includes('NELOR') || normalized === 'NE') {
+                    return 'NE';
+                }
+                if (normalized.includes('ANGUS') || normalized === 'AN') {
+                    return 'AN';
+                }
+                if (normalized.includes('BRAHMAN') || normalized.includes('BRAHMA') || normalized === 'BR') {
+                    return 'BR';
+                }
+                if (normalized.includes('SIMENTAL') || normalized === 'SI') {
+                    return 'SI';
+                }
+                if (normalized.includes('CHAROLES') || normalized.includes('CHAROLAIS') || normalized === 'CH') {
+                    return 'CH';
+                }
+                if (normalized.includes('HEREFORD') || normalized === 'HE') {
+                    return 'HE';
+                }
+                if (normalized.includes('LIMOUSIN') || normalized === 'LI') {
+                    return 'LI';
+                }
+                if (normalized.includes('BLONDE') || normalized.includes('AQUITAINE') || normalized === 'BB') {
+                    return 'BB';
+                }
+                if (normalized.includes('TABAPUA') || normalized === 'TA') {
+                    return 'TA';
+                }
+                if (normalized.includes('SENEPOL') || normalized === 'SN') {
+                    return 'SN';
+                }
+                if (normalized.includes('SANTA GERTRUDIS') || normalized.includes('GERTRUDIS') || normalized === 'SA') {
+                    return 'SA';
+                }
+                if (normalized.includes('CANCHIM') || normalized === 'CN') {
+                    return 'CN';
+                }
+                if (normalized.includes('CARACU') || normalized === 'CA') {
+                    return 'CA';
+                }
+                
+                // Mistas
+                if (normalized.includes('GIROLANDO')) {
+                    return 'GIROLANDO';
+                }
+                if (normalized.includes('PARDO NACIONAL') || normalized === 'PN') {
+                    return 'PN';
+                }
+                
+                // Retornar a sigla se já for uma sigla conhecida, senão retornar normalizado
+                const knownBreeds = ['HO', 'JE', 'GI', 'GU', 'AY', 'BS', 'NR', 'NE', 'AN', 'BR', 'SI', 'CH', 'HE', 'LI', 'BB', 'TA', 'SN', 'SA', 'CN', 'CA', 'PN', 'GIROLANDO'];
+                if (knownBreeds.includes(normalized)) {
+                    return normalized;
+                }
+                
+                return normalized;
+            };
+            
+            // Função recursiva para calcular contribuição
+            const addContribution = (animal, contribution, generation = 0) => {
+                if (!animal || contribution <= 0.001) return; // Parar se contribuição muito pequena
+                
+                const breed = normalizeBreed(animal.related_animal_breed || animal.breed);
+                if (!breed) return;
+                
+                // Se a raça for uma raça composta conhecida (como Girolando), 
+                // precisamos calcular baseado no pedigree dele, mas por enquanto
+                // vamos tratar como raça única se não tiver pedigree detalhado
+                
+                if (!percentages[breed]) {
+                    percentages[breed] = 0;
+                }
+                percentages[breed] += contribution;
+            };
+            
+            // Geração 1: Pais (50% cada)
+            if (organized.generation1) {
+                if (organized.generation1.pai) {
+                    addContribution(organized.generation1.pai, 0.5, 1);
+                }
+                if (organized.generation1.mae) {
+                    addContribution(organized.generation1.mae, 0.5, 1);
+                }
+            }
+            
+            // Geração 2: Avós (25% cada)
+            if (organized.generation2) {
+                if (organized.generation2.avo_paterno) {
+                    addContribution(organized.generation2.avo_paterno, 0.25, 2);
+                }
+                if (organized.generation2.avo_paterno_mae) {
+                    addContribution(organized.generation2.avo_paterno_mae, 0.25, 2);
+                }
+                if (organized.generation2.avo_materno) {
+                    addContribution(organized.generation2.avo_materno, 0.25, 2);
+                }
+                if (organized.generation2.avo_materno_mae) {
+                    addContribution(organized.generation2.avo_materno_mae, 0.25, 2);
+                }
+            }
+            
+            // Geração 3: Bisavós (12.5% cada)
+            if (organized.generation3) {
+                Object.values(organized.generation3).forEach(ancestor => {
+                    if (ancestor) {
+                        addContribution(ancestor, 0.125, 3);
+                    }
+                });
+            }
+            
+            // Se não tiver pedigree ou porcentagens muito baixas, considerar a raça do animal
+            const totalPercentage = Object.values(percentages).reduce((sum, val) => sum + val, 0);
+            if (totalPercentage < 0.1) {
+                // Não tem pedigree suficiente, mostrar apenas a raça do animal (mas não como composição)
+                const animalBreed = normalizeBreed(currentAnimal.breed);
+                if (animalBreed) {
+                    // Se for uma raça composta conhecida como Girolando, não mostrar como 100%
+                    // pois não sabemos a composição exata sem pedigree
+                    if (animalBreed === 'GIROLANDO') {
+                        return {}; // Não mostrar composição se for Girolando sem pedigree
+                    }
+                    return {[animalBreed]: 100};
+                }
+                return {};
+            }
+            
+            // Normalizar para 100% e converter para porcentagem
+            const normalized = {};
+            Object.keys(percentages).forEach(breed => {
+                const percentage = (percentages[breed] / totalPercentage) * 100;
+                if (percentage >= 0.1) { // Mostrar apenas se for pelo menos 0.1%
+                    normalized[breed] = Math.round(percentage * 10) / 10; // Arredondar para 1 casa decimal
+                }
+            });
+            
+            return normalized;
+        }
+        
+        function displayBloodComposition(percentages) {
+            const container = document.getElementById('animal-blood-composition');
+            const percentagesContainer = document.getElementById('animal-blood-percentages');
+            
+            if (!container || !percentagesContainer) return;
+            
+            if (!percentages || Object.keys(percentages).length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            // Ordenar por porcentagem (maior primeiro)
+            const sorted = Object.entries(percentages)
+                .sort((a, b) => b[1] - a[1]);
+            
+            percentagesContainer.innerHTML = sorted.map(([breed, percentage]) => `
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                    <span class="font-semibold">${breed}</span>
+                    <span class="ml-2">${percentage}%</span>
+                </span>
+            `).join('');
+            
+            container.classList.remove('hidden');
         }
 
         function updateAnimalHero(animal) {
@@ -706,7 +1138,7 @@ $v = time();
                 const response = await fetch(`${API_BASE}?action=bcs_history&animal_id=${currentAnimalId}`);
                 const result = await response.json();
                 
-                if (result.success && result.data) {
+                if (result.success) {
                     const records = result.data || [];
                     
                     if (records.length > 0) {
@@ -729,12 +1161,30 @@ $v = time();
                             </div>
                         `;
                     } else {
-                        content.innerHTML = '<div class="text-center text-gray-500 py-8">Nenhum registro de BCS encontrado</div>';
+                        content.innerHTML = `
+                            <div class="text-center text-gray-500 py-8">
+                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="text-lg font-medium mb-2">Nenhum registro de BCS encontrado</p>
+                                <p class="text-sm text-gray-400">Adicione avaliações de BCS para visualizar o histórico</p>
+                            </div>
+                        `;
                     }
+                } else {
+                    content.innerHTML = `
+                        <div class="text-center text-gray-500 py-8">
+                            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-lg font-medium mb-2">Nenhum registro de BCS encontrado</p>
+                            <p class="text-sm text-gray-400">Adicione avaliações de BCS para visualizar o histórico</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Erro ao carregar BCS:', error);
-                content.innerHTML = '<div class="text-center text-red-500 py-8">Erro ao carregar BCS</div>';
+                content.innerHTML = '<div class="text-center text-red-500 py-8">Erro ao carregar histórico de BCS</div>';
             }
         }
 
@@ -881,8 +1331,10 @@ $v = time();
             const renderAnimalCard = (animal, position, isCurrent = false) => {
                 if (!animal) return '<div class="p-3 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 text-center text-gray-400 text-sm">Não informado</div>';
                 
+                // Para animais do pedigree, priorizar related_animal_name/number (quando há animal relacionado)
+                // Caso contrário, usar animal_name/number do registro do pedigree
                 const name = animal.related_animal_name || animal.animal_name || animal.name || 'Sem nome';
-                const number = animal.related_animal_number || animal.animal_number || '-';
+                const number = animal.related_animal_number || animal.animal_number || '';
                 const breed = animal.related_animal_breed || animal.breed || '-';
                 const bgColor = isCurrent ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200';
                 const textColor = isCurrent ? 'text-blue-900' : 'text-gray-900';
@@ -892,7 +1344,7 @@ $v = time();
                         ${position && !isCurrent ? `<p class="text-xs font-semibold text-gray-500 mb-2 uppercase">${getPositionLabel(position)}</p>` : ''}
                         ${isCurrent ? `<p class="text-xs font-semibold text-blue-600 mb-2 uppercase">Animal Atual</p>` : ''}
                         <p class="font-bold ${textColor} text-lg mb-1">${name}</p>
-                        <p class="text-sm text-gray-600 mb-1">#${number}</p>
+                        ${number ? `<p class="text-sm text-gray-600 mb-1">#${number}</p>` : ''}
                         <p class="text-xs text-gray-500">${breed}</p>
                         ${animal.notes ? `<p class="text-xs text-gray-400 mt-2 italic">${animal.notes}</p>` : ''}
                     </div>
@@ -1038,6 +1490,48 @@ $v = time();
             openAnimalForm(id);
         }
 
+        async function deleteAnimal(id, animalNumber, animalName) {
+            const animalLabel = animalName || animalNumber || 'este animal';
+            
+            if (!confirm(`Tem certeza que deseja excluir ${animalLabel} do rebanho?\n\nEsta ação não pode ser desfeita.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}?action=animal_delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (typeof window.showSuccessToast === 'function') {
+                        window.showSuccessToast('Animal excluído do rebanho com sucesso!');
+                    }
+                    
+                    // Fechar modal de detalhes se estiver aberto
+                    if (currentAnimalId === id) {
+                        closeAnimalDetails();
+                    }
+                    
+                    // Recarregar lista de animais e dashboard
+                    loadAnimals();
+                    loadDashboard();
+                } else {
+                    if (typeof window.showErrorToast === 'function') {
+                        window.showErrorToast(result.error || 'Erro ao excluir animal');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao excluir animal:', error);
+                if (typeof window.showErrorToast === 'function') {
+                    window.showErrorToast('Erro ao excluir animal');
+                }
+            }
+        }
+
         document.getElementById('animal-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -1113,15 +1607,215 @@ $v = time();
             return 'text-green-600';
         }
 
-        function openPedigreeForm() {
+        async function openPedigreeForm() {
             if (!currentAnimalId) return;
             
-            // Por enquanto, apenas mostrar mensagem
-            // Em uma implementação completa, abriria um modal para editar pedigree
-            if (typeof window.showInfoToast === 'function') {
-                window.showInfoToast('Funcionalidade de edição de pedigree será implementada em breve');
-            } else {
-                alert('Funcionalidade de edição de pedigree será implementada em breve');
+            document.getElementById('pedigree-form-modal').classList.remove('hidden');
+            
+            // Limpar formulário PRIMEIRO - limpar TODOS os campos explicitamente
+            const allFieldIds = [
+                'pai', 'mae', 'avo-paterno', 'avo-paterno-mae', 'avo-materno', 'avo-materno-mae'
+            ];
+            
+            for (let idx = 0; idx < allFieldIds.length; idx++) {
+                const fieldId = allFieldIds[idx];
+                const numberField = document.getElementById(`pedigree-${fieldId}-number`);
+                const nameField = document.getElementById(`pedigree-${fieldId}-name`);
+                const breedField = document.getElementById(`pedigree-${fieldId}-breed`);
+                
+                if (numberField) numberField.value = '';
+                if (nameField) nameField.value = '';
+                if (breedField) breedField.value = '';
+            }
+            
+            // Carregar dados existentes
+            try {
+                const response = await fetch(`${API_BASE}?action=pedigree&animal_id=${currentAnimalId}`);
+                const result = await response.json();
+                
+                if (result.success && result.data && Array.isArray(result.data)) {
+                    const pedigree = result.data;
+                    
+                    // Mapeamento explícito: generation + position -> fieldId
+                    const positionMap = {
+                        '1_pai': 'pai',
+                        '1_mae': 'mae',
+                        '2_avo_paterno': 'avo-paterno',
+                        '2_avo_paterno_mae': 'avo-paterno-mae',
+                        '2_avo_materno': 'avo-materno',
+                        '2_avo_materno_mae': 'avo-materno-mae'
+                    };
+                    
+                    // Objeto para armazenar dados de cada fieldId (sobrescreve se houver duplicatas)
+                    const fieldData = {};
+                    
+                    // Processar cada registro do banco
+                    for (let i = 0; i < pedigree.length; i++) {
+                        const record = pedigree[i];
+                        const position = String(record.position || '').trim();
+                        const generation = parseInt(record.generation) || 0;
+                        
+                        // Só processar gerações 1 e 2 (que têm campos no formulário)
+                        if (generation !== 1 && generation !== 2) {
+                            continue;
+                        }
+                        
+                        // Criar chave única: generation_position
+                        const mapKey = `${generation}_${position}`;
+                        const fieldId = positionMap[mapKey];
+                        
+                        // Ignorar se não houver mapeamento
+                        if (!fieldId) {
+                            continue;
+                        }
+                        
+                        // Extrair dados deste registro específico
+                        const recordNumber = String(record.animal_number || record.related_animal_number || '').trim();
+                        const recordName = String(record.animal_name || record.related_animal_name || '').trim();
+                        const recordBreed = String(record.breed || record.related_animal_breed || '').trim();
+                        
+                        // Armazenar dados (sobrescreve se já existir - usa o último registro encontrado)
+                        fieldData[fieldId] = {
+                            number: recordNumber,
+                            name: recordName,
+                            breed: recordBreed
+                        };
+                    }
+                    
+                    // Agora preencher os campos com os dados coletados
+                    for (let idx = 0; idx < allFieldIds.length; idx++) {
+                        const fieldId = allFieldIds[idx];
+                        
+                        // Se não houver dados para este fieldId, deixar vazio (já foi limpo)
+                        if (!fieldData[fieldId]) {
+                            continue;
+                        }
+                        
+                        // Buscar campos específicos para este fieldId
+                        const numberField = document.getElementById(`pedigree-${fieldId}-number`);
+                        const nameField = document.getElementById(`pedigree-${fieldId}-name`);
+                        const breedField = document.getElementById(`pedigree-${fieldId}-breed`);
+                        
+                        // Preencher apenas se os campos existirem
+                        if (numberField && fieldData[fieldId].number) {
+                            numberField.value = fieldData[fieldId].number;
+                        }
+                        if (nameField && fieldData[fieldId].name) {
+                            nameField.value = fieldData[fieldId].name;
+                        }
+                        if (breedField && fieldData[fieldId].breed) {
+                            breedField.value = fieldData[fieldId].breed;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar pedigree:', error);
+            }
+        }
+        
+        function closePedigreeForm() {
+            document.getElementById('pedigree-form-modal').classList.add('hidden');
+        }
+        
+        async function savePedigree() {
+            if (!currentAnimalId) return;
+            
+            const positions = [
+                { id: 'pai', generation: 1, position: 'pai' },
+                { id: 'mae', generation: 1, position: 'mae' },
+                { id: 'avo-paterno', generation: 2, position: 'avo_paterno' },
+                { id: 'avo-paterno-mae', generation: 2, position: 'avo_paterno_mae' },
+                { id: 'avo-materno', generation: 2, position: 'avo_materno' },
+                { id: 'avo-materno-mae', generation: 2, position: 'avo_materno_mae' }
+            ];
+            
+            let savedCount = 0;
+            let errorCount = 0;
+            
+            // Processar cada posição de forma isolada
+            for (let i = 0; i < positions.length; i++) {
+                const pos = positions[i];
+                
+                // Construir IDs dos campos de forma explícita para esta posição específica
+                const numberFieldId = `pedigree-${pos.id}-number`;
+                const nameFieldId = `pedigree-${pos.id}-name`;
+                const breedFieldId = `pedigree-${pos.id}-breed`;
+                
+                // Buscar campos específicos para esta posição usando os IDs construídos
+                const numberField = document.getElementById(numberFieldId);
+                const nameField = document.getElementById(nameFieldId);
+                const breedField = document.getElementById(breedFieldId);
+                
+                if (!numberField || !nameField || !breedField) {
+                    console.error(`Campos não encontrados para ${pos.id}:`, { numberFieldId, nameFieldId, breedFieldId });
+                    continue;
+                }
+                
+                // Pegar valores APENAS destes campos específicos (não reutilizar variáveis)
+                const numberValue = String(numberField.value || '').trim();
+                const nameValue = String(nameField.value || '').trim();
+                const breedValue = String(breedField.value || '').trim();
+                
+                // Só salvar se tiver pelo menos um campo preenchido
+                if (!numberValue && !nameValue && !breedValue) {
+                    continue;
+                }
+                
+                try {
+                    // Criar objeto de dados APENAS para esta posição específica
+                    const dataToSave = {
+                        animal_id: parseInt(currentAnimalId),
+                        generation: parseInt(pos.generation),
+                        position: String(pos.position),
+                        animal_number: numberValue || null,
+                        animal_name: nameValue || null,
+                        breed: breedValue || null
+                    };
+                    
+                    // Verificar se os dados estão corretos antes de enviar
+                    if (dataToSave.position !== pos.position) {
+                        console.error(`Erro: position não corresponde para ${pos.id}`);
+                        continue;
+                    }
+                    
+                    const response = await fetch(`${API_BASE}?action=pedigree_create`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dataToSave)
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        savedCount++;
+                    } else {
+                        errorCount++;
+                        console.error(`Erro ao salvar ${pos.position} (${pos.id}):`, result.error);
+                    }
+                } catch (error) {
+                    errorCount++;
+                    console.error(`Erro ao salvar ${pos.position} (${pos.id}):`, error);
+                }
+            }
+            
+            if (savedCount > 0) {
+                if (typeof window.showSuccessToast === 'function') {
+                    window.showSuccessToast(`Pedigree salvo com sucesso! ${savedCount} registro(s) atualizado(s).`);
+                }
+                closePedigreeForm();
+                // Recarregar a aba de pedigree
+                if (currentAnimalTab === 'pedigree') {
+                    loadPedigree();
+                }
+                // Recarregar composição racial
+                const animalResponse = await fetch(`${API_BASE}?action=animal_get&id=${currentAnimalId}`);
+                const animalResult = await animalResponse.json();
+                if (animalResult.success && animalResult.data) {
+                    await calculateAndDisplayBloodComposition(animalResult.data);
+                }
+            } else if (errorCount > 0) {
+                if (typeof window.showErrorToast === 'function') {
+                    window.showErrorToast('Erro ao salvar alguns registros do pedigree');
+                }
             }
         }
 

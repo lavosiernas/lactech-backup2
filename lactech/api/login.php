@@ -19,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 $email = trim($input['email'] ?? '');
 $password = $input['password'] ?? '';
-$turnstileToken = $input['turnstile_token'] ?? '';
 
 // Validações básicas
 if (empty($email) || empty($password)) {
@@ -32,51 +31,6 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Email inválido']);
     exit;
-}
-
-// Validar Cloudflare Turnstile se estiver configurado
-if (defined('TURNSTILE_SECRET_KEY') && !empty(TURNSTILE_SECRET_KEY)) {
-    if (empty($turnstileToken)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Por favor, complete a verificação de segurança.']);
-        exit;
-    }
-    
-    // Validar token com Cloudflare
-    $verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-    $verifyData = [
-        'secret' => TURNSTILE_SECRET_KEY,
-        'response' => $turnstileToken,
-        'remoteip' => $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? ''
-    ];
-    
-    $ch = curl_init($verifyUrl);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($verifyData));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    
-    $verifyResponse = curl_exec($ch);
-    $curlError = curl_error($ch);
-    curl_close($ch);
-    
-    if ($curlError) {
-        error_log("Erro ao validar Turnstile: " . $curlError);
-        http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Erro ao validar verificação de segurança. Tente novamente.']);
-        exit;
-    }
-    
-    $verifyResult = json_decode($verifyResponse, true);
-    
-    if (!$verifyResult || !isset($verifyResult['success']) || !$verifyResult['success']) {
-        $errorCodes = $verifyResult['error-codes'] ?? [];
-        error_log("Turnstile validation failed: " . json_encode($errorCodes));
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Verificação de segurança falhou. Tente novamente.']);
-        exit;
-    }
 }
 
 // Verificar conexão com banco antes de tentar login

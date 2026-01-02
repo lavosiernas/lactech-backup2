@@ -87,13 +87,6 @@ if (!defined('SESSION_COOKIE_LIFETIME')) define('SESSION_COOKIE_LIFETIME', 60 * 
 if (!defined('LOGIN_URL')) define('LOGIN_URL', 'inicio-login.php');
 if (!defined('DASHBOARD_URL')) define('DASHBOARD_URL', 'gerente-completo.php');
 
-// Configurações do Cloudflare Turnstile
-// Sempre buscar do .env primeiro (sem valores padrão hardcoded por segurança)
-if (!defined('TURNSTILE_SITE_KEY')) define('TURNSTILE_SITE_KEY', getEnvValue('TURNSTILE_SITE_KEY', ''));
-if (!defined('TURNSTILE_SECRET_KEY')) define('TURNSTILE_SECRET_KEY', getEnvValue('TURNSTILE_SECRET_KEY', ''));
-// IDs opcionais (não necessários para funcionamento do Turnstile, apenas para referência)
-if (!defined('CLOUDFLARE_ZONE_ID')) define('CLOUDFLARE_ZONE_ID', getEnvValue('CLOUDFLARE_ZONE_ID', ''));
-if (!defined('CLOUDFLARE_ACCOUNT_ID')) define('CLOUDFLARE_ACCOUNT_ID', getEnvValue('CLOUDFLARE_ACCOUNT_ID', ''));
 
 // Configurações de sessão (antes de iniciar a sessão)
 if (session_status() === PHP_SESSION_NONE) {
@@ -278,7 +271,7 @@ function changePassword($userId, $currentPassword, $newPassword) {
         
         // Registrar na tabela de auditoria se existir
         try {
-            $ipAddress = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? null;
+            $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
             $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
             
             // Verificar se a tabela existe

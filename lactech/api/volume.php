@@ -289,73 +289,16 @@ try {
             
         case 'get_by_id':
             $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+            $recordType = isset($_GET['record_type']) ? $_GET['record_type'] : null;
+            
             if ($id <= 0) { sendJSONResponse(null, 'id inválido'); }
             
-            // Primeiro tentar buscar em volume_records (registro geral)
-            $rows = $db->query("
-                SELECT 
-                    id, 
-                    record_date as date, 
-                    shift, 
-                    total_volume, 
-                    total_animals, 
-                    average_per_animal, 
-                    notes, 
-                    created_at,
-                    'general' as record_type,
-                    NULL as animal_id,
-                    NULL as animal_name
-                FROM volume_records 
-                WHERE id = ? AND farm_id = 1
-            ", [$id]);
-            
+            $rows = [];
             $animals = []; // Lista de animais para registro geral
             
-            // Se encontrou registro geral, buscar todos os animais da ordenha
-            if (!empty($rows)) {
-                $r = $rows[0];
-                $recordDate = $r['date'];
-                $recordShift = $r['shift'];
-                
-                // Buscar todos os animais que foram ordenhados na mesma data e período
-                // Garantir que a data está no formato correto (YYYY-MM-DD)
-                $dateFormatted = is_string($recordDate) ? $recordDate : date('Y-m-d', strtotime($recordDate));
-                
-                $animalsRows = $db->query("
-                    SELECT DISTINCT
-                        a.id as animal_id,
-                        a.animal_number,
-                        a.name as animal_name,
-                        a.breed as animal_breed,
-                        a.status as animal_status,
-                        a.gender as animal_gender,
-                        COALESCE(SUM(mp.volume), 0) as total_volume,
-                        COUNT(mp.id) as milking_count
-                    FROM milk_production mp
-                    INNER JOIN animals a ON mp.animal_id = a.id
-                    WHERE mp.farm_id = 1
-                    AND DATE(mp.production_date) = DATE(?)
-                    AND mp.shift = ?
-                    GROUP BY a.id, a.animal_number, a.name, a.breed, a.status, a.gender
-                    ORDER BY a.animal_number ASC, a.name ASC
-                ", [$dateFormatted, $recordShift]);
-                
-                $animals = array_map(function($a) {
-                    return [
-                        'id' => (int)$a['animal_id'],
-                        'animal_number' => $a['animal_number'],
-                        'name' => $a['animal_name'],
-                        'breed' => $a['animal_breed'],
-                        'status' => $a['animal_status'],
-                        'gender' => $a['animal_gender'],
-                        'total_volume' => (float)$a['total_volume'],
-                        'milking_count' => (int)$a['milking_count']
-                    ];
-                }, $animalsRows);
-            }
-            
-            // Se não encontrou, buscar em milk_production (registro individual por vaca)
-            if (empty($rows)) {
+            // Se record_type foi fornecido, buscar diretamente na tabela correta
+            if ($recordType === 'individual') {
+                // Buscar diretamente em milk_production (registro individual por vaca)
                 $rows = $db->query("
                     SELECT 
                         mp.id, 
@@ -380,11 +323,164 @@ try {
                     LEFT JOIN animals a ON mp.animal_id = a.id
                     WHERE mp.id = ? AND mp.farm_id = 1
                 ", [$id]);
+            } else if ($recordType === 'general') {
+                // Buscar diretamente em volume_records (registro geral)
+                $rows = $db->query("
+                    SELECT 
+                        id, 
+                        record_date as date, 
+                        shift, 
+                        total_volume, 
+                        total_animals, 
+                        average_per_animal, 
+                        notes, 
+                        created_at,
+                        'general' as record_type,
+                        NULL as animal_id,
+                        NULL as animal_name
+                    FROM volume_records 
+                    WHERE id = ? AND farm_id = 1
+                ", [$id]);
+                
+                // Se encontrou registro geral, buscar todos os animais da ordenha
+                if (!empty($rows)) {
+                    $r = $rows[0];
+                    $recordDate = $r['date'];
+                    $recordShift = $r['shift'];
+                    
+                    // Buscar todos os animais que foram ordenhados na mesma data e período
+                    // Garantir que a data está no formato correto (YYYY-MM-DD)
+                    $dateFormatted = is_string($recordDate) ? $recordDate : date('Y-m-d', strtotime($recordDate));
+                    
+                    $animalsRows = $db->query("
+                        SELECT DISTINCT
+                            a.id as animal_id,
+                            a.animal_number,
+                            a.name as animal_name,
+                            a.breed as animal_breed,
+                            a.status as animal_status,
+                            a.gender as animal_gender,
+                            COALESCE(SUM(mp.volume), 0) as total_volume,
+                            COUNT(mp.id) as milking_count
+                        FROM milk_production mp
+                        INNER JOIN animals a ON mp.animal_id = a.id
+                        WHERE mp.farm_id = 1
+                        AND DATE(mp.production_date) = DATE(?)
+                        AND mp.shift = ?
+                        GROUP BY a.id, a.animal_number, a.name, a.breed, a.status, a.gender
+                        ORDER BY a.animal_number ASC, a.name ASC
+                    ", [$dateFormatted, $recordShift]);
+                    
+                    $animals = array_map(function($a) {
+                        return [
+                            'id' => (int)$a['animal_id'],
+                            'animal_number' => $a['animal_number'],
+                            'name' => $a['animal_name'],
+                            'breed' => $a['animal_breed'],
+                            'status' => $a['animal_status'],
+                            'gender' => $a['animal_gender'],
+                            'total_volume' => (float)$a['total_volume'],
+                            'milking_count' => (int)$a['milking_count']
+                        ];
+                    }, $animalsRows);
+                }
+            } else {
+                // Se record_type não foi fornecido, tentar ambas as tabelas (comportamento legado)
+                // Primeiro tentar buscar em volume_records (registro geral)
+                $rows = $db->query("
+                    SELECT 
+                        id, 
+                        record_date as date, 
+                        shift, 
+                        total_volume, 
+                        total_animals, 
+                        average_per_animal, 
+                        notes, 
+                        created_at,
+                        'general' as record_type,
+                        NULL as animal_id,
+                        NULL as animal_name
+                    FROM volume_records 
+                    WHERE id = ? AND farm_id = 1
+                ", [$id]);
+                
+                // Se encontrou registro geral, buscar todos os animais da ordenha
+                if (!empty($rows)) {
+                    $r = $rows[0];
+                    $recordDate = $r['date'];
+                    $recordShift = $r['shift'];
+                    
+                    // Buscar todos os animais que foram ordenhados na mesma data e período
+                    // Garantir que a data está no formato correto (YYYY-MM-DD)
+                    $dateFormatted = is_string($recordDate) ? $recordDate : date('Y-m-d', strtotime($recordDate));
+                    
+                    $animalsRows = $db->query("
+                        SELECT DISTINCT
+                            a.id as animal_id,
+                            a.animal_number,
+                            a.name as animal_name,
+                            a.breed as animal_breed,
+                            a.status as animal_status,
+                            a.gender as animal_gender,
+                            COALESCE(SUM(mp.volume), 0) as total_volume,
+                            COUNT(mp.id) as milking_count
+                        FROM milk_production mp
+                        INNER JOIN animals a ON mp.animal_id = a.id
+                        WHERE mp.farm_id = 1
+                        AND DATE(mp.production_date) = DATE(?)
+                        AND mp.shift = ?
+                        GROUP BY a.id, a.animal_number, a.name, a.breed, a.status, a.gender
+                        ORDER BY a.animal_number ASC, a.name ASC
+                    ", [$dateFormatted, $recordShift]);
+                    
+                    $animals = array_map(function($a) {
+                        return [
+                            'id' => (int)$a['animal_id'],
+                            'animal_number' => $a['animal_number'],
+                            'name' => $a['animal_name'],
+                            'breed' => $a['animal_breed'],
+                            'status' => $a['animal_status'],
+                            'gender' => $a['animal_gender'],
+                            'total_volume' => (float)$a['total_volume'],
+                            'milking_count' => (int)$a['milking_count']
+                        ];
+                    }, $animalsRows);
+                }
+                
+                // Se não encontrou, buscar em milk_production (registro individual por vaca)
+                if (empty($rows)) {
+                    $rows = $db->query("
+                        SELECT 
+                            mp.id, 
+                            mp.production_date as date, 
+                            mp.shift, 
+                            mp.volume as total_volume, 
+                            mp.temperature,
+                            1 as total_animals, 
+                            mp.volume as average_per_animal, 
+                            mp.notes, 
+                            mp.created_at,
+                            'individual' as record_type,
+                            mp.animal_id,
+                            a.animal_number,
+                            a.name as animal_name,
+                            a.breed as animal_breed,
+                            a.birth_date as animal_birth_date,
+                            a.status as animal_status,
+                            a.gender as animal_gender,
+                            DATEDIFF(CURDATE(), a.birth_date) as animal_age_days
+                        FROM milk_production mp
+                        LEFT JOIN animals a ON mp.animal_id = a.id
+                        WHERE mp.id = ? AND mp.farm_id = 1
+                    ", [$id]);
+                }
             }
             
             if (empty($rows)) { sendJSONResponse(null, 'Registro não encontrado'); }
             
             $r = $rows[0];
+            $recordType = $r['record_type'] ?? 'general';
+            
             $data = [
                 'id' => (int)$r['id'],
                 'date' => $r['date'],
@@ -394,7 +490,7 @@ try {
                 'average_per_animal' => (float)$r['average_per_animal'],
                 'notes' => $r['notes'],
                 'created_at' => $r['created_at'],
-                'record_type' => $r['record_type'] ?? 'general',
+                'record_type' => $recordType,
                 'animal_id' => isset($r['animal_id']) ? (int)$r['animal_id'] : null,
                 'animal_name' => $r['animal_name'] ?? null,
                 'animal_number' => $r['animal_number'] ?? null,
@@ -403,9 +499,14 @@ try {
                 'animal_age_days' => isset($r['animal_age_days']) ? (int)$r['animal_age_days'] : null,
                 'animal_status' => $r['animal_status'] ?? null,
                 'animal_gender' => $r['animal_gender'] ?? null,
-                'temperature' => isset($r['temperature']) ? (float)$r['temperature'] : null,
-                'animals' => $animals // Lista de animais para registro geral
+                'temperature' => isset($r['temperature']) ? (float)$r['temperature'] : null
             ];
+            
+            // Só incluir 'animals' se for registro geral
+            if ($recordType === 'general') {
+                $data['animals'] = $animals;
+            }
+            
             sendJSONResponse($data);
             break;
             
@@ -491,6 +592,277 @@ try {
             }
             
             sendJSONResponse(['message' => 'Registro excluído com sucesso', 'id' => $id]);
+            break;
+            
+        // ==========================================
+        // GRUPOS DE ORDENHA
+        // ==========================================
+        case 'milking_groups_list':
+            // Listar todos os grupos de ordenha ativos
+            $groups = $db->query("
+                SELECT id, group_name, animal_ids, created_at, updated_at
+                FROM milking_groups
+                WHERE farm_id = 1 AND is_active = 1
+                ORDER BY group_name ASC
+            ");
+            
+            $data = array_map(function($g) use ($db) {
+                $animalIds = !empty($g['animal_ids']) ? array_map('intval', explode(',', $g['animal_ids'])) : [];
+                return [
+                    'id' => (int)$g['id'],
+                    'group_name' => $g['group_name'],
+                    'animal_ids' => $animalIds,
+                    'animal_count' => count($animalIds),
+                    'created_at' => $g['created_at'],
+                    'updated_at' => $g['updated_at']
+                ];
+            }, $groups);
+            
+            sendJSONResponse($data);
+            break;
+            
+        case 'milking_group_get':
+            // Obter um grupo específico com detalhes dos animais
+            $groupId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+            if ($groupId <= 0) {
+                sendJSONResponse(null, 'ID do grupo inválido');
+            }
+            
+            $group = $db->query("
+                SELECT id, group_name, animal_ids, created_at, updated_at
+                FROM milking_groups
+                WHERE id = ? AND farm_id = 1 AND is_active = 1
+            ", [$groupId]);
+            
+            if (empty($group)) {
+                sendJSONResponse(null, 'Grupo não encontrado');
+            }
+            
+            $g = $group[0];
+            $animalIds = !empty($g['animal_ids']) ? array_map('intval', explode(',', $g['animal_ids'])) : [];
+            
+            // Data para verificar turnos já ordenhados (hoje por padrão)
+            $checkDate = $_GET['date'] ?? date('Y-m-d');
+            
+            // Buscar detalhes dos animais e turnos já ordenhados
+            $animals = [];
+            if (!empty($animalIds)) {
+                $placeholders = implode(',', array_fill(0, count($animalIds), '?'));
+                $animalsData = $db->query("
+                    SELECT 
+                        a.id, 
+                        a.animal_number, 
+                        a.name, 
+                        a.breed, 
+                        a.status, 
+                        a.gender
+                    FROM animals a
+                    WHERE a.id IN ($placeholders) 
+                    AND a.farm_id = 1 
+                    AND a.is_active = 1
+                    AND (a.status = 'Lactante' OR a.status LIKE '%lacta%' OR a.status LIKE '%lacta%')
+                    ORDER BY a.animal_number ASC
+                ", $animalIds);
+                
+                // Buscar turnos já ordenhados no dia
+                $milkedShifts = [];
+                if (!empty($animalIds)) {
+                    $placeholders2 = implode(',', array_fill(0, count($animalIds), '?'));
+                    $milkedData = $db->query("
+                        SELECT DISTINCT animal_id, shift
+                        FROM milk_production
+                        WHERE animal_id IN ($placeholders2)
+                        AND DATE(production_date) = ?
+                        AND farm_id = 1
+                    ", array_merge($animalIds, [$checkDate]));
+                    
+                    foreach ($milkedData as $m) {
+                        $animalId = (int)$m['animal_id'];
+                        if (!isset($milkedShifts[$animalId])) {
+                            $milkedShifts[$animalId] = [];
+                        }
+                        $milkedShifts[$animalId][] = $m['shift'];
+                    }
+                }
+                
+                $animals = array_map(function($a) use ($milkedShifts) {
+                    $animalId = (int)$a['id'];
+                    $milked = $milkedShifts[$animalId] ?? [];
+                    return [
+                        'id' => $animalId,
+                        'animal_number' => $a['animal_number'],
+                        'name' => $a['name'],
+                        'breed' => $a['breed'],
+                        'status' => $a['status'],
+                        'gender' => $a['gender'],
+                        'milked_shifts' => $milked // Turnos já ordenhados hoje
+                    ];
+                }, $animalsData);
+            }
+            
+            $data = [
+                'id' => (int)$g['id'],
+                'group_name' => $g['group_name'],
+                'animal_ids' => $animalIds,
+                'animals' => $animals,
+                'animal_count' => count($animals), // Contar apenas animais lactantes válidos
+                'created_at' => $g['created_at'],
+                'updated_at' => $g['updated_at']
+            ];
+            
+            sendJSONResponse($data);
+            break;
+            
+        case 'milking_group_create':
+            // Criar novo grupo de ordenha
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+            $groupName = trim($input['group_name'] ?? '');
+            $animalIds = $input['animal_ids'] ?? [];
+            
+            if (empty($groupName)) {
+                sendJSONResponse(null, 'Nome do grupo é obrigatório');
+            }
+            
+            if (!is_array($animalIds) || empty($animalIds)) {
+                sendJSONResponse(null, 'Selecione pelo menos um animal');
+            }
+            
+            // Validar que todos os animais existem e são ativos
+            $validIds = array_filter(array_map('intval', $animalIds));
+            if (empty($validIds)) {
+                sendJSONResponse(null, 'IDs de animais inválidos');
+            }
+            
+            $placeholders = implode(',', array_fill(0, count($validIds), '?'));
+            $existingAnimals = $db->query("
+                SELECT id FROM animals
+                WHERE id IN ($placeholders) AND farm_id = 1 AND is_active = 1
+            ", $validIds);
+            
+            if (count($existingAnimals) !== count($validIds)) {
+                sendJSONResponse(null, 'Alguns animais não foram encontrados ou estão inativos');
+            }
+            
+            // Salvar grupo
+            $animalIdsString = implode(',', $validIds);
+            $pdo = $db->getConnection();
+            $stmt = $pdo->prepare("
+                INSERT INTO milking_groups (farm_id, group_name, animal_ids)
+                VALUES (1, ?, ?)
+            ");
+            $stmt->execute([$groupName, $animalIdsString]);
+            
+            $newId = $pdo->lastInsertId();
+            sendJSONResponse(['id' => (int)$newId, 'message' => 'Grupo criado com sucesso']);
+            break;
+            
+        case 'milking_group_update':
+            // Atualizar grupo de ordenha
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+            $groupId = isset($input['id']) ? (int)$input['id'] : 0;
+            $groupName = trim($input['group_name'] ?? '');
+            $animalIds = $input['animal_ids'] ?? [];
+            
+            if ($groupId <= 0) {
+                sendJSONResponse(null, 'ID do grupo inválido');
+            }
+            
+            if (empty($groupName)) {
+                sendJSONResponse(null, 'Nome do grupo é obrigatório');
+            }
+            
+            if (!is_array($animalIds)) {
+                sendJSONResponse(null, 'IDs de animais inválidos');
+            }
+            
+            // Validar animais
+            $validIds = array_filter(array_map('intval', $animalIds));
+            $animalIdsString = empty($validIds) ? '' : implode(',', $validIds);
+            
+            if (!empty($validIds)) {
+                $placeholders = implode(',', array_fill(0, count($validIds), '?'));
+                $existingAnimals = $db->query("
+                    SELECT id FROM animals
+                    WHERE id IN ($placeholders) AND farm_id = 1 AND is_active = 1
+                ", $validIds);
+                
+                if (count($existingAnimals) !== count($validIds)) {
+                    sendJSONResponse(null, 'Alguns animais não foram encontrados ou estão inativos');
+                }
+            }
+            
+            // Atualizar grupo
+            $db->query("
+                UPDATE milking_groups
+                SET group_name = ?, animal_ids = ?, updated_at = NOW()
+                WHERE id = ? AND farm_id = 1
+            ", [$groupName, $animalIdsString, $groupId]);
+            
+            sendJSONResponse(['id' => $groupId, 'message' => 'Grupo atualizado com sucesso']);
+            break;
+            
+        case 'milking_group_delete':
+            // Soft delete do grupo (marcar como inativo)
+            $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+            $groupId = isset($input['id']) ? (int)$input['id'] : 0;
+            if ($groupId <= 0) {
+                sendJSONResponse(null, 'ID do grupo inválido');
+            }
+            
+            $db->query("
+                UPDATE milking_groups
+                SET is_active = 0, updated_at = NOW()
+                WHERE id = ? AND farm_id = 1
+            ", [$groupId]);
+            
+            sendJSONResponse(['id' => $groupId, 'message' => 'Grupo excluído com sucesso']);
+            break;
+            
+        case 'milking_group_animals':
+            // Obter lista de animais de um grupo (para popular select) - apenas lactantes
+            $groupId = isset($_GET['id']) ? (int)$_GET['id'] : (isset($_GET['group_id']) ? (int)$_GET['group_id'] : 0);
+            
+            if ($groupId <= 0) {
+                sendJSONResponse(null, 'ID do grupo inválido');
+            }
+            
+            $group = $db->query("
+                SELECT animal_ids FROM milking_groups
+                WHERE id = ? AND farm_id = 1 AND is_active = 1
+            ", [$groupId]);
+            
+            if (empty($group)) {
+                sendJSONResponse(null, 'Grupo não encontrado');
+            }
+            
+            $animalIds = !empty($group[0]['animal_ids']) ? array_map('intval', explode(',', $group[0]['animal_ids'])) : [];
+            if (empty($animalIds)) {
+                sendJSONResponse([]);
+            }
+            
+            $placeholders = implode(',', array_fill(0, count($animalIds), '?'));
+            $animals = $db->query("
+                SELECT id, animal_number, name, breed, status, gender
+                FROM animals
+                WHERE id IN ($placeholders) 
+                AND farm_id = 1 
+                AND is_active = 1
+                AND (status = 'Lactante' OR status LIKE '%lacta%' OR status LIKE '%lacta%')
+                ORDER BY animal_number ASC
+            ", $animalIds);
+            
+            $data = array_map(function($a) {
+                return [
+                    'id' => (int)$a['id'],
+                    'animal_number' => $a['animal_number'],
+                    'name' => $a['name'],
+                    'breed' => $a['breed'],
+                    'status' => $a['status'],
+                    'gender' => $a['gender']
+                ];
+            }, $animals);
+            
+            sendJSONResponse($data);
             break;
             
         default:

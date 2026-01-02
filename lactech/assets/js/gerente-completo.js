@@ -131,6 +131,8 @@ function switchTab(tabName) {
             if (!loadedTabs.has(tabName)) {
                 loadedTabs.add(tabName);
                 loadVolumeData();
+                loadVolumeMilkingGroups();
+                loadMilkingGroupsPreview();
                 // Garantir que a tabela seja carregada mesmo se loadVolumeData falhar
                 setTimeout(() => {
                     const tbody = document.getElementById('volumeRecordsTable');
@@ -826,9 +828,10 @@ async function loadVolumeRecordsTable() {
                 <td class="py-3 px-4">
                     <div class="flex items-center justify-end gap-3">
                         ${finalId ? `
-                        <button onclick="viewVolumeDetails(${finalId})" 
+                        <button onclick="viewVolumeDetails(${finalId}, '${r.record_type || 'general'}')" 
                             class="text-blue-600 hover:text-blue-800 hover:underline font-medium text-sm px-2 py-1 rounded transition-colors" 
                             data-id="${finalId}"
+                            data-record-type="${r.record_type || 'general'}"
                             data-record-date="${r.record_date}"
                             data-record-shift="${r.shift}"
                             title="Ver detalhes">
@@ -887,7 +890,7 @@ async function loadVolumeRecordsTable() {
                 </div>
                 ${finalId ? `
                 <div class="flex gap-2 pt-3 border-t border-gray-100">
-                    <button onclick="viewVolumeDetails(${finalId})" 
+                    <button onclick="viewVolumeDetails(${finalId}, '${r.record_type || 'general'}')" 
                         class="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                         Detalhes
                     </button>
@@ -930,7 +933,7 @@ async function loadVolumeRecordsTable() {
 }
 
 // Função para visualizar detalhes de um registro
-async function viewVolumeDetails(id) {
+async function viewVolumeDetails(id, recordType = null) {
     try {
         
         // Validar e converter ID
@@ -941,7 +944,13 @@ async function viewVolumeDetails(id) {
             return;
         }
         
-        const response = await fetch(`./api/volume.php?action=get_by_id&id=${recordId}`);
+        // Construir URL com record_type se fornecido
+        let url = `./api/volume.php?action=get_by_id&id=${recordId}`;
+        if (recordType) {
+            url += `&record_type=${encodeURIComponent(recordType)}`;
+        }
+        
+        const response = await fetch(url);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -3133,26 +3142,320 @@ window.exportQualityReport = exportQualityReport;
 // ==================== MODAIS DE VOLUME ====================
 
 // Abrir modal Volume Geral
-window.showGeneralVolumeOverlay = function() {
+window.showGeneralVolumeOverlay = async function() {
     const modal = document.getElementById('generalVolumeOverlay');
     if (modal) {
         const form = document.getElementById('generalVolumeForm');
         if (form) {
             form.reset();
-            const dateInput = form.querySelector('input[type="date"]');
+            const dateInput = document.getElementById('generalVolumeDate');
             if (dateInput) {
                 dateInput.value = new Date().toISOString().split('T')[0];
             }
+            // Resetar grupo e número de vacas
+            const groupSelect = document.getElementById('generalVolumeGroupSelect');
+            if (groupSelect) groupSelect.value = '';
+            const totalAnimalsInput = document.getElementById('generalVolumeTotalAnimals');
+            if (totalAnimalsInput) totalAnimalsInput.value = '';
         }
         const messageDiv = document.getElementById('generalVolumeMessage');
         if (messageDiv) {
             messageDiv.classList.add('hidden');
             messageDiv.textContent = '';
         }
+        
+        // Carregar grupos de ordenha
+        await loadGeneralVolumeGroups();
+        
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 };
+
+// Carregar grupos de ordenha no modal de volume geral
+async function loadGeneralVolumeGroups() {
+    const select = document.getElementById('generalVolumeGroupSelect');
+    if (!select) return;
+    
+    try {
+        const res = await fetch('./api/volume.php?action=milking_groups_list');
+        const result = await res.json();
+        
+        select.innerHTML = '<option value="">Selecione um grupo (opcional)</option>';
+        
+        if (result.success && Array.isArray(result.data)) {
+            result.data.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.id;
+                option.textContent = `${group.group_name} (${group.animal_count} vacas)`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar grupos de ordenha:', error);
+    }
+}
+
+// Preencher automaticamente o número de vacas quando selecionar um grupo
+async function populateGeneralVolumeTotalAnimals(groupId) {
+    const totalAnimalsInput = document.getElementById('generalVolumeTotalAnimals');
+    if (!totalAnimalsInput) return;
+    
+    if (!groupId) {
+        totalAnimalsInput.value = '';
+        return;
+    }
+    
+    try {
+        const res = await fetch(`./api/volume.php?action=milking_group_get&id=${groupId}`);
+        const result = await res.json();
+        
+        if (result.success && result.data) {
+            totalAnimalsInput.value = result.data.animal_count || 0;
+        } else {
+            console.error('Erro ao carregar detalhes do grupo:', result.error);
+            totalAnimalsInput.value = '';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar detalhes do grupo:', error);
+        totalAnimalsInput.value = '';
+    }
+}
+
+// Carregar grupos de ordenha na página de volume
+async function loadVolumeMilkingGroups() {
+    const select = document.getElementById('milkingGroupSelectForAnimals');
+    if (!select) return;
+    
+    try {
+        const res = await fetch('./api/volume.php?action=milking_groups_list');
+        const result = await res.json();
+        
+        select.innerHTML = '<option value="">Selecione um grupo (opcional)</option>';
+        
+        if (result.success && Array.isArray(result.data)) {
+            result.data.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.id;
+                option.textContent = `${group.group_name} (${group.animal_count} vacas)`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar grupos de ordenha:', error);
+    }
+}
+
+// Carregar preview de grupos na página de volume
+async function loadMilkingGroupsPreview() {
+    const previewDiv = document.getElementById('milkingGroupsPreview');
+    if (!previewDiv) return;
+    
+    try {
+        const res = await fetch('./api/volume.php?action=milking_groups_list');
+        const result = await res.json();
+        
+        if (result.success && Array.isArray(result.data)) {
+            if (result.data.length === 0) {
+                previewDiv.innerHTML = 'Nenhum grupo criado ainda.';
+                return;
+            }
+            
+            previewDiv.innerHTML = result.data.map(group => 
+                `<span class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm mr-2 mb-2">${group.group_name} (${group.animal_count} vacas)</span>`
+            ).join('');
+        } else {
+            previewDiv.innerHTML = 'Erro ao carregar grupos.';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar preview de grupos:', error);
+        previewDiv.innerHTML = 'Erro ao carregar grupos.';
+    }
+}
+
+// Variável global para armazenar animais selecionados para ordenha
+let milkingAnimalsList = [];
+let selectedMilkingAnimals = [];
+
+// Abrir seletor de animais para ordenha
+window.openMilkingAnimalsSelector = async function() {
+    const modal = document.getElementById('milkingAnimalsSelectorOverlay');
+    if (!modal) {
+        console.error('Modal de seleção de animais não encontrado');
+        return;
+    }
+    
+    const listDiv = document.getElementById('milkingAnimalsSelectorList');
+    if (!listDiv) return;
+    
+    listDiv.innerHTML = '<p class="text-gray-500 text-center py-8">Carregando animais...</p>';
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    try {
+        // Buscar todos os animais lactantes ativos
+        const response = await fetch('./api/animals.php?action=get_all');
+        const result = await response.json();
+        
+        if (result.success && Array.isArray(result.data)) {
+            // Filtrar apenas fêmeas ativas em lactação
+            milkingAnimalsList = result.data.filter(animal => {
+                const isFemale = animal.gender === 'femea';
+                const isActive = animal.is_active !== 0 && animal.is_active !== '0';
+                const isLactating = !animal.status || 
+                                  animal.status.toLowerCase().includes('lactação') || 
+                                  animal.status.toLowerCase().includes('lactacao') ||
+                                  animal.status.toLowerCase().includes('lactante');
+                return isFemale && isActive && isLactating;
+            });
+            
+            // Ordenar por número
+            milkingAnimalsList.sort((a, b) => {
+                const numA = a.animal_number || '';
+                const numB = b.animal_number || '';
+                return numA.localeCompare(numB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+            
+            // Carregar seleção salva do localStorage
+            const today = new Date().toISOString().split('T')[0];
+            const storageKey = `milkingAnimals_${today}`;
+            const storedData = localStorage.getItem(storageKey);
+            selectedMilkingAnimals = storedData ? JSON.parse(storedData) : [];
+            
+            if (milkingAnimalsList.length === 0) {
+                listDiv.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma vaca encontrada</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = milkingAnimalsList.map(animal => {
+                const isSelected = selectedMilkingAnimals.includes(animal.id);
+                return `
+                    <label class="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all ${isSelected ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-gray-300'}">
+                        <input type="checkbox" value="${animal.id}" ${isSelected ? 'checked' : ''} 
+                            onchange="toggleMilkingAnimal(${animal.id}, this.checked)"
+                            class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                        <div class="flex-1">
+                            <p class="font-semibold text-slate-900">${animal.animal_number || 'N/A'} - ${animal.name || 'Sem nome'}</p>
+                            <p class="text-sm text-slate-500">${animal.breed || 'N/A'}</p>
+                        </div>
+                        ${isSelected ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Selecionado</span>' : ''}
+                    </label>
+                `;
+            }).join('');
+            
+            updateMilkingAnimalsCount();
+        } else {
+            listDiv.innerHTML = '<p class="text-red-500 text-center py-8">Erro ao carregar animais</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar animais:', error);
+        listDiv.innerHTML = '<p class="text-red-500 text-center py-8">Erro ao carregar animais</p>';
+    }
+};
+
+// Fechar seletor de animais para ordenha
+window.closeMilkingAnimalsSelector = function() {
+    const modal = document.getElementById('milkingAnimalsSelectorOverlay');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+};
+
+// Toggle animal selecionado para ordenha
+window.toggleMilkingAnimal = function(animalId, isSelected) {
+    const animalIdInt = parseInt(animalId);
+    if (isSelected) {
+        if (!selectedMilkingAnimals.includes(animalIdInt)) {
+            selectedMilkingAnimals.push(animalIdInt);
+        }
+    } else {
+        selectedMilkingAnimals = selectedMilkingAnimals.filter(id => id !== animalIdInt);
+    }
+    updateMilkingAnimalsCount();
+    
+    // Atualizar visual do checkbox
+    const checkbox = document.querySelector(`#milkingAnimalsSelectorList input[value="${animalId}"]`);
+    if (checkbox) {
+        const label = checkbox.closest('label');
+        if (label) {
+            if (isSelected) {
+                label.classList.remove('border-gray-200');
+                label.classList.add('border-green-400', 'bg-green-50');
+                // Adicionar badge se não existir
+                if (!label.querySelector('.bg-green-100')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'px-2 py-1 bg-green-100 text-green-700 text-xs rounded';
+                    badge.textContent = 'Selecionado';
+                    label.appendChild(badge);
+                }
+            } else {
+                label.classList.remove('border-green-400', 'bg-green-50');
+                label.classList.add('border-gray-200');
+                // Remover badge
+                const badge = label.querySelector('.bg-green-100');
+                if (badge) badge.remove();
+            }
+        }
+    }
+};
+
+// Atualizar contador de animais selecionados
+function updateMilkingAnimalsCount() {
+    const countDiv = document.getElementById('milkingAnimalsSelectorCount');
+    if (countDiv) {
+        countDiv.textContent = selectedMilkingAnimals.length;
+    }
+}
+
+// Salvar seleção de animais para ordenha
+window.saveMilkingAnimalsSelection = function() {
+    const today = new Date().toISOString().split('T')[0];
+    const storageKey = `milkingAnimals_${today}`;
+    localStorage.setItem(storageKey, JSON.stringify(selectedMilkingAnimals));
+    
+    // Atualizar informação na página
+    loadSelectedMilkingAnimalsInfo();
+    
+    closeMilkingAnimalsSelector();
+};
+
+// Carregar informação de animais selecionados para ordenha
+async function loadSelectedMilkingAnimalsInfo() {
+    const infoDiv = document.getElementById('selectedMilkingAnimalsInfo');
+    if (!infoDiv) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const storageKey = `milkingAnimals_${today}`;
+    const storedData = localStorage.getItem(storageKey);
+    const selectedIds = storedData ? JSON.parse(storedData) : [];
+    
+    if (selectedIds.length === 0) {
+        infoDiv.textContent = 'Nenhum animal selecionado';
+        return;
+    }
+    
+    try {
+        // Buscar informações dos animais selecionados
+        const response = await fetch('./api/animals.php?action=get_all');
+        const result = await response.json();
+        
+        if (result.success && Array.isArray(result.data)) {
+            const selectedAnimals = result.data.filter(a => selectedIds.includes(a.id));
+            const selectedNames = selectedAnimals
+                .map(a => a.animal_number || a.name || 'N/A')
+                .slice(0, 5)
+                .join(', ');
+            const more = selectedIds.length > 5 ? ` e mais ${selectedIds.length - 5}` : '';
+            infoDiv.innerHTML = `<span class="text-green-600 font-semibold">${selectedIds.length} animais selecionados:</span> ${selectedNames}${more}`;
+        } else {
+            infoDiv.textContent = `${selectedIds.length} animais selecionados`;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar informações dos animais:', error);
+        infoDiv.textContent = `${selectedIds.length} animais selecionados`;
+    }
+}
 
 // Fechar modal Volume Geral
 window.closeGeneralVolumeModal = function() {
@@ -3294,9 +3597,30 @@ async function populateVolumeAnimalSelect() {
     const select = document.getElementById('volumeAnimalSelect');
     if (!select) return;
     
+    // Obter grupo selecionado
+    const groupSelect = document.getElementById('milkingGroupSelect');
+    const selectedGroupId = groupSelect ? groupSelect.value : '';
+    
     try {
-        const res = await fetch('./api/animals.php?action=get_all');
-        const result = await res.json();
+        let animals = [];
+        
+        // Se há grupo selecionado, buscar apenas animais desse grupo
+        if (selectedGroupId) {
+            const groupRes = await fetch(`./api/volume.php?action=milking_group_animals&id=${selectedGroupId}`);
+            const groupResult = await groupRes.json();
+            
+            if (groupResult.success && Array.isArray(groupResult.data)) {
+                animals = groupResult.data;
+            }
+        } else {
+            // Se não há grupo selecionado, buscar todos os animais
+            const res = await fetch('./api/animals.php?action=get_all');
+            const result = await res.json();
+            
+            if (result.success && Array.isArray(result.data)) {
+                animals = result.data;
+            }
+        }
         
         select.innerHTML = '<option value="">Selecione uma vaca...</option>';
         
@@ -3306,31 +3630,75 @@ async function populateVolumeAnimalSelect() {
         const storedData = localStorage.getItem(storageKey);
         const absentAnimals = storedData ? JSON.parse(storedData) : [];
         
-        if (result.success && Array.isArray(result.data)) {
-            // Filtrar apenas animais ativos e em lactação, e que não estão ausentes
-            result.data
-                .filter(animal => {
-                    const isActive = animal.is_active !== 0 && animal.is_active !== '0';
-                    const isLactating = !animal.status || 
-                                      animal.status.toLowerCase().includes('lactação') || 
-                                      animal.status.toLowerCase().includes('lactacao') ||
-                                      animal.status.toLowerCase().includes('lactante');
-                    return isActive && isLactating && !absentAnimals.includes(animal.id);
-                })
-                .forEach(animal => {
-                    const option = document.createElement('option');
-                    option.value = animal.id;
-                    option.textContent = `${animal.name || 'Sem nome'} (${animal.animal_number || 'N/A'})`;
-                    select.appendChild(option);
-                });
-        }
+        // Filtrar apenas animais ativos e em lactação, e que não estão ausentes
+        animals
+            .filter(animal => {
+                const isActive = animal.is_active !== 0 && animal.is_active !== '0';
+                const isLactating = !animal.status || 
+                                  animal.status.toLowerCase().includes('lactação') || 
+                                  animal.status.toLowerCase().includes('lactacao') ||
+                                  animal.status.toLowerCase().includes('lactante');
+                return isActive && isLactating && !absentAnimals.includes(animal.id);
+            })
+            .forEach(animal => {
+                const option = document.createElement('option');
+                option.value = animal.id;
+                option.textContent = `${animal.name || 'Sem nome'} (${animal.animal_number || 'N/A'})`;
+                select.appendChild(option);
+            });
     } catch (error) {
         console.error('Erro ao carregar animais:', error);
     }
 }
 
+// Carregar lista de grupos de ordenha
+async function loadMilkingGroups() {
+    const select = document.getElementById('milkingGroupSelect');
+    if (!select) return;
+    
+    try {
+        const res = await fetch('./api/volume.php?action=milking_groups_list');
+        const result = await res.json();
+        
+        // Manter a primeira opção (Todas as vacas)
+        select.innerHTML = '<option value="">Todas as vacas (sem filtro)</option>';
+        
+        if (result.success && Array.isArray(result.data)) {
+            result.data.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.id;
+                option.textContent = `${group.group_name} (${group.animal_count} vacas)`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar grupos de ordenha:', error);
+    }
+}
+
 // Event listeners para formulários
 document.addEventListener('DOMContentLoaded', () => {
+    // Event listener para o select de grupos no modal de volume geral
+    const generalVolumeGroupSelect = document.getElementById('generalVolumeGroupSelect');
+    if (generalVolumeGroupSelect) {
+        generalVolumeGroupSelect.addEventListener('change', async function() {
+            const groupId = this.value;
+            await populateGeneralVolumeTotalAnimals(groupId);
+        });
+    }
+    
+    // Event listener para o select de grupos de ordenha
+    const groupSelect = document.getElementById('milkingGroupSelect');
+    if (groupSelect) {
+        groupSelect.addEventListener('change', () => {
+            // Quando o grupo mudar, se o modal estiver aberto, atualizar o select de animais
+            const volumeModal = document.getElementById('volumeOverlay');
+            if (volumeModal && !volumeModal.classList.contains('hidden')) {
+                populateVolumeAnimalSelect();
+            }
+        });
+    }
+    
     // Formulário Volume Geral
     const generalVolumeForm = document.getElementById('generalVolumeForm');
     if (generalVolumeForm) {
@@ -3355,7 +3723,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
                 
-                if (result.success) {
+                // Verificar se result é válido e tem success
+                if (result && (result.success === true || result.success === 'true')) {
                     if (messageDiv) {
                         messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
                         messageDiv.innerHTML = result.offline 
@@ -3364,7 +3733,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         messageDiv.classList.remove('hidden');
                     }
                     generalVolumeForm.reset();
-                    document.getElementById('absentAnimalsInput').value = '';
+                    const absentInput = document.getElementById('absentAnimalsInput');
+                    if (absentInput) absentInput.value = '';
+                    // Resetar grupo e número de vacas
+                    const groupSelect = document.getElementById('generalVolumeGroupSelect');
+                    if (groupSelect) groupSelect.value = '';
+                    const totalAnimalsInput = document.getElementById('generalVolumeTotalAnimals');
+                    if (totalAnimalsInput) totalAnimalsInput.value = '';
                     if (!result.offline) {
                         setTimeout(() => {
                             closeGeneralVolumeModal();
@@ -3377,21 +3752,55 @@ document.addEventListener('DOMContentLoaded', () => {
                         setTimeout(() => closeGeneralVolumeModal(), 2000);
                     }
                 } else {
-                    if (messageDiv) {
-                        messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
-                        messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result.error || 'Erro ao registrar volume');
-                        messageDiv.classList.remove('hidden');
+                    // Se não tem success, mas também não tem erro explícito, pode ser que o registro foi salvo
+                    // Verificar se há mensagem de sucesso na resposta
+                    if (result && result.message && result.message.includes('sucesso')) {
+                        if (messageDiv) {
+                            messageDiv.className = 'p-4 rounded-xl border-2 border-green-200 bg-green-50 text-green-800 flex items-center gap-2';
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Volume registrado com sucesso!';
+                            messageDiv.classList.remove('hidden');
+                        }
+                        generalVolumeForm.reset();
+                        const absentInput = document.getElementById('absentAnimalsInput');
+                        if (absentInput) absentInput.value = '';
+                        const groupSelect = document.getElementById('generalVolumeGroupSelect');
+                        if (groupSelect) groupSelect.value = '';
+                        const totalAnimalsInput = document.getElementById('generalVolumeTotalAnimals');
+                        if (totalAnimalsInput) totalAnimalsInput.value = '';
+                        setTimeout(() => {
+                            closeGeneralVolumeModal();
+                            if (typeof loadVolumeData === 'function') loadVolumeData();
+                            if (typeof loadVolumeRecordsTable === 'function') {
+                                setTimeout(() => loadVolumeRecordsTable(), 800);
+                            }
+                        }, 1500);
+                    } else {
+                        if (messageDiv) {
+                            messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
+                            messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ' + (result?.error || result?.message || 'Erro ao registrar volume');
+                            messageDiv.classList.remove('hidden');
+                        }
                     }
                 }
             } catch (err) {
                 console.error('Erro ao registrar volume geral:', err);
+                console.error('Detalhes do erro:', err.message, err.stack);
                 // Sempre reabilitar o botão em caso de erro
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
+                // Mesmo em caso de erro, verificar se o registro pode ter sido salvo
+                // (pode ser um erro de parsing da resposta, mas o registro foi salvo)
                 if (messageDiv) {
-                    messageDiv.className = 'p-4 rounded-xl border-2 border-red-200 bg-red-50 text-red-800 flex items-center gap-2';
-                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Erro ao processar registro. Tente novamente.';
+                    messageDiv.className = 'p-4 rounded-xl border-2 border-yellow-200 bg-yellow-50 text-yellow-800 flex items-center gap-2';
+                    messageDiv.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Verifique se o registro foi salvo. Se não aparecer na lista, tente novamente.';
                     messageDiv.classList.remove('hidden');
+                    // Recarregar dados para verificar se foi salvo
+                    setTimeout(() => {
+                        if (typeof loadVolumeData === 'function') loadVolumeData();
+                        if (typeof loadVolumeRecordsTable === 'function') {
+                            setTimeout(() => loadVolumeRecordsTable(), 800);
+                        }
+                    }, 1000);
                 }
             }
         });

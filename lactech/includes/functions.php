@@ -262,12 +262,12 @@ function jsonResponse($data, $status = 200) {
 
 /**
  * Obtém IP do cliente
- * Suporta Cloudflare (HTTP_CF_CONNECTING_IP) e outros proxies
+ * Suporta proxies
  */
 function getClientIP() {
-    // Cloudflare passa o IP real neste header (prioridade)
-    if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-        $ip = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
+    // Obter IP real do cliente
+    if (isset($_SERVER['REMOTE_ADDR'])) {
+        $ip = trim($_SERVER['REMOTE_ADDR']);
         if (filter_var($ip, FILTER_VALIDATE_IP) !== false) {
             return $ip;
         }

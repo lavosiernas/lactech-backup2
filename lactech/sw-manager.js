@@ -45,7 +45,7 @@ const USER_CONFIGS = {
 let currentUserType = 'manager';
 
 // Versão do cache - incrementar quando houver mudanças significativas
-const CACHE_VERSION = 6; // Versão 2.1.0 - Limpeza de cache melhorada
+const CACHE_VERSION = 7; // Versão 2.2.0 - Cache completo de todas as páginas
 
 // Recursos que devem ser cacheados em runtime
 const RUNTIME_CACHE_PATTERNS = [
@@ -59,8 +59,6 @@ const NO_CACHE_PATTERNS = [
     /chrome-extension:/,
     /\/api\/.*\/delete/,
     /\/api\/.*\/delete_all/,
-    /mais-opcoes\.php/,
-    /relatorios\.php/,
     /config\.php/
 ];
 
@@ -256,85 +254,54 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Verificar se deve cachear este recurso
-    // Não cachear páginas PHP dinâmicas (exceto a principal quando offline)
-    const isPHPPage = url.pathname.endsWith('.php') && 
-                     !url.pathname.includes('gerente-completo.php') && 
-                     !url.pathname.includes('funcionario.php');
-    const shouldCache = !isPHPPage && 
-                       RUNTIME_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname)) &&
-                       !NO_CACHE_PATTERNS.some(pattern => pattern.test(request.url)) &&
-                       request.method === 'GET';
-
-    // Determinar qual cache usar
-    const isImage = /\.(?:png|jpg|jpeg|gif|svg|webp)$/i.test(url.pathname);
-    const cacheToUse = isImage ? config.IMAGE_CACHE : config.RUNTIME_CACHE;
-
-    // Para páginas HTML, verificar se é a página principal ou outra página
+    // Verificar se é página HTML/PHP
     const isHTML = request.headers.get('accept') && request.headers.get('accept').includes('text/html');
+    const isPHPPage = url.pathname.endsWith('.php');
     const isMainPage = url.pathname.includes('gerente-completo.php') || 
                       url.pathname.includes('funcionario.php') || 
                       url.pathname === '/' || 
                       url.pathname.endsWith('/');
     
+    // Verificar se deve cachear este recurso
+    // Cachear TODAS as páginas PHP (incluindo subs/)
+    const shouldCache = !NO_CACHE_PATTERNS.some(pattern => pattern.test(request.url)) &&
+                       request.method === 'GET';
+
+    // Determinar qual cache usar
+    const isImage = /\.(?:png|jpg|jpeg|gif|svg|webp)$/i.test(url.pathname);
+    const cacheToUse = isImage ? config.IMAGE_CACHE : config.RUNTIME_CACHE;
+    
     if (isHTML) {
-        // Para páginas diferentes da principal, usar Network First (não cachear navegação)
-        if (!isMainPage) {
-            event.respondWith(
-                fetch(request.clone())
-                    .then((response) => {
-                        // Não cachear outras páginas PHP - permitir navegação normal
-                        return response;
-                    })
-                    .catch(() => {
-                        // Se offline e não for página principal, retornar erro
-                        return new Response('Página não disponível offline', {
-                            status: 503,
-                            statusText: 'Service Unavailable',
-                            headers: { 
-                                'Content-Type': 'text/plain; charset=UTF-8'
-                            }
-                        });
-                    })
-            );
-            return;
-        }
-        
-        // Para página principal, usar Network First com fallback para cache (apenas quando offline)
+        // Para TODAS as páginas HTML/PHP, usar Network First com Cache Fallback
         event.respondWith(
             fetch(request.clone())
                 .then((response) => {
-                    // Se online, sempre buscar da rede e atualizar cache em background
-                    if (response.ok && shouldCache) {
+                    // Se online e resposta OK, cachear a página
+                    if (response.ok && isPHPPage) {
                         const responseClone = response.clone();
-                        caches.open(cacheToUse).then((cache) => {
-                            cache.put(request, responseClone).catch(() => {});
+                        caches.open(config.RUNTIME_CACHE).then((cache) => {
+                            cache.put(request, responseClone).catch(() => {
+                                // Ignorar erros de cache
+                            });
                         });
                     }
                     return response;
                 })
                 .catch(() => {
-                    // Só usar cache se realmente estiver offline
+                    // Se offline, tentar buscar do cache primeiro
                     return caches.match(request).then((cachedResponse) => {
                         if (cachedResponse) {
-                            console.log('[Service Worker] Servindo página principal do cache (offline)');
+                            console.log('[Service Worker] Servindo página do cache (offline):', request.url);
                             return cachedResponse;
                         }
                         
-                        // Tentar variações de URL apenas se realmente offline
-                        const urlWithoutQuery = new URL(request.url);
-                        urlWithoutQuery.search = '';
-                        const cleanUrl = urlWithoutQuery.toString();
-                        
-                        const searchUrls = [
+                        // Se não encontrar no cache, tentar buscar página principal como fallback
+                        const fallbackUrls = [
                             config.MAIN_PAGE,
                             './gerente-completo.php',
                             '/gerente-completo.php',
-                            'gerente-completo.php',
                             './funcionario.php',
-                            '/funcionario.php',
-                            'funcionario.php',
-                            cleanUrl
+                            '/funcionario.php'
                         ];
                         
                         return caches.keys().then((cacheNames) => {
@@ -342,7 +309,7 @@ self.addEventListener('fetch', (event) => {
                                 cacheNames.map((cacheName) => {
                                     return caches.open(cacheName).then((cache) => {
                                         return Promise.all(
-                                            searchUrls.map(url => cache.match(url))
+                                            fallbackUrls.map(fallbackUrl => cache.match(fallbackUrl))
                                         ).then((matches) => {
                                             return matches.find(m => m !== undefined);
                                         });
@@ -351,18 +318,42 @@ self.addEventListener('fetch', (event) => {
                             ).then((responses) => {
                                 const foundResponse = responses.find(r => r !== undefined);
                                 if (foundResponse) {
-                                    console.log('[Service Worker] Página encontrada no cache (offline)');
+                                    console.log('[Service Worker] Usando página principal como fallback (offline)');
                                     return foundResponse;
                                 }
                                 
-                                // Se não encontrar, retornar erro
-                                return new Response('Página não disponível offline', {
-                                    status: 503,
-                                    statusText: 'Service Unavailable',
-                                    headers: { 
-                                        'Content-Type': 'text/plain; charset=UTF-8'
+                                // Último recurso: retornar página HTML básica
+                                return new Response(
+                                    `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LacTech - Modo Offline</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 100px auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #10b981; }
+        p { color: #666; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LacTech - Modo Offline</h1>
+        <p>Você está sem conexão com a internet.</p>
+        <p>Por favor, conecte-se à internet para continuar.</p>
+        <p><small>Aguarde a sincronização automática quando a conexão for restaurada.</small></p>
+    </div>
+</body>
+</html>`,
+                                    {
+                                        status: 200,
+                                        statusText: 'OK',
+                                        headers: { 
+                                            'Content-Type': 'text/html; charset=UTF-8'
+                                        }
                                     }
-                                });
+                                );
                             });
                         });
                     });

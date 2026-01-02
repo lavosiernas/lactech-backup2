@@ -77,6 +77,10 @@ $date_from = $_GET['date_from'] ?? date('Y-m-d', strtotime('-30 days'));
 $date_to = $_GET['date_to'] ?? date('Y-m-d');
 $filters = json_decode($_GET['filters'] ?? '[]', true);
 
+// Validar e normalizar datas
+$date_from = date('Y-m-d', strtotime($date_from));
+$date_to = date('Y-m-d', strtotime($date_to));
+
 // Caminho da logo
 $logo_path = __DIR__ . '/../assets/img/lactech-logo.png';
 
@@ -518,7 +522,8 @@ switch ($report_type) {
             FROM health_records hr
             LEFT JOIN animals a ON hr.animal_id = a.id
             WHERE hr.farm_id = ? 
-            AND hr.record_date BETWEEN ? AND ?
+            AND DATE(hr.record_date) >= ? 
+            AND DATE(hr.record_date) <= ?
             ORDER BY hr.record_date DESC
             LIMIT 100
         ");
@@ -547,11 +552,12 @@ switch ($report_type) {
                 i.insemination_date as data,
                 CONCAT(a.animal_number, ' - ', COALESCE(a.name, '')) as animal,
                 'Inseminacao' as tipo,
-                COALESCE(i.result, 'Pendente') as resultado
+                COALESCE(i.pregnancy_result, 'pendente') as resultado
             FROM inseminations i
             LEFT JOIN animals a ON i.animal_id = a.id
             WHERE i.farm_id = ? 
-            AND i.insemination_date BETWEEN ? AND ?
+            AND DATE(i.insemination_date) >= ? 
+            AND DATE(i.insemination_date) <= ?
             LIMIT 50
         ");
         $stmt->execute([$farm_id, $date_from, $date_to]);
@@ -583,7 +589,8 @@ switch ($report_type) {
             FROM feed_records fr
             LEFT JOIN animals a ON fr.animal_id = a.id
             WHERE fr.farm_id = ? 
-            AND fr.feed_date BETWEEN ? AND ?
+            AND DATE(fr.feed_date) >= ? 
+            AND DATE(fr.feed_date) <= ?
             ORDER BY fr.feed_date DESC
             LIMIT 100
         ");
@@ -598,6 +605,125 @@ switch ($report_type) {
                 'R$ ' . number_format($row['total_cost'], 2, ',', '.')
             ], $w);
         }
+        break;
+        
+    case 'summary':
+        $pdf->SectionTitle('Resumo Geral');
+        
+        // Produção
+        $stmt = $conn->prepare("
+            SELECT 
+                SUM(volume) as total_volume,
+                AVG(volume) as avg_volume,
+                COUNT(DISTINCT animal_id) as animals_count
+            FROM milk_production
+            WHERE farm_id = ? 
+            AND DATE(production_date) >= ? 
+            AND DATE(production_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $production = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 8, utf8ToIso('Producao de Leite'), 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->Cell(0, 6, utf8ToIso('Volume Total: ') . number_format($production['total_volume'] ?? 0, 2, ',', '.') . ' L', 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Media por Animal: ') . number_format($production['avg_volume'] ?? 0, 2, ',', '.') . ' L', 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Animais em Producao: ') . ($production['animals_count'] ?? 0), 0, 1, 'L');
+        $pdf->Ln(5);
+        
+        // Animais
+        $stmt = $conn->prepare("
+            SELECT 
+                COUNT(*) as total,
+                COUNT(CASE WHEN status = 'Lactante' THEN 1 END) as lactating,
+                COUNT(CASE WHEN status = 'Seca' THEN 1 END) as dry,
+                COUNT(CASE WHEN health_status = 'doente' THEN 1 END) as sick
+            FROM animals
+            WHERE farm_id = ? AND (is_active = 1 OR is_active IS NULL)
+        ");
+        $stmt->execute([$farm_id]);
+        $animals = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Cell(0, 8, utf8ToIso('Rebanho'), 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->Cell(0, 6, utf8ToIso('Total de Animais: ') . ($animals['total'] ?? 0), 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Lactantes: ') . ($animals['lactating'] ?? 0), 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Secas: ') . ($animals['dry'] ?? 0), 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Doentes: ') . ($animals['sick'] ?? 0), 0, 1, 'L');
+        $pdf->Ln(5);
+        
+        // Saúde
+        $stmt = $conn->prepare("
+            SELECT 
+                COUNT(*) as total_records,
+                SUM(cost) as total_cost
+            FROM health_records
+            WHERE farm_id = ? 
+            AND DATE(record_date) >= ? 
+            AND DATE(record_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $health = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Cell(0, 8, utf8ToIso('Saude'), 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->Cell(0, 6, utf8ToIso('Total de Registros: ') . ($health['total_records'] ?? 0), 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Custo Total: R$ ') . number_format($health['total_cost'] ?? 0, 2, ',', '.'), 0, 1, 'L');
+        $pdf->Ln(5);
+        
+        // Reprodutivo
+        $stmt = $conn->prepare("
+            SELECT 
+                COUNT(*) as total_inseminations,
+                COUNT(CASE WHEN pregnancy_result = 'prenha' THEN 1 END) as positive_pregnancies
+            FROM inseminations
+            WHERE farm_id = ? 
+            AND DATE(insemination_date) >= ? 
+            AND DATE(insemination_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $reproduction = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $stmt = $conn->prepare("
+            SELECT COUNT(id) as total_births 
+            FROM births 
+            WHERE farm_id = ? 
+            AND DATE(birth_date) >= ? 
+            AND DATE(birth_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $birth_summary = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Cell(0, 8, utf8ToIso('Reprodutivo'), 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->Cell(0, 6, utf8ToIso('Total de Inseminacoes: ') . ($reproduction['total_inseminations'] ?? 0), 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Prenhezes Positivas: ') . ($reproduction['positive_pregnancies'] ?? 0), 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Total de Partos: ') . ($birth_summary['total_births'] ?? 0), 0, 1, 'L');
+        $pdf->Ln(5);
+        
+        // Alimentação
+        $stmt = $conn->prepare("
+            SELECT 
+                SUM(total_cost) as total_cost,
+                COUNT(DISTINCT animal_id) as animals_fed
+            FROM feed_records
+            WHERE farm_id = ? 
+            AND DATE(feed_date) >= ? 
+            AND DATE(feed_date) <= ?
+        ");
+        $stmt->execute([$farm_id, $date_from, $date_to]);
+        $feeding = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Cell(0, 8, utf8ToIso('Alimentacao'), 0, 1, 'L');
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->Cell(0, 6, utf8ToIso('Custo Total: R$ ') . number_format($feeding['total_cost'] ?? 0, 2, ',', '.'), 0, 1, 'L');
+        $pdf->Cell(0, 6, utf8ToIso('Animais Alimentados: ') . ($feeding['animals_fed'] ?? 0), 0, 1, 'L');
         break;
 }
 

@@ -225,7 +225,7 @@ $v = time();
     <title>LacTech - Dashboard Gerente</title>
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- Preconnect para recursos externos (melhora velocidade) -->
     <link rel="preconnect" href="https://i.postimg.cc">
@@ -452,29 +452,6 @@ $v = time();
         }
         
         /* PWA Install Banner (Mobile) */
-        /* Refresh FAB Button */
-        #refreshFAB {
-            transition: all 0.3s ease-in-out;
-        }
-        
-        #refreshFAB:hover {
-            transform: scale(1.1) rotate(15deg);
-        }
-        
-        #refreshFAB:active {
-            transform: scale(0.95);
-        }
-        
-        #refreshFAB:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        @media (max-width: 768px) {
-            #refreshFAB {
-                bottom: 80px !important;
-            }
-        }
         
         
         /* Bottom Navigation Bar (Mobile) */
@@ -2132,6 +2109,59 @@ $v = time();
                     </div>
                 </div>
 
+                <!-- Configuração de Ordenha -->
+                <div class="data-card rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Configuração de Ordenha</h3>
+                    
+                    <!-- Selecionar Animais para Ordenha -->
+                    <div class="mb-6 pb-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Animais que Vão para Ordenha</h4>
+                                <p class="text-sm text-gray-600">Selecione quais animais foram para ordenha hoje</p>
+                            </div>
+                            <button onclick="openMilkingAnimalsSelector()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 text-sm">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Selecionar Animais
+                            </button>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Ou selecione um grupo:</label>
+                            <select id="milkingGroupSelectForAnimals" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                <option value="">Selecione um grupo (opcional)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Ao selecionar um grupo, os animais do grupo serão automaticamente selecionados</p>
+                        </div>
+                        
+                        <div id="selectedMilkingAnimalsInfo" class="text-sm text-gray-600">
+                            Nenhum animal selecionado
+                        </div>
+                    </div>
+                    
+                    <!-- Gerenciar Grupos -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Grupos de Ordenha</h4>
+                                <p class="text-sm text-gray-600">Crie e gerencie grupos de vacas para facilitar o registro</p>
+                            </div>
+                            <button onclick="openMilkingGroupsManager()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 text-sm">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Gerenciar Grupos
+                            </button>
+                        </div>
+                        
+                        <div id="milkingGroupsPreview" class="text-sm text-gray-600">
+                            Carregando grupos...
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Volume Metrics -->
                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
                     <div class="metric-card rounded-2xl p-4 text-center">
@@ -2762,15 +2792,6 @@ $v = time();
         </div>
     </nav>
 
-    <!-- Refresh Button (FAB) - Oculto por padrão, aparece apenas quando necessário -->
-    <button id="refreshFAB" onclick="refreshAllData()" class="hidden fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full shadow-2xl hover:shadow-green-500/50 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 group" aria-label="Atualizar dados">
-        <svg id="refreshIcon" class="w-6 h-6 md:w-7 md:h-7 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-        </svg>
-        <svg id="refreshSpinner" class="w-6 h-6 md:w-7 md:h-7 hidden animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-        </svg>
-    </button>
 
     <!-- ============================================ -->
     <!-- MODAIS - FORMULÁRIOS E DIÁLOGOS -->
@@ -2801,16 +2822,32 @@ $v = time();
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Data</label>
-                            <input type="date" name="collection_date" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                            <input type="date" name="collection_date" id="generalVolumeDate" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Período</label>
-                            <select name="period" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                            <select name="period" id="generalVolumePeriod" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
                                 <option value="manha">Manhã</option>
                                 <option value="tarde">Tarde</option>
                                 <option value="noite">Noite</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Grupo de Ordenha
+                            <span class="text-xs font-normal text-gray-500">(opcional)</span>
+                        </label>
+                        <select id="generalVolumeGroupSelect" name="milking_group_id" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 mb-2">
+                            <option value="">Selecione um grupo (opcional)</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mb-3">Ao selecionar um grupo, o número de vacas será preenchido automaticamente</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Número de Vacas</label>
+                        <input type="number" name="total_animals" id="generalVolumeTotalAnimals" step="1" min="1" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
                     </div>
 
                     <div>
@@ -2897,6 +2934,120 @@ $v = time();
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Selecionar Animais para Ordenha -->
+    <div id="milkingAnimalsSelectorOverlay" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Selecionar Animais para Ordenha</h3>
+                    <p class="text-sm text-green-100">Selecione quais animais foram para ordenha hoje</p>
+                </div>
+                <button onclick="closeMilkingAnimalsSelector()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div id="milkingAnimalsSelectorMessage" class="hidden mb-4 p-3 rounded-lg"></div>
+                
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-3">Selecione as vacas que foram para ordenha:</p>
+                    <div id="milkingAnimalsSelectorList" class="space-y-2 max-h-96 overflow-y-auto">
+                        <p class="text-gray-500 text-center py-8">Carregando animais...</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 border-t">
+                    <div class="text-sm text-gray-600">
+                        <span id="milkingAnimalsSelectorCount">0</span> animais selecionados
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="closeMilkingAnimalsSelector()" class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                            Cancelar
+                        </button>
+                        <button onclick="saveMilkingAnimalsSelection()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all">
+                            Salvar Seleção
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gerenciar Grupos de Ordenha -->
+    <div id="milkingGroupsModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Gerenciar Grupos de Ordenha</h3>
+                    <p class="text-sm text-blue-100">Crie e gerencie grupos de vacas para ordenha</p>
+                </div>
+                <button onclick="closeMilkingGroupsModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div id="milkingGroupsMessage" class="hidden mb-4 p-3 rounded-lg"></div>
+                
+                <!-- Botão Adicionar Grupo -->
+                <div class="mb-4">
+                    <button onclick="showCreateMilkingGroupForm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Novo Grupo
+                    </button>
+                </div>
+
+                <!-- Lista de Grupos -->
+                <div id="milkingGroupsList" class="space-y-3">
+                    <p class="text-gray-500 text-center py-8">Carregando grupos...</p>
+                </div>
+
+                <!-- Formulário Criar/Editar Grupo -->
+                <div id="milkingGroupFormContainer" class="hidden mt-6 p-4 bg-gray-50 rounded-lg border-2 border-blue-200">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4" id="milkingGroupFormTitle">Novo Grupo</h4>
+                    <form id="milkingGroupForm" class="space-y-4">
+                        <input type="hidden" id="milkingGroupFormId" name="id">
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nome do Grupo</label>
+                            <input type="text" id="milkingGroupFormName" name="group_name" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required placeholder="Ex: Grupo Manhã, Lote A, etc.">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Selecionar Vacas</label>
+                            <div class="border-2 border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto">
+                                <div id="milkingGroupAnimalsList" class="space-y-2">
+                                    <p class="text-gray-500 text-center py-4">Carregando vacas...</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2" id="milkingGroupSelectedCount">0 vacas selecionadas</p>
+                        </div>
+
+                        <div class="flex gap-3 pt-4 border-t">
+                            <button type="button" onclick="cancelMilkingGroupForm()" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
+                                Salvar Grupo
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -4355,6 +4506,7 @@ $v = time();
     <!-- ============================================ -->
     <script src="assets/js/offline-manager.js?v=<?php echo $v; ?>"></script>
     <script src="assets/js/gerente-completo.js?v=<?php echo $v; ?>"></script>
+    <script src="assets/js/milking-groups.js?v=<?php echo $v; ?>"></script>
     
     <!-- Script inline para garantir que as funções de fechar modais estejam disponíveis -->
     <script>
@@ -5188,7 +5340,7 @@ $v = time();
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw-manager.js', { scope: './' })
+                navigator.serviceWorker.register('/sw-manager.js', { scope: '/' })
                     .then((registration) => {
                         console.log('Service Worker registrado com sucesso:', registration.scope);
                         
@@ -5453,95 +5605,6 @@ $v = time();
             };
         }
         
-        // Variável para rastrear se há dados para atualizar
-        let hasDataToRefresh = false;
-        let lastDataCheck = 0;
-        const DATA_CHECK_INTERVAL = 30000; // 30 segundos
-        
-        // Verificar se há dados para atualizar
-        async function checkIfDataNeedsRefresh() {
-            const now = Date.now();
-            // Só verificar a cada 30 segundos
-            if (now - lastDataCheck < DATA_CHECK_INTERVAL) {
-                return hasDataToRefresh;
-            }
-            
-            lastDataCheck = now;
-            
-            try {
-                let needsRefresh = false;
-                
-                // Verificar se há dados pendentes no cache offline
-                if (typeof offlineManager !== 'undefined') {
-                    const queueCount = offlineManager.getQueueCount ? offlineManager.getQueueCount() : 
-                                      (offlineManager.queue ? offlineManager.queue.length : 0);
-                    
-                    if (queueCount > 0) {
-                        needsRefresh = true;
-                        console.log(`[Refresh] ${queueCount} registro(s) pendentes na fila offline`);
-                    }
-                }
-                
-                // Verificar localStorage para fila offline
-                const offlineQueue = localStorage.getItem('lactech_offline_queue');
-                if (offlineQueue) {
-                    try {
-                        const queue = JSON.parse(offlineQueue);
-                        if (Array.isArray(queue) && queue.length > 0) {
-                            needsRefresh = true;
-                            console.log(`[Refresh] ${queue.length} registro(s) pendentes no localStorage`);
-                        }
-                    } catch (e) {
-                        // Ignorar erro de parse
-                    }
-                }
-                
-                // Verificar última atualização vs tempo atual (só se estiver online)
-                if (navigator.onLine && (!offlineManager || !offlineManager.forceOffline)) {
-                    const lastUpdate = localStorage.getItem('lastDataUpdate');
-                    if (lastUpdate) {
-                        const timeSinceUpdate = now - parseInt(lastUpdate);
-                        // Se passou mais de 5 minutos, pode ter dados novos
-                        if (timeSinceUpdate > 300000) {
-                            needsRefresh = true;
-                            console.log(`[Refresh] Passaram ${Math.round(timeSinceUpdate / 60000)} minutos desde última atualização`);
-                        }
-                    } else {
-                        // Nunca atualizou, mostrar botão
-                        needsRefresh = true;
-                    }
-                }
-                
-                hasDataToRefresh = needsRefresh;
-                updateRefreshButtonVisibility();
-                return needsRefresh;
-            } catch (error) {
-                console.error('Erro ao verificar dados:', error);
-                return false;
-            }
-        }
-        
-        // Atualizar visibilidade do botão de refresh
-        function updateRefreshButtonVisibility() {
-            const refreshBtn = document.getElementById('refreshFAB');
-            if (refreshBtn) {
-                if (hasDataToRefresh) {
-                    refreshBtn.classList.remove('hidden');
-                } else {
-                    refreshBtn.classList.add('hidden');
-                }
-            }
-        }
-        
-        // Verificar periodicamente se há dados para atualizar
-        setInterval(() => {
-            checkIfDataNeedsRefresh();
-        }, 60000); // Verificar a cada minuto
-        
-        // Verificar imediatamente ao carregar
-        setTimeout(() => {
-            checkIfDataNeedsRefresh();
-        }, 2000); // Após 2 segundos do carregamento
         
         // Função de limpeza de cache periódica (só quando online)
         async function clearCachePeriodically() {
