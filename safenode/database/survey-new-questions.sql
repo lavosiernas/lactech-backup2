@@ -58,3 +58,5 @@ ADD COLUMN `must_have_features` TEXT NULL COMMENT 'O que não pode faltar' AFTER
 -- Se quiser removê-los depois, execute comandos DROP COLUMN separadamente
 
 
+
+

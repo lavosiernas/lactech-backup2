@@ -261,7 +261,7 @@ self.addEventListener('fetch', (event) => {
                       url.pathname.includes('funcionario.php') || 
                       url.pathname === '/' || 
                       url.pathname.endsWith('/');
-    
+
     // Verificar se deve cachear este recurso
     // Cachear TODAS as páginas PHP (incluindo subs/)
     const shouldCache = !NO_CACHE_PATTERNS.some(pattern => pattern.test(request.url)) &&
@@ -349,7 +349,7 @@ self.addEventListener('fetch', (event) => {
                                     {
                                         status: 200,
                                         statusText: 'OK',
-                                        headers: { 
+                                    headers: { 
                                             'Content-Type': 'text/html; charset=UTF-8'
                                         }
                                     }

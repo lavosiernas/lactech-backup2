@@ -508,7 +508,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
 
         // Global variables for authentication state
         let isAuthenticating = false;
-        
+
         // Sistema MySQL - Conexão direta com banco de dados
 
         // Password toggle functions
@@ -699,16 +699,16 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             
             if (loginForm) {
                 loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    handleLogin(this, false);
-                });
+            e.preventDefault();
+            handleLogin(this, false);
+        });
             }
-            
+
             if (loginFormDesktop) {
                 loginFormDesktop.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    handleLogin(this, true);
-                });
+            e.preventDefault();
+            handleLogin(this, true);
+        });
             }
         }
         

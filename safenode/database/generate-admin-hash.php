@@ -16,3 +16,5 @@ echo "OU\n";
 echo "INSERT INTO safenode_survey_admin (username, password_hash, email) VALUES ('admin', '{$hash}', 'safenodemail@safenode.cloud') ON DUPLICATE KEY UPDATE password_hash = '{$hash}';\n";
 
 
+
+

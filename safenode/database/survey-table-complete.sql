@@ -27,3 +27,5 @@ CREATE TABLE IF NOT EXISTS `safenode_survey_responses` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+
+

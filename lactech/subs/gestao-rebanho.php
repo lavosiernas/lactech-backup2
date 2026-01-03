@@ -60,7 +60,7 @@ $v = time();
                     <p class="text-sm text-gray-500">Lista completa e gestão dos animais</p>
                 </div>
             </div>
-            <button onclick="window.parent.postMessage({type: 'closeModal'}, '*')" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
+            <button id="closeModalBtn" onclick="closeGestaoRebanhoModal()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-colors">
                 <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -160,11 +160,11 @@ $v = time();
                     </svg>
                     Excluir
                 </button>
-                <button onclick="closeAnimalDetails()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+            <button onclick="closeAnimalDetails()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
             </div>
         </div>
         
@@ -193,56 +193,56 @@ $v = time();
         
         <!-- Content -->
         <div id="animal-details-content-wrapper" class="flex-1 overflow-y-auto">
-            <!-- Hero Section com Imagem -->
+        <!-- Hero Section com Imagem -->
             <div id="animal-hero-section" class="relative bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-gray-200">
-                <div class="container mx-auto px-6 py-6">
-                    <div class="flex flex-col md:flex-row items-center gap-8">
-                        <!-- Imagem do Animal -->
-                        <div class="flex-shrink-0">
-                            <div class="w-48 h-48 md:w-64 md:h-64 rounded-2xl bg-white shadow-xl border-4 border-white overflow-hidden">
-                                <img id="animal-details-image" src="../assets/video/vaca.png" alt="Animal" class="w-full h-full object-contain p-4">
+            <div class="container mx-auto px-6 py-6">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <!-- Imagem do Animal -->
+                    <div class="flex-shrink-0">
+                        <div class="w-48 h-48 md:w-64 md:h-64 rounded-2xl bg-white shadow-xl border-4 border-white overflow-hidden">
+                            <img id="animal-details-image" src="../assets/video/vaca.png" alt="Animal" class="w-full h-full object-contain p-4">
+                        </div>
+                    </div>
+                    
+                    <!-- Informações Principais -->
+                    <div class="flex-1 text-center md:text-left">
+                        <h2 id="animal-details-name" class="text-3xl font-bold text-gray-900 mb-2">-</h2>
+                        <p id="animal-details-number" class="text-lg text-gray-600 mb-4">#-</p>
+                        <div class="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
+                            <span id="animal-details-status-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
+                            <span id="animal-details-health-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
+                            <span id="animal-details-breed-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">-</span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <p class="text-xs text-gray-500 mb-1">Idade</p>
+                                <p id="animal-details-age" class="text-lg font-bold text-gray-900">-</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <p class="text-xs text-gray-500 mb-1">Status Reprodutivo</p>
+                                <p id="animal-details-reproductive" class="text-lg font-bold text-gray-900">-</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <p class="text-xs text-gray-500 mb-1">Grupo</p>
+                                <p id="animal-details-group" class="text-lg font-bold text-gray-900">-</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <p class="text-xs text-gray-500 mb-1">Último BCS</p>
+                                <p id="animal-details-bcs" class="text-lg font-bold text-gray-900">-</p>
                             </div>
                         </div>
-                        
-                        <!-- Informações Principais -->
-                        <div class="flex-1 text-center md:text-left">
-                            <h2 id="animal-details-name" class="text-3xl font-bold text-gray-900 mb-2">-</h2>
-                            <p id="animal-details-number" class="text-lg text-gray-600 mb-4">#-</p>
-                            <div class="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                                <span id="animal-details-status-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
-                                <span id="animal-details-health-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">-</span>
-                                <span id="animal-details-breed-badge" class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">-</span>
-                            </div>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                                <div class="bg-white rounded-lg p-3 shadow-sm">
-                                    <p class="text-xs text-gray-500 mb-1">Idade</p>
-                                    <p id="animal-details-age" class="text-lg font-bold text-gray-900">-</p>
-                                </div>
-                                <div class="bg-white rounded-lg p-3 shadow-sm">
-                                    <p class="text-xs text-gray-500 mb-1">Status Reprodutivo</p>
-                                    <p id="animal-details-reproductive" class="text-lg font-bold text-gray-900">-</p>
-                                </div>
-                                <div class="bg-white rounded-lg p-3 shadow-sm">
-                                    <p class="text-xs text-gray-500 mb-1">Grupo</p>
-                                    <p id="animal-details-group" class="text-lg font-bold text-gray-900">-</p>
-                                </div>
-                                <div class="bg-white rounded-lg p-3 shadow-sm">
-                                    <p class="text-xs text-gray-500 mb-1">Último BCS</p>
-                                    <p id="animal-details-bcs" class="text-lg font-bold text-gray-900">-</p>
-                                </div>
-                            </div>
                             <!-- Composição Racial -->
                             <div id="animal-blood-composition" class="mt-6 bg-white rounded-lg p-4 shadow-sm border border-gray-200 hidden">
                                 <p class="text-xs font-semibold text-gray-500 mb-3 uppercase">Composição Racial</p>
                                 <div id="animal-blood-percentages" class="flex flex-wrap gap-2">
                                     <!-- Será preenchido dinamicamente -->
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
-            
+        </div>
+            </div>
+        </div>
+        
             <div class="container mx-auto px-6 py-6">
                 <div id="animal-details-content" class="max-w-6xl mx-auto">
                     <p class="text-gray-500 text-center py-8">Carregando detalhes...</p>
@@ -512,6 +512,30 @@ $v = time();
         let breedsList = [];
         let groupsList = [];
 
+        // Função para fechar o modal - detecta se está em iframe ou página direta
+        function closeGestaoRebanhoModal() {
+            // Se estiver em iframe (dentro de um modal), usar postMessage
+            if (window.parent && window.parent !== window) {
+                try {
+                    window.parent.postMessage({type: 'closeModal'}, '*');
+                } catch (e) {
+                    // Se postMessage falhar, tentar voltar
+                    window.history.back();
+                }
+            } else {
+                // Se estiver em página direta, voltar para a página anterior
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // Se não houver histórico, redirecionar para a dashboard
+                    window.location.href = '../gerente-completo.php';
+                }
+            }
+        }
+        
+        // Tornar função global
+        window.closeGestaoRebanhoModal = closeGestaoRebanhoModal;
+
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboard();
@@ -523,6 +547,19 @@ $v = time();
             document.getElementById('search-input').addEventListener('input', debounce(loadAnimals, 300));
             document.getElementById('filter-status').addEventListener('change', loadAnimals);
             document.getElementById('filter-breed').addEventListener('change', loadAnimals);
+            
+            // Verificar se há animal_id na URL e abrir automaticamente
+            const urlParams = new URLSearchParams(window.location.search);
+            const animalId = urlParams.get('animal_id');
+            if (animalId) {
+                // Aguardar um pouco para garantir que a lista foi carregada
+                setTimeout(() => {
+                    viewAnimalDetails(parseInt(animalId));
+                    // Limpar o parâmetro da URL sem recarregar a página
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, '', newUrl);
+                }, 500);
+            }
         });
 
         // Dashboard
@@ -1787,7 +1824,7 @@ $v = time();
                     const result = await response.json();
                     if (result.success) {
                         savedCount++;
-                    } else {
+            } else {
                         errorCount++;
                         console.error(`Erro ao salvar ${pos.position} (${pos.id}):`, result.error);
                     }

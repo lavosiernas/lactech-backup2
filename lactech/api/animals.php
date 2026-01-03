@@ -54,6 +54,41 @@ try {
         $action = $_GET['action'] ?? '';
         
         switch ($action) {
+            case 'search':
+                // Busca rápida de animais por nome ou número
+                $searchTerm = $_GET['q'] ?? '';
+                if (empty($searchTerm)) {
+                    sendResponse([]);
+                }
+                
+                $searchTerm = '%' . $searchTerm . '%';
+                $animals = $db->query("
+                    SELECT 
+                        id, 
+                        animal_number, 
+                        name, 
+                        breed, 
+                        status, 
+                        gender,
+                        birth_date,
+                        DATEDIFF(CURDATE(), birth_date) as age_days
+                    FROM animals 
+                    WHERE farm_id = 1 
+                    AND is_active = 1
+                    AND (name LIKE ? OR animal_number LIKE ?)
+                    ORDER BY 
+                        CASE 
+                            WHEN animal_number LIKE ? THEN 1
+                            WHEN name LIKE ? THEN 2
+                            ELSE 3
+                        END,
+                        animal_number ASC
+                    LIMIT 10
+                ", [$searchTerm, $searchTerm, $_GET['q'] . '%', $_GET['q'] . '%']);
+                
+                sendResponse($animals);
+                break;
+                
             case 'select':
             case 'get_all':
                 $animals = $db->getAllAnimals();

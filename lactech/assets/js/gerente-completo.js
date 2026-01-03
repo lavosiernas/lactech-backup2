@@ -360,17 +360,17 @@ function createOrUpdateLineChart(canvasId, labels, data, color = '#10B981') {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: '',
+                    label: canvasId === 'temperatureChart' ? 'Temperatura (°C)' : '',
                     data: data,
                     borderColor: color,
                     backgroundColor: color + '1A',
                     fill: true,
                     tension: 0.3,
                     borderWidth: 2,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
+                    pointRadius: canvasId === 'temperatureChart' ? 4 : 3,
+                    pointHoverRadius: 6,
                     showLine: true,
-                    spanGaps: true
+                    spanGaps: false
                 }]
             },
             options: {
@@ -641,6 +641,7 @@ async function renderTemperatureChart() {
         }
         
         const json = await res.json();
+        console.log('📊 Dados de temperatura recebidos:', json);
         
         let srcLabels = [];
         let srcData = [];
@@ -655,6 +656,8 @@ async function renderTemperatureChart() {
             srcData = json.data.map(item => Number(item.avg_temp || item.temperature || 0));
         }
         
+        console.log('📊 Labels processados:', srcLabels.length, srcLabels);
+        console.log('📊 Dados processados:', srcData.length, srcData);
         
         // Preencher últimos 30 dias
         const dateKey = (d) => d.toISOString().slice(0,10);
@@ -668,25 +671,19 @@ async function renderTemperatureChart() {
         const map = {};
         srcLabels.forEach((d, i) => { 
             if (d) {
-                map[d] = srcData[i] ?? 0; 
+                // Normalizar formato de data (remover hora se houver)
+                const dateOnly = d.split(' ')[0];
+                map[dateOnly] = srcData[i] ?? 0; 
             }
         });
         
         const labels = last30;
-        const data = labels.map(d => map[d] ?? 0);
+        const data = labels.map(d => map[d] ?? null); // Usar null para valores faltantes
         
-        // Se não há dados, mostrar mensagem
-        if (data.every(v => v === 0)) {
-            // Nenhum dado de temperatura encontrado
-            labels.length = 0;
-            data.length = 0;
-        }
+        console.log('📊 Labels finais:', labels.length);
+        console.log('📊 Dados finais:', data.filter(v => v !== null).length, 'valores não nulos');
         
-        if (data.length === 1) { 
-            labels.push(labels[0]); 
-            data.push(data[0]); 
-        }
-        
+        // Criar gráfico (Chart.js lida com null automaticamente)
         createOrUpdateLineChart('temperatureChart', labels, data, '#F59E0B');
     } catch (e) {
         console.error('❌ Erro ao renderizar gráfico de temperatura:', e);
@@ -3152,11 +3149,18 @@ window.showGeneralVolumeOverlay = async function() {
             if (dateInput) {
                 dateInput.value = new Date().toISOString().split('T')[0];
             }
-            // Resetar grupo e número de vacas
+            // Resetar grupo
             const groupSelect = document.getElementById('generalVolumeGroupSelect');
             if (groupSelect) groupSelect.value = '';
+            
+            // Preencher automaticamente o número de vacas com base nos animais selecionados
             const totalAnimalsInput = document.getElementById('generalVolumeTotalAnimals');
-            if (totalAnimalsInput) totalAnimalsInput.value = '';
+            if (totalAnimalsInput) {
+                const storageKey = 'milkingAnimals_selected';
+                const storedData = localStorage.getItem(storageKey);
+                const selectedIds = storedData ? JSON.parse(storedData) : [];
+                totalAnimalsInput.value = selectedIds.length > 0 ? selectedIds.length : '';
+            }
         }
         const messageDiv = document.getElementById('generalVolumeMessage');
         if (messageDiv) {
@@ -3202,7 +3206,11 @@ async function populateGeneralVolumeTotalAnimals(groupId) {
     if (!totalAnimalsInput) return;
     
     if (!groupId) {
-        totalAnimalsInput.value = '';
+        // Quando não há grupo selecionado, restaurar quantidade dos animais selecionados permanentemente
+        const storageKey = 'milkingAnimals_selected';
+        const storedData = localStorage.getItem(storageKey);
+        const selectedIds = storedData ? JSON.parse(storedData) : [];
+        totalAnimalsInput.value = selectedIds.length > 0 ? selectedIds.length : '';
         return;
     }
     
@@ -3214,11 +3222,19 @@ async function populateGeneralVolumeTotalAnimals(groupId) {
             totalAnimalsInput.value = result.data.animal_count || 0;
         } else {
             console.error('Erro ao carregar detalhes do grupo:', result.error);
-            totalAnimalsInput.value = '';
+            // Se houver erro, restaurar quantidade dos animais selecionados
+            const storageKey = 'milkingAnimals_selected';
+            const storedData = localStorage.getItem(storageKey);
+            const selectedIds = storedData ? JSON.parse(storedData) : [];
+            totalAnimalsInput.value = selectedIds.length > 0 ? selectedIds.length : '';
         }
     } catch (error) {
         console.error('Erro ao carregar detalhes do grupo:', error);
-        totalAnimalsInput.value = '';
+        // Se houver erro, restaurar quantidade dos animais selecionados
+        const storageKey = 'milkingAnimals_selected';
+        const storedData = localStorage.getItem(storageKey);
+        const selectedIds = storedData ? JSON.parse(storedData) : [];
+        totalAnimalsInput.value = selectedIds.length > 0 ? selectedIds.length : '';
     }
 }
 
@@ -3316,9 +3332,8 @@ window.openMilkingAnimalsSelector = async function() {
                 return numA.localeCompare(numB, undefined, { numeric: true, sensitivity: 'base' });
             });
             
-            // Carregar seleção salva do localStorage
-            const today = new Date().toISOString().split('T')[0];
-            const storageKey = `milkingAnimals_${today}`;
+            // Carregar seleção salva do localStorage (permanente, sem data)
+            const storageKey = 'milkingAnimals_selected';
             const storedData = localStorage.getItem(storageKey);
             selectedMilkingAnimals = storedData ? JSON.parse(storedData) : [];
             
@@ -3408,10 +3423,9 @@ function updateMilkingAnimalsCount() {
     }
 }
 
-// Salvar seleção de animais para ordenha
+// Salvar seleção de animais para ordenha (permanente)
 window.saveMilkingAnimalsSelection = function() {
-    const today = new Date().toISOString().split('T')[0];
-    const storageKey = `milkingAnimals_${today}`;
+    const storageKey = 'milkingAnimals_selected';
     localStorage.setItem(storageKey, JSON.stringify(selectedMilkingAnimals));
     
     // Atualizar informação na página
@@ -3425,8 +3439,7 @@ async function loadSelectedMilkingAnimalsInfo() {
     const infoDiv = document.getElementById('selectedMilkingAnimalsInfo');
     if (!infoDiv) return;
     
-    const today = new Date().toISOString().split('T')[0];
-    const storageKey = `milkingAnimals_${today}`;
+    const storageKey = 'milkingAnimals_selected';
     const storedData = localStorage.getItem(storageKey);
     const selectedIds = storedData ? JSON.parse(storedData) : [];
     
@@ -3630,15 +3643,16 @@ async function populateVolumeAnimalSelect() {
         const storedData = localStorage.getItem(storageKey);
         const absentAnimals = storedData ? JSON.parse(storedData) : [];
         
-        // Filtrar apenas animais ativos e em lactação, e que não estão ausentes
+        // Filtrar apenas fêmeas ativas, em lactação, e que não estão ausentes
         animals
             .filter(animal => {
+                const isFemale = animal.gender === 'femea' || animal.gender === 'Fêmea' || animal.gender === 'FEMEA';
                 const isActive = animal.is_active !== 0 && animal.is_active !== '0';
                 const isLactating = !animal.status || 
                                   animal.status.toLowerCase().includes('lactação') || 
                                   animal.status.toLowerCase().includes('lactacao') ||
                                   animal.status.toLowerCase().includes('lactante');
-                return isActive && isLactating && !absentAnimals.includes(animal.id);
+                return isFemale && isActive && isLactating && !absentAnimals.includes(animal.id);
             })
             .forEach(animal => {
                 const option = document.createElement('option');
@@ -3676,8 +3690,308 @@ async function loadMilkingGroups() {
     }
 }
 
+// ==================== BUSCA RÁPIDA DE ANIMAIS ====================
+let animalSearchTimeout = null;
+let currentAnimalSearchResults = [];
+
+// Buscar animais rapidamente
+async function searchAnimals(query) {
+    if (!query || query.trim().length < 2) {
+        hideAnimalSearchResults();
+        hideAnimalSearchResultsMobile();
+        return;
+    }
+    
+    try {
+        const response = await fetch(`./api/animals.php?action=search&q=${encodeURIComponent(query.trim())}`);
+        const result = await response.json();
+        
+        if (result.success && Array.isArray(result.data)) {
+            currentAnimalSearchResults = result.data;
+            displayAnimalSearchResults(result.data);
+            displayAnimalSearchResultsMobile(result.data);
+        } else {
+            hideAnimalSearchResults();
+            hideAnimalSearchResultsMobile();
+        }
+    } catch (error) {
+        console.error('Erro ao buscar animais:', error);
+        hideAnimalSearchResults();
+        hideAnimalSearchResultsMobile();
+    }
+}
+
+// Exibir resultados da busca
+function displayAnimalSearchResults(animals) {
+    const resultsDiv = document.getElementById('animalSearchResults');
+    const resultsList = document.getElementById('animalSearchResultsList');
+    
+    if (!resultsDiv || !resultsList) return;
+    
+    if (animals.length === 0) {
+        resultsList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">Nenhum animal encontrado</div>';
+        resultsDiv.classList.remove('hidden');
+        return;
+    }
+    
+    resultsList.innerHTML = animals.map(animal => {
+        const ageDays = animal.age_days || 0;
+        const ageMonths = Math.floor(ageDays / 30);
+        const ageYears = Math.floor(ageDays / 365);
+        let ageText = '';
+        if (ageYears > 0) {
+            ageText = `${ageYears} ano${ageYears > 1 ? 's' : ''}`;
+        } else if (ageMonths > 0) {
+            ageText = `${ageMonths} mês${ageMonths > 1 ? 'es' : ''}`;
+        } else {
+            ageText = `${ageDays} dia${ageDays > 1 ? 's' : ''}`;
+        }
+        
+        const statusColor = animal.status === 'Lactante' ? 'bg-green-100 text-green-700' : 
+                           animal.status === 'Seca' ? 'bg-gray-100 text-gray-700' :
+                           'bg-blue-100 text-blue-700';
+        
+        return `
+            <button 
+                onclick="openAnimalDetails(${animal.id})" 
+                class="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+            >
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-semibold text-gray-900">${animal.animal_number || 'N/A'}</span>
+                            ${animal.name ? `<span class="text-gray-600">- ${animal.name}</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <span>${animal.breed || 'N/A'}</span>
+                            <span>•</span>
+                            <span>${ageText}</span>
+                            ${animal.status ? `<span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${animal.status}</span>` : ''}
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </div>
+            </button>
+        `;
+    }).join('');
+    
+    resultsDiv.classList.remove('hidden');
+}
+
+// Ocultar resultados da busca
+function hideAnimalSearchResults() {
+    const resultsDiv = document.getElementById('animalSearchResults');
+    if (resultsDiv) {
+        resultsDiv.classList.add('hidden');
+    }
+}
+
+// Limpar busca
+window.clearAnimalSearch = function() {
+    const searchInput = document.getElementById('quickAnimalSearch');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    if (clearBtn) {
+        clearBtn.classList.add('hidden');
+    }
+    hideAnimalSearchResults();
+    currentAnimalSearchResults = [];
+}
+
+// Abrir detalhes do animal
+window.openAnimalDetails = function(animalId) {
+    // Fechar resultados da busca
+    hideAnimalSearchResults();
+    clearAnimalSearch();
+    
+    // Abrir página de gestão de rebanho com o animal selecionado
+    window.location.href = `subs/gestao-rebanho.php?animal_id=${animalId}`;
+}
+
+// Limpar busca mobile
+window.clearAnimalSearchMobile = function() {
+    const searchInput = document.getElementById('quickAnimalSearchMobile');
+    const clearBtn = document.getElementById('clearSearchBtnMobile');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    if (clearBtn) {
+        clearBtn.classList.add('hidden');
+    }
+    const resultsDiv = document.getElementById('animalSearchResultsMobile');
+    if (resultsDiv) {
+        resultsDiv.classList.add('hidden');
+    }
+    currentAnimalSearchResults = [];
+}
+
+// Exibir resultados da busca mobile
+function displayAnimalSearchResultsMobile(animals) {
+    const resultsDiv = document.getElementById('animalSearchResultsMobile');
+    const resultsList = document.getElementById('animalSearchResultsListMobile');
+    
+    if (!resultsDiv || !resultsList) return;
+    
+    if (animals.length === 0) {
+        resultsList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">Nenhum animal encontrado</div>';
+        resultsDiv.classList.remove('hidden');
+        return;
+    }
+    
+    resultsList.innerHTML = animals.map(animal => {
+        const ageDays = animal.age_days || 0;
+        const ageMonths = Math.floor(ageDays / 30);
+        const ageYears = Math.floor(ageDays / 365);
+        let ageText = '';
+        if (ageYears > 0) {
+            ageText = `${ageYears} ano${ageYears > 1 ? 's' : ''}`;
+        } else if (ageMonths > 0) {
+            ageText = `${ageMonths} mês${ageMonths > 1 ? 'es' : ''}`;
+        } else {
+            ageText = `${ageDays} dia${ageDays > 1 ? 's' : ''}`;
+        }
+        
+        const statusColor = animal.status === 'Lactante' ? 'bg-green-100 text-green-700' : 
+                           animal.status === 'Seca' ? 'bg-gray-100 text-gray-700' :
+                           'bg-blue-100 text-blue-700';
+        
+        return `
+            <button 
+                onclick="openAnimalDetails(${animal.id})" 
+                class="w-full text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+            >
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-semibold text-gray-900">${animal.animal_number || 'N/A'}</span>
+                            ${animal.name ? `<span class="text-gray-600">- ${animal.name}</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <span>${animal.breed || 'N/A'}</span>
+                            <span>•</span>
+                            <span>${ageText}</span>
+                            ${animal.status ? `<span class="px-2 py-0.5 rounded-full text-xs ${statusColor}">${animal.status}</span>` : ''}
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </div>
+            </button>
+        `;
+    }).join('');
+    
+    resultsDiv.classList.remove('hidden');
+}
+
+// Ocultar resultados da busca mobile
+function hideAnimalSearchResultsMobile() {
+    const resultsDiv = document.getElementById('animalSearchResultsMobile');
+    if (resultsDiv) {
+        resultsDiv.classList.add('hidden');
+    }
+}
+
 // Event listeners para formulários
 document.addEventListener('DOMContentLoaded', () => {
+    // Busca rápida de animais (desktop)
+    const quickSearchInput = document.getElementById('quickAnimalSearch');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    
+    if (quickSearchInput) {
+        quickSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            if (query.length >= 2) {
+                clearSearchBtn?.classList.remove('hidden');
+                
+                // Debounce - aguardar 300ms após parar de digitar
+                clearTimeout(animalSearchTimeout);
+                animalSearchTimeout = setTimeout(() => {
+                    searchAnimals(query);
+                }, 300);
+            } else {
+                clearSearchBtn?.classList.add('hidden');
+                hideAnimalSearchResults();
+            }
+        });
+        
+        quickSearchInput.addEventListener('focus', () => {
+            const query = quickSearchInput.value.trim();
+            if (query.length >= 2 && currentAnimalSearchResults.length > 0) {
+                displayAnimalSearchResults(currentAnimalSearchResults);
+            }
+        });
+        
+        // Fechar resultados ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!quickSearchInput.contains(e.target) && 
+                !document.getElementById('animalSearchResults')?.contains(e.target)) {
+                hideAnimalSearchResults();
+            }
+        });
+        
+        // Permitir navegação com teclado
+        quickSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideAnimalSearchResults();
+                quickSearchInput.blur();
+            }
+        });
+    }
+    
+    // Busca rápida de animais (mobile)
+    const quickSearchInputMobile = document.getElementById('quickAnimalSearchMobile');
+    const clearSearchBtnMobile = document.getElementById('clearSearchBtnMobile');
+    
+    if (quickSearchInputMobile) {
+        quickSearchInputMobile.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            if (query.length >= 2) {
+                clearSearchBtnMobile?.classList.remove('hidden');
+                
+                // Debounce - aguardar 300ms após parar de digitar
+                clearTimeout(animalSearchTimeout);
+                animalSearchTimeout = setTimeout(() => {
+                    searchAnimals(query);
+                }, 300);
+            } else {
+                clearSearchBtnMobile?.classList.add('hidden');
+                hideAnimalSearchResultsMobile();
+            }
+        });
+        
+        quickSearchInputMobile.addEventListener('focus', () => {
+            const query = quickSearchInputMobile.value.trim();
+            if (query.length >= 2 && currentAnimalSearchResults.length > 0) {
+                displayAnimalSearchResultsMobile(currentAnimalSearchResults);
+            }
+        });
+        
+        // Fechar resultados ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!quickSearchInputMobile.contains(e.target) && 
+                !document.getElementById('animalSearchResultsMobile')?.contains(e.target)) {
+                hideAnimalSearchResultsMobile();
+            }
+        });
+        
+        // Permitir navegação com teclado
+        quickSearchInputMobile.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideAnimalSearchResultsMobile();
+                quickSearchInputMobile.blur();
+            }
+        });
+    }
+    
     // Event listener para o select de grupos no modal de volume geral
     const generalVolumeGroupSelect = document.getElementById('generalVolumeGroupSelect');
     if (generalVolumeGroupSelect) {
@@ -6774,12 +7088,16 @@ async function populateVolumeAnimalSelect() {
         // O método query() retorna um array diretamente, mas a API pode retornar em json.data
         const animals = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         
-        // Filtrar apenas fêmeas ativas (vacas)
+        // Filtrar apenas fêmeas ativas e em lactação (vacas lactantes)
         // is_active pode vir como número ou string
         const lactatingFemales = animals.filter(a => {
-            const isFemale = a.gender === 'femea';
+            const isFemale = a.gender === 'femea' || a.gender === 'Fêmea' || a.gender === 'FEMEA';
             const isActive = a.is_active == 1 || a.is_active === 1 || a.is_active === '1';
-            return isFemale && isActive;
+            const isLactating = !a.status || 
+                              (a.status && (a.status.toLowerCase().includes('lactação') || 
+                                           a.status.toLowerCase().includes('lactacao') ||
+                                           a.status.toLowerCase().includes('lactante')));
+            return isFemale && isActive && isLactating;
         });
         
         if (lactatingFemales.length === 0) {

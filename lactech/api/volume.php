@@ -847,6 +847,7 @@ try {
                 WHERE id IN ($placeholders) 
                 AND farm_id = 1 
                 AND is_active = 1
+                AND gender = 'femea'
                 AND (status = 'Lactante' OR status LIKE '%lacta%' OR status LIKE '%lacta%')
                 ORDER BY animal_number ASC
             ", $animalIds);
