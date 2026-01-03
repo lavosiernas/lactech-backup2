@@ -165,11 +165,12 @@ class PDF extends FPDF {
             $x_left = 15;
             $y_top = 12;
             
-            // Logo da fazenda (se existir)
+            // Logo da fazenda (se existir) - lado direito superior
             if (!empty($this->logoPath) && file_exists($this->logoPath)) {
                 try {
-                    $this->Image($this->logoPath, $x_left, $y_top - 3, 25, 0); // altura 0 = proporcional
-                    $x_left += 30; // Espaço após logo
+                    $logo_width = 40; // Largura da logo
+                    $logo_x = 195 - $logo_width; // Alinhado à direita (margem direita = 15mm, então 210-15-40 = 155)
+                    $this->Image($this->logoPath, $logo_x, $y_top - 3, $logo_width, 0); // altura 0 = proporcional
                 } catch (Exception $e) {
                     // Se houver erro ao carregar imagem, continuar sem logo
                 }
@@ -189,14 +190,11 @@ class PDF extends FPDF {
             $this->SetTextColor(75, 85, 99); // Cinza escuro
             $this->Cell(0, 6, utf8ToIso('LacTech - Sistema de Gestao Leiteira'), 0, 1, 'L');
             
-            // Container lado direito - informações do relatório
-            $x_right = 120;
-            
-            // Data de geração
-            $this->SetXY($x_right, $y_top + 4);
+            // Data de geração - no final
+            $this->SetXY($x_left, $y_top + 18);
             $this->SetFont('Arial', '', 9);
             $this->SetTextColor(107, 114, 128);
-            $this->Cell(75, 5, utf8ToIso('Gerado em: ') . date('d/m/Y H:i'), 0, 0, 'R');
+            $this->Cell(180, 5, utf8ToIso('Gerado em: ') . date('d/m/Y H:i'), 0, 0, 'R');
             
             // Linha separadora verde
             $this->SetDrawColor(16, 185, 129);

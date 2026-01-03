@@ -3850,6 +3850,24 @@ $v = time();
                                         </div>
                                     </div>
                                     
+                                    <!-- Limpeza e Backup -->
+                                    <div class="border-t border-gray-200 pt-4 mt-4">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                            <label class="text-sm font-medium text-gray-700">Limpeza e Backup</label>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mb-4">Gerencie limpeza de dados e backups do sistema.</p>
+                                        
+                                        <button type="button" onclick="openCleanupBackupPage()" class="w-full px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                            Abrir Limpeza e Backup
+                                        </button>
+                                    </div>
+                                    
                                     <!-- Ecossistema - Apps Interligados -->
                                     <div class="border-t border-gray-200 pt-4 mt-4">
                                         <div class="flex items-center gap-2 mb-4">

@@ -8209,6 +8209,20 @@ window.closeProfileOverlay = function closeProfileOverlay() {
     if (footer) footer.classList.add('hidden');
 };
 
+// ==================== LIMPEZA E BACKUP ====================
+window.openCleanupBackupPage = function openCleanupBackupPage() {
+    // Fechar modal de perfil primeiro
+    closeProfileOverlay();
+    
+    // Abrir página de limpeza e backup usando modal-loader
+    if (typeof window.openModal === 'function') {
+        window.openModal('limpeza-backup', { fullscreen: true });
+    } else {
+        // Fallback: abrir em nova aba
+        window.open('subs/limpeza-backup.php', '_blank');
+    }
+};
+
 function setupProfileChangeDetection() {
     const inputs = ['profileName', 'profilePhone', 'farmName', 'farmPhone', 'farmCNPJ', 'farmAddress', 'profileNewPassword', 'profileConfirmPassword'];
     const checkboxes = ['pushNotifications'];

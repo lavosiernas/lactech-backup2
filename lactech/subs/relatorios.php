@@ -189,6 +189,145 @@ $v = time();
     <!-- Toast Container -->
     <div id="toastContainer" class="fixed bottom-4 right-4 z-[99999]"></div>
 
+    <style>
+        /* Toast Notifications Styles */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 320px;
+            max-width: 420px;
+            pointer-events: auto;
+            transform: translateX(450px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+            background: linear-gradient(to right, #f0fdf4 0%, white 5%);
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+            background: linear-gradient(to right, #fef2f2 0%, white 5%);
+        }
+
+        .toast.warning {
+            border-left-color: #f59e0b;
+            background: linear-gradient(to right, #fffbeb 0%, white 5%);
+        }
+
+        .toast.info {
+            border-left-color: #3b82f6;
+            background: linear-gradient(to right, #eff6ff 0%, white 5%);
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+
+        .toast.warning .toast-icon {
+            color: #f59e0b;
+        }
+
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+
+        .toast-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #111827;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-top: -4px;
+            margin-right: -4px;
+        }
+
+        .toast-close:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #374151;
+        }
+
+        .toast-close:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 640px) {
+            #toastContainer {
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: none;
+                width: 100%;
+            }
+        }
+    </style>
+
     <script src="../assets/js/toast-notifications.js?v=<?php echo $v; ?>"></script>
     <script>
         const API_BASE = '../api/reports.php';
@@ -243,9 +382,9 @@ $v = time();
         }
 
         async function uploadLogo() {
-            if (!selectedLogoFile) {
+                if (!selectedLogoFile) {
                 if (typeof showErrorToast === 'function') {
-                    showErrorToast('Selecione um arquivo primeiro');
+                    showErrorToast('Por favor, selecione uma imagem antes de enviar.', 'Arquivo não selecionado');
                 } else {
                     alert('Selecione um arquivo primeiro');
                 }
@@ -270,7 +409,7 @@ $v = time();
 
                 if (result.success) {
                     if (typeof showSuccessToast === 'function') {
-                        showSuccessToast('Logo enviada com sucesso!');
+                        showSuccessToast('Logo da fazenda salva e pronta para uso nos relatórios!', 'Logo enviada');
                     } else {
                         alert('Logo enviada com sucesso!');
                     }
@@ -280,7 +419,7 @@ $v = time();
                     uploadBtn.disabled = true;
                 } else {
                     if (typeof showErrorToast === 'function') {
-                        showErrorToast(result.error || 'Erro ao enviar logo');
+                        showErrorToast(result.error || 'Não foi possível enviar a logo. Verifique o arquivo e tente novamente.', 'Erro ao enviar logo');
                     } else {
                         alert(result.error || 'Erro ao enviar logo');
                     }
@@ -290,7 +429,7 @@ $v = time();
             } catch (error) {
                 console.error('Erro ao enviar logo:', error);
                 if (typeof showErrorToast === 'function') {
-                    showErrorToast('Erro ao enviar logo');
+                    showErrorToast('Ocorreu um erro ao processar o envio. Tente novamente.', 'Erro ao enviar logo');
                 } else {
                     alert('Erro ao enviar logo');
                 }
@@ -313,7 +452,7 @@ $v = time();
 
                 if (result.success) {
                     if (typeof showSuccessToast === 'function') {
-                        showSuccessToast('Logo removida com sucesso!');
+                        showSuccessToast('Logo removida. Os próximos relatórios não exibirão logo.', 'Logo removida');
                     } else {
                         alert('Logo removida com sucesso!');
                     }
@@ -326,7 +465,7 @@ $v = time();
                     selectedLogoFile = null;
                 } else {
                     if (typeof showErrorToast === 'function') {
-                        showErrorToast(result.error || 'Erro ao remover logo');
+                        showErrorToast(result.error || 'Não foi possível remover a logo. Tente novamente.', 'Erro ao remover logo');
                     } else {
                         alert(result.error || 'Erro ao remover logo');
                     }
@@ -334,7 +473,7 @@ $v = time();
             } catch (error) {
                 console.error('Erro ao remover logo:', error);
                 if (typeof showErrorToast === 'function') {
-                    showErrorToast('Erro ao remover logo');
+                    showErrorToast('Ocorreu um erro ao processar a remoção. Tente novamente.', 'Erro ao remover logo');
                 } else {
                     alert('Erro ao remover logo');
                 }
