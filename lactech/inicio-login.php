@@ -44,7 +44,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="LacTech">
@@ -299,8 +299,8 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
             <!-- Logo e título no topo -->
             <div class="text-center mb-8">
                 <img src="https://i.postimg.cc/vmrkgDcB/lactech.png" alt="Logo Fazenda" class="w-16 h-16 rounded-2xl shadow-lg object-cover mx-auto mb-4" loading="eager" width="64" height="64">
-                <h1 class="text-2xl font-bold text-slate-900 mb-1">LacTech</h1>
-                <p class="text-slate-600 text-sm mb-6">Sistema de Gestão Leiteira</p>
+                    <h1 class="text-2xl font-bold text-slate-900 mb-1">LacTech by Kron</h1>
+                    <p class="text-slate-600 text-sm mb-6">Sistema de Gestão Leiteira</p>
                 <h2 class="text-2xl font-bold text-slate-900 mb-2">Bem-vindo de volta!</h2>
                 <p class="text-slate-600">Entre na sua conta da fazenda</p>
             </div>
@@ -397,7 +397,7 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-4xl font-bold mb-4">LacTech</h1>
+                    <h1 class="text-4xl font-bold mb-4">LacTech by Kron</h1>
                     <p class="text-xl text-white/90">Sistema de Controle Leiteiro</p>
                 </div>
             </div>
