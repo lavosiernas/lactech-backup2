@@ -98,9 +98,11 @@ try {
                     fr.*,
                     a.animal_number,
                     a.name as animal_name,
+                    g.group_name,
                     u.name as recorded_by_name
                 FROM feed_records fr
                 LEFT JOIN animals a ON fr.animal_id = a.id
+                LEFT JOIN animal_groups g ON fr.group_id = g.id
                 LEFT JOIN users u ON fr.recorded_by = u.id
                 WHERE fr.farm_id = ? 
                 AND fr.feed_date BETWEEN ? AND ?
@@ -112,7 +114,7 @@ try {
                 $params[] = $animal_id;
             }
             
-            $sql .= " ORDER BY fr.feed_date DESC, fr.shift, a.animal_number";
+            $sql .= " ORDER BY fr.feed_date DESC, fr.shift, COALESCE(g.group_name, a.animal_number)";
             
             $results = $db->query($sql, $params);
             sendResponse($results ?? []);
@@ -130,9 +132,11 @@ try {
                     fr.*,
                     a.animal_number,
                     a.name as animal_name,
+                    g.group_name,
                     u.name as recorded_by_name
                 FROM feed_records fr
                 LEFT JOIN animals a ON fr.animal_id = a.id
+                LEFT JOIN animal_groups g ON fr.group_id = g.id
                 LEFT JOIN users u ON fr.recorded_by = u.id
                 WHERE fr.id = ? AND fr.farm_id = ?
             ", [$id, $farm_id]);
@@ -145,8 +149,10 @@ try {
             break;
             
         case 'create':
-            // Criar novo registro
+            // Criar novo registro (suporta individual ou lote)
+            $record_type = $input['record_type'] ?? 'individual';
             $animal_id = $input['animal_id'] ?? null;
+            $group_id = $input['group_id'] ?? null;
             $feed_date = $input['feed_date'] ?? date('Y-m-d');
             $shift = $input['shift'] ?? 'unico';
             $concentrate_kg = floatval($input['concentrate_kg'] ?? 0);
@@ -159,9 +165,17 @@ try {
             $cost_per_kg = $input['cost_per_kg'] ? floatval($input['cost_per_kg']) : null;
             $notes = $input['notes'] ?? null;
             $automatic = intval($input['automatic'] ?? 0);
+            $animal_count = isset($input['animal_count']) ? intval($input['animal_count']) : null;
             
-            if (!$animal_id) {
-                sendResponse(null, 'Animal é obrigatório');
+            // Validação baseada no tipo de registro
+            if ($record_type === 'group') {
+                if (!$group_id) {
+                    sendResponse(null, 'Lote é obrigatório para registro por lote');
+                }
+            } else {
+                if (!$animal_id) {
+                    sendResponse(null, 'Animal é obrigatório para registro individual');
+                }
             }
             
             // Calcular custo total
@@ -173,14 +187,14 @@ try {
             
             $sql = "
                 INSERT INTO feed_records (
-                    animal_id, feed_date, shift, concentrate_kg, roughage_kg, 
+                    animal_id, group_id, record_type, animal_count, feed_date, shift, concentrate_kg, roughage_kg, 
                     silage_kg, hay_kg, feed_type, feed_brand, protein_percentage,
                     cost_per_kg, total_cost, automatic, notes, recorded_by, farm_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
             
             $params = [
-                $animal_id, $feed_date, $shift, $concentrate_kg, $roughage_kg,
+                $animal_id, $group_id, $record_type, $animal_count, $feed_date, $shift, $concentrate_kg, $roughage_kg,
                 $silage_kg, $hay_kg, $feed_type, $feed_brand, $protein_percentage,
                 $cost_per_kg, $total_cost, $automatic, $notes, $user_id, $farm_id
             ];
@@ -197,9 +211,11 @@ try {
                         fr.*,
                         a.animal_number,
                         a.name as animal_name,
+                        g.group_name,
                         u.name as recorded_by_name
                     FROM feed_records fr
                     LEFT JOIN animals a ON fr.animal_id = a.id
+                    LEFT JOIN animal_groups g ON fr.group_id = g.id
                     LEFT JOIN users u ON fr.recorded_by = u.id
                     WHERE fr.id = ?
                 ", [$newId]);
@@ -223,7 +239,10 @@ try {
                 sendResponse(null, 'Registro não encontrado');
             }
             
+            $record_type = $input['record_type'] ?? null;
             $animal_id = $input['animal_id'] ?? null;
+            $group_id = $input['group_id'] ?? null;
+            $animal_count = isset($input['animal_count']) ? intval($input['animal_count']) : null;
             $feed_date = $input['feed_date'] ?? null;
             $shift = $input['shift'] ?? null;
             $concentrate_kg = isset($input['concentrate_kg']) ? floatval($input['concentrate_kg']) : null;
@@ -241,9 +260,21 @@ try {
             $updates = [];
             $params = [];
             
+            if ($record_type !== null) {
+                $updates[] = "record_type = ?";
+                $params[] = $record_type;
+            }
             if ($animal_id !== null) {
                 $updates[] = "animal_id = ?";
                 $params[] = $animal_id;
+            }
+            if ($group_id !== null) {
+                $updates[] = "group_id = ?";
+                $params[] = $group_id;
+            }
+            if ($animal_count !== null) {
+                $updates[] = "animal_count = ?";
+                $params[] = $animal_count;
             }
             if ($feed_date !== null) {
                 $updates[] = "feed_date = ?";
@@ -328,9 +359,11 @@ try {
                         fr.*,
                         a.animal_number,
                         a.name as animal_name,
+                        g.group_name,
                         u.name as recorded_by_name
                     FROM feed_records fr
                     LEFT JOIN animals a ON fr.animal_id = a.id
+                    LEFT JOIN animal_groups g ON fr.group_id = g.id
                     LEFT JOIN users u ON fr.recorded_by = u.id
                     WHERE fr.id = ?
                 ", [$id]);

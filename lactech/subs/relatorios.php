@@ -56,6 +56,67 @@ $v = time();
 
         <!-- Content -->
         <div class="container mx-auto px-6 py-6">
+            <!-- Configuração de Logo -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Configuração da Logo da Fazenda</h2>
+                <p class="text-sm text-gray-600 mb-4">A logo será exibida nos relatórios em PDF. Formatos JPG/JPEG terão o fundo removido automaticamente.</p>
+                
+                <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <!-- Preview da Logo -->
+                    <div class="flex-shrink-0">
+                        <div class="w-32 h-32 border-2 border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
+                            <img id="logo-preview" src="" alt="Logo da Fazenda" class="max-w-full max-h-full object-contain hidden">
+                            <div id="logo-placeholder" class="text-gray-400 text-center p-4">
+                                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-xs">Nenhuma logo</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Controls -->
+                    <div class="flex-1">
+                        <form id="logo-upload-form" enctype="multipart/form-data" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Selecione uma imagem (JPG, JPEG ou PNG)
+                                </label>
+                                <input 
+                                    type="file" 
+                                    id="logo-file-input" 
+                                    name="logo" 
+                                    accept="image/jpeg,image/jpg,image/png"
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    onchange="handleLogoFileSelect(event)"
+                                >
+                                <p class="mt-1 text-xs text-gray-500">Tamanho máximo: 5MB. JPG/JPEG terá fundo removido automaticamente.</p>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button 
+                                    type="button"
+                                    onclick="uploadLogo()" 
+                                    id="upload-logo-btn"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled
+                                >
+                                    Enviar Logo
+                                </button>
+                                <button 
+                                    type="button"
+                                    onclick="deleteLogo()" 
+                                    id="delete-logo-btn"
+                                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium hidden"
+                                >
+                                    Remover Logo
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- Seleção de Relatório -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
                 <h2 class="text-lg font-bold text-gray-900 mb-4">Selecione o Tipo de Relatório</h2>
@@ -131,14 +192,154 @@ $v = time();
     <script src="../assets/js/toast-notifications.js?v=<?php echo $v; ?>"></script>
     <script>
         const API_BASE = '../api/reports.php';
+        const LOGO_API_BASE = '../api/farm_logo.php';
         let currentReportType = null;
         let reportData = null;
+        let selectedLogoFile = null;
 
         // Carregar tipos de relatórios
         document.addEventListener('DOMContentLoaded', () => {
             loadReportTypes();
             setDefaultDates();
+            loadCurrentLogo();
         });
+
+        // Funções para gerenciamento de logo
+        function handleLogoFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            selectedLogoFile = file;
+            document.getElementById('upload-logo-btn').disabled = false;
+            
+            // Preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('logo-preview');
+                const placeholder = document.getElementById('logo-placeholder');
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function loadCurrentLogo() {
+            try {
+                const response = await fetch(`${LOGO_API_BASE}?action=get`);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.logo_path) {
+                    const preview = document.getElementById('logo-preview');
+                    const placeholder = document.getElementById('logo-placeholder');
+                    preview.src = '../' + result.data.logo_path + '?t=' + Date.now();
+                    preview.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                    document.getElementById('delete-logo-btn').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar logo:', error);
+            }
+        }
+
+        async function uploadLogo() {
+            if (!selectedLogoFile) {
+                if (typeof showErrorToast === 'function') {
+                    showErrorToast('Selecione um arquivo primeiro');
+                } else {
+                    alert('Selecione um arquivo primeiro');
+                }
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('logo', selectedLogoFile);
+            formData.append('action', 'upload');
+
+            try {
+                const uploadBtn = document.getElementById('upload-logo-btn');
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Enviando...';
+
+                const response = await fetch(LOGO_API_BASE, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (typeof showSuccessToast === 'function') {
+                        showSuccessToast('Logo enviada com sucesso!');
+                    } else {
+                        alert('Logo enviada com sucesso!');
+                    }
+                    await loadCurrentLogo();
+                    document.getElementById('logo-file-input').value = '';
+                    selectedLogoFile = null;
+                    uploadBtn.disabled = true;
+                } else {
+                    if (typeof showErrorToast === 'function') {
+                        showErrorToast(result.error || 'Erro ao enviar logo');
+                    } else {
+                        alert(result.error || 'Erro ao enviar logo');
+                    }
+                    uploadBtn.disabled = false;
+                }
+                uploadBtn.textContent = 'Enviar Logo';
+            } catch (error) {
+                console.error('Erro ao enviar logo:', error);
+                if (typeof showErrorToast === 'function') {
+                    showErrorToast('Erro ao enviar logo');
+                } else {
+                    alert('Erro ao enviar logo');
+                }
+                document.getElementById('upload-logo-btn').disabled = false;
+                document.getElementById('upload-logo-btn').textContent = 'Enviar Logo';
+            }
+        }
+
+        async function deleteLogo() {
+            if (!confirm('Tem certeza que deseja remover a logo?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${LOGO_API_BASE}?action=delete`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (typeof showSuccessToast === 'function') {
+                        showSuccessToast('Logo removida com sucesso!');
+                    } else {
+                        alert('Logo removida com sucesso!');
+                    }
+                    const preview = document.getElementById('logo-preview');
+                    const placeholder = document.getElementById('logo-placeholder');
+                    preview.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                    document.getElementById('delete-logo-btn').classList.add('hidden');
+                    document.getElementById('logo-file-input').value = '';
+                    selectedLogoFile = null;
+                } else {
+                    if (typeof showErrorToast === 'function') {
+                        showErrorToast(result.error || 'Erro ao remover logo');
+                    } else {
+                        alert(result.error || 'Erro ao remover logo');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao remover logo:', error);
+                if (typeof showErrorToast === 'function') {
+                    showErrorToast('Erro ao remover logo');
+                } else {
+                    alert('Erro ao remover logo');
+                }
+            }
+        }
 
         function setDefaultDates() {
             const today = new Date();
@@ -462,6 +663,52 @@ $v = time();
                     
                     summaryHtml += '</div>';
                     contentDiv.innerHTML = summaryHtml;
+                    break;
+                    
+                case 'feeding':
+                    if (data.lots && data.lots.length > 0) {
+                        let html = '<div class="mb-4"><h3 class="font-bold text-gray-900 mb-2">Resumo</h3>';
+                        if (data.summary) {
+                            html += `<p class="text-sm text-gray-700"><strong>Total de Lotes:</strong> ${data.summary.lots_count || 0}</p>`;
+                            html += `<p class="text-sm text-gray-700"><strong>Custo Total:</strong> R$ ${parseFloat(data.summary.total_cost || 0).toFixed(2)}</p>`;
+                        }
+                        html += '</div>';
+                        html += '<table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr>';
+                        html += '<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lote</th>';
+                        html += '<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nº Animais</th>';
+                        html += '<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peso Médio (kg)</th>';
+                        html += '<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ideal Concentrado (kg)</th>';
+                        html += '<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ideal Volumoso (kg)</th>';
+                        html += '<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ideal Silagem (kg)</th>';
+                        html += '<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ideal MS Total (kg)</th>';
+                        html += '<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Custo Total (R$)</th>';
+                        html += '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
+                        
+                        data.lots.forEach(lot => {
+                            html += '<tr>';
+                            html += `<td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${lot.group_name || 'N/A'}${lot.group_code ? ' (' + lot.group_code + ')' : ''}</td>`;
+                            html += `<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${lot.animal_count || 0}</td>`;
+                            html += `<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${lot.avg_weight_kg ? parseFloat(lot.avg_weight_kg).toFixed(2) : '-'}</td>`;
+                            if (lot.ideal) {
+                                html += `<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">${parseFloat(lot.ideal.concentrate_kg || 0).toFixed(2)}</td>`;
+                                html += `<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">${parseFloat(lot.ideal.roughage_kg || 0).toFixed(2)}</td>`;
+                                html += `<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">${parseFloat(lot.ideal.silage_kg || 0).toFixed(2)}</td>`;
+                                html += `<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900 font-semibold">${parseFloat(lot.ideal.ms_total_kg || 0).toFixed(2)}</td>`;
+                            } else {
+                                html += '<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-400">-</td>';
+                                html += '<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-400">-</td>';
+                                html += '<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-400">-</td>';
+                                html += '<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-400">-</td>';
+                            }
+                            html += `<td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">R$ ${parseFloat(lot.total_cost || 0).toFixed(2)}</td>`;
+                            html += '</tr>';
+                        });
+                        
+                        html += '</tbody></table>';
+                        contentDiv.innerHTML = html;
+                    } else {
+                        contentDiv.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhum registro de lote encontrado para o período selecionado</p>';
+                    }
                     break;
                     
                 default:

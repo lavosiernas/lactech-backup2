@@ -149,6 +149,24 @@ try {
             ]);
             
             $group_id = $conn->lastInsertId();
+            
+            // Se houver animais para adicionar, movê-los para o grupo
+            if (!empty($data['animal_ids']) && is_array($data['animal_ids'])) {
+                $animal_ids = array_map('intval', $data['animal_ids']);
+                $animal_ids = array_filter($animal_ids);
+                
+                if (!empty($animal_ids)) {
+                    $placeholders = implode(',', array_fill(0, count($animal_ids), '?'));
+                    $stmt = $conn->prepare("
+                        UPDATE animals 
+                        SET current_group_id = ? 
+                        WHERE id IN ($placeholders) AND farm_id = ? AND is_active = 1
+                    ");
+                    $params = array_merge([$group_id], $animal_ids, [$farm_id]);
+                    $stmt->execute($params);
+                }
+            }
+            
             sendResponse(['id' => $group_id, 'message' => 'Grupo criado com sucesso']);
             break;
             
@@ -198,6 +216,25 @@ try {
             $sql = "UPDATE animal_groups SET " . implode(', ', $updateFields) . " WHERE id = ? AND farm_id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->execute($updateParams);
+            
+            // Se houver animais para atualizar, movê-los para o grupo
+            if (isset($data['animal_ids']) && is_array($data['animal_ids'])) {
+                $animal_ids = array_map('intval', $data['animal_ids']);
+                $animal_ids = array_filter($animal_ids);
+                
+                if (!empty($animal_ids)) {
+                    $placeholders = implode(',', array_fill(0, count($animal_ids), '?'));
+                    
+                    // Mover animais selecionados para este grupo
+                    $stmt = $conn->prepare("
+                        UPDATE animals 
+                        SET current_group_id = ? 
+                        WHERE id IN ($placeholders) AND farm_id = ? AND is_active = 1
+                    ");
+                    $params = array_merge([$id], $animal_ids, [$farm_id]);
+                    $stmt->execute($params);
+                }
+            }
             
             sendResponse(['id' => $id, 'message' => 'Grupo atualizado com sucesso']);
             break;
@@ -407,6 +444,109 @@ try {
             $animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             sendResponse($animals);
+            break;
+            
+        // ==========================================
+        // OBTER ANIMAIS DO GRUPO COM PESOS
+        // ==========================================
+        case 'animals_with_weights':
+            $group_id = $_GET['group_id'] ?? null;
+            if (!$group_id) {
+                sendResponse(null, 'ID do grupo não fornecido', 400);
+            }
+            
+            $stmt = $conn->prepare("
+                SELECT 
+                    a.id,
+                    a.animal_number,
+                    a.name,
+                    a.breed,
+                    a.gender,
+                    a.birth_date,
+                    a.status,
+                    a.health_status,
+                    a.reproductive_status,
+                    DATEDIFF(CURDATE(), a.birth_date) as age_days,
+                    (
+                        SELECT weight_kg 
+                        FROM animal_weights 
+                        WHERE animal_id = a.id AND farm_id = ?
+                        ORDER BY weighing_date DESC, id DESC 
+                        LIMIT 1
+                    ) as weight_kg,
+                    (
+                        SELECT weighing_date 
+                        FROM animal_weights 
+                        WHERE animal_id = a.id AND farm_id = ?
+                        ORDER BY weighing_date DESC, id DESC 
+                        LIMIT 1
+                    ) as last_weighing_date
+                FROM animals a
+                WHERE a.current_group_id = ? AND a.farm_id = ? AND a.is_active = 1
+                ORDER BY a.animal_number
+            ");
+            $stmt->execute([$farm_id, $farm_id, $group_id, $farm_id]);
+            $animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            sendResponse($animals);
+            break;
+            
+        // ==========================================
+        // SALVAR PESO DO ANIMAL
+        // ==========================================
+        case 'save_animal_weight':
+            $data = $input;
+            
+            if (empty($data['animal_id'])) {
+                sendResponse(null, 'animal_id é obrigatório', 400);
+            }
+            
+            if (!isset($data['weight_kg']) || $data['weight_kg'] === '' || $data['weight_kg'] === null) {
+                sendResponse(null, 'weight_kg é obrigatório', 400);
+            }
+            
+            $weight_kg = floatval($data['weight_kg']);
+            if ($weight_kg <= 0) {
+                sendResponse(null, 'weight_kg deve ser maior que zero', 400);
+            }
+            
+            $weighing_date = $data['weighing_date'] ?? date('Y-m-d');
+            $weighing_type = $data['weighing_type'] ?? 'normal';
+            $notes = $data['notes'] ?? null;
+            
+            // Verificar se animal existe e pertence à fazenda
+            $checkStmt = $conn->prepare("SELECT id FROM animals WHERE id = ? AND farm_id = ? AND is_active = 1");
+            $checkStmt->execute([$data['animal_id'], $farm_id]);
+            if (!$checkStmt->fetch()) {
+                sendResponse(null, 'Animal não encontrado', 404);
+            }
+            
+            // Inserir peso na tabela animal_weights
+            $stmt = $conn->prepare("
+                INSERT INTO animal_weights 
+                (animal_id, weight_kg, weighing_date, weighing_type, notes, recorded_by, farm_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ");
+            
+            $stmt->execute([
+                $data['animal_id'],
+                $weight_kg,
+                $weighing_date,
+                $weighing_type,
+                $notes,
+                $user_id,
+                $farm_id
+            ]);
+            
+            $weight_id = $conn->lastInsertId();
+            
+            sendResponse([
+                'id' => $weight_id,
+                'animal_id' => $data['animal_id'],
+                'weight_kg' => $weight_kg,
+                'weighing_date' => $weighing_date,
+                'message' => 'Peso registrado com sucesso'
+            ]);
             break;
             
         default:

@@ -277,21 +277,71 @@ try {
                     break;
                     
                 case 'feeding':
+                    // Buscar registros agrupados por lote
                     $stmt = $conn->prepare("
                         SELECT 
-                            fr.*,
-                            a.animal_number,
-                            a.name as animal_name
+                            fr.group_id,
+                            g.group_name,
+                            g.group_code,
+                            COUNT(DISTINCT fr.id) as records_count,
+                            SUM(fr.concentrate_kg) as total_concentrate,
+                            SUM(fr.roughage_kg) as total_roughage,
+                            SUM(fr.silage_kg) as total_silage,
+                            SUM(fr.hay_kg) as total_hay,
+                            SUM(fr.total_cost) as total_cost
                         FROM feed_records fr
-                        LEFT JOIN animals a ON fr.animal_id = a.id
+                        LEFT JOIN animal_groups g ON fr.group_id = g.id
                         WHERE fr.farm_id = ? 
                         AND fr.feed_date BETWEEN ? AND ?
-                        ORDER BY fr.feed_date DESC
+                        AND fr.record_type = 'group'
+                        AND fr.group_id IS NOT NULL
+                        GROUP BY fr.group_id, g.group_name, g.group_code
+                        ORDER BY g.group_name
                     ");
                     $stmt->execute([$farm_id, $date_from, $date_to]);
-                    $data['records'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     
-                    // Resumo
+                    // Para cada lote, buscar informações adicionais (peso, número de animais, ideal)
+                    require_once __DIR__ . '/../includes/FeedingIntelligence.class.php';
+                    $fi = new FeedingIntelligence($farm_id);
+                    
+                    $data['lots'] = [];
+                    foreach ($groups as $group) {
+                        $group_id = $group['group_id'];
+                        
+                        // Buscar peso médio e número de animais
+                        $weightData = $fi->getGroupAverageWeight($group_id);
+                        
+                        // Buscar número atual de animais no grupo
+                        $countStmt = $conn->prepare("
+                            SELECT COUNT(*) as count
+                            FROM animals
+                            WHERE current_group_id = ? AND farm_id = ? AND is_active = 1
+                        ");
+                        $countStmt->execute([$group_id, $farm_id]);
+                        $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+                        $animal_count = (int)($countResult['count'] ?? 0);
+                        
+                        // Calcular alimentação ideal
+                        $idealData = $fi->calculateIdealFeedForGroup($group_id, date('Y-m-d'));
+                        
+                        $data['lots'][] = [
+                            'group_id' => $group_id,
+                            'group_name' => $group['group_name'],
+                            'group_code' => $group['group_code'],
+                            'animal_count' => $animal_count,
+                            'avg_weight_kg' => $weightData ? $weightData['avg_weight_kg'] : null,
+                            'records_count' => (int)$group['records_count'],
+                            'total_concentrate' => (float)$group['total_concentrate'],
+                            'total_roughage' => (float)$group['total_roughage'],
+                            'total_silage' => (float)$group['total_silage'],
+                            'total_hay' => (float)$group['total_hay'],
+                            'total_cost' => (float)$group['total_cost'],
+                            'ideal' => $idealData['success'] && isset($idealData['ideal']) ? $idealData['ideal'] : null
+                        ];
+                    }
+                    
+                    // Resumo geral
                     $stmt = $conn->prepare("
                         SELECT 
                             SUM(concentrate_kg) as total_concentrate,
@@ -299,7 +349,7 @@ try {
                             SUM(silage_kg) as total_silage,
                             SUM(hay_kg) as total_hay,
                             SUM(total_cost) as total_cost,
-                            COUNT(DISTINCT animal_id) as animals_count
+                            COUNT(DISTINCT CASE WHEN record_type = 'group' THEN group_id ELSE NULL END) as lots_count
                         FROM feed_records
                         WHERE farm_id = ? 
                         AND feed_date BETWEEN ? AND ?

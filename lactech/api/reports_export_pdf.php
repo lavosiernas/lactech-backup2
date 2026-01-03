@@ -58,14 +58,24 @@ $db = Database::getInstance();
 $conn = $db->getConnection();
 $farm_id = $_SESSION['farm_id'] ?? 1;
 
-// Buscar nome da fazenda
+// Buscar nome da fazenda e logo
 $farm_name = 'Fazenda';
+$logo_path = ''; // Sem logo padrão - só usar logo da fazenda se existir
 try {
-    $stmt = $conn->prepare("SELECT name FROM farms WHERE id = ?");
+    $stmt = $conn->prepare("SELECT name, logo_path FROM farms WHERE id = ?");
     $stmt->execute([$farm_id]);
     $farm_data = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($farm_data && !empty($farm_data['name'])) {
-        $farm_name = $farm_data['name'];
+    if ($farm_data) {
+        if (!empty($farm_data['name'])) {
+            $farm_name = $farm_data['name'];
+        }
+        // Se houver logo da fazenda, usar ela
+        if (!empty($farm_data['logo_path'])) {
+            $farm_logo_path = __DIR__ . '/../' . $farm_data['logo_path'];
+            if (file_exists($farm_logo_path)) {
+                $logo_path = $farm_logo_path;
+            }
+        }
     }
 } catch (Exception $e) {
     // Usar nome padrão se houver erro
@@ -80,9 +90,6 @@ $filters = json_decode($_GET['filters'] ?? '[]', true);
 // Validar e normalizar datas
 $date_from = date('Y-m-d', strtotime($date_from));
 $date_to = date('Y-m-d', strtotime($date_to));
-
-// Caminho da logo
-$logo_path = __DIR__ . '/../assets/img/lactech-logo.png';
 
 // Função melhorada para converter UTF-8
 function utf8ToIso($text) {
@@ -157,6 +164,16 @@ class PDF extends FPDF {
             // Posicionamento inicial
             $x_left = 15;
             $y_top = 12;
+            
+            // Logo da fazenda (se existir)
+            if (!empty($this->logoPath) && file_exists($this->logoPath)) {
+                try {
+                    $this->Image($this->logoPath, $x_left, $y_top - 3, 25, 0); // altura 0 = proporcional
+                    $x_left += 30; // Espaço após logo
+                } catch (Exception $e) {
+                    // Se houver erro ao carregar imagem, continuar sem logo
+                }
+            }
             
             // Nome da Fazenda - em preto, grande
             if (!empty($this->farmName)) {
@@ -573,37 +590,69 @@ switch ($report_type) {
         break;
         
     case 'feeding':
-        $pdf->SectionTitle('Registros de Alimentacao');
+        require_once __DIR__ . '/../includes/FeedingIntelligence.class.php';
+        $fi = new FeedingIntelligence($farm_id);
         
-        $header = ['Data', 'Animal', 'Concentrado (kg)', 'Volumoso (kg)', 'Custo (R$)'];
-        $w = [32, 55, 38, 38, 27];
-        $pdf->TableHeader($header, $w);
+        $pdf->SectionTitle('Relatorio de Alimentacao por Lote');
         
+        // Buscar lotes
         $stmt = $conn->prepare("
             SELECT 
-                fr.feed_date,
-                CONCAT(a.animal_number, ' - ', COALESCE(a.name, '')) as animal,
-                fr.concentrate_kg,
-                fr.roughage_kg,
-                fr.total_cost
+                fr.group_id,
+                g.group_name,
+                g.group_code,
+                SUM(fr.total_cost) as total_cost
             FROM feed_records fr
-            LEFT JOIN animals a ON fr.animal_id = a.id
+            LEFT JOIN animal_groups g ON fr.group_id = g.id
             WHERE fr.farm_id = ? 
             AND DATE(fr.feed_date) >= ? 
             AND DATE(fr.feed_date) <= ?
-            ORDER BY fr.feed_date DESC
-            LIMIT 100
+            AND fr.record_type = 'group'
+            AND fr.group_id IS NOT NULL
+            GROUP BY fr.group_id, g.group_name, g.group_code
+            ORDER BY g.group_name
         ");
         $stmt->execute([$farm_id, $date_from, $date_to]);
+        $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $pdf->TableRow([
-                date('d/m/Y', strtotime($row['feed_date'])),
-                mb_substr($row['animal'], 0, 30),
-                number_format($row['concentrate_kg'], 2, ',', '.'),
-                number_format($row['roughage_kg'], 2, ',', '.'),
-                'R$ ' . number_format($row['total_cost'], 2, ',', '.')
-            ], $w);
+        if (count($groups) > 0) {
+            $header = ['Lote', 'N.Animais', 'Peso Med. (kg)', 'Ideal MS (kg)', 'Custo (R$)'];
+            $w = [50, 20, 28, 32, 30];
+            $pdf->TableHeader($header, $w);
+            
+            foreach ($groups as $group) {
+                $group_id = $group['group_id'];
+                
+                // Buscar peso e número de animais
+                $weightData = $fi->getGroupAverageWeight($group_id);
+                $countStmt = $conn->prepare("
+                    SELECT COUNT(*) as count
+                    FROM animals
+                    WHERE current_group_id = ? AND farm_id = ? AND is_active = 1
+                ");
+                $countStmt->execute([$group_id, $farm_id]);
+                $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+                $animal_count = (int)($countResult['count'] ?? 0);
+                
+                // Calcular ideal
+                $idealData = $fi->calculateIdealFeedForGroup($group_id, date('Y-m-d'));
+                $idealMs = $idealData['success'] && isset($idealData['ideal']['ms_total_kg']) 
+                    ? $idealData['ideal']['ms_total_kg'] 
+                    : null;
+                
+                $groupName = $group['group_name'] . ($group['group_code'] ? ' (' . $group['group_code'] . ')' : '');
+                
+                $pdf->TableRow([
+                    mb_substr($groupName, 0, 35),
+                    (string)$animal_count,
+                    $weightData ? number_format($weightData['avg_weight_kg'], 2, ',', '.') : '-',
+                    $idealMs ? number_format($idealMs, 2, ',', '.') : '-',
+                    'R$ ' . number_format($group['total_cost'], 2, ',', '.')
+                ], $w);
+            }
+        } else {
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell(0, 8, utf8ToIso('Nenhum registro de lote encontrado para o periodo selecionado.'), 0, 1, 'L');
         }
         break;
         

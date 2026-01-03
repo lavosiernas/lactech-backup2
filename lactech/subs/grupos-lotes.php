@@ -195,6 +195,16 @@ $v = time();
                         <label class="block text-sm font-medium text-gray-700 mb-1">Protocolo de Alimentação</label>
                         <textarea id="group-form-feed-protocol" name="feed_protocol" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"></textarea>
                     </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Animais do Grupo</label>
+                        <div class="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto bg-gray-50">
+                            <div id="group-form-animals-list" class="space-y-2">
+                                <p class="text-sm text-gray-500 text-center py-4">Carregando animais...</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Selecione os animais que deseja adicionar ao grupo</p>
+                    </div>
 
                     <div class="flex gap-3 pt-4 border-t border-gray-200">
                         <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-violet-600 to-violet-700 text-white rounded-lg hover:from-violet-700 hover:to-violet-800 transition-all font-medium">
@@ -275,6 +285,8 @@ $v = time();
         let currentEditId = null;
         let selectedAnimals = [];
         let currentGroupId = null;
+        let allAnimalsList = [];
+        let groupFormSelectedAnimals = [];
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
@@ -357,14 +369,95 @@ $v = time();
             }
         }
 
+        // Carregar lista de animais para o formulário
+        async function loadAnimalsForForm(isEditing = false, currentGroupId = null) {
+            try {
+                let animals = [];
+                let animalsInGroup = [];
+                
+                if (isEditing && currentGroupId) {
+                    // Se estiver editando, buscar animais do grupo primeiro
+                    const groupAnimalsResponse = await fetch(`${API_BASE}?action=animals&group_id=${currentGroupId}`);
+                    const groupAnimalsResult = await groupAnimalsResponse.json();
+                    if (groupAnimalsResult.success && groupAnimalsResult.data) {
+                        animalsInGroup = groupAnimalsResult.data.map(a => a.id);
+                        groupFormSelectedAnimals = [...animalsInGroup];
+                    }
+                    
+                    // Buscar todos os animais
+                    const response = await fetch(`../api/herd_management.php?action=animals_list&limit=1000`);
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.animals) {
+                        animals = result.data.animals;
+                    }
+                } else {
+                    // Se for novo grupo, mostrar apenas animais sem grupo
+                    const response = await fetch(`${API_BASE}?action=animals_without_group`);
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        animals = result.data;
+                    }
+                    groupFormSelectedAnimals = [];
+                }
+                
+                allAnimalsList = animals;
+                renderAnimalsCheckboxes(animals, animalsInGroup);
+            } catch (error) {
+                console.error('Erro ao carregar animais:', error);
+                document.getElementById('group-form-animals-list').innerHTML = '<p class="text-sm text-red-500 text-center py-4">Erro ao carregar animais</p>';
+            }
+        }
+        
+        // Renderizar checkboxes de animais
+        function renderAnimalsCheckboxes(animals, animalsInGroup = []) {
+            const container = document.getElementById('group-form-animals-list');
+            
+            if (animals.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Nenhum animal disponível</p>';
+                return;
+            }
+            
+            container.innerHTML = animals.map(animal => {
+                const isSelected = groupFormSelectedAnimals.includes(animal.id);
+                
+                return `
+                    <label class="flex items-center p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                        <input 
+                            type="checkbox" 
+                            value="${animal.id}"
+                            ${isSelected ? 'checked' : ''}
+                            onchange="toggleGroupFormAnimal(${animal.id})"
+                            class="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                        />
+                        <span class="ml-3 text-sm text-gray-900">
+                            ${animal.animal_number}${animal.name ? ' - ' + animal.name : ''}
+                            ${animal.breed ? ' (' + animal.breed + ')' : ''}
+                        </span>
+                    </label>
+                `;
+            }).join('');
+        }
+        
+        // Toggle animal no formulário
+        function toggleGroupFormAnimal(animalId) {
+            const index = groupFormSelectedAnimals.indexOf(animalId);
+            if (index > -1) {
+                groupFormSelectedAnimals.splice(index, 1);
+            } else {
+                groupFormSelectedAnimals.push(animalId);
+            }
+        }
+
         // Abrir formulário
-        function openGroupForm() {
+        async function openGroupForm() {
             currentEditId = null;
+            groupFormSelectedAnimals = [];
             document.getElementById('group-form-title').textContent = 'Novo Grupo';
             document.getElementById('group-form').reset();
             document.getElementById('group-form-id').value = '';
             document.getElementById('group-form-color').value = '#6B7280';
             document.getElementById('group-form-modal').classList.remove('hidden');
+            await loadAnimalsForForm(false);
         }
 
         // Fechar formulário
@@ -396,6 +489,7 @@ $v = time();
                     document.getElementById('group-form-feed-protocol').value = group.feed_protocol || '';
                     
                     document.getElementById('group-form-modal').classList.remove('hidden');
+                    await loadAnimalsForForm(true, id);
                 } else {
                     alert('Erro ao carregar grupo: ' + (result.error || 'Erro desconhecido'));
                 }
@@ -436,7 +530,7 @@ $v = time();
             try {
                 const [groupResponse, animalsResponse] = await Promise.all([
                     fetch(`${API_BASE}?action=get&id=${id}`),
-                    fetch(`${API_BASE}?action=animals&group_id=${id}`)
+                    fetch(`${API_BASE}?action=animals_with_weights&group_id=${id}`)
                 ]);
                 
                 const groupResult = await groupResponse.json();
@@ -445,6 +539,17 @@ $v = time();
                 if (groupResult.success && groupResult.data) {
                     const group = groupResult.data;
                     const animals = animalsResult.success ? animalsResult.data : [];
+                    
+                    // Calcular peso médio
+                    let totalWeight = 0;
+                    let weightCount = 0;
+                    animals.forEach(animal => {
+                        if (animal.weight_kg) {
+                            totalWeight += parseFloat(animal.weight_kg);
+                            weightCount++;
+                        }
+                    });
+                    const avgWeight = weightCount > 0 ? (totalWeight / weightCount).toFixed(2) : null;
                     
                     document.getElementById('group-details-title').textContent = group.group_name;
                     
@@ -476,8 +581,8 @@ $v = time();
                                         <p class="font-medium text-gray-900">${group.capacity || 'Ilimitada'}</p>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-gray-500">Ordem de Ordenha</p>
-                                        <p class="font-medium text-gray-900">${group.milking_order || '-'}</p>
+                                        <p class="text-xs text-gray-500">Peso Médio</p>
+                                        <p class="font-medium text-gray-900">${avgWeight ? avgWeight + ' kg' : 'Não informado'}</p>
                                     </div>
                                 </div>
                                 ${group.description ? `<p class="mt-4 text-sm text-gray-700"><strong>Descrição:</strong> ${group.description}</p>` : ''}
@@ -499,18 +604,34 @@ $v = time();
                                                 <tr>
                                                     <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700">Número</th>
                                                     <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700">Nome</th>
-                                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700">Raça</th>
-                                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700">Status</th>
+                                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700">Peso (kg)</th>
+                                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700">Última Pesagem</th>
                                                     <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700">Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-200">
                                                 ${animals.map(animal => `
-                                                    <tr>
-                                                        <td class="px-3 py-2 text-gray-900">${animal.animal_number}</td>
+                                                    <tr id="animal-row-${animal.id}">
+                                                        <td class="px-3 py-2 text-gray-900 font-medium">${animal.animal_number}</td>
                                                         <td class="px-3 py-2 text-gray-700">${animal.name || '-'}</td>
-                                                        <td class="px-3 py-2 text-gray-700">${animal.breed || '-'}</td>
-                                                        <td class="px-3 py-2 text-gray-700">${animal.status || '-'}</td>
+                                                        <td class="px-3 py-2">
+                                                            <div class="flex items-center gap-2">
+                                                                <input 
+                                                                    type="number" 
+                                                                    step="0.01" 
+                                                                    min="0"
+                                                                    value="${animal.weight_kg || ''}" 
+                                                                    placeholder="0.00"
+                                                                    id="weight-input-${animal.id}"
+                                                                    class="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                                                                    onchange="saveAnimalWeight(${animal.id}, ${id})"
+                                                                />
+                                                                <span class="text-xs text-gray-500">kg</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-gray-600 text-xs">
+                                                            ${animal.last_weighing_date ? new Date(animal.last_weighing_date).toLocaleDateString('pt-BR') : '-'}
+                                                        </td>
                                                         <td class="px-3 py-2 text-center">
                                                             <button onclick="removeAnimalFromGroup(${animal.id}, ${id})" class="text-red-600 hover:text-red-800 text-xs font-medium">
                                                                 Remover
@@ -539,6 +660,59 @@ $v = time();
         // Fechar detalhes
         function closeGroupDetails() {
             document.getElementById('group-details-modal').classList.add('hidden');
+        }
+
+        // Salvar peso do animal
+        async function saveAnimalWeight(animalId, groupId) {
+            const input = document.getElementById(`weight-input-${animalId}`);
+            const weightKg = parseFloat(input.value);
+            
+            if (isNaN(weightKg) || weightKg <= 0) {
+                if (typeof window.showErrorToast === 'function') {
+                    window.showErrorToast('Peso inválido. Digite um valor maior que zero.');
+                } else {
+                    alert('Peso inválido. Digite um valor maior que zero.');
+                }
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}?action=save_animal_weight`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        animal_id: animalId,
+                        weight_kg: weightKg,
+                        weighing_date: new Date().toISOString().split('T')[0],
+                        weighing_type: 'normal'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (typeof window.showSuccessToast === 'function') {
+                        window.showSuccessToast('Peso registrado com sucesso!');
+                    }
+                    // Recarregar detalhes para atualizar data de pesagem
+                    viewGroupDetails(groupId);
+                } else {
+                    if (typeof window.showErrorToast === 'function') {
+                        window.showErrorToast('Erro ao salvar peso: ' + (result.error || 'Erro desconhecido'));
+                    } else {
+                        alert('Erro ao salvar peso: ' + (result.error || 'Erro desconhecido'));
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao salvar peso:', error);
+                if (typeof window.showErrorToast === 'function') {
+                    window.showErrorToast('Erro ao salvar peso');
+                } else {
+                    alert('Erro ao salvar peso');
+                }
+            }
         }
 
         // Remover animal do grupo
@@ -697,6 +871,9 @@ $v = time();
             // Converter valores numéricos
             if (data.capacity) data.capacity = parseInt(data.capacity);
             if (data.milking_order) data.milking_order = parseInt(data.milking_order);
+            
+            // Adicionar animais selecionados
+            data.animal_ids = groupFormSelectedAnimals;
             
             try {
                 const url = currentEditId 
