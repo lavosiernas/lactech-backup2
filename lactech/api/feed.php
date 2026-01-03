@@ -173,7 +173,7 @@ try {
                     sendResponse(null, 'Lote é obrigatório para registro por lote');
                 }
             } else {
-                if (!$animal_id) {
+            if (!$animal_id) {
                     sendResponse(null, 'Animal é obrigatório para registro individual');
                 }
             }

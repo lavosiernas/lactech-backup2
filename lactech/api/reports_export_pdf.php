@@ -67,7 +67,7 @@ try {
     $farm_data = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($farm_data) {
         if (!empty($farm_data['name'])) {
-            $farm_name = $farm_data['name'];
+        $farm_name = $farm_data['name'];
         }
         // Se houver logo da fazenda, usar ela
         if (!empty($farm_data['logo_path'])) {
@@ -642,13 +642,13 @@ switch ($report_type) {
                 
                 $groupName = $group['group_name'] . ($group['group_code'] ? ' (' . $group['group_code'] . ')' : '');
                 
-                $pdf->TableRow([
+            $pdf->TableRow([
                     mb_substr($groupName, 0, 35),
                     (string)$animal_count,
                     $weightData ? number_format($weightData['avg_weight_kg'], 2, ',', '.') : '-',
                     $idealMs ? number_format($idealMs, 2, ',', '.') : '-',
                     'R$ ' . number_format($group['total_cost'], 2, ',', '.')
-                ], $w);
+            ], $w);
             }
         } else {
             $pdf->SetFont('Arial', '', 10);
