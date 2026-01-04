@@ -147,3 +147,5 @@ Valores padrão de MS:
 - Pesos podem ser estimados automaticamente se não houver registro real
 - O sistema funciona mesmo com dados incompletos (peso estimado, parâmetros padrão)
 
+
+

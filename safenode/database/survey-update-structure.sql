@@ -59,3 +59,5 @@ CHANGE COLUMN `additional_info` `additional_info_old` TEXT NULL COMMENT 'DEPRECA
 
 
 
+
+

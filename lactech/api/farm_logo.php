@@ -207,3 +207,5 @@ function processImageRemoveBackground($inputPath, $outputPath) {
     return $result;
 }
 
+
+

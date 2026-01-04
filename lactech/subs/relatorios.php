@@ -590,11 +590,19 @@ $v = time();
                 if (breed) filters.breed = breed;
             }
             
+            // Verificar se está no app (standalone) ou no site (browser)
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const isIOSStandalone = window.navigator.standalone === true;
+            const isInApp = isStandalone || isIOSStandalone;
+            
             // Criar formulário para download
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = API_BASE;
-            form.target = '_blank';
+            // No site usa _blank, no app não (para baixar diretamente)
+            if (!isInApp) {
+                form.target = '_blank';
+            }
             
             const actionInput = document.createElement('input');
             actionInput.type = 'hidden';

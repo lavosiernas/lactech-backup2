@@ -151,6 +151,26 @@ class PDF extends FPDF {
     }
     
     function Header() {
+        // Marca d'água (logo do sistema transparente no centro) - em todas as páginas
+        $systemLogoPath = __DIR__ . '/../assets/img/lacinvi.png';
+        if (file_exists($systemLogoPath)) {
+            try {
+                // Usar transparência se disponível (via FPDF com extensão)
+                if (method_exists($this, 'SetAlpha')) {
+                    $this->SetAlpha(0.05);
+                }
+                $watermarkSize = 220;
+                $watermarkX = (210 - $watermarkSize) / 2;
+                $watermarkY = (297 - $watermarkSize) / 2;
+                $this->Image($systemLogoPath, $watermarkX, $watermarkY, $watermarkSize, $watermarkSize);
+                if (method_exists($this, 'SetAlpha')) {
+                    $this->SetAlpha(1);
+                }
+            } catch (Exception $e) {
+                // Ignorar erro na marca d'água
+            }
+        }
+        
         // Header completo apenas na primeira página
         if ($this->PageNo() == 1) {
             // Fundo branco limpo
@@ -170,7 +190,7 @@ class PDF extends FPDF {
                 try {
                     $logo_width = 40; // Largura da logo
                     $logo_x = 195 - $logo_width; // Alinhado à direita (margem direita = 15mm, então 210-15-40 = 155)
-                    $this->Image($this->logoPath, $logo_x, $y_top - 3, $logo_width, 0); // altura 0 = proporcional
+                    $this->Image($this->logoPath, $logo_x, $y_top - 5, $logo_width, 0); // altura 0 = proporcional
                 } catch (Exception $e) {
                     // Se houver erro ao carregar imagem, continuar sem logo
                 }
@@ -190,12 +210,6 @@ class PDF extends FPDF {
             $this->SetTextColor(75, 85, 99); // Cinza escuro
             $this->Cell(0, 6, utf8ToIso('LacTech - Sistema de Gestao Leiteira'), 0, 1, 'L');
             
-            // Data de geração - no final
-            $this->SetXY($x_left, $y_top + 18);
-            $this->SetFont('Arial', '', 9);
-            $this->SetTextColor(107, 114, 128);
-            $this->Cell(180, 5, utf8ToIso('Gerado em: ') . date('d/m/Y H:i'), 0, 0, 'R');
-            
             // Linha separadora verde
             $this->SetDrawColor(16, 185, 129);
             $this->SetLineWidth(0.5);
@@ -213,7 +227,11 @@ class PDF extends FPDF {
     }
     
     function Footer() {
-        // Footer removido
+        // Data de geração no final da página
+        $this->SetY(-15);
+        $this->SetFont('Arial', 'I', 8);
+        $this->SetTextColor(107, 114, 128);
+        $this->Cell(0, 10, utf8ToIso('Gerado em: ') . date('d/m/Y H:i:s'), 0, 0, 'R');
     }
     
     function TableHeader($header, $w) {

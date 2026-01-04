@@ -60,3 +60,5 @@ ADD COLUMN `must_have_features` TEXT NULL COMMENT 'O que não pode faltar' AFTER
 
 
 
+
+

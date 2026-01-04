@@ -28,8 +28,13 @@ class PDFGenerator {
     }
     
     private function loadLogos() {
-        // Logo do sistema (URL fixa)
-        $this->systemLogo = "https://i.postimg.cc/vmrkgDcB/lactech.png";
+        // Logo do sistema (arquivo local)
+        $logoPath = __DIR__ . '/../assets/img/lactech-logo.png';
+        if (file_exists($logoPath)) {
+            $this->systemLogo = $logoPath;
+        } else {
+            $this->systemLogo = null;
+        }
         
         // Carregar logo e nome da fazenda do banco
         $this->loadFarmSettings();
@@ -223,38 +228,31 @@ class PDFGenerator {
             // Converter base64 para arquivo temporário
             $tempFile = $this->base64ToTempFile($this->farmLogo);
             if ($tempFile) {
-                $this->pdf->Image($tempFile, $this->pageWidth - 50, 20, 30, 30);
+                $this->pdf->Image($tempFile, $this->pageWidth - 50, 15, 30, 30);
                 unlink($tempFile); // Limpar arquivo temporário
             }
         }
         
-        // Marca d'água (logo da fazenda transparente no centro)
-        if ($this->farmLogo) {
-            $tempFile = $this->base64ToTempFile($this->farmLogo);
-            if ($tempFile) {
-                $this->pdf->SetAlpha(0.1);
-                $watermarkSize = 150;
+        // Marca d'água (logo do sistema transparente no centro)
+        if ($this->systemLogo && file_exists($this->systemLogo)) {
+            try {
+                $this->pdf->SetAlpha(0.05);
+                $watermarkSize = 220;
                 $watermarkX = ($this->pageWidth - $watermarkSize) / 2;
                 $watermarkY = ($this->pageHeight - $watermarkSize) / 2;
-                $this->pdf->Image($tempFile, $watermarkX, $watermarkY, $watermarkSize, $watermarkSize);
+                $this->pdf->Image($this->systemLogo, $watermarkX, $watermarkY, $watermarkSize, $watermarkSize);
                 $this->pdf->SetAlpha(1);
-                unlink($tempFile);
+            } catch (Exception $e) {
+                error_log("Erro ao adicionar marca d'água: " . $e->getMessage());
             }
         }
         
         $this->yPosition = 30;
         
-        // Título com nome da fazenda
         $this->pdf->SetFont('Arial', 'B', 18);
         $titleText = $this->farmName ? $title . ' - ' . $this->farmName : $title;
         $this->pdf->SetXY($this->margin, $this->yPosition);
         $this->pdf->Cell(0, 10, $titleText, 0, 1, 'L');
-        $this->yPosition += 15;
-        
-        // Data do relatório
-        $this->pdf->SetFont('Arial', '', 12);
-        $this->pdf->SetXY($this->margin, $this->yPosition);
-        $this->pdf->Cell(0, 10, 'Relatório gerado em: ' . date('d/m/Y H:i'), 0, 1, 'L');
         $this->yPosition += 15;
     }
     
@@ -274,7 +272,6 @@ class PDFGenerator {
     }
     
     private function addTable($headers, $widths, $aligns, $data, $callback) {
-        // Título da seção
         $this->pdf->SetFont('Arial', 'B', 14);
         $this->pdf->SetXY($this->margin, $this->yPosition);
         $this->pdf->Cell(0, 10, 'DETALHAMENTO DOS REGISTROS', 0, 1, 'L');
@@ -326,11 +323,11 @@ class PDFGenerator {
         $this->pdf->Line($this->margin, $footerY - 5, $this->pageWidth - $this->margin, $footerY - 5);
         
         // Logo menor do sistema
-        if ($this->systemLogo) {
-            $tempFile = $this->downloadImageToTemp($this->systemLogo);
-            if ($tempFile) {
-                $this->pdf->Image($tempFile, $this->margin, $footerY, 8, 8);
-                unlink($tempFile);
+        if ($this->systemLogo && file_exists($this->systemLogo)) {
+            try {
+                $this->pdf->Image($this->systemLogo, $this->margin, $footerY, 8, 8);
+            } catch (Exception $e) {
+                error_log("Erro ao adicionar logo no footer: " . $e->getMessage());
             }
         }
         

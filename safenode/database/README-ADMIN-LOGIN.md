@@ -50,3 +50,5 @@ O script vai mostrar o hash gerado. Use o SQL fornecido para atualizar no banco.
 
 
 
+
+

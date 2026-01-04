@@ -1992,13 +1992,6 @@
                 doc.text(titleText, margin, yPosition);
                 yPosition += 20;
 
-                // Data do relatório
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                const today = new Date().toLocaleDateString('pt-BR');
-                doc.text(`Relatório gerado em: ${today}`, margin, yPosition);
-                yPosition += 20;
-
                 // Resumo Financeiro
                 doc.setFontSize(14);
                 doc.setFont('helvetica', 'bold');
@@ -2062,6 +2055,15 @@
                     yPosition += 6;
                 });
 
+                // Data do relatório no final
+                yPosition += 10;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'italic');
+                const today = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+                const footerText = `Gerado em: ${today}`;
+                const textWidth = doc.getTextWidth(footerText);
+                doc.text(footerText, pageWidth - margin - textWidth, yPosition);
+
                 // Download do PDF
                 doc.save(`relatorio_financeiro_${new Date().toISOString().split('T')[0]}.pdf`);
             } catch (error) {
@@ -2088,13 +2090,6 @@
                     ? `RELATÓRIO DE PRODUÇÃO - ${window.reportSettings.farmName}`
                     : 'RELATÓRIO DE PRODUÇÃO';
                 doc.text(titleText, margin, yPosition);
-                yPosition += 20;
-
-                // Data do relatório
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                const today = new Date().toLocaleDateString('pt-BR');
-                doc.text(`Relatório gerado em: ${today}`, margin, yPosition);
                 yPosition += 20;
 
                 // Resumo da Produção
@@ -2163,6 +2158,15 @@
                     });
                     yPosition += 6;
                 });
+
+                // Data do relatório no final
+                yPosition += 10;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'italic');
+                const today = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+                const footerText = `Gerado em: ${today}`;
+                const textWidth = doc.getTextWidth(footerText);
+                doc.text(footerText, pageWidth - margin - textWidth, yPosition);
 
                 // Download do PDF
                 doc.save(`relatorio_producao_${new Date().toISOString().split('T')[0]}.pdf`);
