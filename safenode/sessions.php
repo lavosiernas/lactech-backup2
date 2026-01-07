@@ -300,7 +300,8 @@ $sessions = $sessionManager->getUserSessions($userId);
             <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
                 <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <div class="relative">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                        <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 dark:hidden">
+                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 hidden dark:block">
                     </div>
                     <div x-show="!sidebarCollapsed" 
                          x-transition:enter="transition ease-out duration-200" 
@@ -405,20 +406,6 @@ $sessions = $sessionManager->getUserSessions($userId);
             </a>
             
             <div class="pt-4 mt-4 border-t border-white/5">
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Configurações' : ''">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" 
                    class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" 
                    :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
@@ -1032,10 +1019,6 @@ $sessions = $sessionManager->getUserSessions($userId);
                 <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
                 </a>
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>

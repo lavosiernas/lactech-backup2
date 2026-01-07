@@ -32,7 +32,7 @@ if ($db && $currentSiteId > 0) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark h-full">
+<html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,6 +42,8 @@ if ($db && $currentSiteId > 0) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="includes/theme-styles.css">
+    <script src="includes/theme-toggle.js"></script>
     
     <script>
         tailwind.config = {
@@ -72,43 +74,59 @@ if ($db && $currentSiteId > 0) {
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        :root {
-            --bg-primary: #030303;
-            --bg-secondary: #080808;
-            --bg-tertiary: #0f0f0f;
-            --bg-card: #0a0a0a;
-            --bg-hover: #111111;
-            --border-subtle: rgba(255,255,255,0.04);
-            --border-light: rgba(255,255,255,0.08);
-            --accent: #ffffff;
-            --accent-glow: rgba(255, 255, 255, 0.2);
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
-            --text-muted: #52525b;
-        }
-        
         body {
             background-color: var(--bg-primary);
-            color: var(--text-secondary);
+            color: var(--text-primary);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             font-size: 0.92em;
         }
         
+        :root:not(.dark) body {
+            color: #1a1a1a;
+        }
+        
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: rgba(255,255,255,0.1); 
+            background: var(--scrollbar-thumb, var(--border-light)); 
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: var(--scrollbar-thumb-hover, var(--text-muted)); 
+        }
         
         .glass {
-            background: rgba(10, 10, 10, 0.7);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-subtle);
+        }
+        
+        :root:not(.dark) .glass {
+            color: #1a1a1a;
+        }
+        
+        :root:not(.dark) .glass h1,
+        :root:not(.dark) .glass h2,
+        :root:not(.dark) .glass h3,
+        :root:not(.dark) .glass h4,
+        :root:not(.dark) .glass h5,
+        :root:not(.dark) .glass h6 {
+            color: #111827 !important;
+        }
+        
+        :root:not(.dark) .glass p,
+        :root:not(.dark) .glass span,
+        :root:not(.dark) .glass div,
+        :root:not(.dark) .glass label {
+            color: #374151 !important;
+        }
+        
+        :root:not(.dark) .glass .text-gray-900,
+        :root:not(.dark) .glass .text-white {
+            color: #111827 !important;
         }
         
         .table-card {
@@ -132,24 +150,75 @@ if ($db && $currentSiteId > 0) {
             color: var(--text-muted);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
             text-decoration: none;
         }
         
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
         .nav-item:hover {
-            background: rgba(255,255,255,0.05);
             color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+        
+        :root:not(.dark) .nav-item:hover {
+            background: #f1f3f5;
+            color: #000000;
+        }
+        
+        .nav-item:hover::before {
+            opacity: 0.5;
+        }
+        
+        :root:not(.dark) .nav-item:hover::before {
+            opacity: 0.3;
         }
         
         .nav-item.active {
-            background: rgba(255,255,255,0.1);
-            color: var(--text-primary);
+            color: var(--accent);
+            background: linear-gradient(90deg, var(--gradient-overlay) 0%, transparent 100%);
+        }
+        
+        :root:not(.dark) .nav-item.active {
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%);
+            color: #000000;
+        }
+        
+        .nav-item.active::before {
+            opacity: 1;
+        }
+        
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 20px var(--accent-glow);
         }
         
         .upgrade-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
             border-radius: 12px;
             padding: 16px;
+        }
+        
+        :root:not(.dark) .upgrade-card {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-light);
         }
         
         .btn-primary {
@@ -217,64 +286,9 @@ if ($db && $currentSiteId > 0) {
 
     ?>
     <style>
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            color: #52525b;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            text-decoration: none;
-        }
+        /* Nav-item styles já estão definidos acima com variáveis CSS - este bloco foi removido para evitar duplicação */
         
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .nav-item:hover {
-            color: #ffffff;
-        }
-        
-        .nav-item:hover::before {
-            opacity: 0.5;
-        }
-        
-        .nav-item.active {
-            color: #ffffff;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-        }
-        
-        .nav-item.active::before {
-            opacity: 1;
-        }
-        
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: #ffffff;
-            border-radius: 0 4px 4px 0;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-        }
-        
-        .sidebar {
-            background: linear-gradient(180deg, #080808 0%, #030303 100%);
-            border-right: 1px solid rgba(255,255,255,0.04);
-            position: relative;
-        }
+        /* Sidebar já está definido acima com variáveis CSS */
         
         /* Garantir que sidebar mobile sobreponha completamente sem comprimir interface */
         @media (max-width: 1023px) {
@@ -335,44 +349,7 @@ if ($db && $currentSiteId > 0) {
             opacity: 0.5;
         }
         
-        .upgrade-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 16px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%);
-            color: #000;
-            font-weight: 600;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-        }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255,255,255,0.2);
-        }
-        
-        .btn-primary:hover::before {
-            opacity: 1;
-        }
+        /* Upgrade card e btn-primary já estão definidos acima - este bloco foi removido para evitar duplicação */
         
         /* CSS para x-cloak - esconder elementos antes do Alpine.js carregar */
         [x-cloak] { 
@@ -397,11 +374,12 @@ if ($db && $currentSiteId > 0) {
            :class="sidebarCollapsed ? 'w-20' : 'w-72'" 
            class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
                 <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <div class="relative">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                        <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 dark:hidden">
+                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 hidden dark:block">
                     </div>
                     <div x-show="!sidebarCollapsed" 
                          x-transition:enter="transition ease-out duration-200" 
@@ -411,12 +389,12 @@ if ($db && $currentSiteId > 0) {
                          x-transition:leave-start="opacity-100 translate-x-0" 
                          x-transition:leave-end="opacity-0 -translate-x-2" 
                          class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
                 <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" 
-                        class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0" 
+                        class="text-gray-500 dark:text-zinc-600 hover:text-gray-700 dark:hover:text-zinc-400 transition-colors flex-shrink-0" 
                         :class="sidebarCollapsed ? 'mt-2' : ''">
                     <i :data-lucide="sidebarCollapsed ? 'chevrons-right' : 'chevrons-left'" class="w-5 h-5"></i>
                 </button>
@@ -432,7 +410,7 @@ if ($db && $currentSiteId > 0) {
                x-transition:leave="transition ease-in duration-150" 
                x-transition:leave-start="opacity-100" 
                x-transition:leave-end="opacity-0" 
-               class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
+               class="text-xs font-semibold text-gray-500 dark:text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
             
             <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" 
                class="nav-item <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" 
@@ -505,21 +483,7 @@ if ($db && $currentSiteId > 0) {
                       class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Configurações' : ''">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" 
                    class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" 
                    :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
@@ -547,7 +511,7 @@ if ($db && $currentSiteId > 0) {
              x-transition:leave-start="opacity-100 translate-y-0" 
              x-transition:leave-end="opacity-0 translate-y-2">
             <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
                     Upgrade Agora
                 </button>
@@ -560,11 +524,11 @@ if ($db && $currentSiteId > 0) {
 
     <!-- Modal de confirmação de saída -->
     <div id="safenode-logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="w-full max-w-sm mx-4 rounded-2xl bg-zinc-950 border border-white/10 p-6 shadow-2xl">
-            <h3 class="text-lg font-bold text-white mb-2">Deseja realmente sair?</h3>
-            <p class="text-sm text-zinc-400 mb-6">Você será desconectado do painel SafeNode e precisará fazer login novamente para acessar o sistema.</p>
+        <div class="w-full max-w-sm mx-4 rounded-2xl bg-white dark:bg-zinc-950 border border-gray-200 dark:border-white/10 p-6 shadow-2xl">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Deseja realmente sair?</h3>
+            <p class="text-sm text-gray-600 dark:text-zinc-400 mb-6">Você será desconectado do painel SafeNode e precisará fazer login novamente para acessar o sistema.</p>
             <div class="flex gap-3 justify-end">
-                <button type="button" data-logout-cancel class="px-4 py-2 rounded-xl bg-zinc-900 text-zinc-300 hover:bg-zinc-800 text-sm font-semibold transition-all">
+                <button type="button" data-logout-cancel class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-800 text-sm font-semibold transition-all">
                     Cancelar
                 </button>
                 <button type="button" data-logout-confirm class="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 text-sm font-semibold transition-all">
@@ -1040,16 +1004,16 @@ if ($db && $currentSiteId > 0) {
            style="position: fixed !important; transform: translateX(-100%); will-change: transform;"
            x-cloak>
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
                     <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
-                <button @click="sidebarOpen = false; $dispatch('safenode-sidebar-toggle', { isOpen: false })" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
+                <button @click="sidebarOpen = false; $dispatch('safenode-sidebar-toggle', { isOpen: false })" class="text-gray-500 dark:text-zinc-600 hover:text-gray-700 dark:hover:text-zinc-400 transition-colors flex-shrink-0">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1078,11 +1042,7 @@ if ($db && $currentSiteId > 0) {
                 <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Ajuda</span>
@@ -1100,17 +1060,17 @@ if ($db && $currentSiteId > 0) {
 
         
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-dark-950">
             <!-- Header -->
-            <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
+            <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center gap-6">
-                    <button data-sidebar-toggle class="lg:hidden text-zinc-400 hover:text-white transition-colors">
+                    <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div>
-                        <h2 class="text-2xl font-bold text-white tracking-tight">IPs que Falharam Verificação</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">IPs que Falharam Verificação</h2>
                         <?php if ($selectedSite): ?>
-                            <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
+                            <p class="text-sm text-gray-600 dark:text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -1120,8 +1080,8 @@ if ($db && $currentSiteId > 0) {
             <div class="flex-1 overflow-y-auto p-8">
                 <div id="suspicious-content" class="space-y-6">
                     <div class="glass rounded-2xl p-12 text-center">
-                        <i data-lucide="loader" class="w-12 h-12 mx-auto mb-4 animate-spin text-zinc-400"></i>
-                        <p class="text-sm text-zinc-500">Carregando IPs que falharam verificação...</p>
+                        <i data-lucide="loader" class="w-12 h-12 mx-auto mb-4 animate-spin text-gray-500 dark:text-zinc-400"></i>
+                        <p class="text-sm text-gray-700 dark:text-zinc-500">Carregando IPs que falharam verificação...</p>
                     </div>
                 </div>
             </div>
@@ -1156,8 +1116,8 @@ if ($db && $currentSiteId > 0) {
                     <div class="glass rounded-2xl p-8 text-center">
                         <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4 text-red-400"></i>
                         <p class="text-red-400 font-bold mb-2">Erro ao carregar dados</p>
-                        <p class="text-zinc-500 text-sm mb-4">${error.message}</p>
-                        <button onclick="fetchSuspiciousIPs()" class="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors text-sm">
+                        <p class="text-gray-600 dark:text-zinc-500 text-sm mb-4">${error.message}</p>
+                        <button onclick="fetchSuspiciousIPs()" class="px-4 py-2 bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-sm">
                             Tentar novamente
                         </button>
                     </div>
@@ -1176,9 +1136,9 @@ if ($db && $currentSiteId > 0) {
                 container.innerHTML = `
                     <div class="table-card p-8 text-center">
                         <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-4 text-green-400"></i>
-                        <p class="text-white font-bold mb-2">Nenhum IP bloqueado</p>
-                        <p class="text-zinc-500 text-sm">Todos os acessos passaram pela verificação humana</p>
-                        <p class="text-zinc-600 text-xs mt-4">IPs que falharem a verificação aparecerão aqui</p>
+                        <p class="text-gray-900 dark:text-white font-bold mb-2">Nenhum IP bloqueado</p>
+                        <p class="text-gray-600 dark:text-zinc-500 text-sm">Todos os acessos passaram pela verificação humana</p>
+                        <p class="text-gray-600 dark:text-zinc-600 text-xs mt-4">IPs que falharem a verificação aparecerão aqui</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -1189,8 +1149,8 @@ if ($db && $currentSiteId > 0) {
                 <div class="glass rounded-2xl p-6 mb-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-xl font-semibold text-white">${ips.length} IP${ips.length !== 1 ? 's' : ''} Bloqueado${ips.length !== 1 ? 's' : ''}</h2>
-                            <p class="text-sm text-zinc-500 mt-1">IPs que falharam na verificação humana</p>
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">${ips.length} IP${ips.length !== 1 ? 's' : ''} Bloqueado${ips.length !== 1 ? 's' : ''}</h2>
+                            <p class="text-sm text-gray-600 dark:text-zinc-500 mt-1">IPs que falharam na verificação humana</p>
                         </div>
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold border border-red-500/30">
                             <span class="w-2 h-2 rounded-full bg-red-400"></span>
@@ -1223,42 +1183,42 @@ if ($db && $currentSiteId > 0) {
                                 <div class="flex items-start justify-between mb-4">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-3 mb-2">
-                                            <p class="text-lg font-mono font-bold text-white">${ip.ip_address}</p>
+                                            <p class="text-lg font-mono font-bold text-gray-900 dark:text-white">${ip.ip_address}</p>
                                             <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${suspicionBadgeClass}">
                                                 ${suspicionLevel}
                                             </span>
                                         </div>
-                                        <p class="text-sm text-zinc-400">
-                                            Bloqueios: <span class="text-white font-semibold">${ip.block_count || 0}</span>
+                                        <p class="text-sm text-gray-600 dark:text-zinc-400">
+                                            Bloqueios: <span class="text-gray-900 dark:text-white font-semibold">${ip.block_count || 0}</span>
                                         </p>
                                     </div>
                                 </div>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">Tentativas Bloqueadas</p>
-                                        <p class="text-xl font-bold text-red-400">${ip.block_count || 0}</p>
+                                    <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                                        <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1">Tentativas Bloqueadas</p>
+                                        <p class="text-xl font-bold text-red-600 dark:text-red-400">${ip.block_count || 0}</p>
                                     </div>
-                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">Primeira Tentativa</p>
-                                        <p class="text-sm font-bold text-white">${ip.first_seen ? new Date(ip.first_seen).toLocaleString('pt-BR') : 'N/A'}</p>
+                                    <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                                        <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1">Primeira Tentativa</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">${ip.first_seen ? new Date(ip.first_seen).toLocaleString('pt-BR') : 'N/A'}</p>
                                     </div>
-                                    <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">Última Tentativa</p>
-                                        <p class="text-sm font-bold text-white">${ip.last_seen ? new Date(ip.last_seen).toLocaleString('pt-BR') : 'N/A'}</p>
+                                    <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                                        <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1">Última Tentativa</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">${ip.last_seen ? new Date(ip.last_seen).toLocaleString('pt-BR') : 'N/A'}</p>
                                     </div>
                                 </div>
                                 
                                 ${ip.threat_types ? `
-                                    <div class="mt-4 pt-4 border-t border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-2 font-semibold">Tipos de Ameaça Detectados</p>
-                                        <p class="text-sm text-white font-mono">${ip.threat_types}</p>
+                                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                                        <p class="text-xs text-gray-600 dark:text-zinc-400 mb-2 font-semibold">Tipos de Ameaça Detectados</p>
+                                        <p class="text-sm text-gray-900 dark:text-white font-mono">${ip.threat_types}</p>
                                     </div>
                                 ` : ''}
                                 
-                                <div class="mt-4 pt-4 border-t border-white/10">
-                                    <p class="text-xs text-zinc-400 mb-1 font-semibold">Última atividade</p>
-                                    <p class="text-sm text-white">${new Date(ip.last_seen).toLocaleString('pt-BR')}</p>
+                                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                                    <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1 font-semibold">Última atividade</p>
+                                    <p class="text-sm text-gray-900 dark:text-white">${new Date(ip.last_seen).toLocaleString('pt-BR')}</p>
                                 </div>
                             </div>
                         `;
@@ -1282,7 +1242,8 @@ if ($db && $currentSiteId > 0) {
             setInterval(fetchSuspiciousIPs, 10000);
         }
         
-                lucide.createIcons();
+        SafeNodeTheme.init();
+        lucide.createIcons();
     </script>
 </body>
 </html>

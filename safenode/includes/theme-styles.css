@@ -1,0 +1,161 @@
+/**
+ * SafeNode - Theme Styles
+ * Variáveis CSS para modo claro e escuro
+ */
+
+:root {
+    /* Modo Escuro (padrão) */
+    --bg-primary: #030303;
+    --bg-secondary: #080808;
+    --bg-tertiary: #0f0f0f;
+    --bg-card: #0a0a0a;
+    --bg-hover: #111111;
+    --border-subtle: rgba(255,255,255,0.04);
+    --border-light: rgba(255,255,255,0.08);
+    --accent: #ffffff;
+    --accent-glow: rgba(255, 255, 255, 0.2);
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-muted: #52525b;
+}
+
+:root:not(.dark) {
+    /* Modo Claro */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #f1f3f5;
+    --bg-card: #ffffff;
+    --bg-hover: #f1f3f5;
+    --border-subtle: rgba(0,0,0,0.06);
+    --border-light: rgba(0,0,0,0.12);
+    --accent: #000000;
+    --accent-glow: rgba(0, 0, 0, 0.1);
+    --text-primary: #000000;
+    --text-secondary: #495057;
+    --text-muted: #868e96;
+    --scrollbar-thumb: rgba(0,0,0,0.2);
+    --scrollbar-thumb-hover: rgba(0,0,0,0.3);
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-light-bg: rgba(0, 0, 0, 0.02);
+    --gradient-overlay: rgba(0, 0, 0, 0.08);
+    --gradient-overlay-light: rgba(0, 0, 0, 0.05);
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+    --scrollbar-thumb: rgba(255,255,255,0.1);
+    --scrollbar-thumb-hover: rgba(255,255,255,0.15);
+    --glass-bg: rgba(10, 10, 10, 0.7);
+    --glass-light-bg: rgba(255, 255, 255, 0.02);
+    --gradient-overlay: rgba(255, 255, 255, 0.1);
+    --gradient-overlay-light: rgba(255, 255, 255, 0.05);
+    --shadow-color: rgba(255, 255, 255, 0.2);
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar adaptável */
+::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+}
+
+::-webkit-scrollbar-track { 
+    background: transparent; 
+}
+
+::-webkit-scrollbar-thumb { 
+    background: var(--scrollbar-thumb, var(--border-light)); 
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover { 
+    background: var(--scrollbar-thumb-hover, var(--text-muted)); 
+}
+
+/* Glass effect adaptável */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-light {
+    background: var(--glass-light-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Sidebar adaptável */
+.sidebar {
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    border-right: 1px solid var(--border-subtle);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Cards adaptáveis */
+.stat-card,
+.chart-card,
+.table-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Text colors adaptáveis */
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+/* Botão de toggle de tema */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+/* Esconder ícone baseado no tema */
+.dark .theme-toggle-light-icon {
+    display: none;
+}
+
+.dark .theme-toggle-dark-icon {
+    display: block;
+}
+
+:root:not(.dark) .theme-toggle-light-icon {
+    display: block;
+}
+
+:root:not(.dark) .theme-toggle-dark-icon {
+    display: none;
+}
+

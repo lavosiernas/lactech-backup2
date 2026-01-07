@@ -149,7 +149,7 @@ if ($db && $userId) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark h-full">
+<html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -159,7 +159,8 @@ if ($db && $userId) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+    <link rel="stylesheet" href="includes/theme-styles.css">
+    <script src="includes/theme-toggle.js"></script>
     
     <script>
         tailwind.config = {
@@ -191,6 +192,7 @@ if ($db && $userId) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
+            /* Modo Escuro (padrão) */
             --bg-primary: #030303;
             --bg-secondary: #080808;
             --bg-tertiary: #0f0f0f;
@@ -205,6 +207,22 @@ if ($db && $userId) {
             --text-muted: #52525b;
         }
         
+        :root:not(.dark) {
+            /* Modo Claro */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f5;
+            --bg-card: #ffffff;
+            --bg-hover: #e9ecef;
+            --border-subtle: rgba(0,0,0,0.06);
+            --border-light: rgba(0,0,0,0.12);
+            --accent: #000000;
+            --accent-glow: rgba(0, 0, 0, 0.1);
+            --text-primary: #000000;
+            --text-secondary: #495057;
+            --text-muted: #868e96;
+        }
+        
         body {
             background-color: var(--bg-primary);
             color: var(--text-secondary);
@@ -217,13 +235,15 @@ if ($db && $userId) {
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: rgba(255,255,255,0.1); 
+            background: var(--scrollbar-thumb, var(--border-light)); 
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: var(--scrollbar-thumb-hover, var(--text-muted)); 
+        }
         
         .glass {
-            background: rgba(10, 10, 10, 0.7);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-subtle);
@@ -248,13 +268,27 @@ if ($db && $userId) {
         }
         
         .nav-item:hover {
-            background: rgba(255,255,255,0.05);
+            background: var(--bg-hover);
             color: var(--text-primary);
         }
         
+        :root:not(.dark) .nav-item:hover {
+            background: #f1f3f5;
+            color: #000000;
+        }
+        
+        :root:not(.dark) .nav-item:hover::before {
+            opacity: 0.3;
+        }
+        
         .nav-item.active {
-            background: rgba(255,255,255,0.1);
-            color: var(--text-primary);
+            background: linear-gradient(90deg, var(--gradient-overlay) 0%, transparent 100%);
+            color: var(--accent);
+        }
+        
+        :root:not(.dark) .nav-item.active {
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%);
+            color: #000000;
         }
         
         .upgrade-card {
@@ -344,41 +378,7 @@ if ($db && $userId) {
 
     ?>
     <style>
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            color: #52525b;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            text-decoration: none;
-        }
-        
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .nav-item:hover {
-            color: #ffffff;
-        }
-        
-        .nav-item:hover::before {
-            opacity: 0.5;
-        }
-        
-        .nav-item.active {
-            color: #ffffff;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-        }
+        /* Nav-item styles já estão definidos acima com variáveis CSS - este bloco foi removido para evitar duplicação */
         
         .nav-item.active::before {
             opacity: 1;
@@ -398,8 +398,8 @@ if ($db && $userId) {
         }
         
         .sidebar {
-            background: linear-gradient(180deg, #080808 0%, #030303 100%);
-            border-right: 1px solid rgba(255,255,255,0.04);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-right: 1px solid var(--border-subtle);
             position: relative;
         }
         
@@ -524,11 +524,12 @@ if ($db && $userId) {
            :class="sidebarCollapsed ? 'w-20' : 'w-72'" 
            class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
                 <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <div class="relative">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                        <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 dark:hidden">
+                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 hidden dark:block">
                     </div>
                     <div x-show="!sidebarCollapsed" 
                          x-transition:enter="transition ease-out duration-200" 
@@ -538,8 +539,8 @@ if ($db && $userId) {
                          x-transition:leave-start="opacity-100 translate-x-0" 
                          x-transition:leave-end="opacity-0 -translate-x-2" 
                          class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
                 <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" 
@@ -623,21 +624,7 @@ if ($db && $userId) {
                       class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Configurações' : ''">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" 
                    class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" 
                    :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
@@ -665,7 +652,7 @@ if ($db && $userId) {
              x-transition:leave-start="opacity-100 translate-y-0" 
              x-transition:leave-end="opacity-0 translate-y-2">
             <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
                     Upgrade Agora
                 </button>
@@ -1207,13 +1194,13 @@ if ($db && $userId) {
            style="position: fixed !important; transform: translateX(-100%); will-change: transform;"
            x-cloak>
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
                     <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
                 <button @click="sidebarOpen = false; $dispatch('safenode-sidebar-toggle', { isOpen: false })" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
@@ -1247,11 +1234,7 @@ if ($db && $userId) {
                 <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Ajuda</span>
@@ -1262,7 +1245,7 @@ if ($db && $userId) {
         <!-- Upgrade Card -->
         <div class="p-4 flex-shrink-0">
             <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
                     Upgrade Agora
                 </button>
@@ -1278,15 +1261,15 @@ if ($db && $userId) {
     </script>
         
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-dark-950">
             <!-- Header -->
-            <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0">
+            <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center gap-3 md:gap-6">
-                    <button data-sidebar-toggle class="lg:hidden text-zinc-400 hover:text-white transition-colors">
+                    <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div>
-                        <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight">Gerenciar Sites</h2>
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Gerenciar Sites</h2>
                         <?php if ($selectedSite): ?>
                             <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>

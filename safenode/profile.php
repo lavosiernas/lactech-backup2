@@ -138,7 +138,7 @@ if ($db) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark h-full">
+<html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,6 +150,8 @@ if ($db) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="includes/theme-styles.css">
+    <script src="includes/theme-toggle.js"></script>
     
     <script>
         tailwind.config = {
@@ -187,6 +189,7 @@ if ($db) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
+            /* Modo Escuro (padrão) */
             --bg-primary: #030303;
             --bg-secondary: #080808;
             --bg-tertiary: #0f0f0f;
@@ -201,6 +204,22 @@ if ($db) {
             --text-muted: #52525b;
         }
         
+        :root:not(.dark) {
+            /* Modo Claro */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f5;
+            --bg-card: #ffffff;
+            --bg-hover: #e9ecef;
+            --border-subtle: rgba(0,0,0,0.06);
+            --border-light: rgba(0,0,0,0.12);
+            --accent: #000000;
+            --accent-glow: rgba(0, 0, 0, 0.1);
+            --text-primary: #000000;
+            --text-secondary: #495057;
+            --text-muted: #868e96;
+        }
+        
         body {
             background-color: var(--bg-primary);
             color: var(--text-secondary);
@@ -213,16 +232,27 @@ if ($db) {
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: rgba(255,255,255,0.1); 
+            background: var(--border-light); 
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: var(--text-muted); 
+        }
         
         .glass {
-            background: rgba(10, 10, 10, 0.7);
+            background: var(--bg-card);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-subtle);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .dark .glass {
+            background: rgba(10, 10, 10, 0.7);
+        }
+        
+        :root:not(.dark) .glass {
+            background: rgba(255, 255, 255, 0.8);
         }
         
         .sidebar {
@@ -265,17 +295,33 @@ if ($db) {
             transition: opacity 0.3s;
         }
         
+        /* Hover adaptável - modo claro precisa de mais contraste */
         .nav-item:hover {
             color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+        
+        :root:not(.dark) .nav-item:hover {
+            background: #f1f3f5;
+            color: #000000;
         }
         
         .nav-item:hover::before {
             opacity: 0.5;
         }
         
+        :root:not(.dark) .nav-item:hover::before {
+            opacity: 0.3;
+        }
+        
         .nav-item.active {
             color: var(--accent);
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, var(--gradient-overlay) 0%, transparent 100%);
+        }
+        
+        :root:not(.dark) .nav-item.active {
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%);
+            color: #000000;
         }
         
         .nav-item.active::before {
@@ -312,7 +358,7 @@ if ($db) {
             left: 0;
             right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+            background: linear-gradient(90deg, transparent 0%, var(--border-light) 50%, transparent 100%);
         }
         
         .stat-card:hover {
@@ -360,7 +406,7 @@ if ($db) {
         }
         
         .search-input {
-            background: rgba(255,255,255,0.03);
+            background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: 12px;
             padding: 12px 18px 12px 44px;
@@ -376,14 +422,14 @@ if ($db) {
         
         .search-input:focus {
             outline: none;
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+            border-color: var(--border-light);
+            box-shadow: 0 0 0 4px var(--accent-glow);
             width: 280px;
         }
         
         .upgrade-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
             border-radius: 12px;
             padding: 16px;
         }
@@ -392,7 +438,7 @@ if ($db) {
         
         /* Profile specific styles */
         .glass-card {
-            background: rgba(10, 10, 10, 0.7);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-subtle);
@@ -403,30 +449,31 @@ if ($db) {
         }
 
         .avatar-glow {
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 30px var(--shadow-color);
             transition: all 0.3s;
         }
         .avatar-glow:hover {
-            box-shadow: 0 0 40px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 40px var(--shadow-color);
             transform: scale(1.05);
         }
 
         .form-input {
-            background: rgba(10, 10, 10, 0.6);
+            background: var(--bg-card);
             border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
             transition: all 0.3s;
         }
         .form-input:focus {
-            background: rgba(10, 10, 10, 0.8);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+            box-shadow: 0 0 0 3px var(--accent-glow);
             outline: none;
         }
 
         .grid-pattern {
             background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+                linear-gradient(var(--border-subtle) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
             background-size: 20px 20px;
         }
 
@@ -465,9 +512,9 @@ if ($db) {
 
         .depth-shadow {
             box-shadow: 
-                0 10px 30px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                0 10px 30px var(--shadow-color),
+                0 0 0 1px var(--border-subtle),
+                inset 0 1px 0 var(--accent-glow);
         }
 
         .security-card {
@@ -475,7 +522,7 @@ if ($db) {
         }
         .security-card:hover {
             transform: translateX(4px);
-            border-color: rgba(255, 255, 255, 0.3);
+            border-color: var(--border-light);
         }
     </style>
 </head>
@@ -512,62 +559,11 @@ if ($db) {
 
     ?>
     <style>
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            color: #52525b;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            text-decoration: none;
-        }
-        
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .nav-item:hover {
-            color: #ffffff;
-        }
-        
-        .nav-item:hover::before {
-            opacity: 0.5;
-        }
-        
-        .nav-item.active {
-            color: #ffffff;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-        }
-        
-        .nav-item.active::before {
-            opacity: 1;
-        }
-        
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: #ffffff;
-            border-radius: 0 4px 4px 0;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-        }
+        /* Nav-item styles já estão definidos acima com variáveis CSS - este bloco foi removido para evitar duplicação */
         
         .sidebar {
-            background: linear-gradient(180deg, #080808 0%, #030303 100%);
-            border-right: 1px solid rgba(255,255,255,0.04);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-right: 1px solid var(--border-subtle);
             position: relative;
         }
         
@@ -631,8 +627,8 @@ if ($db) {
         }
         
         .upgrade-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
             border-radius: 12px;
             padding: 16px;
         }
@@ -692,11 +688,12 @@ if ($db) {
            :class="sidebarCollapsed ? 'w-20' : 'w-72'" 
            class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
                 <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <div class="relative">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                        <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 dark:hidden">
+                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 hidden dark:block">
                     </div>
                     <div x-show="!sidebarCollapsed" 
                          x-transition:enter="transition ease-out duration-200" 
@@ -706,12 +703,12 @@ if ($db) {
                          x-transition:leave-start="opacity-100 translate-x-0" 
                          x-transition:leave-end="opacity-0 -translate-x-2" 
                          class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
                 <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" 
-                        class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0" 
+                        class="text-gray-500 dark:text-zinc-600 hover:text-gray-700 dark:hover:text-zinc-400 transition-colors flex-shrink-0" 
                         :class="sidebarCollapsed ? 'mt-2' : ''">
                     <i :data-lucide="sidebarCollapsed ? 'chevrons-right' : 'chevrons-left'" class="w-5 h-5"></i>
                 </button>
@@ -727,7 +724,7 @@ if ($db) {
                x-transition:leave="transition ease-in duration-150" 
                x-transition:leave-start="opacity-100" 
                x-transition:leave-end="opacity-0" 
-               class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
+               class="text-xs font-semibold text-gray-500 dark:text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
             
             <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" 
                class="nav-item <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" 
@@ -757,22 +754,8 @@ if ($db) {
                       x-transition:leave-end="opacity-0 -translate-x-2" 
                       class="font-medium whitespace-nowrap">Gerenciar Sites</span>
             </a>
-            <a href="<?php echo getSafeNodeUrl('mail'); ?>" 
-               class="nav-item <?php echo $currentPage == 'mail' ? 'active' : ''; ?>" 
-               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-               :title="sidebarCollapsed ? 'Mail' : ''">
-                <i data-lucide="mail" class="w-5 h-5 flex-shrink-0"></i>
-                <span x-show="!sidebarCollapsed" 
-                      x-transition:enter="transition ease-out duration-200" 
-                      x-transition:enter-start="opacity-0 -translate-x-2" 
-                      x-transition:enter-end="opacity-100 translate-x-0" 
-                      x-transition:leave="transition ease-in duration-150" 
-                      x-transition:leave-start="opacity-100 translate-x-0" 
-                      x-transition:leave-end="opacity-0 -translate-x-2" 
-                      class="font-medium whitespace-nowrap">Mail</span>
-            </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <p x-show="!sidebarCollapsed" 
                    x-transition:enter="transition ease-out duration-200" 
                    x-transition:enter-start="opacity-0" 
@@ -780,7 +763,7 @@ if ($db) {
                    x-transition:leave="transition ease-in duration-150" 
                    x-transition:leave-start="opacity-100" 
                    x-transition:leave-end="opacity-0" 
-                   class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Análises</p>
+                   class="text-xs font-semibold text-gray-500 dark:text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Análises</p>
                 <a href="<?php echo getSafeNodeUrl('logs'); ?>" 
                    class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" 
                    :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
@@ -794,34 +777,6 @@ if ($db) {
                           x-transition:leave-start="opacity-100 translate-x-0" 
                           x-transition:leave-end="opacity-0 -translate-x-2" 
                           class="font-medium whitespace-nowrap">Explorar Logs</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Comportamental' : ''">
-                    <i data-lucide="brain" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Comportamental</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'security-analytics' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Analytics' : ''">
-                    <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Analytics</span>
                 </a>
                 <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" 
                    class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" 
@@ -837,182 +792,6 @@ if ($db) {
                           x-transition:leave-end="opacity-0 -translate-x-2" 
                           class="font-medium whitespace-nowrap">IPs Suspeitos</span>
                 </a>
-                <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'attacked-targets' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Alvos Atacados' : ''">
-                    <i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Alvos Atacados</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p x-show="!sidebarCollapsed" 
-                   x-transition:enter="transition ease-out duration-200" 
-                   x-transition:enter-start="opacity-0" 
-                   x-transition:enter-end="opacity-100" 
-                   x-transition:leave="transition ease-in duration-150" 
-                   x-transition:leave-start="opacity-100" 
-                   x-transition:leave-end="opacity-0" 
-                   class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
-                <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'threat-intelligence' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Threat Intelligence' : ''">
-                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Threat Intelligence</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'security-advisor' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Security Advisor' : ''">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Security Advisor</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'vulnerability-scanner' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Vulnerability Scanner' : ''">
-                    <i data-lucide="scan-search" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Vulnerability Scanner</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('anomaly-detector'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'anomaly-detector' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Anomaly Detector' : ''">
-                    <i data-lucide="radar" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Anomaly Detector</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'endpoint-protection' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Proteção por Endpoint' : ''">
-                    <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'security-tests' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Testes de Segurança' : ''">
-                    <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Testes de Segurança</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p x-show="!sidebarCollapsed" 
-                   x-transition:enter="transition ease-out duration-200" 
-                   x-transition:enter-start="opacity-0" 
-                   x-transition:enter-end="opacity-100" 
-                   x-transition:leave="transition ease-in duration-150" 
-                   x-transition:leave-start="opacity-100" 
-                   x-transition:leave-end="opacity-0" 
-                   class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="<?php echo getSafeNodeUrl('updates'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'updates' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Atualizações' : ''">
-                    <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Atualizações</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Verificação Humana' : ''">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Configurações' : ''">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('help'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Ajuda' : ''">
-                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Ajuda</span>
-                </a>
             </div>
         </nav>
         
@@ -1026,7 +805,7 @@ if ($db) {
              x-transition:leave-start="opacity-100 translate-y-0" 
              x-transition:leave-end="opacity-0 translate-y-2">
             <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
                     Upgrade Agora
                 </button>
@@ -1039,11 +818,11 @@ if ($db) {
 
     <!-- Modal de confirmação de saída -->
     <div id="safenode-logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="w-full max-w-sm mx-4 rounded-2xl bg-zinc-950 border border-white/10 p-6 shadow-2xl">
-            <h3 class="text-lg font-bold text-white mb-2">Deseja realmente sair?</h3>
-            <p class="text-sm text-zinc-400 mb-6">Você será desconectado do painel SafeNode e precisará fazer login novamente para acessar o sistema.</p>
+        <div class="w-full max-w-sm mx-4 rounded-2xl bg-white dark:bg-zinc-950 border border-gray-200 dark:border-white/10 p-6 shadow-2xl">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Deseja realmente sair?</h3>
+            <p class="text-sm text-gray-600 dark:text-zinc-400 mb-6">Você será desconectado do painel SafeNode e precisará fazer login novamente para acessar o sistema.</p>
             <div class="flex gap-3 justify-end">
-                <button type="button" data-logout-cancel class="px-4 py-2 rounded-xl bg-zinc-900 text-zinc-300 hover:bg-zinc-800 text-sm font-semibold transition-all">
+                <button type="button" data-logout-cancel class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-800 text-sm font-semibold transition-all">
                     Cancelar
                 </button>
                 <button type="button" data-logout-confirm class="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 text-sm font-semibold transition-all">
@@ -1568,16 +1347,16 @@ if ($db) {
            style="position: fixed !important; transform: translateX(-100%); will-change: transform;"
            x-cloak>
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
                     <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
-                <button @click="sidebarOpen = false; $dispatch('safenode-sidebar-toggle', { isOpen: false })" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
+                <button @click="sidebarOpen = false; $dispatch('safenode-sidebar-toggle', { isOpen: false })" class="text-gray-500 dark:text-zinc-600 hover:text-gray-700 dark:hover:text-zinc-400 transition-colors flex-shrink-0">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1595,80 +1374,16 @@ if ($db) {
                 <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
             </a>
-            <a href="<?php echo getSafeNodeUrl('mail'); ?>" class="nav-item <?php echo $currentPage == 'mail' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                <i data-lucide="mail" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Mail</span>
-            </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Análises</p>
                 <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Explorar Logs</span>
                 </a>
-                <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="brain" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Comportamental</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" class="nav-item <?php echo $currentPage == 'security-analytics' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Analytics</span>
-                </a>
                 <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" class="nav-item <?php echo $currentPage == 'attacked-targets' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Alvos Atacados</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
-                <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" class="nav-item <?php echo $currentPage == 'threat-intelligence' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Threat Intelligence</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" class="nav-item <?php echo $currentPage == 'security-advisor' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Security Advisor</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" class="nav-item <?php echo $currentPage == 'vulnerability-scanner' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="scan-search" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Vulnerability Scanner</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('anomaly-detector'); ?>" class="nav-item <?php echo $currentPage == 'anomaly-detector' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="radar" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Anomaly Detector</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" class="nav-item <?php echo $currentPage == 'endpoint-protection' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" class="nav-item <?php echo $currentPage == 'security-tests' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Testes de Segurança</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="<?php echo getSafeNodeUrl('updates'); ?>" class="nav-item <?php echo $currentPage == 'updates' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Atualizações</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('help'); ?>" class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Ajuda</span>
                 </a>
             </div>
         </nav>
@@ -1676,7 +1391,7 @@ if ($db) {
         <!-- Upgrade Card -->
         <div class="p-4 flex-shrink-0">
             <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
+                <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Ativar Pro</h3>
                 <button class="w-full btn-primary py-2.5 text-sm">
                     Upgrade Agora
                 </button>
@@ -1693,22 +1408,22 @@ if ($db) {
 
         
         <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-dark-950">
         <!-- Header -->
-        <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
+        <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-8 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-6">
-                <button data-sidebar-toggle class="lg:hidden text-zinc-400 hover:text-white transition-colors">
+                <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
                 <div>
-                    <h2 class="text-2xl font-bold text-white tracking-tight"><?php echo $pageTitle; ?></h2>
-                    <p class="text-sm text-zinc-500 mt-0.5">Gerencie suas informações pessoais</p>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight"><?php echo $pageTitle; ?></h2>
+                    <p class="text-sm text-gray-600 dark:text-zinc-500 mt-0.5">Gerencie suas informações pessoais</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
                 <div class="relative hidden md:block">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"></i>
+                    <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"></i>
                     <input type="text" placeholder="Buscar..." class="search-input">
                 </div>
             </div>
@@ -1742,35 +1457,35 @@ if ($db) {
                     <div class="absolute inset-0 grid-pattern opacity-20"></div>
                     
                     <!-- Background Pattern -->
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/5 to-white/2 rounded-full blur-3xl"></div>
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-gray-200/20 dark:from-white/5 to-gray-100/10 dark:to-white/2 rounded-full blur-3xl"></div>
                     
                     <div class="relative z-10">
                         <div class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
                             <?php if ($avatarUrl): ?>
-                                <div class="relative w-28 h-28 rounded-2xl overflow-hidden shadow-2xl avatar-glow border-2 border-white/20">
+                                <div class="relative w-28 h-28 rounded-2xl overflow-hidden shadow-2xl avatar-glow border-2 border-gray-300 dark:border-white/20">
                                     <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="Avatar" class="w-full h-full object-cover">
                                     <div class="absolute bottom-1 right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-black shadow-lg">
                                         <i data-lucide="check" class="w-3.5 h-3.5 text-black"></i>
                                     </div>
                                 </div>
                             <?php else: ?>
-                                <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-white to-zinc-300 flex items-center justify-center text-black font-black text-4xl shadow-2xl avatar-glow border-2 border-white/20">
+                                <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-gray-200 dark:from-white to-gray-300 dark:to-zinc-300 flex items-center justify-center text-gray-900 dark:text-black font-black text-4xl shadow-2xl avatar-glow border-2 border-gray-300 dark:border-white/20">
                                     <?php echo $userInitial; ?>
                                 </div>
                             <?php endif; ?>
                             <div class="flex-1">
                                 <div class="flex items-center gap-3 mb-3">
-                                    <h3 class="text-3xl font-black text-white"><?php echo htmlspecialchars($username); ?></h3>
-                                    <span class="modern-badge px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold border border-white/20">
+                                    <h3 class="text-3xl font-black text-gray-900 dark:text-white"><?php echo htmlspecialchars($username); ?></h3>
+                                    <span class="modern-badge px-3 py-1.5 bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white rounded-lg text-xs font-bold border border-gray-300 dark:border-white/20">
                                         <i data-lucide="check-circle" class="w-3.5 h-3.5 inline mr-1"></i>
                                         Ativo
                                     </span>
                                 </div>
-                                <p class="text-zinc-400 text-sm flex items-center gap-2 mb-2 font-semibold">
-                                    <i data-lucide="shield-check" class="w-4 h-4 text-white"></i>
+                                <p class="text-gray-600 dark:text-zinc-400 text-sm flex items-center gap-2 mb-2 font-semibold">
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-gray-900 dark:text-white"></i>
                                     Administrador do Sistema
                                 </p>
-                                <p class="text-zinc-500 text-xs flex items-center gap-2 font-medium">
+                                <p class="text-gray-500 dark:text-zinc-500 text-xs flex items-center gap-2 font-medium">
                                     <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
                                     Membro desde <?php echo date('d/m/Y', strtotime($userStats['account_created'])); ?>
                                 </p>
@@ -1780,16 +1495,16 @@ if ($db) {
                         <!-- Estatísticas - Redesign -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="stat-card rounded-xl p-5 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full blur-2xl"></div>
+                                <div class="absolute top-0 right-0 w-20 h-20 bg-gray-200/20 dark:bg-white/5 rounded-full blur-2xl"></div>
                                 <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-3">
-                                        <div class="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
-                                        <i data-lucide="globe" class="w-6 h-6 text-white"></i>
+                                        <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/10 border border-gray-300 dark:border-white/20 flex items-center justify-center">
+                                        <i data-lucide="globe" class="w-6 h-6 text-gray-900 dark:text-white"></i>
                                     </div>
-                                        <span class="text-xs text-zinc-500 uppercase tracking-wider font-bold">Sites</span>
+                                        <span class="text-xs text-gray-500 dark:text-zinc-500 uppercase tracking-wider font-bold">Sites</span>
                                 </div>
-                                    <div class="text-3xl font-black text-white mb-1"><?php echo number_format($userStats['total_sites']); ?></div>
-                                    <div class="text-xs text-zinc-400 font-medium">Configurados</div>
+                                    <div class="text-3xl font-black text-gray-900 dark:text-white mb-1"><?php echo number_format($userStats['total_sites']); ?></div>
+                                    <div class="text-xs text-gray-600 dark:text-zinc-400 font-medium">Configurados</div>
                                 </div>
                             </div>
                             
@@ -1800,10 +1515,10 @@ if ($db) {
                                         <div class="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center">
                                             <i data-lucide="activity" class="w-6 h-6 text-purple-400"></i>
                                     </div>
-                                        <span class="text-xs text-zinc-500 uppercase tracking-wider font-bold">Logs</span>
+                                        <span class="text-xs text-gray-500 dark:text-zinc-500 uppercase tracking-wider font-bold">Logs</span>
                                 </div>
-                                    <div class="text-3xl font-black text-white mb-1"><?php echo number_format($userStats['total_logs']); ?></div>
-                                    <div class="text-xs text-zinc-400 font-medium">Registrados</div>
+                                    <div class="text-3xl font-black text-gray-900 dark:text-white mb-1"><?php echo number_format($userStats['total_logs']); ?></div>
+                                    <div class="text-xs text-gray-600 dark:text-zinc-400 font-medium">Registrados</div>
                                 </div>
                             </div>
                             
@@ -1814,10 +1529,10 @@ if ($db) {
                                         <div class="w-12 h-12 rounded-xl bg-red-600/20 border border-red-500/30 flex items-center justify-center">
                                             <i data-lucide="shield-alert" class="w-6 h-6 text-red-400"></i>
                                     </div>
-                                        <span class="text-xs text-zinc-500 uppercase tracking-wider font-bold">Bloqueios</span>
+                                        <span class="text-xs text-gray-500 dark:text-zinc-500 uppercase tracking-wider font-bold">Bloqueios</span>
                                 </div>
-                                    <div class="text-3xl font-black text-white mb-1"><?php echo number_format($userStats['total_blocks']); ?></div>
-                                    <div class="text-xs text-zinc-400 font-medium">Ativos</div>
+                                    <div class="text-3xl font-black text-gray-900 dark:text-white mb-1"><?php echo number_format($userStats['total_blocks']); ?></div>
+                                    <div class="text-xs text-gray-600 dark:text-zinc-400 font-medium">Ativos</div>
                                 </div>
                             </div>
                         </div>
@@ -1838,8 +1553,8 @@ if ($db) {
                                 <i data-lucide="settings" class="w-6 h-6 text-blue-400"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-white">Configurações da Conta</h3>
-                                <p class="text-xs text-zinc-400 mt-0.5 font-medium">Gerencie suas credenciais de acesso</p>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Configurações da Conta</h3>
+                                <p class="text-xs text-gray-600 dark:text-zinc-400 mt-0.5 font-medium">Gerencie suas credenciais de acesso</p>
                         </div>
                     </div>
                     
@@ -1848,7 +1563,7 @@ if ($db) {
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
-                                <label class="block text-sm font-bold text-zinc-300 mb-2 flex items-center gap-2">
+                                <label class="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2 flex items-center gap-2">
                                     <i data-lucide="user" class="w-4 h-4 text-blue-400"></i>
                                     Nome de Usuário
                                 </label>
@@ -1857,7 +1572,7 @@ if ($db) {
                                 <input type="text" name="username" id="inputUsername" value="<?php echo htmlspecialchars($username); ?>" required
                                        pattern="[a-zA-Z0-9_]{3,50}" 
                                        disabled
-                                           class="profile-input w-full pl-10 pr-4 py-3 border border-white/10 rounded-xl bg-zinc-900/30 text-zinc-500 cursor-not-allowed transition-all" 
+                                           class="profile-input w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-zinc-900/30 text-gray-500 dark:text-zinc-500 cursor-not-allowed transition-all" 
                                        placeholder="seu_usuario">
                                 </div>
                                 <p class="mt-1.5 text-xs text-zinc-500 flex items-center gap-1 font-medium">
@@ -1868,13 +1583,13 @@ if ($db) {
 
                             <?php if ($email): ?>
                             <div>
-                                <label class="block text-sm font-bold text-zinc-300 mb-2 flex items-center gap-2">
+                                <label class="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2 flex items-center gap-2">
                                     <i data-lucide="mail" class="w-4 h-4 text-blue-400"></i>
                                     E-mail
                                 </label>
                                 <div class="relative">
                                     <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
-                                    <input type="email" value="<?php echo htmlspecialchars($email); ?>" disabled class="w-full pl-10 pr-4 py-3 border border-white/10 rounded-xl bg-zinc-900/30 text-zinc-500 cursor-not-allowed">
+                                    <input type="email" value="<?php echo htmlspecialchars($email); ?>" disabled class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-zinc-900/30 text-gray-500 dark:text-zinc-500 cursor-not-allowed">
                                 </div>
                                 <p class="mt-1.5 text-xs text-zinc-500 flex items-center gap-1 font-medium">
                                     <i data-lucide="shield-check" class="w-3 h-3 text-emerald-400"></i>
@@ -1901,7 +1616,7 @@ if ($db) {
                             </p>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-white/10">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-200 dark:border-white/10">
                             <a href="change-password.php" class="text-blue-400 hover:text-blue-300 text-sm font-bold flex items-center gap-2 transition-colors order-2 sm:order-1 hover:scale-105">
                                 <i data-lucide="key" class="w-4 h-4"></i>
                                 Alterar Senha
@@ -1917,7 +1632,7 @@ if ($db) {
                             
                             <!-- Botões Cancelar e Salvar (modo edição) -->
                             <div id="actionButtonsContainer" class="hidden flex flex-col sm:flex-row gap-3 w-full sm:w-auto order-1 sm:order-2">
-                                <button type="button" onclick="cancelEditMode()" class="w-full sm:w-auto px-6 py-3 border border-white/10 text-white rounded-xl hover:bg-white/5 hover:border-white/20 font-bold transition-all text-center">
+                                <button type="button" onclick="cancelEditMode()" class="w-full sm:w-auto px-6 py-3 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:border-gray-400 dark:hover:border-white/20 font-bold transition-all text-center">
                                     Cancelar
                                 </button>
                                 <button type="submit" name="update_profile" class="btn-primary w-full sm:w-auto px-6 py-3 text-black rounded-xl font-bold transition-all flex items-center justify-center gap-2">
@@ -1944,8 +1659,8 @@ if ($db) {
                                 <i data-lucide="shield" class="w-6 h-6 text-purple-400"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-white">Segurança Avançada</h3>
-                                <p class="text-xs text-zinc-400 mt-0.5 font-medium">Proteja ainda mais sua conta</p>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Segurança Avançada</h3>
+                                <p class="text-xs text-gray-600 dark:text-zinc-400 mt-0.5 font-medium">Proteja ainda mais sua conta</p>
                         </div>
                     </div>
                     
@@ -1953,14 +1668,14 @@ if ($db) {
                         <!-- 2FA removido -->
                         
                         <!-- Logout Simples -->
-                        <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-blue-500/30 transition-all group">
+                        <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-gray-50 dark:bg-zinc-900/30 border border-gray-200 dark:border-white/5 hover:border-blue-500/30 transition-all group">
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600/25 transition-colors">
                                     <i data-lucide="log-out" class="w-6 h-6 text-blue-400"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-bold text-white mb-1">Sair da Conta</p>
-                                    <p class="text-xs text-zinc-500 font-medium">Fazer logout da sua conta</p>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Sair da Conta</p>
+                                    <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Fazer logout da sua conta</p>
                                 </div>
                             </div>
                             <a href="logout.php" class="modern-badge px-5 py-2.5 bg-blue-600/15 text-blue-400 rounded-lg text-sm font-bold hover:bg-blue-600/25 transition-all whitespace-nowrap border border-blue-600/30 text-center">
@@ -1969,14 +1684,14 @@ if ($db) {
                             </a>
                         </div>
                         
-                            <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-blue-500/30 transition-all group">
+                            <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-gray-50 dark:bg-zinc-900/30 border border-gray-200 dark:border-white/5 hover:border-blue-500/30 transition-all group">
                             <div class="flex items-start gap-4">
                                     <div class="w-12 h-12 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600/25 transition-colors">
                                     <i data-lucide="monitor" class="w-6 h-6 text-blue-400"></i>
                                 </div>
                                 <div>
-                                        <p class="text-sm font-bold text-white mb-1">Sessões Ativas</p>
-                                        <p class="text-xs text-zinc-500 font-medium">Gerencie dispositivos conectados à sua conta</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Sessões Ativas</p>
+                                        <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Gerencie dispositivos conectados à sua conta</p>
                                 </div>
                             </div>
                                 <a href="sessions.php" class="modern-badge px-5 py-2.5 bg-blue-600/15 text-blue-400 rounded-lg text-sm font-bold hover:bg-blue-600/25 transition-all whitespace-nowrap border border-blue-600/30 text-center">
@@ -1985,22 +1700,99 @@ if ($db) {
                             </a>
                         </div>
 
-                            <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-blue-500/30 transition-all group">
+                            <div class="security-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-gray-50 dark:bg-zinc-900/30 border border-gray-200 dark:border-white/5 hover:border-blue-500/30 transition-all group">
                             <div class="flex items-start gap-4">
                                     <div class="w-12 h-12 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600/25 transition-colors">
                                     <i data-lucide="clock" class="w-6 h-6 text-blue-400"></i>
                                 </div>
                                 <div>
-                                        <p class="text-sm font-bold text-white mb-1">Histórico de Atividades</p>
-                                        <p class="text-xs text-zinc-500 font-medium">Visualize ações recentes em sua conta</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Histórico de Atividades</p>
+                                        <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Visualize ações recentes em sua conta</p>
                                 </div>
                             </div>
                                 <a href="activity-log.php" class="modern-badge px-5 py-2.5 bg-blue-600/15 text-blue-400 rounded-lg text-sm font-bold hover:bg-blue-600/25 transition-all whitespace-nowrap border border-blue-600/30 text-center">
                                     <i data-lucide="arrow-right" class="w-4 h-4 inline mr-1"></i>
                                 Ver histórico
                             </a>
-                            </div>
                         </div>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Aparência - Redesign -->
+                <div class="glass-card rounded-2xl p-6 md:p-8 relative overflow-hidden animate-fade-in depth-shadow" style="animation-delay: 0.3s">
+                    <!-- Grid pattern -->
+                    <div class="absolute inset-0 grid-pattern opacity-20"></div>
+                    
+                    <!-- Decoração de fundo -->
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+                                <i data-lucide="palette" class="w-6 h-6 text-amber-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Aparência</h3>
+                                <p class="text-xs text-zinc-400 mt-0.5 font-medium">Personalize a interface do painel</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3" x-data="{ currentTheme: '<?php echo isset($_COOKIE['safenode-theme']) ? htmlspecialchars($_COOKIE['safenode-theme']) : 'auto'; ?>' }" 
+                         x-init="
+                             currentTheme = localStorage.getItem('safenode-theme') || 'auto';
+                             window.addEventListener('theme-changed', (e) => {
+                                 currentTheme = e.detail.theme;
+                             });
+                         ">
+                        <!-- Modo Escuro -->
+                        <button @click="SafeNodeTheme.set('dark'); currentTheme = 'dark'; if(typeof lucide !== 'undefined') lucide.createIcons();" 
+                                class="security-card w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-gray-50 dark:bg-zinc-900/30 border border-gray-200 dark:border-white/5 hover:border-amber-500/30 transition-all group text-left" 
+                                :class="currentTheme === 'dark' ? 'border-amber-500/50 bg-amber-500/5' : ''">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-amber-600/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-600/25 transition-colors">
+                                    <i data-lucide="moon" class="w-6 h-6 text-amber-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Modo Escuro</p>
+                                    <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Interface com tema escuro</p>
+                                </div>
+                            </div>
+                            <i x-show="currentTheme === 'dark'" data-lucide="check" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+                        </button>
+                        
+                        <!-- Modo Claro -->
+                        <button @click="SafeNodeTheme.set('light'); currentTheme = 'light'; if(typeof lucide !== 'undefined') lucide.createIcons();" 
+                                class="security-card w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-gray-50 dark:bg-zinc-900/30 border border-gray-200 dark:border-white/5 hover:border-amber-500/30 transition-all group text-left" 
+                                :class="currentTheme === 'light' ? 'border-amber-500/50 bg-amber-500/5' : ''">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-amber-600/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-600/25 transition-colors">
+                                    <i data-lucide="sun" class="w-6 h-6 text-amber-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Modo Claro</p>
+                                    <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Interface com tema claro</p>
+                                </div>
+                            </div>
+                            <i x-show="currentTheme === 'light'" data-lucide="check" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+                        </button>
+                        
+                        <!-- Seguir Dispositivo -->
+                        <button @click="SafeNodeTheme.set('auto'); currentTheme = 'auto'; if(typeof lucide !== 'undefined') lucide.createIcons();" 
+                                class="security-card w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl bg-gray-50 dark:bg-zinc-900/30 border border-gray-200 dark:border-white/5 hover:border-amber-500/30 transition-all group text-left" 
+                                :class="currentTheme === 'auto' ? 'border-amber-500/50 bg-amber-500/5' : ''">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-amber-600/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-600/25 transition-colors">
+                                    <i data-lucide="monitor" class="w-6 h-6 text-amber-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Seguir Dispositivo</p>
+                                    <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Usar preferência do sistema</p>
+                                </div>
+                            </div>
+                            <i x-show="currentTheme === 'auto'" data-lucide="check" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+                        </button>
+                    </div>
                     </div>
                 </div>
 
@@ -2018,8 +1810,8 @@ if ($db) {
                                 <i data-lucide="alert-triangle" class="w-6 h-6 text-red-400"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-red-400">Zona Perigosa</h3>
-                                <p class="text-xs text-zinc-400 mt-0.5 font-medium">Ações irreversíveis - proceda com cautela</p>
+                            <h3 class="text-lg font-bold text-red-600 dark:text-red-400">Zona Perigosa</h3>
+                                <p class="text-xs text-gray-600 dark:text-zinc-400 mt-0.5 font-medium">Ações irreversíveis - proceda com cautela</p>
                         </div>
                     </div>
                     
@@ -2030,8 +1822,8 @@ if ($db) {
                                     <i data-lucide="log-out" class="w-6 h-6 text-red-400"></i>
                                 </div>
                                 <div>
-                                        <p class="text-sm font-bold text-white mb-1">Encerrar Todas as Sessões</p>
-                                        <p class="text-xs text-zinc-500 font-medium">Desconecte-se de todos os dispositivos imediatamente</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Encerrar Todas as Sessões</p>
+                                        <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Desconecte-se de todos os dispositivos imediatamente</p>
                                 </div>
                             </div>
                                 <button onclick="openTerminateSessionsModal()" class="modern-badge px-5 py-2.5 bg-red-500/15 text-red-400 rounded-lg text-sm font-bold hover:bg-red-500/25 transition-all border border-red-500/30 whitespace-nowrap">
@@ -2046,8 +1838,8 @@ if ($db) {
                                     <i data-lucide="trash-2" class="w-6 h-6 text-red-400"></i>
                                 </div>
                                 <div>
-                                        <p class="text-sm font-bold text-white mb-1">Excluir Conta Permanentemente</p>
-                                        <p class="text-xs text-zinc-500 font-medium">Esta ação não pode ser desfeita. Todos os dados serão perdidos</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Excluir Conta Permanentemente</p>
+                                        <p class="text-xs text-gray-600 dark:text-zinc-500 font-medium">Esta ação não pode ser desfeita. Todos os dados serão perdidos</p>
                                 </div>
                             </div>
                                 <button onclick="openDeleteAccountModal()" class="modern-badge px-5 py-2.5 bg-red-500/15 text-red-400 rounded-lg text-sm font-bold hover:bg-red-500/25 transition-all border border-red-500/30 whitespace-nowrap">
@@ -2066,7 +1858,7 @@ if ($db) {
 
     <!-- Modal de Confirmação Customizado - Redesign -->
     <div id="confirmModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-        <div class="glass-card rounded-2xl p-6 md:p-8 max-w-md w-full border border-white/10 relative overflow-hidden depth-shadow animate-scale-in">
+        <div class="glass-card rounded-2xl p-6 md:p-8 max-w-md w-full border border-gray-200 dark:border-white/10 relative overflow-hidden depth-shadow animate-scale-in">
             <!-- Grid pattern -->
             <div class="absolute inset-0 grid-pattern opacity-20"></div>
             
@@ -2081,7 +1873,7 @@ if ($db) {
                 <div class="flex-1">
                     <h3 id="confirmTitle" class="text-xl font-bold text-white">Confirmar Ação</h3>
                 </div>
-                    <button onclick="closeConfirmModal()" class="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                    <button onclick="closeConfirmModal()" class="p-2 text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -2089,7 +1881,7 @@ if ($db) {
                 <p id="confirmMessage" class="text-sm text-zinc-400 mb-6 leading-relaxed font-medium"></p>
 
             <div class="flex gap-3">
-                    <button id="confirmCancelBtn" onclick="closeConfirmModal()" class="flex-1 px-5 py-3 border border-white/10 text-white rounded-xl hover:bg-white/5 hover:border-white/20 font-bold transition-all">
+                    <button id="confirmCancelBtn" onclick="closeConfirmModal()" class="flex-1 px-5 py-3 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:border-gray-400 dark:hover:border-white/20 font-bold transition-all">
                     Cancelar
                 </button>
                     <button id="confirmOkBtn" class="btn-primary flex-1 px-5 py-3 text-white rounded-xl font-bold transition-all">
@@ -2160,7 +1952,7 @@ if ($db) {
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-zinc-300 mb-2">Sua Senha</label>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">Sua Senha</label>
                     <div class="relative">
                         <input type="password" id="terminatePassword" 
                                class="form-input w-full px-4 py-3 pr-12 rounded-xl text-white placeholder:text-zinc-600 text-sm font-medium" 
@@ -2174,7 +1966,7 @@ if ($db) {
                 <div id="terminateError" class="hidden p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400"></div>
 
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeTerminateSessionsModal()" class="flex-1 px-5 py-3 border border-white/10 text-white rounded-xl hover:bg-white/5 hover:border-white/20 font-bold transition-all">
+                    <button onclick="closeTerminateSessionsModal()" class="flex-1 px-5 py-3 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:border-gray-400 dark:hover:border-white/20 font-bold transition-all">
                         Cancelar
                     </button>
                     <button onclick="requestTerminateCode()" id="terminateSubmitBtn" class="flex-1 px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 font-bold transition-all shadow-lg shadow-red-500/30 flex items-center justify-center gap-2">
@@ -2201,7 +1993,7 @@ if ($db) {
                 <div id="terminateError2" class="hidden p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400"></div>
 
                 <div class="flex gap-3 pt-2">
-                    <button onclick="backToTerminateStep1()" class="flex-1 px-5 py-3 border border-white/10 text-white rounded-xl hover:bg-white/5 hover:border-white/20 font-bold transition-all">
+                    <button onclick="backToTerminateStep1()" class="flex-1 px-5 py-3 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:border-gray-400 dark:hover:border-white/20 font-bold transition-all">
                         Voltar
                     </button>
                     <button onclick="verifyTerminateCode()" id="terminateVerifyBtn" class="flex-1 px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 font-bold transition-all shadow-lg shadow-red-500/30 flex items-center justify-center gap-2">
@@ -2250,7 +2042,7 @@ if ($db) {
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-zinc-300 mb-2">Sua Senha</label>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">Sua Senha</label>
                     <div class="relative">
                         <input type="password" id="deletePassword" 
                                class="form-input w-full px-4 py-3 pr-12 rounded-xl text-white placeholder:text-zinc-600 text-sm font-medium" 
@@ -2264,7 +2056,7 @@ if ($db) {
                 <div id="deleteError" class="hidden p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400"></div>
 
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeDeleteAccountModal()" class="flex-1 px-5 py-3 border border-white/10 text-white rounded-xl hover:bg-white/5 hover:border-white/20 font-bold transition-all">
+                    <button onclick="closeDeleteAccountModal()" class="flex-1 px-5 py-3 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:border-gray-400 dark:hover:border-white/20 font-bold transition-all">
                         Cancelar
                     </button>
                     <button onclick="requestDeleteCode()" id="deleteSubmitBtn" class="flex-1 px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 font-bold transition-all shadow-lg shadow-red-500/30 flex items-center justify-center gap-2">
@@ -2291,7 +2083,7 @@ if ($db) {
                 <div id="deleteError2" class="hidden p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400"></div>
 
                 <div class="flex gap-3 pt-2">
-                    <button onclick="backToDeleteStep1()" class="flex-1 px-5 py-3 border border-white/10 text-white rounded-xl hover:bg-white/5 hover:border-white/20 font-bold transition-all">
+                    <button onclick="backToDeleteStep1()" class="flex-1 px-5 py-3 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:border-gray-400 dark:hover:border-white/20 font-bold transition-all">
                         Voltar
                     </button>
                     <button onclick="verifyDeleteCode()" id="deleteVerifyBtn" class="flex-1 px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 font-bold transition-all shadow-lg shadow-red-500/30 flex items-center justify-center gap-2">

@@ -64,7 +64,7 @@ if ($db) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark h-full">
+<html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,6 +77,8 @@ if ($db) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="includes/theme-styles.css">
+    <script src="includes/theme-toggle.js"></script>
     
     
     <script>
@@ -116,6 +118,7 @@ if ($db) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
+            /* Modo Escuro (padrão) */
             --bg-primary: #030303;
             --bg-secondary: #080808;
             --bg-tertiary: #0f0f0f;
@@ -130,6 +133,22 @@ if ($db) {
             --text-muted: #52525b;
         }
         
+        :root:not(.dark) {
+            /* Modo Claro */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f5;
+            --bg-card: #ffffff;
+            --bg-hover: #e9ecef;
+            --border-subtle: rgba(0,0,0,0.06);
+            --border-light: rgba(0,0,0,0.12);
+            --accent: #000000;
+            --accent-glow: rgba(0, 0, 0, 0.1);
+            --text-primary: #000000;
+            --text-secondary: #495057;
+            --text-muted: #868e96;
+        }
+        
         body {
             background-color: var(--bg-primary);
             color: var(--text-secondary);
@@ -138,25 +157,27 @@ if ($db) {
             -moz-osx-font-smoothing: grayscale;
         }
         
-        /* Custom Scrollbar */
+        /* Custom Scrollbar - usa variáveis do theme-styles.css */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: rgba(255,255,255,0.1); 
+            background: var(--scrollbar-thumb, var(--border-light)); 
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: var(--scrollbar-thumb-hover, var(--text-muted)); 
+        }
         
-        /* Glassmorphism Effect */
+        /* Glassmorphism Effect - usa variáveis do theme-styles.css */
         .glass {
-            background: rgba(10, 10, 10, 0.7);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-subtle);
         }
         
         .glass-light {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--glass-light-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
@@ -202,17 +223,36 @@ if ($db) {
             transition: opacity 0.3s;
         }
         
+        :root:not(.dark) .nav-item::before {
+            background: linear-gradient(90deg, var(--gradient-overlay-light) 0%, transparent 100%);
+        }
+        
         .nav-item:hover {
             color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+        
+        :root:not(.dark) .nav-item:hover {
+            background: #f1f3f5;
+            color: #000000;
         }
         
         .nav-item:hover::before {
             opacity: 0.5;
         }
         
+        :root:not(.dark) .nav-item:hover::before {
+            opacity: 0.3;
+        }
+        
         .nav-item.active {
             color: var(--accent);
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, var(--gradient-overlay) 0%, transparent 100%);
+        }
+        
+        :root:not(.dark) .nav-item.active {
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%);
+            color: #000000;
         }
         
         .nav-item.active::before {
@@ -738,41 +778,7 @@ if ($db) {
     // Buscar sequência de proteção
     ?>
     <style>
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            color: #52525b;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            text-decoration: none;
-        }
-        
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .nav-item:hover {
-            color: #ffffff;
-        }
-        
-        .nav-item:hover::before {
-            opacity: 0.5;
-        }
-        
-        .nav-item.active {
-            color: #ffffff;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-        }
+        /* Nav-item styles já estão definidos acima com variáveis CSS - este bloco foi removido para evitar duplicação */
         
         .nav-item.active::before {
             opacity: 1;
@@ -792,8 +798,8 @@ if ($db) {
         }
         
         .sidebar {
-            background: linear-gradient(180deg, #080808 0%, #030303 100%);
-            border-right: 1px solid rgba(255,255,255,0.04);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-right: 1px solid var(--border-subtle);
             position: relative;
         }
         
@@ -918,11 +924,12 @@ if ($db) {
            :class="sidebarCollapsed ? 'w-20' : 'w-72'" 
            class="sidebar h-full flex-shrink-0 flex flex-col hidden lg:flex transition-all duration-300 ease-in-out overflow-hidden">
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center flex-col gap-3' : 'justify-between'">
                 <div class="flex items-center gap-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <div class="relative">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                        <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 dark:hidden">
+                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 hidden dark:block">
                     </div>
                     <div x-show="!sidebarCollapsed" 
                          x-transition:enter="transition ease-out duration-200" 
@@ -932,8 +939,8 @@ if ($db) {
                          x-transition:leave-start="opacity-100 translate-x-0" 
                          x-transition:leave-end="opacity-0 -translate-x-2" 
                          class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
                 <button @click="sidebarCollapsed = !sidebarCollapsed; setTimeout(() => lucide.createIcons(), 50)" 
@@ -1017,21 +1024,7 @@ if ($db) {
                       class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Configurações' : ''">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" 
                    class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" 
                    :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
@@ -1584,13 +1577,13 @@ if ($db) {
            style="position: fixed !important; transform: translateX(-100%); will-change: transform;"
            x-cloak>
         <!-- Logo -->
-        <div class="p-4 border-b border-white/5 flex-shrink-0 relative">
+        <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
                     <div class="overflow-hidden whitespace-nowrap">
-                        <h1 class="font-bold text-white text-xl tracking-tight">SafeNode</h1>
-                        <p class="text-xs text-zinc-500 font-medium">Security Platform</p>
+                        <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
+                        <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
                     </div>
                 </div>
                 <button @click="sidebarOpen = false; $dispatch('safenode-sidebar-toggle', { isOpen: false })" class="text-zinc-600 hover:text-zinc-400 transition-colors flex-shrink-0">
@@ -1622,11 +1615,7 @@ if ($db) {
                 <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Configurações</span>
-                </a>
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="life-buoy" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Ajuda</span>
@@ -1643,17 +1632,17 @@ if ($db) {
     </script>
         
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950">
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-dark-950 dark:bg-dark-950 bg-white">
         <!-- Header -->
-        <header class="h-20 bg-dark-900/50 backdrop-blur-xl border-b border-white/5 px-8 flex items-center justify-between flex-shrink-0">
+        <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-8 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-6">
-                <button data-sidebar-toggle class="lg:hidden text-zinc-400 hover:text-white transition-colors">
+                <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
                 <div>
-                    <h2 class="text-2xl font-bold text-white tracking-tight">Dashboard</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h2>
                     <?php if ($currentSiteId > 0 && $selectedSite): ?>
-                    <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['name'] ?? ''); ?></p>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-500 text-gray-600 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['name'] ?? ''); ?></p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -1666,7 +1655,7 @@ if ($db) {
                 </div>
                 
                 <!-- Notifications -->
-                <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <button @click="notificationsOpen = !notificationsOpen" class="relative p-3 text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">
                     <i data-lucide="bell" class="w-5 h-5"></i>
                     <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-white rounded-full border-2 border-dark-900 animate-pulse"></span>
                 </button>
@@ -1687,7 +1676,7 @@ if ($db) {
                 <div class="w-10 h-10 rounded-xl <?php echo $dashboardFlashType === 'warning' ? 'bg-amber-500/20' : ($dashboardFlashType === 'error' ? 'bg-red-500/20' : 'bg-white/20'); ?> flex items-center justify-center">
                     <i data-lucide="<?php echo $dashboardFlashType === 'error' ? 'alert-triangle' : ($dashboardFlashType === 'warning' ? 'shield-alert' : 'check-circle-2'); ?>" class="w-5 h-5 <?php echo $dashboardFlashType === 'warning' ? 'text-amber-400' : ($dashboardFlashType === 'error' ? 'text-red-400' : 'text-white'); ?>"></i>
                 </div>
-                <p class="font-medium <?php echo $dashboardFlashType === 'warning' ? 'text-amber-200' : ($dashboardFlashType === 'error' ? 'text-red-200' : 'text-white'); ?>"><?php echo htmlspecialchars($dashboardFlash); ?></p>
+                <p class="font-medium <?php echo $dashboardFlashType === 'warning' ? 'text-amber-700 dark:text-amber-200' : ($dashboardFlashType === 'error' ? 'text-red-700 dark:text-red-200' : 'text-gray-900 dark:text-white'); ?>"><?php echo htmlspecialchars($dashboardFlash); ?></p>
             </div>
                 <?php endif; ?>
             
@@ -1715,7 +1704,7 @@ if ($db) {
                     <div class="flex items-center gap-3">
                         <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
                         <div>
-                            <h3 class="text-sm font-semibold text-white">Status Geral</h3>
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Status Geral</h3>
                             <p class="text-xs text-zinc-500" id="status-description">Sistema operacional</p>
                         </div>
                     </div>
@@ -1730,8 +1719,8 @@ if ($db) {
                         <p class="text-xs sm:text-sm font-medium text-zinc-400">Tráfego Humano</p>
                     </div>
                     <div class="flex items-end justify-between mt-2 sm:mt-4">
-                        <p id="human-traffic" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="human-change" class="text-xs sm:text-sm font-semibold text-white bg-green-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
+                        <p id="human-traffic" class="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">-</p>
+                        <span id="human-change" class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white bg-green-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
                     </div>
                     <p class="text-xs text-zinc-600 mt-2 sm:mt-3">últimas 24h</p>
                 </div>
@@ -1742,7 +1731,7 @@ if ($db) {
                         <p class="text-xs sm:text-sm font-medium text-zinc-400">Bots Bloqueados</p>
                     </div>
                     <div class="flex items-end justify-between mt-2 sm:mt-4">
-                        <p id="bots-blocked" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
+                        <p id="bots-blocked" class="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">-</p>
                         <span id="bots-change" class="text-xs sm:text-sm font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
                     </div>
                     <p class="text-xs text-zinc-600 mt-2 sm:mt-3">últimas 24h</p>
@@ -1754,7 +1743,7 @@ if ($db) {
                         <p class="text-xs sm:text-sm font-medium text-zinc-400">Taxa de Bloqueio</p>
                     </div>
                     <div class="flex items-end justify-between mt-2 sm:mt-4">
-                        <p id="block-rate-value" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
+                        <p id="block-rate-value" class="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">-</p>
                         <span class="text-xs sm:text-sm font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg">%</span>
                     </div>
                     <p class="text-xs text-zinc-600 mt-2 sm:mt-3">requisições bloqueadas</p>
@@ -1766,8 +1755,8 @@ if ($db) {
                         <p class="text-xs sm:text-sm font-medium text-zinc-400">Total de Eventos</p>
                     </div>
                     <div class="flex items-end justify-between mt-2 sm:mt-4">
-                        <p id="total-events" class="text-2xl sm:text-4xl font-bold text-white tracking-tight">-</p>
-                        <span id="events-change" class="text-xs sm:text-sm font-semibold text-white bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
+                        <p id="total-events" class="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">-</p>
+                        <span id="events-change" class="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg"></span>
                     </div>
                     <p class="text-xs text-zinc-600 mt-2 sm:mt-3">últimas 24h</p>
                 </div>

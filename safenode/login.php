@@ -87,33 +87,27 @@ $clientCountry    = (function () {
                 $error = 'Erro ao conectar ao banco de dados. Tente novamente.';
             } else {
                 // Verificar se já excedeu o limite de tentativas no intervalo
+                // Usar tabela de verificação humana para contar falhas
                 if ($loginMaxAttempts > 0 && $loginWindow > 0) {
-                    $stmt = $pdo->prepare("
-                        SELECT COUNT(*) 
-                        FROM safenode_security_logs 
-                        WHERE ip_address = ? 
-                          AND threat_type = 'login_failed' 
-                          AND created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
-                    ");
-                    $stmt->execute([$clientIp, $loginWindow]);
-                    $failedAttempts = (int) $stmt->fetchColumn();
+                    try {
+                        $stmt = $pdo->prepare("
+                            SELECT COUNT(*) 
+                            FROM safenode_human_verification_logs 
+                            WHERE ip_address = ? 
+                              AND event_type = 'bot_blocked' 
+                              AND created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
+                        ");
+                        $stmt->execute([$clientIp, $loginWindow]);
+                        $failedAttempts = (int) $stmt->fetchColumn();
+                    } catch (PDOException $e) {
+                        // Se tabela não existir, ignorar rate limit
+                        error_log("SafeNode Login Rate Limit Check Error: " . $e->getMessage());
+                        $failedAttempts = 0;
+                    }
 
                     if ($failedAttempts >= $loginMaxAttempts) {
-                        // Registrar evento de rate limit
-                        $logger = new SecurityLogger($pdo);
-                        $logger->log(
-                            $clientIp,
-                            '/safenode/login.php',
-                            'POST',
-                            'blocked',
-                            'rate_limit_login',
-                            80,
-                            $_SERVER['HTTP_USER_AGENT'] ?? null,
-                            $_SERVER['HTTP_REFERER'] ?? null,
-                            null,
-                            null,
-                            $clientCountry
-                        );
+                        // Registrar evento de rate limit (log simples)
+                        error_log("SafeNode Login Rate Limit: IP $clientIp excedeu $loginMaxAttempts tentativas em $loginWindow segundos");
 
                         $error = 'Muitas tentativas de login. Tente novamente em alguns minutos.';
                         // Não prosseguir com validação de usuário/senha
@@ -148,21 +142,8 @@ $clientCountry    = (function () {
                             error_log("Hash no banco: " . substr($passwordHash, 0, 30) . "...");
                             error_log("Tentando verificar novamente com hash limpo...");
                         }
-                        // Registrar tentativa de login falha no logger
-                        $logger = new SecurityLogger($pdo);
-                        $logger->log(
-                            $clientIp,
-                            '/safenode/login.php',
-                            'POST',
-                            'blocked',
-                            'login_failed',
-                            40,
-                            $_SERVER['HTTP_USER_AGENT'] ?? null,
-                            $_SERVER['HTTP_REFERER'] ?? null,
-                            null,
-                            null,
-                            $clientCountry
-                        );
+                        // Registrar tentativa de login falha (log simples)
+                        error_log("SafeNode Login Failed: Email $email, IP $clientIp");
 
                         $error = 'Senha incorreta. Verifique sua senha e tente novamente.';
                     } elseif (!$user['is_active']) {
@@ -281,7 +262,8 @@ $clientCountry    = (function () {
             <!-- Logo -->
             <div class="flex items-center gap-3">
                 <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md">
-                    <img src="assets/img/logos (6).png" alt="SafeNode" class="w-6 h-6 brightness-0 invert">
+                    <img src="assets/img/safe-claro.png" alt="SafeNode" class="w-6 h-6 dark:hidden">
+                    <img src="assets/img/logos (6).png" alt="SafeNode" class="w-6 h-6 brightness-0 invert hidden dark:block">
                 </div>
                 <span class="text-xl font-bold tracking-tight">SafeNode</span>
             </div>
@@ -404,8 +386,9 @@ $clientCountry    = (function () {
                 <div class="mt-3 p-3 rounded-2xl border border-slate-200 bg-slate-50 flex items-center gap-3 shadow-sm" id="hv-box">
                     <div class="relative flex items-center justify-center w-9 h-9">
                         <div class="absolute inset-0 rounded-2xl border-2 border-slate-200 border-t-black animate-spin" id="hv-spinner"></div>
-                        <div class="relative z-10 w-7 h-7 rounded-2xl bg-black flex items-center justify-center">
-                            <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain">
+                        <div class="relative z-10 w-7 h-7 rounded-2xl bg-black dark:bg-black flex items-center justify-center">
+                            <img src="assets/img/safe-claro.png" alt="SafeNode" class="w-4 h-4 object-contain dark:hidden">
+                            <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain hidden dark:block">
                         </div>
                     </div>
                     <div class="flex-1">
