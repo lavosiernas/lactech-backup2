@@ -1,0 +1,34 @@
+================================================================================
+RESUMO RÁPIDO - O QUE EXECUTAR EM CADA SISTEMA
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. KRON (kron.sbs)                                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+Arquivo: create_kron_ecosystem.sql
+Ação: Criar banco completo
+Onde: Servidor do KRON
+Banco: kron_ecosystem (NOVO - será criado)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2. SAFENODE (safenode.cloud)                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+Arquivo: add_kron_columns_safenode.sql
+Ação: Adicionar 3 colunas
+Onde: Servidor do SafeNode
+Banco: safend (JÁ EXISTE)
+Tabela: safenode_users
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 3. LACTECH (lactechsys.com)                                             │
+└─────────────────────────────────────────────────────────────────────────┘
+Arquivo: add_kron_columns_lactech.sql
+Ação: Adicionar 3 colunas
+Onde: Servidor do LacTech
+Banco: lactech_lgmato (JÁ EXISTE - verifique o nome)
+Tabela: users
+
+================================================================================
+ORDEM DE EXECUÇÃO: KRON → SAFENODE → LACTECH
+================================================================================
+
