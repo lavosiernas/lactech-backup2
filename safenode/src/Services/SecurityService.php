@@ -12,7 +12,6 @@ class SecurityService
 {
     private $db;
     private $siteModel;
-    private $rateLimiter;
     private $ipBlocker;
     
     public function __construct($database)
@@ -20,10 +19,9 @@ class SecurityService
         $this->db = $database;
         $this->siteModel = new SiteModel($database);
         
-        require_once __DIR__ . '/../../includes/RateLimiter.php';
         require_once __DIR__ . '/../../includes/IPBlocker.php';
         
-        $this->rateLimiter = new \RateLimiter($database);
+        // RateLimiter removido - não é core
         $this->ipBlocker = new \IPBlocker($database);
     }
     
@@ -48,15 +46,7 @@ class SecurityService
             ];
         }
         
-        // Verificar rate limit
-        $rateLimit = $this->rateLimiter->checkRateLimit($ipAddress, $endpoint);
-        if (!$rateLimit['allowed']) {
-            return [
-                'blocked' => true,
-                'reason' => 'rate_limit_exceeded',
-                'details' => $rateLimit
-            ];
-        }
+        // Rate limit removido - não é core
         
         return [
             'blocked' => false,
@@ -86,8 +76,7 @@ class SecurityService
         $this->logSecurityEvent($ipAddress, $userAgent, 'allowed', 'allowed');
         
         return [
-            'action' => 'allow',
-            'rateLimit' => $this->rateLimiter->checkRateLimit($ipAddress, $endpoint)
+            'action' => 'allow'
         ];
     }
     

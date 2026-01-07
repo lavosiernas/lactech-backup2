@@ -16,7 +16,7 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
 
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/HumanVerification.php';
-require_once __DIR__ . '/includes/SecurityLogger.php';
+// SecurityLogger removido - não é core
 
 $pageTitle = 'Redefinir Senha';
 $message = '';
@@ -133,24 +133,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password']) && 
                             ");
                             $invalidateStmt->execute([$otpRecord['user_id'], $otpRecord['id']]);
                             
-                            // Log de segurança
+                            // Log de segurança - SecurityLogger removido (não é core)
                             try {
-                                if (class_exists('SecurityLogger')) {
+                                // SecurityLogger removido - não é core
+                                if (false && class_exists('SecurityLogger')) {
                                     $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-                                    $logger = new SecurityLogger($db);
-                                    $logger->log(
-                                        $ipAddress,
-                                        '/reset-password.php',
-                                        'POST',
-                                        'password_reset_complete_otp',
-                                        'password_reset_otp_completed',
-                                        0,
-                                        $_SERVER['HTTP_USER_AGENT'] ?? null,
-                                        $_SERVER['HTTP_REFERER'] ?? null,
-                                        null,
-                                        null,
-                                        null,
-                                        null
+                                    // $logger = new SecurityLogger($db);
+                                    // $logger->log(
+                                    //     $ipAddress,
+                                    //     '/reset-password.php',
+                                    //     'POST',
+                                        // 'password_reset_complete_otp',
+                                        // 'password_reset_otp_completed',
+                                        // 0,
+                                        // $_SERVER['HTTP_USER_AGENT'] ?? null,
+                                        // $_SERVER['HTTP_REFERER'] ?? null,
+                                        // null,
+                                        // null,
+                                        // null,
+                                        // null
                                     );
                                 }
                             } catch (Exception $logError) {

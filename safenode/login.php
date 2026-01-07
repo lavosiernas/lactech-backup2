@@ -31,7 +31,7 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/HumanVerification.php';
 require_once __DIR__ . '/includes/Settings.php';
-require_once __DIR__ . '/includes/SecurityLogger.php';
+// SecurityLogger removido - não é core
 // 2FA removido - require_once __DIR__ . '/includes/TwoFactorAuth.php';
 
 // Inicializar desafio de verificação humana SafeNode

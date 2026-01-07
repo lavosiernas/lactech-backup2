@@ -147,12 +147,40 @@ try {
     ];
     
     try {
+        // Buscar desafios da tabela de verificação humana
+        $challengeCount = 0;
+        try {
+            $sqlChallenge = "SELECT COUNT(*) as challenge_count 
+                FROM safenode_human_verification_logs 
+                WHERE event_type = 'challenge_shown' 
+                AND DATE(created_at) = CURDATE()";
+            $paramsChallenge = [];
+            if ($currentSiteId > 0) {
+                $sqlChallenge .= " AND site_id = ?";
+                $paramsChallenge[] = $currentSiteId;
+            } elseif ($userId) {
+                $sqlChallenge .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+                $paramsChallenge[] = $userId;
+            }
+            $stmtChallenge = $db->prepare($sqlChallenge);
+            if (!empty($paramsChallenge)) {
+                $stmtChallenge->execute($paramsChallenge);
+            } else {
+                $stmtChallenge->execute();
+            }
+            $challengeResult = $stmtChallenge->fetch();
+            if ($challengeResult) {
+                $challengeCount = (int)($challengeResult['challenge_count'] ?? 0);
+            }
+        } catch (PDOException $e) {
+            error_log("SafeNode Challenge Count Error: " . $e->getMessage());
+        }
+        
         $sqlToday = "SELECT 
             COUNT(*) as total_requests,
-            COALESCE(SUM(CASE WHEN action_taken = 'blocked' THEN 1 ELSE 0 END), 0) as blocked_requests,
-            COALESCE(SUM(CASE WHEN action_taken = 'allowed' THEN 1 ELSE 0 END), 0) as allowed_requests,
-            COALESCE(SUM(CASE WHEN action_taken = 'challenged' THEN 1 ELSE 0 END), 0) as challenged_requests,
-            COALESCE(SUM(CASE WHEN action_taken = 'rate_limited' THEN 1 ELSE 0 END), 0) as rate_limited_requests,
+            COALESCE(SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END), 0) as blocked_requests,
+            COALESCE(SUM(CASE WHEN event_type IN ('access_allowed', 'human_validated') THEN 1 ELSE 0 END), 0) as allowed_requests,
+            COALESCE(SUM(CASE WHEN event_type = 'rate_limited' THEN 1 ELSE 0 END), 0) as rate_limited_requests,
             COUNT(DISTINCT ip_address) as unique_ips,
             COALESCE(AVG(threat_score), 0) as avg_threat_score,
             COALESCE(MAX(threat_score), 0) as max_threat_score,
@@ -191,7 +219,7 @@ try {
                     'total_requests' => (int)($result['total_requests'] ?? 0),
                     'blocked_requests' => (int)($result['blocked_requests'] ?? 0) ?: 0,
                     'allowed_requests' => (int)($result['allowed_requests'] ?? 0) ?: 0,
-                    'challenged_requests' => (int)($result['challenged_requests'] ?? 0) ?: 0,
+                    'challenged_requests' => $challengeCount,
                     'rate_limited_requests' => (int)($result['rate_limited_requests'] ?? 0) ?: 0,
                     'unique_ips' => (int)($result['unique_ips'] ?? 0),
                     'avg_threat_score' => (float)($result['avg_threat_score'] ?? 0),
@@ -302,16 +330,8 @@ try {
         $activeBlocks = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total' => 0];
     }
     
-    // Calcular latência
+    // Calcular latência - removido (não é core)
     $latencyData = null;
-    try {
-        require_once __DIR__ . '/../includes/SecurityLogger.php';
-        $securityLogger = new SecurityLogger($db);
-        $latencyData = $securityLogger->calculateLatency(null, 3600);
-    } catch (Exception $e) {
-        error_log("SafeNode Latency Calculation Error: " . $e->getMessage());
-        $latencyData = null;
-    }
     
     // Últimos logs (últimos 10)
     $recentLogs = [];

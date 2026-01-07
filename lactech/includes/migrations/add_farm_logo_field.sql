@@ -23,3 +23,11 @@ SELECT 'Campo logo_path adicionado com sucesso!' AS resultado;
 
 
 
+
+
+
+
+
+
+
+

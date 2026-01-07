@@ -15,7 +15,7 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/Settings.php';
-require_once __DIR__ . '/includes/ProtectionStreak.php';
+// ProtectionStreak removido - não é core
 
 $pageTitle = 'Configurações';
 $currentSiteId = $_SESSION['view_site_id'] ?? 0;
@@ -36,19 +36,12 @@ if ($db && $currentSiteId > 0) {
 $message = '';
 $messageType = '';
 
-// Buscar sequência de proteção ANTES de verificar atualização
-$streakManager = new ProtectionStreak($db);
+// ProtectionStreak removido - não é core
 $protectionStreak = null;
-if ($userId) {
-    $protectionStreak = $streakManager->getStreak($userId, $currentSiteId);
-}
 
 // Verificar se houve atualização bem-sucedida (DEPOIS de buscar os dados atualizados)
 if (isset($_GET['streak_updated'])) {
-    // Recarregar dados após atualização para garantir que está sincronizado
-    if ($userId) {
-        $protectionStreak = $streakManager->getStreak($userId, $currentSiteId);
-    }
+    // ProtectionStreak removido - não é core
     // Redirecionar sem mensagem para limpar a URL
     header("Location: settings.php");
     exit;

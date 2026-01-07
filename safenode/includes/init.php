@@ -10,7 +10,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/ProtectionStreak.php';
 
 // Remover token da URL se presente (limpeza)
 if (isset($_GET['token'])) {
@@ -72,17 +71,7 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
         $_SESSION['view_site_name'] = 'Visão Global';
     }
 
-    // Registrar proteção do dia (sequência de proteção)
-    if (isset($_SESSION['safenode_user_id'])) {
-        $userId = $_SESSION['safenode_user_id'];
-        $siteId = $_SESSION['view_site_id'] ?? 0;
-        
-        $streakManager = new ProtectionStreak();
-        // Só registrar se estiver habilitado
-        if ($streakManager->isEnabled($userId, $siteId)) {
-            $streakManager->recordProtection($userId, $siteId);
-        }
-    }
+    // Registrar proteção do dia (sequência de proteção) - REMOVIDO (gamificação não é core)
 
     // Inicializar Router
     require_once __DIR__ . '/Router.php';

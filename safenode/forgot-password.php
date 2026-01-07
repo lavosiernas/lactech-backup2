@@ -21,8 +21,7 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
 
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/HumanVerification.php';
-require_once __DIR__ . '/includes/EmailSender.php';
-require_once __DIR__ . '/includes/SecurityLogger.php';
+// EmailSender e SecurityLogger removidos - não são core
 
 $pageTitle = 'Esqueceu Senha';
 $message = '';
@@ -129,24 +128,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_reset'])) {
                                 header('Location: reset-password.php');
                                 exit;
                                 
-                                // Log de segurança
+                                // Log de segurança - SecurityLogger removido (não é core)
                                 try {
-                                    if (class_exists('SecurityLogger')) {
-                                        $logger = new SecurityLogger($db);
-                                        $logger->log(
-                                            $ipAddress,
-                                            '/forgot-password.php',
-                                            'POST',
-                                            'password_reset_request_otp',
-                                            'password_reset_otp_requested',
-                                            0,
-                                            $_SERVER['HTTP_USER_AGENT'] ?? null,
-                                            $_SERVER['HTTP_REFERER'] ?? null,
-                                            null,
-                                            null,
-                                            null,
-                                            null
-                                        );
+                                    // SecurityLogger removido - não é core
+                                    if (false && class_exists('SecurityLogger')) {
+                                        // $logger = new SecurityLogger($db);
+                                        // $logger->log(
+                                        //     $ipAddress,
+                                        //     '/forgot-password.php',
+                                        //     'POST',
+                                        //     'password_reset_request_otp',
+                                        //     'password_reset_otp_requested',
+                                        //     0,
+                                        //     $_SERVER['HTTP_USER_AGENT'] ?? null,
+                                        //     $_SERVER['HTTP_REFERER'] ?? null,
+                                        //     null,
+                                        //     null,
+                                        //     null,
+                                        //     null
+                                        // );
                                     }
                                 } catch (Exception $logError) {
                                     error_log("Erro ao registrar log: " . $logError->getMessage());

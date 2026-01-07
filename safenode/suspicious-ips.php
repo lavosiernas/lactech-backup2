@@ -15,7 +15,7 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
 
-$pageTitle = 'IPs Suspeitos';
+$pageTitle = 'IPs que Falharam Verificação';
 $currentSiteId = $_SESSION['view_site_id'] ?? 0;
 $userId = $_SESSION['safenode_user_id'] ?? null;
 $selectedSite = null;
@@ -462,11 +462,11 @@ if ($db && $currentSiteId > 0) {
                       x-transition:leave-end="opacity-0 -translate-x-2" 
                       class="font-medium whitespace-nowrap">Gerenciar Sites</span>
             </a>
-            <a href="<?php echo getSafeNodeUrl('mail'); ?>" 
-               class="nav-item <?php echo $currentPage == 'mail' ? 'active' : ''; ?>" 
+            <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" 
+               class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" 
                :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-               :title="sidebarCollapsed ? 'Mail' : ''">
-                <i data-lucide="mail" class="w-5 h-5 flex-shrink-0"></i>
+               :title="sidebarCollapsed ? 'Verificação Humana' : ''">
+                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
                 <span x-show="!sidebarCollapsed" 
                       x-transition:enter="transition ease-out duration-200" 
                       x-transition:enter-start="opacity-0 -translate-x-2" 
@@ -474,222 +474,38 @@ if ($db && $currentSiteId > 0) {
                       x-transition:leave="transition ease-in duration-150" 
                       x-transition:leave-start="opacity-100 translate-x-0" 
                       x-transition:leave-end="opacity-0 -translate-x-2" 
-                      class="font-medium whitespace-nowrap">Mail</span>
+                      class="font-medium whitespace-nowrap">Verificação Humana</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('logs'); ?>" 
+               class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Logs' : ''">
+                <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">Logs</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" 
+               class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'IPs Suspeitos' : ''">
+                <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" 
+                      x-transition:enter="transition ease-out duration-200" 
+                      x-transition:enter-start="opacity-0 -translate-x-2" 
+                      x-transition:enter-end="opacity-100 translate-x-0" 
+                      x-transition:leave="transition ease-in duration-150" 
+                      x-transition:leave-start="opacity-100 translate-x-0" 
+                      x-transition:leave-end="opacity-0 -translate-x-2" 
+                      class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
             <div class="pt-4 mt-4 border-t border-white/5">
-                <p x-show="!sidebarCollapsed" 
-                   x-transition:enter="transition ease-out duration-200" 
-                   x-transition:enter-start="opacity-0" 
-                   x-transition:enter-end="opacity-100" 
-                   x-transition:leave="transition ease-in duration-150" 
-                   x-transition:leave-start="opacity-100" 
-                   x-transition:leave-end="opacity-0" 
-                   class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Análises</p>
-                <a href="<?php echo getSafeNodeUrl('logs'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Explorar Logs' : ''">
-                    <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Explorar Logs</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Comportamental' : ''">
-                    <i data-lucide="brain" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Comportamental</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'security-analytics' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Analytics' : ''">
-                    <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Analytics</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'IPs Suspeitos' : ''">
-                    <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">IPs Suspeitos</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'attacked-targets' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Alvos Atacados' : ''">
-                    <i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Alvos Atacados</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p x-show="!sidebarCollapsed" 
-                   x-transition:enter="transition ease-out duration-200" 
-                   x-transition:enter-start="opacity-0" 
-                   x-transition:enter-end="opacity-100" 
-                   x-transition:leave="transition ease-in duration-150" 
-                   x-transition:leave-start="opacity-100" 
-                   x-transition:leave-end="opacity-0" 
-                   class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
-                <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'threat-intelligence' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Threat Intelligence' : ''">
-                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Threat Intelligence</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'security-advisor' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Security Advisor' : ''">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Security Advisor</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'vulnerability-scanner' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Vulnerability Scanner' : ''">
-                    <i data-lucide="scan-search" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Vulnerability Scanner</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('anomaly-detector'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'anomaly-detector' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Anomaly Detector' : ''">
-                    <i data-lucide="radar" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Anomaly Detector</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'endpoint-protection' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Proteção por Endpoint' : ''">
-                    <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'security-tests' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Testes de Segurança' : ''">
-                    <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Testes de Segurança</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p x-show="!sidebarCollapsed" 
-                   x-transition:enter="transition ease-out duration-200" 
-                   x-transition:enter-start="opacity-0" 
-                   x-transition:enter-end="opacity-100" 
-                   x-transition:leave="transition ease-in duration-150" 
-                   x-transition:leave-start="opacity-100" 
-                   x-transition:leave-end="opacity-0" 
-                   class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="<?php echo getSafeNodeUrl('updates'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'updates' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Atualizações' : ''">
-                    <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Atualizações</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" 
-                   class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" 
-                   :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
-                   :title="sidebarCollapsed ? 'Verificação Humana' : ''">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span x-show="!sidebarCollapsed" 
-                          x-transition:enter="transition ease-out duration-200" 
-                          x-transition:enter-start="opacity-0 -translate-x-2" 
-                          x-transition:enter-end="opacity-100 translate-x-0" 
-                          x-transition:leave="transition ease-in duration-150" 
-                          x-transition:leave-start="opacity-100 translate-x-0" 
-                          x-transition:leave-end="opacity-0 -translate-x-2" 
-                          class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
                 <a href="<?php echo getSafeNodeUrl('settings'); ?>" 
                    class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" 
                    :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
@@ -1241,83 +1057,28 @@ if ($db && $currentSiteId > 0) {
         
         <!-- Navigation -->
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
-            
             <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" class="nav-item <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                 <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="font-medium whitespace-nowrap">Dashboard</span>
             </a>
             <a href="<?php echo getSafeNodeUrl('sites'); ?>" class="nav-item <?php echo $currentPage == 'sites' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                 <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
+                <span class="font-medium whitespace-nowrap">Sites</span>
             </a>
-            <a href="<?php echo getSafeNodeUrl('mail'); ?>" class="nav-item <?php echo $currentPage == 'mail' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                <i data-lucide="mail" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Mail</span>
+            <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Verificação Humana</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Logs</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
             <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Análises</p>
-                <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Explorar Logs</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="brain" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Comportamental</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-analytics'); ?>" class="nav-item <?php echo $currentPage == 'security-analytics' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Analytics</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('attacked-targets'); ?>" class="nav-item <?php echo $currentPage == 'attacked-targets' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="target" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Alvos Atacados</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Inteligência</p>
-                <a href="<?php echo getSafeNodeUrl('threat-intelligence'); ?>" class="nav-item <?php echo $currentPage == 'threat-intelligence' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Threat Intelligence</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-advisor'); ?>" class="nav-item <?php echo $currentPage == 'security-advisor' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Security Advisor</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('vulnerability-scanner'); ?>" class="nav-item <?php echo $currentPage == 'vulnerability-scanner' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="scan-search" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Vulnerability Scanner</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('anomaly-detector'); ?>" class="nav-item <?php echo $currentPage == 'anomaly-detector' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="radar" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Anomaly Detector</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('endpoint-protection'); ?>" class="nav-item <?php echo $currentPage == 'endpoint-protection' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="route" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Proteção por Endpoint</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-tests'); ?>" class="nav-item <?php echo $currentPage == 'security-tests' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="test-tube" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Testes de Segurança</span>
-                </a>
-            </div>
-            
-            <div class="pt-4 mt-4 border-t border-white/5">
-                <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Sistema</p>
-                <a href="<?php echo getSafeNodeUrl('updates'); ?>" class="nav-item <?php echo $currentPage == 'updates' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Atualizações</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Verificação Humana</span>
-                </a>
                 <a href="<?php echo getSafeNodeUrl('settings'); ?>" class="nav-item <?php echo $currentPage == 'settings' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                     <i data-lucide="settings-2" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">Configurações</span>
@@ -1328,16 +1089,6 @@ if ($db && $currentSiteId > 0) {
                 </a>
             </div>
         </nav>
-        
-        <!-- Upgrade Card -->
-        <div class="p-4 flex-shrink-0">
-            <div class="upgrade-card">
-                <h3 class="font-semibold text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
-            </div>
-        </div>
     </aside>
 
     <script>
@@ -1357,7 +1108,7 @@ if ($db && $currentSiteId > 0) {
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div>
-                        <h2 class="text-2xl font-bold text-white tracking-tight">IPs Suspeitos</h2>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">IPs que Falharam Verificação</h2>
                         <?php if ($selectedSite): ?>
                             <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>
@@ -1370,7 +1121,7 @@ if ($db && $currentSiteId > 0) {
                 <div id="suspicious-content" class="space-y-6">
                     <div class="glass rounded-2xl p-12 text-center">
                         <i data-lucide="loader" class="w-12 h-12 mx-auto mb-4 animate-spin text-zinc-400"></i>
-                        <p class="text-sm text-zinc-500">Carregando IPs suspeitos...</p>
+                        <p class="text-sm text-zinc-500">Carregando IPs que falharam verificação...</p>
                     </div>
                 </div>
             </div>
@@ -1424,10 +1175,10 @@ if ($db && $currentSiteId > 0) {
             if (ips.length === 0) {
                 container.innerHTML = `
                     <div class="table-card p-8 text-center">
-                        <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-4 text-white"></i>
-                        <p class="text-white font-bold mb-2">Nenhum IP suspeito detectado</p>
-                        <p class="text-zinc-500 text-sm">Todas as rotas estão seguras</p>
-                        <p class="text-zinc-600 text-xs mt-4">IPs suspeitos aparecerão aqui quando detectados pelo sistema</p>
+                        <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-4 text-green-400"></i>
+                        <p class="text-white font-bold mb-2">Nenhum IP bloqueado</p>
+                        <p class="text-zinc-500 text-sm">Todos os acessos passaram pela verificação humana</p>
+                        <p class="text-zinc-600 text-xs mt-4">IPs que falharem a verificação aparecerão aqui</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -1437,10 +1188,13 @@ if ($db && $currentSiteId > 0) {
             container.innerHTML = `
                 <div class="glass rounded-2xl p-6 mb-6">
                     <div class="flex items-center justify-between">
-                        <h2 class="text-xl font-semibold text-white">${ips.length} IP${ips.length !== 1 ? 's' : ''} Suspeito${ips.length !== 1 ? 's' : ''}</h2>
+                        <div>
+                            <h2 class="text-xl font-semibold text-white">${ips.length} IP${ips.length !== 1 ? 's' : ''} Bloqueado${ips.length !== 1 ? 's' : ''}</h2>
+                            <p class="text-sm text-zinc-500 mt-1">IPs que falharam na verificação humana</p>
+                        </div>
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-semibold border border-red-500/30">
                             <span class="w-2 h-2 rounded-full bg-red-400"></span>
-                            Análise Ativa
+                            Bloqueados
                         </div>
                     </div>
                 </div>
@@ -1475,23 +1229,23 @@ if ($db && $currentSiteId > 0) {
                                             </span>
                                         </div>
                                         <p class="text-sm text-zinc-400">
-                                            Suspicion Score: <span class="text-white font-semibold">${ip.suspicion_score || 0}</span>
+                                            Bloqueios: <span class="text-white font-semibold">${ip.block_count || 0}</span>
                                         </p>
                                     </div>
                                 </div>
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                     <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">Total Ataques</p>
-                                        <p class="text-xl font-bold text-red-400">${ip.total_attacks || 0}</p>
+                                        <p class="text-xs text-zinc-400 mb-1">Tentativas Bloqueadas</p>
+                                        <p class="text-xl font-bold text-red-400">${ip.block_count || 0}</p>
                                     </div>
                                     <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">Tipos de Ataque</p>
-                                        <p class="text-xl font-bold text-orange-400">${ip.attack_types_count || 0}</p>
+                                        <p class="text-xs text-zinc-400 mb-1">Primeira Tentativa</p>
+                                        <p class="text-sm font-bold text-white">${ip.first_seen ? new Date(ip.first_seen).toLocaleString('pt-BR') : 'N/A'}</p>
                                     </div>
                                     <div class="p-4 rounded-xl bg-white/5 border border-white/10">
-                                        <p class="text-xs text-zinc-400 mb-1">País</p>
-                                        <p class="text-xl font-bold text-white">${ip.country_code || 'N/A'}</p>
+                                        <p class="text-xs text-zinc-400 mb-1">Última Tentativa</p>
+                                        <p class="text-sm font-bold text-white">${ip.last_seen ? new Date(ip.last_seen).toLocaleString('pt-BR') : 'N/A'}</p>
                                     </div>
                                 </div>
                                 

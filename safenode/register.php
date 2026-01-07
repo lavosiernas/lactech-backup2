@@ -19,7 +19,7 @@ if (isset($_SESSION['safenode_logged_in']) && $_SESSION['safenode_logged_in'] ==
 }
 
 require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/EmailService.php';
+// EmailService removido - não é core
 require_once __DIR__ . '/includes/HumanVerification.php';
 
 // Inicializar desafio de verificação humana SafeNode
@@ -188,10 +188,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                             error_log("SafeNode Register: OTP Code: " . $otpCode);
                             error_log("SafeNode Register: Username: " . ($fullName ?: $username));
                             
-                    $emailService = SafeNodeEmailService::getInstance();
-                            error_log("SafeNode Register: EmailService instanciado com sucesso");
-                            
-                    $emailResult = $emailService->sendRegistrationOTP($email, $otpCode, $fullName ?: $username);
+                    // EmailService removido - não é core
+                    // $emailService = SafeNodeEmailService::getInstance();
+                    // $emailResult = $emailService->sendRegistrationOTP($email, $otpCode, $fullName ?: $username);
+                    $emailResult = ['success' => false, 'error' => 'Email service não disponível'];
                     
                             error_log("SafeNode Register: Resultado do envio:");
                             error_log("SafeNode Register: - Success: " . ($emailResult['success'] ?? 'N/A'));
