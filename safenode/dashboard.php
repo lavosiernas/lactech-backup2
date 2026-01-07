@@ -80,6 +80,25 @@ if ($db) {
     <link rel="stylesheet" href="includes/theme-styles.css">
     <script src="includes/theme-toggle.js"></script>
     
+    <!-- Aplicar tema ANTES da renderização para evitar flash -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('safenode-theme') || 'auto';
+            let actualTheme = stored;
+            if (stored === 'auto') {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    actualTheme = 'light';
+                } else {
+                    actualTheme = 'dark';
+                }
+            }
+            if (actualTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     
     <script>
         tailwind.config = {
@@ -1580,7 +1599,8 @@ if ($db) {
         <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                    <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 dark:hidden">
+                    <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 hidden dark:block">
                     <div class="overflow-hidden whitespace-nowrap">
                         <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
                         <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>
@@ -1725,7 +1745,6 @@ if ($db) {
                     <p class="text-xs text-zinc-600 mt-2 sm:mt-3">últimas 24h</p>
                 </div>
 
-                <!-- Bots Bloqueados -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
                         <p class="text-xs sm:text-sm font-medium text-zinc-400">Bots Bloqueados</p>
@@ -1737,7 +1756,6 @@ if ($db) {
                     <p class="text-xs text-zinc-600 mt-2 sm:mt-3">últimas 24h</p>
                 </div>
                 
-                <!-- Taxa de Bloqueio -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
                         <p class="text-xs sm:text-sm font-medium text-zinc-400">Taxa de Bloqueio</p>
@@ -1749,7 +1767,6 @@ if ($db) {
                     <p class="text-xs text-zinc-600 mt-2 sm:mt-3">requisições bloqueadas</p>
                 </div>
                 
-                <!-- Total de Eventos -->
                 <div class="stat-card group">
                     <div class="flex items-center justify-between mb-1">
                         <p class="text-xs sm:text-sm font-medium text-zinc-400">Total de Eventos</p>
@@ -1763,14 +1780,14 @@ if ($db) {
             </div>
             
             <!-- Último Evento Relevante -->
-            <div class="mb-8 glass rounded-2xl p-6 border border-white/10">
-                <h3 class="text-lg font-semibold text-white mb-4">Último Evento Relevante</h3>
-                <div id="last-event" class="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                    <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-zinc-400"></i>
+            <div class="mb-8 glass rounded-2xl p-6 border border-gray-200 dark:border-white/10">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Último Evento Relevante</h3>
+                <div id="last-event" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5">
+                    <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-gray-600 dark:text-zinc-400"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm text-zinc-400">Carregando...</p>
+                        <p class="text-sm text-gray-700 dark:text-zinc-400">Carregando...</p>
                     </div>
                 </div>
             </div>
@@ -1779,17 +1796,17 @@ if ($db) {
             <div class="chart-card mb-8">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold text-white">Tráfego: Humanos vs Bots</h3>
-                        <p class="text-sm text-zinc-500 mt-1">Últimas 24 horas</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tráfego: Humanos vs Bots</h3>
+                        <p class="text-sm text-gray-600 dark:text-zinc-500 mt-1">Últimas 24 horas</p>
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                            <span class="text-sm text-zinc-400">Humanos</span>
+                            <span class="text-sm text-gray-700 dark:text-zinc-400">Humanos</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <span class="text-sm text-zinc-400">Bots</span>
+                            <span class="text-sm text-gray-700 dark:text-zinc-400">Bots</span>
                         </div>
                     </div>
                 </div>
@@ -1802,62 +1819,24 @@ if ($db) {
             <div class="chart-card mb-8">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h3 class="text-lg font-semibold text-white">Eventos Recentes</h3>
-                        <p class="text-sm text-zinc-500 mt-1">Últimos 10 eventos de verificação</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Eventos Recentes</h3>
+                        <p class="text-sm text-gray-600 dark:text-zinc-500 mt-1">Últimos 10 eventos de verificação</p>
                     </div>
-                    <a href="logs.php" class="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                    <a href="logs.php" class="text-sm text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2">
                         <span>Ver todos</span>
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
                 <div id="recent-events" class="space-y-3">
-                    <div class="text-center py-10 text-zinc-500">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
+                    <div class="text-center py-10 text-gray-600 dark:text-zinc-500">
+                        <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-gray-600 dark:text-zinc-400"></i>
                         </div>
                         <p class="text-sm font-medium">Carregando eventos...</p>
                     </div>
                 </div>
             </div>
             
-            
-            <!-- Recent Events -->
-            <!-- Skeleton para eventos recentes -->
-            <div x-show="loading" class="chart-card">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="skeleton-line" style="width: 150px; height: 20px;"></div>
-                    <div class="skeleton-line" style="width: 120px; height: 24px;"></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <?php for ($i = 0; $i < 8; $i++): ?>
-                    <div class="event-item">
-                        <div class="flex items-center gap-4">
-                            <div class="skeleton-circle" style="width: 36px; height: 36px;"></div>
-                            <div class="flex-1">
-                                <div class="skeleton-line" style="width: 150px; height: 14px; margin-bottom: 4px;"></div>
-                                <div class="skeleton-line" style="width: 200px; height: 12px;"></div>
-                            </div>
-                            <div class="skeleton-line" style="width: 50px; height: 12px;"></div>
-                        </div>
-                    </div>
-                    <?php endfor; ?>
-                </div>
-            </div>
-            
-            <div x-show="!loading" class="chart-card">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-white">Eventos Recentes</h3>
-                    <span id="last-update" class="text-xs text-zinc-500 font-mono bg-white/5 px-3 py-1.5 rounded-lg"></span>
-                </div>
-                <div id="recent-logs" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="text-center py-10 text-zinc-500 col-span-2">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
-                        </div>
-                        <p class="text-sm font-medium">Carregando...</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
@@ -1870,34 +1849,33 @@ if ($db) {
          x-transition:leave-start="translate-x-0 opacity-100"
          x-transition:leave-end="translate-x-full opacity-0"
          @click.away="notificationsOpen = false"
-         class="notification-panel fixed right-0 top-0 h-full w-96 bg-dark-900 z-50 shadow-2xl"
+         class="notification-panel fixed right-0 top-0 h-full w-96 bg-white dark:bg-dark-900 z-50 shadow-2xl border-l border-gray-200 dark:border-white/5"
          x-cloak>
         <div class="flex flex-col h-full">
-            <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <div class="p-6 border-b border-gray-200 dark:border-white/5 flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center">
-                        <i data-lucide="bell" class="w-6 h-6 text-white"></i>
+                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/15 flex items-center justify-center">
+                        <i data-lucide="bell" class="w-6 h-6 text-gray-900 dark:text-white"></i>
                     </div>
                 <div>
-                        <h3 class="font-bold text-white text-lg">Notificações</h3>
-                        <p class="text-xs text-zinc-500">Alertas e eventos</p>
+                        <h3 class="font-bold text-gray-900 dark:text-white text-lg">Notificações</h3>
+                        <p class="text-xs text-gray-600 dark:text-zinc-500">Alertas e eventos</p>
                     </div>
                 </div>
-                <button @click="notificationsOpen = false" class="p-2.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <button @click="notificationsOpen = false" class="p-2.5 text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto p-5">
                 <div class="text-center py-16">
-                    <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-5">
-                        <i data-lucide="bell-off" class="w-10 h-10 text-zinc-600"></i>
+                    <div class="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-5">
+                        <i data-lucide="bell-off" class="w-10 h-10 text-gray-600 dark:text-zinc-600"></i>
                     </div>
-                    <p class="text-sm text-zinc-400 font-medium">Nenhuma notificação</p>
-                    <p class="text-xs text-zinc-600 mt-1">Você será notificado de novos eventos</p>
+                    <p class="text-sm text-gray-700 dark:text-zinc-400 font-medium">Nenhuma notificação</p>
+                    <p class="text-xs text-gray-600 dark:text-zinc-600 mt-1">Você será notificado de novos eventos</p>
                 </div>
             </div>
         </div>
-    </main>
     </div>
 
     <script>
@@ -1937,22 +1915,22 @@ if ($db) {
                 return;
             }
             
-            // Gerar labels das últimas 24 horas (a cada 2 horas)
+            // Gerar labels das últimas 7 horas (dados reais da API)
             const labels = [];
-            for (let i = 23; i >= 0; i -= 2) {
+            for (let i = 6; i >= 0; i--) {
                 const hour = new Date();
                 hour.setHours(hour.getHours() - i);
-                labels.push(hour.getHours().toString().padStart(2, '0') + 'h');
+                labels.push(hour.getHours().toString().padStart(2, '0'));
             }
             
             try {
                 humansVsBotsChart = new ChartLib(ctx, {
                     type: 'line',
                     data: {
-                        labels: labels,
+                        labels: labels.map(h => h + 'h'),
                         datasets: [{
                             label: 'Humanos',
-                            data: new Array(12).fill(0),
+                            data: new Array(7).fill(0), // 7 horas - dados reais da API
                             borderColor: '#22c55e',
                             backgroundColor: 'rgba(34, 197, 94, 0.1)',
                             borderWidth: 2,
@@ -1962,7 +1940,7 @@ if ($db) {
                             pointHoverRadius: 5
                         }, {
                             label: 'Bots',
-                            data: new Array(12).fill(0),
+                            data: new Array(7).fill(0), // 7 horas - dados reais da API
                             borderColor: '#ef4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             borderWidth: 2,
@@ -1973,6 +1951,9 @@ if ($db) {
                         }]
                     },
                     options: {
+                        animation: {
+                            duration: 0 // Desabilitar animação - apenas dados reais
+                        },
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
@@ -1980,7 +1961,7 @@ if ($db) {
                                 display: false
                             },
                             tooltip: {
-                                backgroundColor: '#0f0f0f',
+                                backgroundColor: 'rgba(0,0,0,0.9)',
                                 titleColor: '#fff',
                                 bodyColor: '#a1a1aa',
                                 borderColor: 'rgba(255,255,255,0.1)',
@@ -1993,22 +1974,22 @@ if ($db) {
                         scales: {
                             x: {
                                 grid: {
-                                    color: 'rgba(255,255,255,0.05)',
+                                    color: 'rgba(0,0,0,0.05)',
                                     drawBorder: false
                                 },
                                 ticks: {
-                                    color: '#52525b',
+                                    color: '#6b7280',
                                     font: { size: 11 }
                                 }
                             },
                             y: {
                                 beginAtZero: true,
                                 grid: {
-                                    color: 'rgba(255,255,255,0.05)',
+                                    color: 'rgba(0,0,0,0.05)',
                                     drawBorder: false
                                 },
                                 ticks: {
-                                    color: '#52525b',
+                                    color: '#6b7280',
                                     font: { size: 11 }
                                 }
                             }
@@ -2144,6 +2125,20 @@ if ($db) {
                     updateDashboard();
                 } else {
                     console.warn('Resposta sem dados:', result);
+                    // Se não houver dados, mostrar mensagem de "sem eventos"
+                    const recentEventsContainer = document.getElementById('recent-events');
+                    if (recentEventsContainer) {
+                        recentEventsContainer.innerHTML = `
+                            <div class="text-center py-12">
+                                <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
+                                    <i data-lucide="inbox" class="w-8 h-8 text-gray-400 dark:text-zinc-600"></i>
+                                </div>
+                                <p class="text-sm font-medium text-gray-700 dark:text-zinc-400 mb-1">Nenhum evento recente</p>
+                                <p class="text-xs text-gray-600 dark:text-zinc-600">Os eventos de verificação aparecerão aqui</p>
+                            </div>
+                        `;
+                        lucide.createIcons();
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao buscar estatísticas:', error);
@@ -2154,6 +2149,21 @@ if ($db) {
                 if (errorMsg) {
                     errorMsg.textContent = `Erro ao carregar dados: ${error.message}`;
                     errorMsg.classList.remove('hidden');
+                }
+                
+                // Se houver erro, mostrar mensagem de "sem eventos" em vez de "carregando"
+                const recentEventsContainer = document.getElementById('recent-events');
+                if (recentEventsContainer) {
+                    recentEventsContainer.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="inbox" class="w-8 h-8 text-gray-400 dark:text-zinc-600"></i>
+                            </div>
+                            <p class="text-sm font-medium text-gray-700 dark:text-zinc-400 mb-1">Nenhum evento recente</p>
+                            <p class="text-xs text-gray-600 dark:text-zinc-600">Os eventos de verificação aparecerão aqui</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
                 }
             }
         }
@@ -2195,7 +2205,7 @@ if ($db) {
             document.getElementById('bots-change').className = `text-xs sm:text-sm font-semibold ${botsChange >= 0 ? 'text-red-400 bg-red-500/10' : 'text-green-400 bg-green-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
             
             document.getElementById('events-change').innerHTML = formatPercent(eventsChange);
-            document.getElementById('events-change').className = `text-xs sm:text-sm font-semibold ${eventsChange >= 0 ? 'text-white bg-white/10' : 'text-red-400 bg-red-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
+            document.getElementById('events-change').className = `text-xs sm:text-sm font-semibold ${eventsChange >= 0 ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10' : 'text-red-600 dark:text-red-400 bg-red-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
             
             // Status Geral
             let status = 'operational';
@@ -2253,25 +2263,27 @@ if ($db) {
                         <i data-lucide="${eventIcon}" class="w-6 h-6 text-${eventColor}-400"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-semibold text-white">${eventText}</p>
-                        <p class="text-xs text-zinc-500 mt-1">IP: ${lastEvent.ip_address || 'N/A'} | Domínio: ${lastEvent.domain || 'N/A'}</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white">${eventText}</p>
+                        <p class="text-xs text-gray-600 dark:text-zinc-500 mt-1">IP: ${lastEvent.ip_address || 'N/A'} | Domínio: ${lastEvent.domain || 'N/A'}</p>
                     </div>
-                    <span class="text-xs text-zinc-500">${timeAgo}</span>
+                    <span class="text-xs text-gray-600 dark:text-zinc-500">${timeAgo}</span>
                 `;
                 lucide.createIcons();
             } else {
                 lastEventContainer.innerHTML = `
-                    <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-                        <i data-lucide="info" class="w-6 h-6 text-zinc-400"></i>
+                    <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                        <i data-lucide="info" class="w-6 h-6 text-gray-600 dark:text-zinc-400"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm text-zinc-400">Nenhum evento ainda</p>
+                        <p class="text-sm text-gray-700 dark:text-zinc-400">Nenhum evento ainda</p>
                     </div>
                 `;
             }
             
             // Atualizar gráfico Humans vs Bots
-            updateHumansVsBotsChart(humansValidated, botsBlocked);
+            // Atualizar gráfico com dados reais
+            const hourlyStats = dashboardData.hourly_stats || {};
+            updateHumansVsBotsChart(hourlyStats);
             
             // Eventos Recentes
             const recentEventsContainer = document.getElementById('recent-events');
@@ -2296,21 +2308,30 @@ if ($db) {
                     const timeAgo = getTimeAgo(eventDate);
                     
                     return `
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
+                        <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/[0.04] transition-all">
                             <div class="w-8 h-8 rounded-lg bg-${eventColor}-500/10 flex items-center justify-center flex-shrink-0">
                                 <i data-lucide="${eventIcon}" class="w-4 h-4 text-${eventColor}-400"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-white">${eventText}</p>
-                                <p class="text-xs text-zinc-500 truncate">${log.ip_address || 'N/A'} | ${log.domain || 'N/A'}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">${eventText}</p>
+                                <p class="text-xs text-gray-600 dark:text-zinc-500 truncate">${log.ip_address || 'N/A'} | ${log.domain || 'N/A'}</p>
                             </div>
-                            <span class="text-xs text-zinc-500 flex-shrink-0">${timeAgo}</span>
+                            <span class="text-xs text-gray-600 dark:text-zinc-500 flex-shrink-0">${timeAgo}</span>
                         </div>
                     `;
                 }).join('');
                 lucide.createIcons();
             } else {
-                recentEventsContainer.innerHTML = '<p class="text-center py-8 text-zinc-600 text-sm">Nenhum evento recente</p>';
+                recentEventsContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="inbox" class="w-8 h-8 text-gray-400 dark:text-zinc-600"></i>
+                        </div>
+                        <p class="text-sm font-medium text-gray-700 dark:text-zinc-400 mb-1">Nenhum evento recente</p>
+                        <p class="text-xs text-gray-600 dark:text-zinc-600">Os eventos de verificação aparecerão aqui</p>
+                    </div>
+                `;
+                lucide.createIcons();
             }
             
             lucide.createIcons();
@@ -2329,18 +2350,35 @@ if ($db) {
             return `Há ${diffDays} dias`;
         }
         
-        function updateHumansVsBotsChart(humans, bots) {
+        function updateHumansVsBotsChart(hourlyStats) {
             if (!humansVsBotsChart) return;
             
             try {
-                // Simular dados das últimas 24h (12 pontos, a cada 2 horas)
-                // Em produção, isso viria da API
-                const humansData = new Array(12).fill(0).map(() => Math.floor(humans / 12 + Math.random() * 10));
-                const botsData = new Array(12).fill(0).map(() => Math.floor(bots / 12 + Math.random() * 5));
+                // Usar dados reais da API - últimas 7 horas
+                const labels = Object.keys(hourlyStats).sort();
+                const humansData = [];
+                const botsData = [];
                 
+                labels.forEach(hour => {
+                    const stats = hourlyStats[hour] || { requests: 0, blocked: 0 };
+                    const total = stats.requests || 0;
+                    const blocked = stats.blocked || 0;
+                    const humans = Math.max(0, total - blocked); // Humanos = total - bloqueados
+                    
+                    humansData.push(humans);
+                    botsData.push(blocked);
+                });
+                
+                // Se não houver dados, manter zeros
+                if (humansData.length === 0) {
+                    humansData.push(0);
+                    botsData.push(0);
+                }
+                
+                humansVsBotsChart.data.labels = labels.map(h => h + 'h');
                 humansVsBotsChart.data.datasets[0].data = humansData;
                 humansVsBotsChart.data.datasets[1].data = botsData;
-                humansVsBotsChart.update('active');
+                humansVsBotsChart.update('none'); // 'none' para evitar animação desnecessária
             } catch (error) {
                 console.error('Erro ao atualizar gráfico Humans vs Bots:', error);
             }

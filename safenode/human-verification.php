@@ -113,6 +113,32 @@ if (!function_exists('getSafeNodeUrl')) {
     <link rel="stylesheet" href="includes/theme-styles.css">
     <script src="includes/theme-toggle.js"></script>
     
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            950: '#030303',
+                            900: '#050505',
+                            850: '#080808',
+                            800: '#0a0a0a',
+                            700: '#0f0f0f',
+                            600: '#141414',
+                            500: '#1a1a1a',
+                            400: '#222222',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -495,7 +521,8 @@ if (!function_exists('getSafeNodeUrl')) {
             <div class="p-4 border-b border-gray-200 dark:border-white/5 flex-shrink-0 relative">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0">
+                        <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 dark:hidden">
+                        <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-8 h-8 object-contain flex-shrink-0 hidden dark:block">
                         <div class="overflow-hidden whitespace-nowrap">
                             <h1 class="font-bold text-gray-900 dark:text-white text-xl tracking-tight">SafeNode</h1>
                             <p class="text-xs text-gray-500 dark:text-zinc-500 font-medium">Security Platform</p>

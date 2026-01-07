@@ -90,15 +90,15 @@ $clientCountry    = (function () {
                 // Usar tabela de verificação humana para contar falhas
                 if ($loginMaxAttempts > 0 && $loginWindow > 0) {
                     try {
-                        $stmt = $pdo->prepare("
-                            SELECT COUNT(*) 
+                    $stmt = $pdo->prepare("
+                        SELECT COUNT(*) 
                             FROM safenode_human_verification_logs 
-                            WHERE ip_address = ? 
+                        WHERE ip_address = ? 
                               AND event_type = 'bot_blocked' 
-                              AND created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
-                        ");
-                        $stmt->execute([$clientIp, $loginWindow]);
-                        $failedAttempts = (int) $stmt->fetchColumn();
+                          AND created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)
+                    ");
+                    $stmt->execute([$clientIp, $loginWindow]);
+                    $failedAttempts = (int) $stmt->fetchColumn();
                     } catch (PDOException $e) {
                         // Se tabela não existir, ignorar rate limit
                         error_log("SafeNode Login Rate Limit Check Error: " . $e->getMessage());

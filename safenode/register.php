@@ -313,7 +313,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             <!-- Logo -->
             <div class="flex items-center gap-3">
                 <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md">
-                    <img src="assets/img/logos (6).png" alt="SafeNode" class="w-6 h-6 brightness-0 invert">
+                    <img src="assets/img/safe-claro.png" alt="SafeNode" class="w-6 h-6 dark:hidden">
+                    <img src="assets/img/logos (6).png" alt="SafeNode" class="w-6 h-6 brightness-0 invert hidden dark:block">
                 </div>
                 <span class="text-xl font-bold tracking-tight">SafeNode</span>
             </div>
@@ -463,7 +464,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     <div class="relative flex items-center justify-center w-9 h-9">
                         <div class="absolute inset-0 rounded-2xl border-2 border-slate-200 border-t-black animate-spin" id="hv-spinner"></div>
                         <div class="relative z-10 w-7 h-7 rounded-2xl bg-black flex items-center justify-center">
-                            <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain">
+                            <img src="assets/img/safe-claro.png" alt="SafeNode" class="w-4 h-4 object-contain dark:hidden">
+                            <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain hidden dark:block">
                         </div>
                     </div>
                     <div class="flex-1">

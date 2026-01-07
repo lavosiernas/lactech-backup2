@@ -170,6 +170,26 @@ function getEventTypeColor($actionTaken) {
     <link rel="stylesheet" href="includes/theme-styles.css">
     <script src="includes/theme-toggle.js"></script>
     
+    <!-- Aplicar tema ANTES da renderização para evitar flash -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('safenode-theme') || 'auto';
+            let actualTheme = stored;
+            if (stored === 'auto') {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    actualTheme = 'light';
+                } else {
+                    actualTheme = 'dark';
+                }
+            }
+            if (actualTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -1207,42 +1227,42 @@ function getEventTypeColor($actionTaken) {
             <div class="flex-1 overflow-y-auto p-8">
                 <!-- Filtros -->
                 <div class="glass rounded-2xl p-6 mb-6">
-                    <h3 class="text-lg font-semibold text-white mb-4">Filtros</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filtros</h3>
                     <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm text-zinc-400 mb-2">Tipo de Evento</label>
-                            <select name="event_type" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
-                                    style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
-                                <option value="" class="bg-dark-900 text-white">Todos os Eventos</option>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-zinc-400 mb-2">Tipo de Evento</label>
+                            <select name="event_type" class="w-full bg-white dark:bg-dark-900 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-white/30 appearance-none cursor-pointer"
+                                    style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23374151\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
+                                <option value="" class="bg-white dark:bg-dark-900 text-gray-900 dark:text-white">Todos os Eventos</option>
                                 <?php foreach ($eventTypes as $key => $label): ?>
-                                    <option value="<?php echo $key; ?>" <?php echo $eventType === $key ? 'selected' : ''; ?> class="bg-dark-900 text-white"><?php echo $label; ?></option>
+                                    <option value="<?php echo $key; ?>" <?php echo $eventType === $key ? 'selected' : ''; ?> class="bg-white dark:bg-dark-900 text-gray-900 dark:text-white"><?php echo $label; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         
                         <div>
-                            <label class="block text-sm text-zinc-400 mb-2">Buscar por IP</label>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-zinc-400 mb-2">Buscar por IP</label>
                             <div class="relative">
-                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
-                                <input type="text" name="ip" value="<?php echo htmlspecialchars($ipAddress); ?>" placeholder="Ex: 192.168.1.1" class="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30">
+                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-zinc-500"></i>
+                                <input type="text" name="ip" value="<?php echo htmlspecialchars($ipAddress); ?>" placeholder="Ex: 192.168.1.1" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-zinc-500 focus:outline-none focus:border-gray-400 dark:focus:border-white/30">
                             </div>
                         </div>
                         
                         <div>
-                            <label class="block text-sm text-zinc-400 mb-2">Data Inicial</label>
-                            <input type="date" name="date_from" value="<?php echo htmlspecialchars($dateFrom); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30">
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-zinc-400 mb-2">Data Inicial</label>
+                            <input type="date" name="date_from" value="<?php echo htmlspecialchars($dateFrom); ?>" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-white/30">
                         </div>
                         
                         <div>
-                            <label class="block text-sm text-zinc-400 mb-2">Data Final</label>
-                            <input type="date" name="date_to" value="<?php echo htmlspecialchars($dateTo); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30">
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-zinc-400 mb-2">Data Final</label>
+                            <input type="date" name="date_to" value="<?php echo htmlspecialchars($dateTo); ?>" class="w-full bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-white/30">
                         </div>
                         
                         <div class="md:col-span-3 lg:col-span-5 flex gap-2">
-                            <button type="submit" class="px-6 py-2.5 bg-white text-black rounded-xl font-semibold hover:bg-white/90 transition-colors">
+                            <button type="submit" class="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl font-semibold hover:bg-gray-800 dark:hover:bg-white/90 transition-colors">
                                 Aplicar Filtros
                             </button>
-                            <a href="logs.php" class="px-6 py-2.5 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors">
+                            <a href="logs.php" class="px-6 py-2.5 bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
                                 Limpar
                             </a>
                         </div>
@@ -1252,20 +1272,20 @@ function getEventTypeColor($actionTaken) {
                 <!-- Estatísticas -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="glass rounded-xl p-4">
-                        <p class="text-sm text-zinc-400 mb-1">Total de Logs</p>
-                        <p class="text-2xl font-bold text-white"><?php echo number_format($totalLogs); ?></p>
+                        <p class="text-sm text-gray-600 dark:text-zinc-400 mb-1">Total de Logs</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><?php echo number_format($totalLogs); ?></p>
                     </div>
                     <div class="glass rounded-xl p-4">
-                        <p class="text-sm text-zinc-400 mb-1">Página Atual</p>
-                        <p class="text-2xl font-bold text-white"><?php echo $page; ?> / <?php echo $totalPages; ?></p>
+                        <p class="text-sm text-gray-600 dark:text-zinc-400 mb-1">Página Atual</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><?php echo $page; ?> / <?php echo $totalPages; ?></p>
                     </div>
                     <div class="glass rounded-xl p-4">
-                        <p class="text-sm text-zinc-400 mb-1">Logs por Página</p>
-                        <p class="text-2xl font-bold text-white"><?php echo $limit; ?></p>
+                        <p class="text-sm text-gray-600 dark:text-zinc-400 mb-1">Logs por Página</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><?php echo $limit; ?></p>
                     </div>
                     <div class="glass rounded-xl p-4">
-                        <p class="text-sm text-zinc-400 mb-1">Filtros Ativos</p>
-                        <p class="text-2xl font-bold text-white"><?php echo count(array_filter([$eventType, $ipAddress, $dateFrom, $dateTo])); ?></p>
+                        <p class="text-sm text-gray-600 dark:text-zinc-400 mb-1">Filtros Ativos</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white"><?php echo count(array_filter([$eventType, $ipAddress, $dateFrom, $dateTo])); ?></p>
                     </div>
                 </div>
 
@@ -1274,17 +1294,17 @@ function getEventTypeColor($actionTaken) {
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
-                                <tr class="border-b border-white/10">
-                                    <th class="text-left py-3 px-4 text-sm font-semibold text-zinc-400">Data/Hora</th>
-                                    <th class="text-left py-3 px-4 text-sm font-semibold text-zinc-400">Tipo de Evento</th>
-                                    <th class="text-left py-3 px-4 text-sm font-semibold text-zinc-400">IP</th>
-                                    <th class="text-left py-3 px-4 text-sm font-semibold text-zinc-400">Domínio</th>
+                                <tr class="border-b border-gray-200 dark:border-white/10">
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-zinc-400">Data/Hora</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-zinc-400">Tipo de Evento</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-zinc-400">IP</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-zinc-400">Domínio</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($logs)): ?>
                                     <tr>
-                                        <td colspan="4" class="text-center py-12 text-zinc-500">
+                                        <td colspan="4" class="text-center py-12 text-gray-600 dark:text-zinc-500">
                                             Nenhum evento encontrado
                                         </td>
                                     </tr>
@@ -1296,8 +1316,8 @@ function getEventTypeColor($actionTaken) {
                                         $eventColor = getEventTypeColor($log['action_taken']);
                                         $domain = $selectedSite['domain'] ?? ($log['request_uri'] ?? 'N/A');
                                         ?>
-                                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                            <td class="py-3 px-4 text-sm text-white font-mono">
+                                        <tr class="border-b border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-mono">
                                                 <?php echo date('d/m/Y H:i:s', strtotime($log['created_at'])); ?>
                                             </td>
                                             <td class="py-3 px-4">
@@ -1305,13 +1325,13 @@ function getEventTypeColor($actionTaken) {
                                                     <div class="w-8 h-8 rounded-lg bg-<?php echo $eventColor; ?>-500/10 flex items-center justify-center">
                                                         <i data-lucide="<?php echo $eventIcon; ?>" class="w-4 h-4 text-<?php echo $eventColor; ?>-400"></i>
                                                     </div>
-                                                    <span class="text-sm text-white font-medium"><?php echo htmlspecialchars($eventLabel); ?></span>
+                                                    <span class="text-sm text-gray-900 dark:text-white font-medium"><?php echo htmlspecialchars($eventLabel); ?></span>
                                                 </div>
                                             </td>
-                                            <td class="py-3 px-4 text-sm text-white font-mono">
+                                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-mono">
                                                 <?php echo htmlspecialchars($log['ip_address']); ?>
                                             </td>
-                                            <td class="py-3 px-4 text-sm text-zinc-400">
+                                            <td class="py-3 px-4 text-sm text-gray-700 dark:text-zinc-400">
                                                 <?php echo htmlspecialchars($domain); ?>
                                             </td>
                                         </tr>

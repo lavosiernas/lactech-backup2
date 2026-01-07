@@ -162,6 +162,26 @@ if ($db && $userId) {
     <link rel="stylesheet" href="includes/theme-styles.css">
     <script src="includes/theme-toggle.js"></script>
     
+    <!-- Aplicar tema ANTES da renderização para evitar flash -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('safenode-theme') || 'auto';
+            let actualTheme = stored;
+            if (stored === 'auto') {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    actualTheme = 'light';
+                } else {
+                    actualTheme = 'dark';
+                }
+            }
+            if (actualTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -1281,13 +1301,13 @@ if ($db && $userId) {
             <div class="flex-1 overflow-y-auto p-4 md:p-8">
                 <?php if ($message): ?>
                 <div class="glass rounded-2xl p-4 mb-6 <?php echo $messageType === 'success' ? 'border-green-500/30 bg-green-500/10' : ($messageType === 'error' ? 'border-red-500/30 bg-red-500/10' : 'border-amber-500/30 bg-amber-500/10'); ?>">
-                    <p class="text-white"><?php echo htmlspecialchars($message); ?></p>
+                    <p class="text-gray-900 dark:text-white"><?php echo htmlspecialchars($message); ?></p>
                 </div>
                 <?php endif; ?>
 
                 <!-- Formulário de Cadastro -->
                 <div class="glass rounded-2xl p-4 md:p-6 mb-6">
-                    <h3 class="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6 flex items-center gap-3">
+                    <h3 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6 flex items-center gap-3">
                         <i data-lucide="plus-circle" class="w-5 h-5 md:w-6 md:h-6"></i>
                         Cadastrar Novo Site
                     </h3>
@@ -1297,29 +1317,29 @@ if ($db && $userId) {
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div>
-                                <label class="block text-sm font-semibold text-white mb-2">Domínio *</label>
+                                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Domínio *</label>
                                 <input type="text" name="domain" required 
                                     placeholder="exemplo.com" 
-                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 transition-all">
-                                <p class="text-xs text-zinc-400 mt-2">Apenas o domínio, sem http:// ou https://</p>
+                                    class="w-full bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-zinc-500 focus:outline-none focus:border-gray-400 dark:focus:border-white/30 focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 transition-all">
+                                <p class="text-xs text-gray-600 dark:text-zinc-400 mt-2">Apenas o domínio, sem http:// ou https://</p>
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-semibold text-white mb-2">Nome de Exibição</label>
+                                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Nome de Exibição</label>
                                 <input type="text" name="display_name" 
                                     placeholder="Meu Site Principal" 
-                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 transition-all">
-                                <p class="text-xs text-zinc-400 mt-2">Nome amigável (opcional)</p>
+                                    class="w-full bg-gray-50 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-zinc-500 focus:outline-none focus:border-gray-400 dark:focus:border-white/30 focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 transition-all">
+                                <p class="text-xs text-gray-600 dark:text-zinc-400 mt-2">Nome amigável (opcional)</p>
                             </div>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-semibold text-white mb-2">Nível de Segurança</label>
-                            <select name="security_level" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10 transition-all appearance-none cursor-pointer"
-                                    style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
-                                <option value="low" class="bg-dark-900 text-white">Baixo - Menos bloqueios</option>
-                                <option value="medium" selected class="bg-dark-900 text-white">Médio - Balanceado</option>
-                                <option value="high" class="bg-dark-900 text-white">Alto - Mais bloqueios</option>
+                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Nível de Segurança</label>
+                            <select name="security_level" class="w-full bg-white dark:bg-dark-900 border border-gray-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-gray-400 dark:focus:border-white/30 focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 transition-all appearance-none cursor-pointer"
+                                    style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23374151\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem;">
+                                <option value="low" class="bg-white dark:bg-dark-900 text-gray-900 dark:text-white">Baixo - Menos bloqueios</option>
+                                <option value="medium" selected class="bg-white dark:bg-dark-900 text-gray-900 dark:text-white">Médio - Balanceado</option>
+                                <option value="high" class="bg-white dark:bg-dark-900 text-gray-900 dark:text-white">Alto - Mais bloqueios</option>
                             </select>
                         </div>
                         
@@ -1334,7 +1354,7 @@ if ($db && $userId) {
 
                 <!-- Lista de Sites -->
                 <div class="glass rounded-2xl p-4 md:p-6">
-                    <h3 class="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6 flex items-center gap-3">
+                    <h3 class="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 md:mb-6 flex items-center gap-3">
                         <i data-lucide="list" class="w-5 h-5 md:w-6 md:h-6"></i>
                         Meus Sites (<?php echo count($sites); ?>)
                     </h3>
@@ -1365,11 +1385,11 @@ if ($db && $userId) {
                     
                     <?php if (empty($sites)): ?>
                         <div x-show="!loading" class="text-center py-16">
-                            <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="globe" class="w-8 h-8 text-zinc-400"></i>
+                            <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="globe" class="w-8 h-8 text-gray-500 dark:text-zinc-400"></i>
                             </div>
-                            <p class="text-zinc-400 font-medium mb-2">Nenhum site cadastrado ainda</p>
-                            <p class="text-sm text-zinc-500">Cadastre seu primeiro site acima</p>
+                            <p class="text-gray-700 dark:text-zinc-400 font-medium mb-2">Nenhum site cadastrado ainda</p>
+                            <p class="text-sm text-gray-600 dark:text-zinc-500">Cadastre seu primeiro site acima</p>
                         </div>
                     <?php else: ?>
                         <div x-show="!loading" class="space-y-4">
@@ -1416,8 +1436,8 @@ if ($db && $userId) {
                                                 </span>
                                             </div>
                                             
-                                            <p class="text-sm text-zinc-400 font-mono mb-2 break-all"><?php echo htmlspecialchars($site['domain']); ?></p>
-                                            <p class="text-xs text-zinc-500">
+                                            <p class="text-sm text-gray-700 dark:text-zinc-400 font-mono mb-2 break-all"><?php echo htmlspecialchars($site['domain']); ?></p>
+                                            <p class="text-xs text-gray-600 dark:text-zinc-500">
                                                 <?php echo (int)$site['total_logs']; ?> eventos registrados • 
                                                 Cadastrado em <?php echo date('d/m/Y', strtotime($site['created_at'])); ?>
                                             </p>

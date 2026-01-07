@@ -45,6 +45,26 @@ if ($db && $currentSiteId > 0) {
     <link rel="stylesheet" href="includes/theme-styles.css">
     <script src="includes/theme-toggle.js"></script>
     
+    <!-- Aplicar tema ANTES da renderização para evitar flash -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('safenode-theme') || 'auto';
+            let actualTheme = stored;
+            if (stored === 'auto') {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    actualTheme = 'light';
+                } else {
+                    actualTheme = 'dark';
+                }
+            }
+            if (actualTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    
     <script>
         tailwind.config = {
             darkMode: 'class',

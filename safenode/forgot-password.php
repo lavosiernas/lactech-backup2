@@ -377,7 +377,8 @@ $safenodeHvToken = SafeNodeHumanVerification::initChallenge();
         <!-- Logo -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center gap-3 mb-4">
-                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-10 h-10">
+                <img src="assets/img/safe-claro.png" alt="SafeNode" class="w-10 h-10 dark:hidden">
+                <img src="assets/img/logos (6).png" alt="SafeNode" class="w-10 h-10 hidden dark:block">
                 <h1 class="text-2xl font-bold text-white">SafeNode</h1>
             </div>
             <p class="text-zinc-400 text-sm">Security Platform</p>
@@ -424,7 +425,8 @@ $safenodeHvToken = SafeNodeHumanVerification::initChallenge();
                     <div class="relative flex items-center justify-center w-9 h-9">
                         <div class="absolute inset-0 rounded-2xl border-2 border-slate-200 border-t-black animate-spin" id="hv-spinner"></div>
                         <div class="relative z-10 w-7 h-7 rounded-2xl bg-black flex items-center justify-center">
-                            <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain">
+                            <img src="assets/img/safe-claro.png" alt="SafeNode" class="w-4 h-4 object-contain dark:hidden">
+                            <img src="assets/img/logos (6).png" alt="SafeNode" class="w-4 h-4 object-contain hidden dark:block">
                         </div>
                     </div>
                     <div class="flex-1">
