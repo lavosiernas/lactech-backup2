@@ -1,0 +1,32 @@
+# KRON Server - Configuração Apache
+
+# Habilitar Rewrite Engine
+RewriteEngine On
+
+# Base path - ajuste conforme sua instalação
+# Se estiver na raiz: RewriteBase /
+# Se estiver em subpasta: RewriteBase /kron/
+RewriteBase /Kron/
+
+# Redirecionar /dashboard para /dashboard/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^dashboard/?$ dashboard/index.php [L]
+
+# Redirecionar /login para login.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^login/?$ login.php [L]
+
+# Proteger arquivos sensíveis
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Proteger arquivos de configuração
+<FilesMatch "\.(sql|md|txt)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+

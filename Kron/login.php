@@ -5,21 +5,21 @@
 
 session_start();
 
-// Se já estiver logado, redirecionar para dashboard
-if (isset($_SESSION['kron_logged_in']) && $_SESSION['kron_logged_in'] === true) {
-    header('Location: dashboard/index.php');
-    exit;
-}
-
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/GoogleOAuth.php';
+
+// Se já estiver logado, redirecionar
+if (isset($_SESSION['kron_logged_in']) && $_SESSION['kron_logged_in'] === true) {
+    redirect('dashboard/');
+}
 
 $error = '';
 $success = '';
 
-// Processar login via formulário
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $email = trim($_POST['email'] ?? '');
+// Processar login
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
     
     if (empty($email) || empty($password)) {
@@ -28,39 +28,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         $pdo = getKronDatabase();
         
         if ($pdo) {
-            $stmt = $pdo->prepare("SELECT id, email, password, name, is_active, google_id FROM kron_users WHERE email = ?");
+            $stmt = $pdo->prepare("
+                SELECT id, email, name, password, is_active, avatar_url, google_id
+                FROM kron_users 
+                WHERE email = ?
+            ");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
             
-            if ($user && password_verify($password, $user['password'])) {
-                if (!$user['is_active']) {
-                    $error = 'Sua conta está inativa. Entre em contato com o administrador.';
-                } else {
-                    // Criar sessão
-                    $sessionToken = bin2hex(random_bytes(32));
-                    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-                    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-                    
-                    // Salvar sessão no banco
-                    $stmt = $pdo->prepare("
-                        INSERT INTO kron_user_sessions (user_id, session_token, ip_address, user_agent, expires_at) 
-                        VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY))
-                    ");
-                    $stmt->execute([$user['id'], $sessionToken, $ipAddress, $userAgent]);
+            if ($user && $user['is_active'] == 1) {
+                // Verificar senha
+                if ($user['password'] && password_verify($password, $user['password'])) {
+                    // Login bem-sucedido
+                    $_SESSION['kron_logged_in'] = true;
+                    $_SESSION['kron_user_id'] = $user['id'];
+                    $_SESSION['kron_user_email'] = $user['email'];
+                    $_SESSION['kron_user_name'] = $user['name'];
+                    $_SESSION['kron_user_avatar'] = $user['avatar_url'];
                     
                     // Atualizar último login
                     $stmt = $pdo->prepare("UPDATE kron_users SET last_login = NOW() WHERE id = ?");
                     $stmt->execute([$user['id']]);
                     
-                    // Criar sessão PHP
-                    $_SESSION['kron_logged_in'] = true;
-                    $_SESSION['kron_user_id'] = $user['id'];
-                    $_SESSION['kron_user_email'] = $user['email'];
-                    $_SESSION['kron_user_name'] = $user['name'];
-                    $_SESSION['kron_session_token'] = $sessionToken;
-                    
-                    header('Location: dashboard/index.php');
-                    exit;
+                    redirect('dashboard/');
+                } else {
+                    $error = 'Email ou senha incorretos';
                 }
             } else {
                 $error = 'Email ou senha incorretos';
@@ -71,250 +63,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
-// Mensagens de erro/sucesso
+// Verificar erro do Google OAuth
 if (isset($_SESSION['google_error'])) {
     $error = $_SESSION['google_error'];
     unset($_SESSION['google_error']);
 }
 
-if (isset($_SESSION['register_success'])) {
-    $success = $_SESSION['register_success'];
-    unset($_SESSION['register_success']);
+$googleAuthUrl = '';
+try {
+    $googleOAuth = new GoogleOAuth();
+    $_SESSION['google_oauth_action'] = 'login';
+    $googleAuthUrl = $googleOAuth->getAuthUrl('login');
+} catch (Exception $e) {
+    // Google OAuth não configurado
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-white">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrar &mdash; KRON</title>
-    
-    <!-- Favicon -->
+    <title>Login - KRON</title>
     <link rel="icon" type="image/png" href="asset/kron.png">
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        
-        .loading-spinner {
-            width: 20px; height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Fade-in animation */
-        @keyframes fade-in {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .animate-fade-in {
-            animation: fade-in 0.5s ease-out;
-        }
-
-        /* Toggle Switch */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #000000;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #000000;
-        }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #0a0a0a; color: #f5f5f7; }
     </style>
 </head>
-<body class="h-full flex flex-col md:flex-row overflow-hidden bg-white">
-    
-    <!-- Left Side: Image & Branding (Desktop Only) -->
-    <div class="hidden md:flex md:w-1/2 lg:w-[55%] relative bg-black text-white overflow-hidden">
-        <!-- Background Image -->
-        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80" 
-             alt="Technology Workspace" 
-             class="absolute inset-0 w-full h-full object-cover opacity-50">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20"></div>
+<body class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <img src="asset/kron.png" alt="KRON" class="w-16 h-16 mx-auto mb-4">
+            <h1 class="text-3xl font-bold mb-2">KRON</h1>
+            <p class="text-gray-400">Servidor Administrativo Central</p>
+        </div>
         
-        <!-- Content Overlay -->
-        <div class="relative z-10 flex flex-col justify-between w-full p-12 lg:p-16">
-            <!-- Logo -->
-            <div class="flex items-center gap-3">
-                <div class="bg-white/10 p-2 rounded-lg backdrop-blur-md">
-                    <img src="asset/kron.png" alt="KRON" class="w-6 h-6 brightness-0 invert">
-                </div>
-                <span class="text-xl font-bold tracking-tight">KRON</span>
-            </div>
-
-            <!-- Quote -->
-            <div class="max-w-md">
-                <blockquote class="text-2xl font-medium leading-snug mb-6">
-                    "Estamos revolucionando a tecnologia empresarial, conectando sistemas e criando um ecossistema unificado."
-                </blockquote>
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">KR</div>
-                    <div>
-                        <div class="font-semibold">KRON Ecosystem</div>
-                        <div class="text-sm text-slate-400">Plataforma de Integração</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Side: Login Form -->
-    <div class="w-full md:w-1/2 lg:w-[45%] flex flex-col justify-center overflow-y-auto">
-        <div class="w-full max-w-md mx-auto px-6 py-12 md:px-10 lg:px-12">
-            
-            <!-- Header (Mobile Logo) -->
-            <div class="md:hidden mb-8 flex items-center gap-2">
-                <img src="asset/kron.png" alt="KRON" class="w-8 h-8">
-                <span class="text-xl font-bold text-slate-900">KRON</span>
-            </div>
-
-            <div class="mb-10">
-                <h1 class="text-3xl font-bold text-slate-900 mb-2">Bem-vindo de volta</h1>
-                <p class="text-slate-500">Acesse seu ecossistema e gerencie suas conexões.</p>
-            </div>
-
-            <?php if(!empty($error)): ?>
-                <div class="mb-6 p-5 rounded-xl bg-red-500 border-2 border-red-600 shadow-lg shadow-red-500/20 flex items-start gap-4 animate-fade-in">
-                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-red-600 flex items-center justify-center">
-                        <i data-lucide="alert-circle" class="w-5 h-5 text-white"></i>
-                    </div>
-                    <p class="text-base text-white font-bold leading-relaxed"><?php echo htmlspecialchars($error); ?></p>
+        <div class="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+            <?php if ($error): ?>
+                <div class="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg mb-4">
+                    <?= htmlspecialchars($error) ?>
                 </div>
             <?php endif; ?>
             
-            <?php if(!empty($success)): ?>
-                <div class="mb-6 p-4 rounded-lg bg-emerald-50 border border-emerald-100 flex items-start gap-3 animate-fade-in">
-                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5"></i>
-                    <p class="text-sm text-emerald-600 font-medium"><?php echo htmlspecialchars($success); ?></p>
+            <form method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" name="email" required
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                        placeholder="seu@email.com">
                 </div>
-            <?php endif; ?>
-
-            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST" class="space-y-6" id="loginForm">
-                <input type="hidden" name="login" value="1">
                 
-                <!-- Email -->
-                <div class="space-y-1.5">
-                    <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
-                    <input type="email" name="email" id="email" required 
-                        class="block w-full px-4 py-3 rounded-lg border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all text-sm"
-                        placeholder="exemplo@email.com"
-                        value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Senha</label>
+                    <input type="password" name="password" required
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                        placeholder="••••••••">
                 </div>
-
-                <!-- Password -->
-                <div class="space-y-1.5">
-                    <label for="password" class="block text-sm font-medium text-slate-700">Senha</label>
-                    <div class="relative">
-                        <input type="password" name="password" id="password" required 
-                            class="block w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all text-sm"
-                            placeholder="••••••••">
-                        <button 
-                            type="button" 
-                            onclick="togglePasswordVisibility('password', 'eyeIcon')" 
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                            <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <!-- Remember Me Toggle -->
-                    <div class="flex items-center">
-                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                            <input type="checkbox" name="remember" id="remember" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300"/>
-                            <label for="remember" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer"></label>
-                        </div>
-                        <label for="remember" class="text-sm text-slate-600 cursor-pointer">Lembrar-me</label>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-sm font-semibold text-white bg-black hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all duration-200" id="loginBtn">
-                    <span id="loadingSpinner" class="loading-spinner mr-2 hidden"></span>
-                    <span id="loginText">Entrar</span>
+                
+                <button type="submit"
+                    class="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-gray-100 transition">
+                    Entrar
                 </button>
-
-                <!-- Divider -->
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-slate-200"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-slate-500 uppercase text-xs font-medium">Ou</span>
-                    </div>
-                </div>
-
-                <!-- Google OAuth Button -->
-                <a href="google-auth.php?action=login" class="w-full flex justify-center items-center gap-3 px-4 py-3 border border-slate-200 rounded-lg shadow-sm bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors no-underline">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    <span>Continuar com Google</span>
-                </a>
             </form>
-
-            <p class="mt-8 text-center text-sm text-slate-600">
-                Não tem uma conta? 
-                <a href="register.php" class="font-semibold text-black hover:underline">Cadastre-se</a>
-            </p>
-        </div>
-    </div>
-
-    <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
-
-        // Toggle password visibility
-        function togglePasswordVisibility(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
             
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
-                `;
-            } else {
-                input.type = 'password';
-                icon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                `;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Login button loading state
-            const form = document.getElementById('loginForm');
-            form.addEventListener('submit', function() {
-                const btn = document.getElementById('loginBtn');
-                const spinner = document.getElementById('loadingSpinner');
-                const text = document.getElementById('loginText');
-                
-                btn.disabled = true;
-                btn.classList.add('opacity-75');
-                spinner.classList.remove('hidden');
-                text.textContent = 'Autenticando...';
-            });
-        });
-    </script>
+            <?php if ($googleAuthUrl): ?>
+                <div class="mt-4">
+                    <a href="<?= htmlspecialchars($googleAuthUrl) ?>"
+                        class="w-full bg-gray-800 border border-gray-700 text-white font-medium py-3 rounded-lg hover:bg-gray-750 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Entrar com Google
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <p class="text-center text-gray-500 text-sm mt-6">
+            Sistema de governança e orquestração
+        </p>
+    </div>
 </body>
 </html>
+

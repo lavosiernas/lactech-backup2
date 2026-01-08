@@ -12,13 +12,13 @@ $isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', ':
 if ($isLocal) {
     // LOCAL
     define('KRON_DB_HOST', 'localhost');
-    define('KRON_DB_NAME', 'kron');
+    define('KRON_DB_NAME', 'kronserver');
     define('KRON_DB_USER', 'root');
     define('KRON_DB_PASS', '');
 } else {
-    // PRODUÇÃO (kron.sbs)
+    // PRODUÇÃO
     define('KRON_DB_HOST', 'localhost');
-    define('KRON_DB_NAME', 'u311882628_kron');
+    define('KRON_DB_NAME', 'kronserver');
     define('KRON_DB_USER', 'u311882628_kronz');
     define('KRON_DB_PASS', 'Lavosier0012!');
 }

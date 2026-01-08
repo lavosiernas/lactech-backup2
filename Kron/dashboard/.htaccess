@@ -1,6 +1,16 @@
-# Permitir acesso a arquivos PHP sem extensão
+# KRON Dashboard - Rewrite Rules
+
+# Redirecionar /dashboard para /dashboard/index.php
 RewriteEngine On
+RewriteBase /dashboard/
+
+# Se acessar /dashboard sem arquivo, redirecionar para index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^profile$ profile.php [L]
+RewriteRule ^$ index.php [L]
 
+# Proteger arquivos sensíveis
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

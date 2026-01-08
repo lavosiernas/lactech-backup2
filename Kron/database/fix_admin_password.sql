@@ -3,7 +3,7 @@
 -- Execute este script se o login não estiver funcionando
 -- =====================================================
 
-USE `kron`;
+USE `kronserver`;
 
 -- Atualizar senha do admin (senha: admin123)
 UPDATE `kron_users` 

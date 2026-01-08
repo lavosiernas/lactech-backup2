@@ -7,9 +7,9 @@
 Edite o arquivo `includes/config.php` e ajuste as credenciais de produção:
 
 ```php
-// PRODUÇÃO (kronx.sbs)
+// PRODUÇÃO
 define('KRON_DB_HOST', 'localhost');
-define('KRON_DB_NAME', 'kron');
+define('KRON_DB_NAME', 'kronserver');
 define('KRON_DB_USER', 'SEU_USUARIO_AQUI');  // ⚠️ ALTERAR
 define('KRON_DB_PASS', 'SUA_SENHA_AQUI');    // ⚠️ ALTERAR
 ```
@@ -20,10 +20,10 @@ Execute o script no banco de dados de produção:
 
 ```sql
 -- Via phpMyAdmin ou MySQL CLI
-SOURCE lactech/kron/database/create_kron_ecosystem.sql;
+SOURCE database/kron_full_schema.sql;
 ```
 
-OU copie e cole todo o conteúdo do arquivo `database/create_kron_ecystem.sql` no phpMyAdmin.
+OU copie e cole todo o conteúdo do arquivo `database/kron_full_schema.sql` no phpMyAdmin.
 
 ### 3. **Configurar Google OAuth** ⚠️ OBRIGATÓRIO
 
