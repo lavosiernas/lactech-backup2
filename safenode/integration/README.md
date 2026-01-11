@@ -70,3 +70,5 @@ sudo bash setup-safenode.sh
 
 
 
+
+

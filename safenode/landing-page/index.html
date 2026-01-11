@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCode | The Precision Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        :root {
+            --bg: #000000;
+            --fg: #ffffff;
+            --gray-900: #0a0a0a;
+            --gray-800: #111111;
+            --gray-700: #1a1a1a;
+            --gray-500: #666666;
+            --gray-400: #888888;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        /* Technical Grid Background - Enhanced for depth */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 64px 64px;
+            mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 16px 16px;
+            mask-image: radial-gradient(circle at 50% 50%, black, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 90%);
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* Nav - Ultra-Spacious for maximum clarity */
+        nav {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: fit-content;
+            min-width: 680px;
+            height: 72px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px 0 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .nav-logo img {
+            width: 24px;
+            filter: brightness(2);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--gray-400);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+        }
+
+        .btn-nav {
+            background: #fff;
+            color: #000;
+            height: 52px;
+            padding: 0 32px;
+            border-radius: 99px;
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .btn-nav:hover {
+            transform: scale(1.02);
+        }
+
+        /* Hero - Understated Elegance */
+        .hero {
+            padding: 180px 0 80px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            background: var(--gray-900);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #ccc;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 6vw, 4.5rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .hero-sub {
+            font-size: 1.25rem;
+            color: var(--gray-400);
+            max-width: 600px;
+            margin: 0 auto 48px;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-main {
+            background: #fff;
+            color: #000;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-main:hover {
+            opacity: 0.9;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .btn-ghost:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Showcase - Crisp Shadow & No distortion */
+        .showcase {
+            margin-top: 80px;
+            border: 1px solid var(--border);
+            background: var(--gray-900);
+            border-radius: 16px;
+            padding: 6px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+        }
+
+        .showcase img {
+            width: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+
+        /* Features - High Precision Bento */
+        .features {
+            padding: 120px 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .f-card {
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 20px;
+            background: var(--gray-900);
+            transition: all 0.3s;
+        }
+
+        .f-card:hover {
+            border-color: var(--border-hover);
+            background: #0c0c0c;
+        }
+
+        .f-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .f-card p {
+            font-size: 0.95rem;
+            color: var(--gray-400);
+            line-height: 1.6;
+        }
+
+        .f-icon {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        /* Statement */
+        .statement {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 80px;
+        }
+
+        .s-text {
+            flex: 1.2;
+        }
+
+        .s-visual {
+            flex: 0.8;
+        }
+
+        .s-text h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 24px;
+            letter-spacing: -0.03em;
+        }
+
+        /* Footer - Sophisticated & Clean */
+        footer {
+            padding: 80px 0 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 60px;
+        }
+
+        .f-brand h4 {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 16px;
+            letter-spacing: -0.04em;
+        }
+
+        .f-links {
+            display: flex;
+            gap: 60px;
+        }
+
+        .f-col h5 {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+
+        .f-col a {
+            display: block;
+            text-decoration: none;
+            color: var(--gray-500);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            transition: color 0.2s;
+        }
+
+        .f-col a:hover {
+            color: #fff;
+        }
+
+        .f-bottom {
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray-700);
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                width: 90%;
+                min-width: auto;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .statement {
+                flex-direction: column;
+                text-align: center;
+                gap: 40px;
+            }
+
+            .footer-grid {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+        }
+
+        /* Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="#" class="nav-logo">
+            <img src="../assets/img/logos (6).png" alt="">
+            <span>SafeCode Studio</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Build</a>
+            <a href="#docs" class="nav-link">Docs</a>
+            <a href="https://github.com" class="nav-link">GitHub</a>
+        </div>
+        <a href="../src/index.html" class="btn-nav">Launch Web IDE</a>
+    </nav>
+
+    <main class="container">
+        <header class="hero">
+            <div class="badge">SafeCode v1.0.0 Now Official</div>
+            <h1>The Architect's Studio.</h1>
+            <p class="hero-sub">A professional monochrome development environment. Built for precision, silence, and
+                absolute focus.</p>
+            <div class="hero-actions">
+                <a href="../src/index.html" class="btn-main"><i data-lucide="play"></i> Launch Web IDE</a>
+                <a href="../build-ide.ps1" class="btn-ghost" download><i data-lucide="terminal"></i> Build Locally
+                    (PowerShell)</a>
+            </div>
+
+            <div class="showcase" id="heroShowcase">
+                <img src="hero-mockup.png" alt="SafeCode Professional Studio View">
+            </div>
+        </header>
+
+        <section id="features" class="features">
+            <div class="f-card reveal">
+                <div class="f-icon"><i data-lucide="smartphone" size="20"></i></div>
+                <h3>Hardware Realism.</h3>
+                <p>Test on high-fidelity iPhone and Android frames with pixel-perfect accuracy. Zero latency previews.
+                </p>
+            </div>
+            <div class="f-card reveal">
+                <div class="f-icon"><i data-lucide="zap" size="20"></i></div>
+                <h3>Instant Productivity.</h3>
+                <p>Integrated hot-reload and a professional terminal experience designed for a fluid modern workflow.
+                </p>
+            </div>
+            <div class="f-card reveal">
+                <div class="f-icon"><i data-lucide="shield" size="20"></i></div>
+                <h3>Pure Focus.</h3>
+                <p>Monochrome by design. Map code structure intuitively by stripping away the cognitive load of color.
+                </p>
+            </div>
+        </section>
+
+        <section class="statement reveal">
+            <div class="s-text">
+                <h2>Precision in every pixel.</h2>
+                <p>Built on the Monaco engine, SafeCode IDE provides the power you expect with the silence you need. No
+                    distractions, just your logic.</p>
+            </div>
+            <div class="s-visual">
+                <div
+                    style="background: var(--gray-900); border: 1px solid var(--border); border-radius: 20px; height: 180px; padding: 30px; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="width: 80%; height: 2px; background: var(--border);"></div>
+                    <div style="width: 60%; height: 2px; background: var(--border);"></div>
+                    <div style="width: 90%; height: 2px; background: var(--border);"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="f-brand">
+                    <h4>SafeCode.</h4>
+                    <p>Professional tools for professional builders.</p>
+                </div>
+                <div class="f-links">
+                    <div class="f-col">
+                        <h5>Product</h5>
+                        <a href="../src/index.html">SafeCode Web Edition</a>
+                        <a href="#">Changelog</a>
+                        <a href="#">Security</a>
+                    </div>
+                    <div class="f-col">
+                        <h5>Resources</h5>
+                        <a href="#">Docs</a>
+                        <a href="#">API</a>
+                        <a href="#">GitHub</a>
+                    </div>
+                </div>
+            </div>
+            <div class="f-bottom">
+                <span>© 2026 SafeCode IDE. All rights reserved.</span>
+                <span style="display: flex; gap: 20px;"><a href="#"
+                        style="color: inherit; text-decoration: none;">Twitter</a> <a href="#"
+                        style="color: inherit; text-decoration: none;">GitHub</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Understated GSAP animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.from(".hero > *", {
+            y: 20,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.15,
+            ease: "power2.out"
+        });
+
+        gsap.utils.toArray(".reveal").forEach(el => {
+            gsap.to(el, {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: el,
+                    start: "top 90%",
+                }
+            });
+        });
+
+        // Download Simulation
+        document.querySelectorAll('.download-trigger').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                // Show a premium toast/overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    bottom: 40px;
+                    left: 50%;
+                    transform: translateX(-50%) translateY(100px);
+                    background: #fff;
+                    color: #000;
+                    padding: 12px 24px;
+                    border-radius: 99px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    font-size: 0.9rem;
+                    font-weight: 700;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+                    z-index: 10000;
+                    opacity: 0;
+                `;
+                overlay.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-4 h-4"></i> Preparing your precision build...`;
+                document.body.appendChild(overlay);
+                lucide.createIcons();
+
+                gsap.to(overlay, {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.6,
+                    ease: "power3.out"
+                });
+
+                setTimeout(() => {
+                    overlay.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Download Initiated. Welcome to SafeCode.`;
+                    lucide.createIcons();
+
+                    gsap.to(overlay, {
+                        y: 100,
+                        opacity: 0,
+                        duration: 0.6,
+                        delay: 3,
+                        ease: "power3.in",
+                        onComplete: () => overlay.remove()
+                    });
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+
+</html>

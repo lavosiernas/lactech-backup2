@@ -148,3 +148,5 @@ Kron/
 
 **Última atualização:** Dezembro 2024
 
+
+

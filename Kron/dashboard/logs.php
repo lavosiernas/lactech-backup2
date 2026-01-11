@@ -315,3 +315,5 @@ $totalPages = ceil(max($totalSystemLogs, $totalAuditLogs) / $perPage);
 </body>
 </html>
 
+
+

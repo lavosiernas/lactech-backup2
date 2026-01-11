@@ -131,3 +131,5 @@ try {
     echo json_encode(['success' => false, 'error' => ['code' => 'INTERNAL_ERROR', 'message' => 'Erro interno']]);
 }
 
+
+

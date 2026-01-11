@@ -15,20 +15,52 @@ class GoogleOAuth
         $this->clientId = '563053705449-sivcmt98k6150nnd6vj277b4jt10u1n7.apps.googleusercontent.com';
         $this->clientSecret = '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';
         
-        // URL de callback
-        // PRODUÇÃO: https://safenode.cloud/google-callback.php
-        // LOCAL (dev): http://localhost/google-callback.php (adicionar no Google Console também)
+        // Detectar ambiente e construir URL de callback corretamente
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         
-        // Detectar ambiente
-        $isLocal = (isset($_SERVER['HTTP_HOST']) && 
-                    (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || 
-                     strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false));
+        // Detectar se é localhost
+        $isLocal = (
+            strpos($host, 'localhost') !== false || 
+            strpos($host, '127.0.0.1') !== false ||
+            strpos($host, '::1') !== false ||
+            strpos($host, '192.168.') === 0 ||
+            $host === 'localhost' ||
+            $host === '127.0.0.1'
+        );
         
-        if ($isLocal) {
-            $this->redirectUri = 'http://localhost/google-callback.php';
-        } else {
-            $this->redirectUri = 'https://safenode.cloud/google-callback.php';
+        // Detectar o caminho base do projeto a partir do script atual
+        // Se o script está em safenode2/google-auth.php, o callback deve estar em safenode2/google-callback.php
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $scriptPath = dirname($scriptName);
+        $scriptPath = rtrim($scriptPath, '/');
+        
+        // Se o scriptPath estiver vazio ou for apenas '/', significa que está na raiz
+        // Caso contrário, usar o caminho detectado
+        if (empty($scriptPath) || $scriptPath === '/') {
+            $scriptPath = '';
         }
+        
+        // Se estiver em produção (safenode.cloud), usar HTTPS e caminho correto
+        if (strpos($host, 'safenode.cloud') !== false) {
+            // Em produção, verificar se precisa do subdiretório
+            // Se o script está em /safenode2/, usar /safenode2/google-callback.php
+            // Se está na raiz, usar /google-callback.php
+            $this->redirectUri = 'https://safenode.cloud' . $scriptPath . '/google-callback.php';
+        } elseif ($isLocal) {
+            // Localhost - usar HTTP e caminho completo
+            // Exemplo: http://localhost/safenode2/google-callback.php
+            $this->redirectUri = $protocol . '://' . $host . $scriptPath . '/google-callback.php';
+        } else {
+            // Produção genérica - usar HTTPS
+            $this->redirectUri = 'https://' . $host . $scriptPath . '/google-callback.php';
+        }
+        
+        // Garantir que não há espaços ou caracteres extras
+        $this->redirectUri = trim($this->redirectUri);
+        
+        // Log para debug (remover em produção se necessário)
+        error_log("SafeNode Google OAuth - redirect_uri configurado: " . $this->redirectUri);
     }
     
     /**

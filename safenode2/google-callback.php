@@ -11,8 +11,27 @@ require_once __DIR__ . '/includes/GoogleOAuth.php';
 
 $error = 'Erro ao autenticar com Google. Tente novamente.';
 
+// Verificar se há erro do Google
+if (isset($_GET['error'])) {
+    $googleError = $_GET['error'] ?? 'unknown_error';
+    $errorDescription = $_GET['error_description'] ?? 'Erro desconhecido';
+    
+    error_log("SafeNode Google OAuth Error: $googleError - $errorDescription");
+    
+    // Erro comum: redirect_uri_mismatch significa que a URL não está registrada no Google Console
+    if ($googleError === 'redirect_uri_mismatch') {
+        $_SESSION['google_error'] = 'A URL de callback não está configurada corretamente no Google Console. Entre em contato com o administrador.';
+    } else {
+        $_SESSION['google_error'] = 'Erro ao autenticar com Google: ' . htmlspecialchars($errorDescription);
+    }
+    
+    header('Location: login.php');
+    exit;
+}
+
 // Verificar se há código de autorização
 if (!isset($_GET['code'])) {
+    error_log("SafeNode Google OAuth: Código de autorização não recebido. GET params: " . json_encode($_GET));
     $_SESSION['google_error'] = $error;
     header('Location: login.php');
     exit;

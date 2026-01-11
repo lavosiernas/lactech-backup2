@@ -35,6 +35,14 @@ if ($db && $currentSiteId > 0) {
 $message = '';
 $messageType = '';
 
+// Recuperar mensagem da sessão (após redirect)
+if (isset($_SESSION['site_message'])) {
+    $message = $_SESSION['site_message'];
+    $messageType = $_SESSION['site_message_type'] ?? 'success';
+    unset($_SESSION['site_message']);
+    unset($_SESSION['site_message_type']);
+}
+
 // Processar formulários
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!CSRFProtection::validate()) {
@@ -82,8 +90,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             VALUES (?, ?, ?, ?, 1, NOW(), NOW())
                         ");
                         $stmt->execute([$userId, $domain, $displayName ?: $domain, $securityLevel]);
-                        $message = 'Site cadastrado com sucesso!';
-                        $messageType = 'success';
+                        $siteId = $db->lastInsertId();
+                        error_log("SafeNode: Site cadastrado com sucesso. ID: $siteId, User ID: $userId, Domain: $domain");
+                        // Redirecionar para recarregar a lista de sites
+                        $_SESSION['site_message'] = 'Site cadastrado com sucesso!';
+                        $_SESSION['site_message_type'] = 'success';
+                        header('Location: sites.php');
+                        exit;
                     }
                 } catch (PDOException $e) {
                     error_log("SafeNode Create Site Error: " . $e->getMessage());
@@ -100,8 +113,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("DELETE FROM safenode_sites WHERE id = ? AND user_id = ?");
                 $stmt->execute([$siteId, $userId]);
                 if ($stmt->rowCount() > 0) {
-                    $message = 'Site removido com sucesso';
-                    $messageType = 'success';
+                    $_SESSION['site_message'] = 'Site removido com sucesso';
+                    $_SESSION['site_message_type'] = 'success';
+                    header('Location: sites.php');
+                    exit;
                 } else {
                     $message = 'Site não encontrado';
                     $messageType = 'error';
@@ -118,8 +133,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $stmt = $db->prepare("UPDATE safenode_sites SET is_active = NOT is_active WHERE id = ? AND user_id = ?");
                 $stmt->execute([$siteId, $userId]);
-                $message = 'Status do site atualizado';
-                $messageType = 'success';
+                $_SESSION['site_message'] = 'Status do site atualizado';
+                $_SESSION['site_message_type'] = 'success';
+                header('Location: sites.php');
+                exit;
             } catch (PDOException $e) {
                 error_log("SafeNode Toggle Site Error: " . $e->getMessage());
                 $message = 'Erro ao atualizar site';
@@ -143,9 +160,13 @@ if ($db && $userId) {
         ");
         $stmt->execute([$userId]);
         $sites = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("SafeNode: Buscou " . count($sites) . " sites para o usuário ID: $userId");
     } catch (PDOException $e) {
         error_log("SafeNode List Sites Error: " . $e->getMessage());
+        error_log("SafeNode List Sites - User ID: $userId, DB: " . ($db ? 'connected' : 'not connected'));
     }
+} else {
+    error_log("SafeNode: Não foi possível buscar sites. DB: " . ($db ? 'connected' : 'not connected') . ", User ID: " . ($userId ?? 'null'));
 }
 ?>
 <!DOCTYPE html>

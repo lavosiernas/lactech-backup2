@@ -481,3 +481,5 @@ if ($response['code'] === 200 && !empty($response['data']['commands'])) {
 
 **Última atualização:** Dezembro 2024
 
+
+

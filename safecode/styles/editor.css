@@ -1,0 +1,484 @@
+/* SafeCode IDE - Monochrome Live Preview & Device Frames */
+
+.ide-preview-container {
+    width: 45%;
+    min-width: 350px;
+    background: #000;
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.preview-resizer {
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    z-index: 100;
+}
+
+.preview-resizer:hover {
+    background: #fff;
+}
+
+.preview-header {
+    height: 40px;
+    background: #000;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    flex-shrink: 0;
+}
+
+.preview-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-title::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+
+.preview-header-left,
+.preview-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Device Selector Clean BW */
+.device-selector {
+    display: flex;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.device-btn {
+    width: 28px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.device-btn:hover {
+    color: #fff;
+}
+
+.device-btn.active {
+    background: #fff;
+    color: #000;
+}
+
+/* Preview Body */
+.preview-body {
+    flex: 1;
+    overflow: auto;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* Device Frames - Professional Monochrome Outlines */
+.device-frame {
+    background: #000;
+    border: 4px solid #1a1a1a;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+    display: none;
+    margin: auto;
+    transform-origin: top center;
+    transform: scale(0.9);
+    /* Perfect balance */
+}
+
+.device-frame.active {
+    display: block;
+}
+
+/* iPhone - BW Style */
+.iphone-frame {
+    width: 375px;
+    height: 812px;
+    border-radius: 50px;
+    position: relative;
+    padding: 12px;
+}
+
+.dynamic-island {
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 105px;
+    height: 28px;
+    background: #000;
+    border: 0.5px solid #222;
+    border-radius: 14px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    /* Lens on left usually? */
+    /* Let's stick to flex. User wants lock on right. */
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+/* Pseudo-element is the camera lens on the right? No, typically lens is right or left. 
+   Code had justify-content: flex-end; padding-right: 12px; and ::before for lens.
+   Let's keep lens and add lock.
+*/
+
+.dynamic-island::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle at center, #111 0%, #000 70%, #1a1a2e 100%);
+    border-radius: 50%;
+    border: 0.5px solid #222;
+    box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.1);
+    order: 2;
+    /* Lens on right */
+}
+
+.island-lock {
+    color: #fff;
+    opacity: 1;
+    transform: scale(1);
+    display: flex;
+    align-items: center;
+    margin-left: 2px;
+}
+
+.island-lock svg {
+    width: 13px;
+    height: 13px;
+}
+
+/* User asked: "coloca dentro da dynamic island no lado direito" 
+   Wait, if lens is commonly on right, or maybe user considers the whole island.
+   If I put it on right, it might overlap lens if I'm not careful.
+   Let's put lock on the far right and lens on left? Or adjacent.
+   Standard iPhone 14 Pro: Lens is on the right side of the pill. Lock icon appears in the island? 
+   Actually lock icon appears ABOVE the date usually on lock screen. 
+   But user specifically asked "dentro da dynamic island no lado direito".
+   I will follow user request exactly.
+*/
+
+.iphone-screen {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+    padding: 2px;
+    /* Small safe margin from bezel */
+}
+
+/* iOS Lock Screen */
+.ios-lock-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://i.postimg.cc/zGQQWV9n/wwlp.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 40;
+    /* Below status bar (50) but above content */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 60px;
+    padding-bottom: 8px;
+    color: #fff;
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
+}
+
+/* Screen Off State */
+.iphone-frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    border-radius: 38px;
+}
+
+.iphone-frame.screen-off::after {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.iphone-frame.landscape {
+    width: 812px;
+    height: 375px;
+}
+
+/* Floating Controls Menu */
+.device-controls-menu {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.control-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ccc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
+.ios-lock-screen.unlocked {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.lock-top-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.lock-icon {
+    margin-bottom: 8px;
+    opacity: 0.8;
+}
+
+.lock-date {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.8;
+    text-transform: capitalize;
+}
+
+.lock-clock {
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.lock-bottom-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    padding: 0 32px;
+}
+
+.lock-shortcuts {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.shortcut-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.shortcut-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.swipe-text {
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.6;
+    margin-bottom: 4px;
+}
+
+.home-indicator {
+    width: 100px;
+    height: 4px;
+    background: #fff;
+    border-radius: 2px;
+    opacity: 0.8;
+}
+
+.ios-status-bar {
+    height: 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    position: absolute;
+    top: 4px;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    pointer-events: none;
+    letter-spacing: -0.01em;
+}
+
+.ios-status-bar .status-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.9;
+}
+
+/* Android - BW Style */
+.android-frame {
+    width: 360px;
+    height: 800px;
+    border-radius: 20px;
+    position: relative;
+    padding: 8px;
+}
+
+.punch-hole {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: #000;
+    border-radius: 50%;
+}
+
+.android-screen {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 2px;
+}
+
+/* Tablet - BW Style */
+.tablet-frame {
+    width: 768px;
+    height: 1024px;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.tablet-screen {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Common Frames styles */
+.mobile-iframe {
+    width: calc(100% + 20px);
+    /* Hide scrollbar by pushing it out */
+    height: 100%;
+    border: none;
+    margin-right: -20px;
+    background: transparent;
+}
+
+/* Fallback for modern browsers */
+.mobile-iframe::-webkit-scrollbar {
+    display: none !important;
+}
+
+.mobile-iframe {
+    scrollbar-width: none !important;
+}
+
+/* Desktop Frame */
+.desktop-frame {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-preview-container {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.mobile-preview-container.active {
+    display: flex;
+    align-items: flex-start;
+}

@@ -9,9 +9,11 @@
     RewriteRule ^ - [L]
     
     # Redirecionar URLs com .php para versão sem extensão (301 permanente) - APENAS EM PRODUÇÃO
+    # EXCEÇÃO: Não redirecionar google-callback.php e google-auth.php (necessários para OAuth)
     RewriteCond %{HTTP_HOST} ^safenode\.cloud$ [NC]
     RewriteCond %{REQUEST_URI} \.php$ [NC]
     RewriteCond %{REQUEST_URI} !^.*/(api|includes|assets)/
+    RewriteCond %{REQUEST_URI} !^.*/(google-callback|google-auth)\.php$ [NC]
     RewriteRule ^(.*)\.php$ $1 [R=301,L,QSA]
     
     # Permitir acesso direto a arquivos físicos existentes (imagens, CSS, JS, etc)

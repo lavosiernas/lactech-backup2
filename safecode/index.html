@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCode IDE</title>
+    <link rel="icon" type="image/png" href="../assets/img/logos (6).png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- xterm.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
+    <link rel="stylesheet" href="./styles/base.css">
+    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="./styles/editor.css">
+</head>
+
+<body>
+    <div class="ide-container">
+        <!-- Header -->
+        <header class="ide-header">
+            <div class="ide-header-left">
+                <div class="ide-header-title">
+                    <img src="../assets/img/logos (6).png" alt="SafeNode" style="height: 20px;">
+                </div>
+                <nav class="ide-menu">
+                    <div class="menu-item-dropdown">
+                        <span id="menuFile">File</span>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item" id="menuItemNewFile">New File <span
+                                    class="shortcut">Ctrl+N</span></div>
+                            <div class="dropdown-item" id="menuItemOpenFile">Open File <span
+                                    class="shortcut">Ctrl+O</span></div>
+                            <div class="dropdown-item" id="menuItemOpenFolder">Open Folder <span
+                                    class="shortcut">Ctrl+Shift+O</span></div>
+                            <div class="divider"></div>
+                            <div class="dropdown-item" id="menuItemSave">Save <span class="shortcut">Ctrl+S</span></div>
+                            <div class="dropdown-item" id="menuItemSaveAs">Save As... <span
+                                    class="shortcut">Ctrl+Shift+S</span></div>
+                        </div>
+                    </div>
+                    <div class="menu-item-dropdown">
+                        <span id="menuEdit">Edit</span>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item" id="menuItemUndo">Undo</div>
+                            <div class="dropdown-item" id="menuItemRedo">Redo</div>
+                            <div class="divider"></div>
+                            <div class="dropdown-item" id="menuItemCut">Cut</div>
+                            <div class="dropdown-item" id="menuItemCopy">Copy</div>
+                            <div class="dropdown-item" id="menuItemPaste">Paste</div>
+                        </div>
+                    </div>
+                    <div class="menu-item-dropdown">
+                        <span id="menuView">View</span>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item" id="menuItemToggleSidebar">Toggle Sidebar <span
+                                    class="shortcut">Ctrl+B</span></div>
+                            <div class="dropdown-item" id="menuItemToggleTerminal">Toggle Terminal <span
+                                    class="shortcut">Ctrl+`</span></div>
+                            <div class="dropdown-item" id="menuItemTogglePreview">Toggle Preview <span
+                                    class="shortcut">Ctrl+Shift+V</span></div>
+                        </div>
+                    </div>
+                    <div class="menu-item-dropdown">
+                        <span id="menuTerminal">Terminal</span>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item" id="menuItemNewTerminal">New Terminal</div>
+                            <div class="dropdown-item" id="menuItemClearTerminal">Clear Terminal</div>
+                        </div>
+                    </div>
+                    <div class="menu-item-dropdown">
+                        <span id="menuExtensions">Extensions</span>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item" id="menuItemManageExtensions">Manage Extensions</div>
+                        </div>
+                    </div>
+                    <div class="menu-item-dropdown">
+                        <span id="menuHelp">Help</span>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item" id="menuItemWelcome">Welcome</div>
+                            <div class="dropdown-item" id="menuItemAbout">About SafeCode</div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <button id="btnGoLive" class="btn-go-live">
+                    <i data-lucide="radio" class="w-3.5 h-3.5"></i>
+                    <span>Go Live</span>
+                </button>
+                <button id="btnSettings" class="btn-icon" title="Settings">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+                <button id="btnCommandPalette" class="btn-icon" title="Command Palette">
+                    <i data-lucide="command" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="ide-main">
+            <!-- Sidebar -->
+            <aside class="ide-sidebar" id="sidebar">
+                <div class="sidebar-activity-bar">
+                    <button class="sidebar-tab active" data-view="explorer" title="Explorer">
+                        <i data-lucide="folder" class="w-5 h-5"></i>
+                    </button>
+                    <button class="sidebar-tab" data-view="search" title="Search">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </button>
+                    <button class="sidebar-tab" data-view="git" title="Source Control">
+                        <i data-lucide="git-branch" class="w-5 h-5"></i>
+                    </button>
+                    <button class="sidebar-tab" data-view="extensions" title="Extensions">
+                        <i data-lucide="puzzle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <div class="sidebar-panel" id="sidebarPanel">
+                    <div class="sidebar-content" id="sidebarContent">
+                        <!-- File Tree will render here -->
+                    </div>
+                </div>
+                <div class="sidebar-resizer" id="sidebarResizer"></div>
+            </aside>
+
+            <!-- Editor Core -->
+            <section class="ide-editor-area">
+                <div class="editor-tabs" id="editorTabs">
+                    <div class="tabs-container" id="tabsContainer"></div>
+                </div>
+
+                <div class="editor-container" id="editorContainer">
+                    <!-- Welcome Screen -->
+                    <div class="editor-welcome" id="editorWelcome">
+                        <div class="welcome-content">
+                            <img src="../assets/img/logos (6).png" alt="SafeCode" class="welcome-logo">
+                            <h1>SafeCode IDE</h1>
+                            <p>Professional monochrome development environment.</p>
+
+                            <div class="welcome-actions">
+                                <button id="btnOpenFolder" class="btn-primary">
+                                    <i data-lucide="folder-open" class="w-4 h-4"></i>
+                                    Open Project
+                                </button>
+                                <button id="btnNewFile" class="btn-primary"
+                                    style="background: transparent; border: 1px solid #444; color: #fff;">
+                                    <i data-lucide="file-plus" class="w-4 h-4"></i>
+                                    New File
+                                </button>
+                            </div>
+
+                            <div class="shortcut-grid">
+                                <div class="shortcut-item">
+                                    <span>New File</span>
+                                    <kbd>Ctrl+N</kbd>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span>Open File</span>
+                                    <kbd>Ctrl+O</kbd>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span>Command Palette</span>
+                                    <kbd>Ctrl+Shift+P</kbd>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span>Terminal</span>
+                                    <kbd>Ctrl+`</kbd>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Editors added here -->
+                </div>
+            </section>
+
+            <!-- Live Preview (Right Side) -->
+            <aside class="ide-preview-container" id="previewContainer" style="display: none;">
+                <div class="preview-resizer" id="previewResizer"></div>
+                <header class="preview-header">
+                    <div class="preview-header-left">
+                        <span class="preview-title">Live Preview</span>
+                        <div class="device-selector">
+                            <button class="device-btn active" data-device="desktop"><i data-lucide="monitor"
+                                    class="w-3.5 h-3.5"></i></button>
+                            <button class="device-btn" data-device="tablet"><i data-lucide="tablet"
+                                    class="w-3.5 h-3.5"></i></button>
+                            <button class="device-btn" data-device="mobile-ios"><i data-lucide="smartphone"
+                                    class="w-3.5 h-3.5"></i></button>
+                            <button class="device-btn" data-device="mobile-android"><i data-lucide="smartphone"
+                                    class="w-3.5 h-3.5"></i></button>
+                        </div>
+                    </div>
+                    <div class="preview-header-right">
+                        <button id="btnRefreshPreview" class="btn-icon"><i data-lucide="refresh-cw"
+                                class="w-3.5 h-3.5"></i></button>
+                        <button id="btnClosePreview" class="btn-icon"><i data-lucide="x"
+                                class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </header>
+                <div class="preview-body" id="previewBody">
+                    <iframe id="preview-frame-desktop" class="desktop-frame"></iframe>
+                    <div class="mobile-preview-container" id="mobilePreviewContainer">
+                        <div class="device-frame iphone-frame" id="iphoneFrame">
+                            <div class="dynamic-island">
+                                <div class="island-lock"><i data-lucide="lock" stroke-width="3" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="iphone-screen">
+                                <div class="ios-status-bar">
+                                    <span class="ios-status-clock">9:41</span>
+                                    <div class="status-right">
+                                        <i data-lucide="signal" class="w-3 h-3"></i>
+                                        <i data-lucide="wifi" class="w-3 h-3"></i>
+                                        <i data-lucide="battery" class="w-3 h-3"></i>
+                                    </div>
+                                </div>
+                                <iframe id="preview-frame-ios" class="mobile-iframe"></iframe>
+                                <!-- iOS Lock Screen Overlay -->
+                                <div class="ios-lock-screen" id="iosLockScreen">
+                                    <div class="lock-top-area">
+                                        <!-- Lock icon removed from here -->
+                                        <div class="lock-date">Domingo, 1 jan</div>
+                                        <div class="lock-clock">12:00</div>
+                                    </div>
+                                    <div class="lock-bottom-area">
+                                        <div class="lock-shortcuts">
+                                            <button class="shortcut-btn"><i data-lucide="flashlight"
+                                                    class="w-4 h-4"></i></button>
+                                            <button class="shortcut-btn"><i data-lucide="camera"
+                                                    class="w-4 h-4"></i></button>
+                                        </div>
+                                        <div class="swipe-text">Passe o dedo para cima</div>
+                                        <div class="home-indicator"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Device Controls -->
+                <div class="device-controls-menu" id="deviceControls">
+                    <button class="control-btn" id="btnRotate" title="Rotate Landscape/Portrait">
+                        <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+                    </button>
+                    <button class="control-btn" id="btnLock" title="Lock Device">
+                        <i data-lucide="lock" class="w-4 h-4"></i>
+                    </button>
+                    <button class="control-btn" id="btnTheme" title="Toggle Theme">
+                        <i data-lucide="moon" class="w-4 h-4"></i>
+                    </button>
+                    <button class="control-btn" id="btnPower" title="Turn Off Screen">
+                        <i data-lucide="power" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="device-frame android-frame" id="androidFrame">
+                    <div class="punch-hole"></div>
+                    <div class="android-screen">
+                        <iframe id="preview-frame-android" class="mobile-iframe"></iframe>
+                    </div>
+                </div>
+                <div class="device-frame tablet-frame" id="tabletFrame">
+                    <div class="tablet-screen">
+                        <iframe id="preview-frame-tablet" class="mobile-iframe"></iframe>
+                    </div>
+                </div>
+    </div>
+    </div>
+    </aside>
+    </main>
+
+    <!-- Bottom Panel -->
+    <footer class="ide-bottom-panel" id="bottomPanel" style="display: none;">
+        <div class="panel-resizer" id="panelResizer"></div>
+        <div class="panel-header">
+            <div class="panel-tabs">
+                <button class="panel-tab active" data-panel="terminal">Terminal</button>
+                <button class="panel-tab" data-panel="output">Output</button>
+            </div>
+            <button id="btnClosePanel" class="btn-icon"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+        </div>
+        <div class="panel-content" id="panelContent"></div>
+    </footer>
+
+    <!-- Status Bar -->
+    <footer class="ide-status-bar">
+        <div class="status-left">
+            <div class="status-item"><i data-lucide="git-branch" class="w-3 h-3"></i> main</div>
+            <div class="status-item"><i data-lucide="x-circle" class="w-3 h-3"></i> 0</div>
+            <div class="status-item"><i data-lucide="alert-triangle" class="w-3 h-3"></i> 0</div>
+        </div>
+        <div class="status-right">
+            <div class="status-item" id="statusLiveServer">Live Server: Stopped</div>
+            <div class="status-item" id="statusLanguage">Plain Text</div>
+            <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
+        </div>
+    </footer>
+    </div>
+
+    <!-- Command Palette -->
+    <div class="command-palette" id="commandPalette" style="display: none;">
+        <div class="command-palette-content">
+            <div class="command-input-wrapper">
+                <input type="text" id="commandInput" placeholder="Busque um comando..." autocomplete="off">
+            </div>
+            <div class="command-list" id="commandList"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./ide-utils.js"></script>
+    <!-- UI State Managers -->
+    <script src="./web-fs.js"></script>
+    <script src="./settings-manager.js"></script>
+    <script src="./settings-view.js"></script>
+    <script src="./ide-managers.js"></script>
+    <script src="./ide-features.js"></script>
+    <script src="./update-checker.js"></script>
+    <script src="./ide-enhanced.js"></script>
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
