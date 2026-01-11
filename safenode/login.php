@@ -380,7 +380,15 @@ $clientCountry    = (function () {
                             Esqueceu a senha?
                         </a>
                     </div>
+                    
+                    <!-- ESC local (Dev Only) -->
+                    <div class="flex items-center mt-2">
+                        <a href="dev-reset-password.php" class="text-[10px] font-medium text-slate-400 hover:text-black transition-colors uppercase tracking-wider">
+                            ESC local
+                        </a>
+                    </div>
                 </div>
+
 
                 <!-- Verificação Humana SafeNode -->
                 <div class="mt-3 p-3 rounded-2xl border border-slate-200 bg-slate-50 flex items-center gap-3 shadow-sm" id="hv-box">

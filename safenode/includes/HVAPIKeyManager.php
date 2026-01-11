@@ -221,15 +221,39 @@ class HVAPIKeyManager
         }
 
         try {
+            $countryCode = self::detectCountryCode();
+
             $stmt = $db->prepare("
                 INSERT INTO safenode_hv_attempts 
-                (api_key_id, ip_address, user_agent, referer, attempt_type, reason)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (api_key_id, ip_address, user_agent, referer, country_code, attempt_type, reason)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $type, $reason]);
+            $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $countryCode, $type, $reason]);
         } catch (PDOException $e) {
             error_log("HVAPIKeyManager::logAttempt Error: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Detecta o código do país baseado em headers HTTP
+     */
+    private static function detectCountryCode(): ?string
+    {
+        $headerKeys = [
+            'HTTP_CF_IPCOUNTRY',
+            'HTTP_X_COUNTRY_CODE',
+            'HTTP_GEOIP_COUNTRY_CODE',
+            'GEOIP_COUNTRY_CODE'
+        ];
+        foreach ($headerKeys as $key) {
+            if (!empty($_SERVER[$key])) {
+                $code = strtoupper(substr(trim($_SERVER[$key]), 0, 2));
+                if (preg_match('/^[A-Z]{2}$/', $code)) {
+                    return $code;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -611,8 +635,68 @@ HTML;
     {
         return [
             'usage' => self::getUsageStats($apiKeyId, $userId, $period),
-            'performance' => self::getPerformanceStats($apiKeyId, $userId, $period)
+            'performance' => self::getPerformanceStats($apiKeyId, $userId, $period),
+            'geo' => self::getGeoStats($apiKeyId, $userId, $period)
         ];
+    }
+
+    /**
+     * Obtém estatísticas geográficas (países)
+     */
+    public static function getGeoStats(int $apiKeyId, int $userId, ?string $period = '24h'): array
+    {
+        $db = getSafeNodeDatabase();
+        if (!$db) {
+            return [];
+        }
+
+        try {
+            // Validar que a API key pertence ao usuário
+            $stmt = $db->prepare("SELECT id FROM safenode_hv_api_keys WHERE id = ? AND user_id = ?");
+            $stmt->execute([$apiKeyId, $userId]);
+            if (!$stmt->fetch()) {
+                return [];
+            }
+
+            $interval = match($period) {
+                '1h' => '1 HOUR',
+                '24h' => '24 HOUR',
+                '7d' => '7 DAY',
+                '30d' => '30 DAY',
+                default => '24 HOUR'
+            };
+
+            // Requisições por país
+            $stmt = $db->prepare("
+                SELECT 
+                    country_code, 
+                    COUNT(*) as count,
+                    SUM(CASE WHEN attempt_type IN ('init', 'validate') THEN 1 ELSE 0 END) as success,
+                    SUM(CASE WHEN attempt_type IN ('failed', 'suspicious') THEN 1 ELSE 0 END) as failed
+                FROM safenode_hv_attempts
+                WHERE api_key_id = ? 
+                  AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                  AND country_code IS NOT NULL
+                GROUP BY country_code
+                ORDER BY count DESC
+            ");
+            $stmt->execute([$apiKeyId]);
+            $countries = $stmt->fetchAll();
+
+            $formatted = [];
+            foreach ($countries as $c) {
+                $formatted[$c['country_code']] = [
+                    'count' => (int)$c['count'],
+                    'success' => (int)$c['success'],
+                    'failed' => (int)$c['failed']
+                ];
+            }
+
+            return $formatted;
+        } catch (PDOException $e) {
+            error_log("HVAPIKeyManager::getGeoStats Error: " . $e->getMessage());
+            return [];
+        }
     }
 }
 

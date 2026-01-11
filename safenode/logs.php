@@ -46,29 +46,42 @@ $where = [];
 $params = [];
 
 if ($currentSiteId > 0) {
-    $where[] = "site_id = ?";
-    $params[] = $currentSiteId;
+    // Verificar se o site pertence ao usuário
+    $stmt = $db->prepare("SELECT id FROM safenode_sites WHERE id = ? AND user_id = ?");
+    $stmt->execute([$currentSiteId, $userId]);
+    if ($stmt->fetch()) {
+        $where[] = "site_id = ?";
+        $params[] = $currentSiteId;
+    } else {
+        // Site não pertence ao usuário, forçar um filtro que retorne vazio ou redirecionar
+        $where[] = "site_id = -1";
+    }
+} else {
+    // Visão Global: Filtrar logs apenas dos sites que pertencem ao usuário logado
+    // CORREÇÃO DE SEGURANÇA: Evita que um usuário veja logs de sites de outros usuários
+    $where[] = "site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+    $params[] = $userId;
 }
 
 // Filtrar apenas eventos de verificação humana
 // action_taken pode ser: 'blocked' (bot), 'allowed' (humano), 'verified' (humano validado)
 // Mapear para os tipos que queremos mostrar
 if ($eventType) {
-    // Mapear tipos claros para valores do banco
+    // Mapear tipos claros para valores do banco (safenode_human_verification_logs usa event_type)
     $actionMap = [
-        'humano_validado' => ['verified', 'allowed'],
-        'bot_bloqueado' => ['blocked'],
-        'acesso_permitido' => ['allowed']
+        'humano_validado' => ['human_validated', 'access_allowed'],
+        'bot_bloqueado' => ['bot_blocked'],
+        'acesso_permitido' => ['access_allowed']
     ];
     
     if (isset($actionMap[$eventType])) {
         $placeholders = implode(',', array_fill(0, count($actionMap[$eventType]), '?'));
-        $where[] = "action_taken IN ($placeholders)";
+        $where[] = "event_type IN ($placeholders)";
         $params = array_merge($params, $actionMap[$eventType]);
     }
 } else {
-    // Por padrão, mostrar apenas eventos de verificação (não todos os logs de segurança)
-    $where[] = "action_taken IN ('blocked', 'allowed', 'verified', 'challenged')";
+    // Por padrão, mostrar apenas eventos de verificação relevantes
+    $where[] = "event_type IN ('bot_blocked', 'access_allowed', 'human_validated', 'challenge_shown')";
 }
 
 if ($ipAddress) {
@@ -92,7 +105,7 @@ $whereClause = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
 $totalLogs = 0;
 if ($db) {
     try {
-        $countStmt = $db->prepare("SELECT COUNT(*) as total FROM safenode_security_logs $whereClause");
+        $countStmt = $db->prepare("SELECT COUNT(*) as total FROM safenode_human_verification_logs $whereClause");
         $countStmt->execute($params);
         $totalLogs = (int)$countStmt->fetch()['total'];
     } catch (PDOException $e) {
@@ -106,10 +119,10 @@ $totalPages = ceil($totalLogs / $limit);
 $logs = [];
 if ($db) {
     try {
-        $sql = "SELECT * FROM safenode_security_logs $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        $sql = "SELECT * FROM safenode_human_verification_logs $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
         $stmt = $db->prepare($sql);
-        $params[] = $limit;
-        $params[] = $offset;
+        $params[] = (int)$limit;
+        $params[] = (int)$offset;
         $stmt->execute($params);
         $logs = $stmt->fetchAll();
     } catch (PDOException $e) {
@@ -124,35 +137,35 @@ $eventTypes = [
     'acesso_permitido' => 'Acesso Permitido'
 ];
 
-// Mapear valores do banco para linguagem clara
-function getEventTypeLabel($actionTaken) {
+// Mapear valores do banco para linguagem clara (tabela safenode_human_verification_logs)
+function getEventTypeLabel($eventType) {
     $map = [
-        'verified' => 'Humano Validado',
-        'allowed' => 'Acesso Permitido',
-        'blocked' => 'Bot Bloqueado',
-        'challenged' => 'Desafiado'
+        'human_validated' => 'Humano Validado',
+        'access_allowed' => 'Acesso Permitido',
+        'bot_blocked' => 'Bot Bloqueado',
+        'challenge_shown' => 'Desafio Exibido'
     ];
-    return $map[$actionTaken] ?? $actionTaken;
+    return $map[$eventType] ?? $eventType;
 }
 
-function getEventTypeIcon($actionTaken) {
+function getEventTypeIcon($eventType) {
     $map = [
-        'verified' => 'check-circle-2',
-        'allowed' => 'check-circle-2',
-        'blocked' => 'shield-off',
-        'challenged' => 'shield-alert'
+        'human_validated' => 'check-circle-2',
+        'access_allowed' => 'check-circle-2',
+        'bot_blocked' => 'shield-off',
+        'challenge_shown' => 'shield-alert'
     ];
-    return $map[$actionTaken] ?? 'info';
+    return $map[$eventType] ?? 'info';
 }
 
-function getEventTypeColor($actionTaken) {
+function getEventTypeColor($eventType) {
     $map = [
-        'verified' => 'green',
-        'allowed' => 'green',
-        'blocked' => 'red',
-        'challenged' => 'amber'
+        'human_validated' => 'green',
+        'access_allowed' => 'green',
+        'bot_blocked' => 'red',
+        'challenge_shown' => 'amber'
     ];
-    return $map[$actionTaken] ?? 'zinc';
+    return $map[$eventType] ?? 'zinc';
 }
 
 ?>
@@ -1311,9 +1324,9 @@ function getEventTypeColor($actionTaken) {
                                 <?php else: ?>
                                     <?php foreach ($logs as $log): ?>
                                         <?php
-                                        $eventLabel = getEventTypeLabel($log['action_taken']);
-                                        $eventIcon = getEventTypeIcon($log['action_taken']);
-                                        $eventColor = getEventTypeColor($log['action_taken']);
+                                        $eventLabel = getEventTypeLabel($log['event_type']);
+                                        $eventIcon = getEventTypeIcon($log['event_type']);
+                                        $eventColor = getEventTypeColor($log['event_type']);
                                         $domain = $selectedSite['domain'] ?? ($log['request_uri'] ?? 'N/A');
                                         ?>
                                         <tr class="border-b border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">

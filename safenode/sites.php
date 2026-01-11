@@ -86,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         $stmt = $db->prepare("
                             INSERT INTO safenode_sites 
-                            (user_id, domain, display_name, security_level, is_active, created_at, updated_at) 
-                            VALUES (?, ?, ?, ?, 1, NOW(), NOW())
+                            (user_id, domain, display_name, security_level, is_active, cloudflare_status, ssl_status, auto_block, rate_limit_enabled, threat_detection_enabled, created_at, updated_at) 
+                            VALUES (?, ?, ?, ?, 1, 'active', 'pending', 1, 1, 1, NOW(), NOW())
                         ");
                         $stmt->execute([$userId, $domain, $displayName ?: $domain, $securityLevel]);
                         $siteId = $db->lastInsertId();
@@ -100,7 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 } catch (PDOException $e) {
                     error_log("SafeNode Create Site Error: " . $e->getMessage());
-                            $message = 'Erro ao cadastrar site';
+                    error_log("SQL State: " . $e->getCode());
+                            $message = 'Erro ao cadastrar site: ' . $e->getMessage();
                     $messageType = 'error';
                 }
             }
@@ -153,7 +154,7 @@ if ($db && $userId) {
     try {
         $stmt = $db->prepare("
             SELECT id, domain, display_name, security_level, is_active, created_at, updated_at,
-                   (SELECT COUNT(*) FROM safenode_security_logs WHERE site_id = safenode_sites.id) as total_logs
+                   (SELECT COUNT(*) FROM safenode_human_verification_logs WHERE site_id = safenode_sites.id) as total_logs
             FROM safenode_sites 
             WHERE user_id = ? 
             ORDER BY created_at DESC
@@ -163,7 +164,8 @@ if ($db && $userId) {
         error_log("SafeNode: Buscou " . count($sites) . " sites para o usuário ID: $userId");
     } catch (PDOException $e) {
         error_log("SafeNode List Sites Error: " . $e->getMessage());
-        error_log("SafeNode List Sites - User ID: $userId, DB: " . ($db ? 'connected' : 'not connected'));
+        $message = "Erro ao carregar sites: " . $e->getMessage();
+        $messageType = "error";
     }
 } else {
     error_log("SafeNode: Não foi possível buscar sites. DB: " . ($db ? 'connected' : 'not connected') . ", User ID: " . ($userId ?? 'null'));

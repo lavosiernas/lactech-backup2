@@ -1,6 +1,8 @@
 # Common folders to ignore
 node_modules/
+.*node_modules/
 vendor/
+.*vendor/
 
 # Environment files
 .env
@@ -31,9 +33,14 @@ storage/framework/sessions/
 storage/framework/views/
 
 # Database
-*.sql
-!database/*.sql
+
 
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Backup and Large Files
+*.zip
+*.rar
+*.7z
+deploy_*.zip
