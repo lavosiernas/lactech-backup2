@@ -284,6 +284,59 @@ if (isLoggedIn() && isset($_SESSION['user_role'])) {
         }
     </script>
 </head>
+<!-- SafeNode Human Verification -->
+<script src="https://safenode.cloud/sdk/safenode-hv.js"></script>
+<script>
+(function() {
+    const apiKey = 'sk_c4df23f83c93a5d4d1b2746e97fb1c78';
+    const apiUrl = 'https://safenode.cloud/api/sdk';
+    const hv = new SafeNodeHV(apiUrl, apiKey);
+    
+    hv.init().then(() => {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            if (form.id) {
+                hv.attachToForm('#' + form.id);
+            } else {
+                const tempId = 'safenode_form_' + Math.random().toString(36).substr(2, 9);
+                form.id = tempId;
+                hv.attachToForm('#' + tempId);
+            }
+            
+            const submitHandler = async (e) => {
+                e.preventDefault();
+                const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+                let originalText = '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    originalText = submitBtn.textContent || submitBtn.value || '';
+                    if (submitBtn.textContent) submitBtn.textContent = 'Validando...';
+                    if (submitBtn.value) submitBtn.value = 'Validando...';
+                }
+                try {
+                    await hv.validateForm('#' + form.id);
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                    }
+                    form.removeEventListener('submit', submitHandler);
+                    form.submit();
+                } catch (error) {
+                    console.error('SafeNode HV: Erro na validação:', error);
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        if (submitBtn.textContent) submitBtn.textContent = originalText;
+                        if (submitBtn.value) submitBtn.value = originalText;
+                    }
+                    alert('Verificação de segurança falhou. Por favor, tente novamente.');
+                }
+            };
+            form.addEventListener('submit', submitHandler);
+        });
+    }).catch((error) => {
+        console.error('SafeNode HV: Erro ao inicializar', error);
+    });
+})();
+</script>
 <body class="gradient-mesh min-h-screen">
     <!-- Mobile Layout -->
     <div class="md:hidden min-h-screen flex flex-col">

@@ -448,7 +448,8 @@ $countryNames = [
                     const count = mapValues[code] || 0;
                     tooltip.text(
                         `<div class="font-bold mb-1">${tooltip.text()}</div>
-                         <div class="text-blue-400">${count.toLocaleString()} requisições</div>`
+                         <div class="text-blue-400">${count.toLocaleString()} requisições</div>`,
+                        true
                     );
                 }
             });

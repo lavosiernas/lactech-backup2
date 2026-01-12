@@ -401,36 +401,60 @@
         
         /* Mobile Menu Animations */
         #mobileMenu {
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             opacity: 0;
-            transform: translateY(-10px);
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
+
         #mobileMenu.show {
-            max-height: 300px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #mobileMenu .menu-item {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 1rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+            color: #1a1a1a;
+            position: relative;
+        }
+
+        #mobileMenu .menu-item:hover {
+            color: #22c55e;
+        }
+
+        #mobileMenu.show .menu-item {
             opacity: 1;
             transform: translateY(0);
         }
         
-        #mobileMenu .menu-item {
-            opacity: 0;
-            transform: translateX(-20px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        #mobileMenu.show .menu-item {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        
         #mobileMenu.show .menu-item:nth-child(1) { transition-delay: 0.1s; }
-        #mobileMenu.show .menu-item:nth-child(2) { transition-delay: 0.2s; }
-        #mobileMenu.show .menu-item:nth-child(3) { transition-delay: 0.3s; }
-        #mobileMenu.show .menu-item:nth-child(4) { transition-delay: 0.4s; }
+        #mobileMenu.show .menu-item:nth-child(2) { transition-delay: 0.15s; }
+        #mobileMenu.show .menu-item:nth-child(3) { transition-delay: 0.2s; }
+        #mobileMenu.show .menu-item:nth-child(4) { transition-delay: 0.25s; }
         
         /* Hamburger Menu Animation */
+        .hamburger-icon {
+            z-index: 60;
+            position: relative;
+        }
+
         .hamburger-icon svg {
             transition: all 0.3s ease;
         }
@@ -452,13 +476,59 @@
 
 <body>
     <!-- Navigation -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100 transition-all duration-300">
+        <div class="max-w-[1920px] mx-auto px-6 xl:px-12 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="index.php" class="flex-shrink-0 group flex items-center gap-3">
+                <img src="assets/img/lactech-logo.png" alt="LacTech Logo" class="h-10 w-auto">
+                <span class="text-3xl font-bold flex items-center text-gray-900 group-hover:text-green-600 transition-colors">
+                    LacTech
+                </span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden lg:flex items-center gap-8">
+                <a href="#features" class="text-gray-600 hover:text-green-600 font-medium transition-colors text-base relative group py-2">
+                    Funcionalidades
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#benefits" class="text-gray-600 hover:text-green-600 font-medium transition-colors text-base relative group py-2">
+                    Benefícios
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#about" class="text-gray-600 hover:text-green-600 font-medium transition-colors text-base relative group py-2">
+                    Sobre o LacTech
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 transition-all duration-300 group-hover:w-full"></span>
+                </a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="hidden lg:flex items-center gap-4">
+                <a href="inicio-login.php" class="text-gray-700 hover:text-green-600 font-semibold transition-colors px-4 py-2">
+                    Entrar
+                </a>
+                <a href="inicio-login.php" class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-semibold shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/30 hover:-translate-y-0.5 transition-all duration-300">
+                    Começar Agora
+                </a>
+            </div>
+
+            <!-- Mobile Hamburger -->
+            <button class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors hamburger-icon" id="hamburgerBtn" onclick="toggleMobileMenu()">
+                <svg class="w-7 h-7 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
 
     <!-- Hero Section -->
     <section id="home" class="w-full min-h-screen bg-white">
         <!-- Mobile Layout -->
-        <div class="block lg:hidden">
-            <!-- Mobile Header -->
-            <div class="px-4 sm:px-8 pt-6 pb-4 bg-white border-b border-gray-100">
+        <div class="block lg:hidden pt-20"> <!-- Added padding-top for fixed header -->
+            <!-- Mobile Header (Hidden as we have global header now) -->
+            <div class="hidden px-4 sm:px-8 pt-6 pb-4 bg-white border-b border-gray-100">
                 <div class="flex items-center justify-between">
                     <!-- Logo -->
                     <span class="text-2xl sm:text-3xl font-bold">
@@ -466,8 +536,8 @@
                     </span>
                     
                     <!-- Mobile Menu Button -->
-                    <button class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors hamburger-icon" id="hamburgerBtn" onclick="toggleMobileMenu()">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button class="p-2 rounded-lg border-2 border-gray-100 hover:bg-gray-50 transition-colors hamburger-icon z-50 relative" id="hamburgerBtn" onclick="toggleMobileMenu()">
+                        <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18h16"></path>
@@ -475,13 +545,15 @@
                     </button>
                 </div>
                 
-                <!-- Mobile Menu (Hidden by default) -->
-                <div id="mobileMenu" class="mt-4 pb-4">
-                    <div class="flex flex-col space-y-3">
-                        <a href="#features" class="menu-item text-gray-700 hover:text-gray-900 transition-colors py-2 border-b border-gray-100">Funcionalidades</a>
-                        <a href="#benefits" class="menu-item text-gray-700 hover:text-gray-900 transition-colors py-2 border-b border-gray-100">Benefícios</a>
-                        <a href="#about" class="menu-item text-gray-700 hover:text-gray-900 transition-colors py-2 border-b border-gray-100">Sobre o LacTech</a>
-                        <a href="inicio-login.php" class="menu-item text-gray-700 hover:text-gray-900 transition-colors py-2 border-b border-gray-100">Entrar</a>
+                <!-- Mobile Menu (Full Screen Overlay) -->
+                <div id="mobileMenu">
+                    <div class="flex flex-col items-center space-y-6 w-full px-6">
+                        <a href="#features" class="menu-item" onclick="toggleMobileMenu()">Funcionalidades</a>
+                        <a href="#benefits" class="menu-item" onclick="toggleMobileMenu()">Benefícios</a>
+                        <a href="#about" class="menu-item" onclick="toggleMobileMenu()">Sobre o LacTech</a>
+                        <a href="inicio-login.php" class="menu-item w-full max-w-xs text-center px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl hover:from-green-600 hover:to-green-700 shadow-xl shadow-green-500/20 !text-lg !text-white !font-bold transform hover:-translate-y-1 transition-all" onclick="toggleMobileMenu()">
+                            Acessar Sistema
+                        </a>
                     </div>
                 </div>
             </div>
@@ -489,10 +561,10 @@
             <!-- Mobile Text Content (above image) -->
             <div class="w-full px-4 sm:px-6 mb-6 lg:hidden">
                 <!-- Main Headline -->
-                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 leading-tight mb-4 text-center">
+                <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4 text-center tracking-tight">
                     Sistema Completo de
                     <br>
-                    <span class="text-green-600">Gestão Leiteira</span>
+                    <span class="gradient-text">Gestão Leiteira</span>
                 </h1>
 
             </div>
@@ -538,18 +610,18 @@
             <div class="w-full flex flex-col justify-center px-4 sm:px-8 pb-8">
                 <!-- Description (below image on mobile) -->
                 <p class="text-base sm:text-lg text-gray-600 mb-6 text-center max-w-4xl mx-auto">
-                    Controle completo de rebanho, produção de leite, saúde animal, análise de dados e muito mais. Aumente sua produtividade com tecnologia de ponta.
+                    Na LacTech, revolucionamos a gestão leiteira com tecnologia avançada.
                 </p>
 
                 <!-- CTA Buttons -->
                 <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 justify-center">
-                    <a href="inicio-login.php" class="px-6 sm:px-8 py-3 sm:py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all shadow-lg text-sm sm:text-base text-center">
+                    <a href="inicio-login.php" class="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-xl shadow-green-500/30 text-base font-bold text-center transform hover:-translate-y-1">
                         Acessar Sistema
                     </a>
                     <a href="#features" class="px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-sm sm:text-base text-center">
                         Ver Funcionalidades
                     </a>
-                    <a href="baixar-app.php" class="px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg text-sm sm:text-base text-center flex items-center justify-center gap-2">
+                    <a href="baixar-app.php" class="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-xl shadow-blue-500/30 text-base font-bold text-center flex items-center justify-center gap-2 transform hover:-translate-y-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                         </svg>
@@ -560,21 +632,11 @@
         </div>
 
         <!-- Desktop Layout -->
-        <div class="hidden lg:flex h-screen">
+        <div class="hidden lg:flex h-screen pt-20"> <!-- Added padding-top for fixed header -->
             <!-- Left Panel: Text Content -->
-            <div class="w-1/2 flex flex-col justify-start px-6 xl:px-16 pt-12 xl:pt-20">
+            <div class="w-1/2 flex flex-col justify-center px-6 xl:px-16"> <!-- Changed justify-start to justify-center for better hero alignment -->
                 <!-- Header (Logo, Nav, CTA) -->
-                <div class="flex items-center justify-between mb-8 gap-4">
-                    <span class="text-3xl lg:text-4xl xl:text-5xl font-bold flex-shrink-0">
-                        <span class="text-black">Lac</span><span class="text-black">Tech</span>
-                    </span>
-                    <div class="flex items-center bg-yellow-50 border border-gray-200 rounded-full pl-3 lg:pl-6 xl:pl-8 pr-6 lg:pr-12 xl:pr-16 py-2 xl:py-3 flex-shrink min-w-0">
-                        <a href="#features" class="text-gray-700 hover:text-gray-900 transition-colors text-xs lg:text-sm xl:text-base mr-2 lg:mr-4 xl:mr-8 whitespace-nowrap">Funcionalidades</a>
-                        <a href="#benefits" class="text-gray-700 hover:text-gray-900 transition-colors text-xs lg:text-sm xl:text-base mr-2 lg:mr-4 xl:mr-8 whitespace-nowrap">Benefícios</a>
-                        <a href="#about" class="text-gray-700 hover:text-gray-900 transition-colors text-xs lg:text-sm xl:text-base mr-2 lg:mr-4 xl:mr-8 whitespace-nowrap">Sobre o LacTech</a>
-                        <a href="inicio-login.php" class="text-gray-700 hover:text-gray-900 transition-colors text-xs lg:text-sm xl:text-base mr-2 lg:mr-3 xl:mr-4 whitespace-nowrap">Entrar</a>
-                    </div>
-                </div>
+                <!-- Header Block Removed -->
 
                 <!-- TrustPilot Rating -->
                 <div class="flex items-center mb-6">
@@ -588,25 +650,25 @@
                 <h1 class="text-6xl lg:text-7xl font-bold text-gray-800 leading-tight mb-6">
                     Sistema Completo de
                     <br>
-                    <span class="text-green-600">Gestão Leiteira</span>
+                    <span class="gradient-text">Gestão Leiteira</span>
                 </h1>
 
 
                 <!-- Description -->
                 <p class="text-lg text-gray-600 mb-8 max-w-lg mt-8">
-                    Controle completo de rebanho, produção de leite, saúde animal, análise de dados e muito mais. Aumente sua produtividade com tecnologia de ponta.
+                    Na LacTech, revolucionamos a gestão leiteira com tecnologia avançada.
                 </p>
 
                 <!-- CTA Buttons -->
                 <div class="flex space-x-4">
-                    <a href="inicio-login.php" class="px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all shadow-lg text-center">
+                    <a href="inicio-login.php" class="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-xl shadow-green-500/30 text-center font-bold text-lg transform hover:-translate-y-1">
                         Acessar Sistema
                     </a>
                     <a href="#features" class="px-8 py-4 border-2 border-gray-300 text-gray-800 rounded-xl hover:bg-gray-100 transition-all text-center">
                         Ver Funcionalidades
                     </a>
-                    <a href="baixar-app.php" class="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg text-center flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="baixar-app.php" class="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-xl shadow-blue-500/30 text-center flex items-center justify-center gap-2 font-bold text-lg transform hover:-translate-y-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                         </svg>
                         Baixar App
@@ -731,10 +793,12 @@
                             // Close menu
                             mobileMenu.classList.remove('show');
                             hamburgerBtn.classList.remove('active');
+                            document.body.style.overflow = ''; // Restore scrolling
                         } else {
                             // Open menu
                             mobileMenu.classList.add('show');
                             hamburgerBtn.classList.add('active');
+                            document.body.style.overflow = 'hidden'; // Lock scrolling
                         }
                     }
                 }
@@ -976,7 +1040,7 @@
                                         App mobile
                                     </li>
                                 </ul>
-                                <a href="pagamento-pix.php?plan=profissional&name=Profissional&value=399" class="w-full px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all text-center block">
+                                <a href="pagamento-pix.php?plan=profissional&name=Profissional&value=399" class="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-lg shadow-green-500/20 text-center block font-bold transform hover:-translate-y-1">
                                     Assinar Plano
                                 </a>
                             </div>
@@ -1110,7 +1174,7 @@
                             App mobile
                         </li>
                     </ul>
-                    <a href="pagamento-pix.php?plan=profissional&name=Profissional&value=399" class="w-full px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all text-center block">
+                    <a href="pagamento-pix.php?plan=profissional&name=Profissional&value=399" class="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-lg shadow-green-500/20 text-center block font-bold transform hover:-translate-y-1">
                         Assinar Plano
                     </a>
                 </div>
