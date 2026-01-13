@@ -399,32 +399,50 @@ ipcMain.handle('preview:refresh', () => {
   return { success: false };
 });
 
-// Dialog handlers
-ipcMain.handle('dialog:openFile', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile'],
-    filters: [
-      { name: 'All Files', extensions: ['*'] }
-    ]
-  });
-  return result;
+// Extensions Handlers
+ipcMain.handle('extensions:list', async () => {
+  try {
+    const extensionsPath = path.join(__dirname, 'extensions');
+    // Create directory if not exists
+    try {
+      await fs.access(extensionsPath);
+    } catch {
+      await fs.mkdir(extensionsPath);
+    }
+
+    const entries = await fs.readdir(extensionsPath, { withFileTypes: true });
+    const extensions = [];
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const manifestPath = path.join(extensionsPath, entry.name, 'package.json');
+        try {
+          const manifestContent = await fs.readFile(manifestPath, 'utf-8');
+          const manifest = JSON.parse(manifestContent);
+          extensions.push({
+            id: entry.name,
+            path: path.join(extensionsPath, entry.name),
+            manifest
+          });
+        } catch (e) {
+          console.warn(`Failed to load extension manifest for ${entry.name}:`, e.message);
+        }
+      }
+    }
+    return { success: true, extensions };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });
 
-ipcMain.handle('dialog:openDirectory', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory']
-  });
-  return result;
-});
-
-ipcMain.handle('dialog:saveFile', async (event, defaultPath) => {
-  const result = await dialog.showSaveDialog(mainWindow, {
-    defaultPath,
-    filters: [
-      { name: 'All Files', extensions: ['*'] }
-    ]
-  });
-  return result;
+ipcMain.handle('extensions:readFile', async (event, extensionId, fileName) => {
+  try {
+    const filePath = path.join(__dirname, 'extensions', extensionId, fileName);
+    const content = await fs.readFile(filePath, 'utf-8');
+    return { success: true, content };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });
 
 // App lifecycle

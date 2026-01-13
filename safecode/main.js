@@ -17,7 +17,8 @@ class SafeCodeIDE {
         this.sidebarManager = null;
         this.tabManager = null;
         this.terminalManager = null;
-        this.buildManager = null; // Initialize BuildManager
+        this.buildManager = null;
+        this.extensionManager = null;
         this.currentFile = null;
         this.isElectron = typeof window !== 'undefined' && window.electronAPI;
 
@@ -33,6 +34,10 @@ class SafeCodeIDE {
         this.sidebarManager = new SidebarManager(this);
         this.terminalManager = new TerminalManager(this);
         this.buildManager = new BuildManager(this); // Initialize BuildManager
+        this.extensionManager = new ExtensionManager(this);
+
+        // Load extensions
+        await this.extensionManager.init();
 
         // Setup event listeners
         this.setupEventListeners();

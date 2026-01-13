@@ -65,6 +65,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
         refresh: () => ipcRenderer.invoke('preview:refresh')
     },
 
+    // Extensions API
+    extensions: {
+        list: () => ipcRenderer.invoke('extensions:list'),
+        readFile: (extensionId, fileName) => ipcRenderer.invoke('extensions:readFile', extensionId, fileName)
+    },
+
     // Platform info
     platform: process.platform,
     isElectron: true

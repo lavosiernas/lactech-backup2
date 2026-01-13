@@ -1463,6 +1463,110 @@
         </div>
     </section>
 
+    <!-- SafeCode IDE Section - Professional Installer -->
+    <section id="safecode" class="bg-zinc-950 py-32 border-t border-zinc-900 overflow-hidden relative">
+        <!-- Background Decoration -->
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-[128px] pointer-events-none"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[128px] pointer-events-none"></div>
+
+        <div class="max-w-5xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">SafeCode IDE</h2>
+                <p class="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
+                    Transforme sua produtividade com a IDE oficial para desenvolvedores LacTech. Instalação instantânea via terminal.
+                </p>
+            </div>
+            
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-black/50 backdrop-blur-xl rounded-2xl p-1 md:p-2 border border-zinc-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-blue-500 to-purple-600"></div>
+                    
+                    <div class="bg-zinc-950 rounded-xl p-6 md:p-8">
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="px-2 py-1 bg-zinc-900 rounded text-[10px] text-zinc-500 font-mono uppercase tracking-widest border border-zinc-800">Windows PowerShell</span>
+                            </div>
+                        </div>
+                        
+                        <div class="relative group/cmd">
+                            <div class="bg-black border border-zinc-800 rounded-xl p-6 md:p-8 font-mono text-sm md:text-base text-zinc-300 overflow-x-auto">
+                                <span class="text-green-500">PS C:\></span> <code id="installCommand">irm safecode.ai/install.ps1 | iex</code>
+                            </div>
+                            
+                            <button onclick="copyInstallCommand()" class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-xl">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                <span>Copiar</span>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                <span>Assinado Digitalmente</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                <span>Auto-configuração de PATH</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                <span>v2.5.0 Stable</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-12 mt-24">
+                <div class="group">
+                    <div class="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-colors">
+                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h4 class="text-white font-bold text-lg mb-2">Instalação Turbo</h4>
+                    <p class="text-zinc-500 leading-relaxed text-sm">Sem instaladores pesados. O script baixa apenas o necessário e configura tudo em segundos.</p>
+                </div>
+                <div class="group">
+                    <div class="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-500/20 transition-colors">
+                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <h4 class="text-white font-bold text-lg mb-2">Segurança Nativa</h4>
+                    <p class="text-zinc-500 leading-relaxed text-sm">O executável é baixado para sua pasta de usuário local, mantendo o sistema limpo e seguro.</p>
+                </div>
+                <div class="group">
+                    <div class="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-500/20 transition-colors">
+                        <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                    </div>
+                    <h4 class="text-white font-bold text-lg mb-2">Pronto para Devs</h4>
+                    <p class="text-zinc-500 leading-relaxed text-sm">Integração total com Git, terminais múltiplos e ferramentas de build do LacTech.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    function copyInstallCommand() {
+        const cmd = "irm safecode.ai/install.ps1 | iex";
+        navigator.clipboard.writeText(cmd).then(() => {
+            const btn = event.currentTarget;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span>Copiado!</span>';
+            btn.classList.add('bg-green-500', 'text-white');
+            btn.classList.remove('bg-white', 'text-black');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.classList.remove('bg-green-500', 'text-white');
+                btn.classList.add('bg-white', 'text-black');
+            }, 2000);
+        });
+    }
+    </script>
+
     <!-- Footer -->
     <footer class="bg-black text-white rounded-t-3xl overflow-hidden">
         <!-- Image Section -->

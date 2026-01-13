@@ -1,0 +1,7 @@
+{
+    "name": "hello-world",
+    "displayName": "Hello World Extension",
+    "version": "1.0.0",
+    "description": "A simple test extension for SafeCode IDE",
+    "main": "extension.js"
+}
