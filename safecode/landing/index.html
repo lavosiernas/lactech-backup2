@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCode IDE | Professional Monochrome Development</title>
+    <link rel="icon" type="image/png" href="../assets/img/logos%20(6).png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="../assets/img/logos%20(6).png" alt="SafeCode Logo">
+                <span>SafeCode</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#install">Install</a>
+                <a href="https://github.com/lavosiernas/lactech-backup2" target="_blank" class="btn-github">
+                    <i data-lucide="github" class="w-4 h-4"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="badge">Version 1.0.0 is out</span>
+                <h1>Code at the speed <br> of <span class="gradient-text">thought.</span></h1>
+                <p>A professional, high-performance IDE built for speed and aesthetics. Monochrome by design, powerful
+                    by nature.</p>
+                <div class="hero-actions">
+                    <a href="#install" class="btn-primary">Get Started</a>
+                    <a href="#features" class="btn-secondary">Explore Features</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="ide-mockup">
+                    <div class="mockup-header">
+                        <div class="dots"><span></span><span></span><span></span></div>
+                        <div class="tab">index.js</div>
+                    </div>
+                    <div class="mockup-body">
+                        <pre><code><span class="keyword">const</span> <span class="variable">safecode</span> = <span class="keyword">new</span> <span class="class">SafeCodeIDE</span>();
+<span class="variable">safecode</span>.<span class="method">init</span>({
+    <span class="property">theme</span>: <span class="string">'monochrome-true-dark'</span>,
+    <span class="property">performance</span>: <span class="string">'extreme'</span>
+});
+
+<span class="variable">console</span>.<span class="method">log</span>(<span class="string">'SafeCode is ready to build.'</span>);</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Built for Developers</h2>
+                <p>Everything you need, nothing you don't. Pure productivity.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i data-lucide="code-2"></i>
+                    <h3>Monaco Core</h3>
+                    <p>Powered by the industry-standard editor engine, providing professional IntelliSense and syntax
+                        highlighting.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="terminal"></i>
+                    <h3>Native Terminal</h3>
+                    <p>Integrated high-performance terminal with PTY support and custom monochrome themes.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="git-branch"></i>
+                    <h3>Git Integration</h3>
+                    <p>Visual conflict resolution, commit management, and gutter indicators built right into the core.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="puzzle"></i>
+                    <h3>Extensions</h3>
+                    <p>A flexible extension system that allows you to customize and expand the IDE to your needs.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="install">
+        <div class="container">
+            <div class="install-card">
+                <div class="install-header">
+                    <h2>Installation</h2>
+                    <p>Deploy SafeCode to your environment in seconds.</p>
+                </div>
+                <div class="command-box">
+                    <div class="command-line">
+                        <code
+                            id="installCommand">powershell -ExecutionPolicy ByPass -c "irm https://safecode.dev/install.ps1 | iex"</code>
+                        <button class="btn-copy" id="copyBtn" title="Copy to clipboard">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="requirements">
+                    <span><i data-lucide="check" class="w-4 h-4"></i> Node.js 16+</span>
+                    <span><i data-lucide="check" class="w-4 h-4"></i> Git</span>
+                    <span><i data-lucide="check" class="w-4 h-4"></i> Electron</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-left">
+                <img src="../assets/img/logos%20(6).png" alt="SafeCode">
+                <p>&copy; 2026 SafeNode Group. Licensed under MIT.</p>
+            </div>
+            <div class="footer-right">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Security</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

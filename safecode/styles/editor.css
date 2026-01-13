@@ -482,3 +482,141 @@
     display: flex;
     align-items: flex-start;
 }
+
+/* Source Control UI */
+.git-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 12px;
+}
+
+.git-commit-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.git-commit-box textarea {
+    background: #000;
+    border: 1px solid #222;
+    border-radius: 4px;
+    color: #fff;
+    padding: 8px;
+    font-size: 11px;
+    font-family: inherit;
+    resize: none;
+    height: 60px;
+    outline: none;
+}
+
+.git-commit-box textarea:focus {
+    border-color: #3b82f6;
+}
+
+.btn-commit {
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-commit:hover {
+    opacity: 0.9;
+}
+
+.git-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.group-header {
+    font-size: 9px;
+    font-weight: 700;
+    color: #52525b;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.group-header span {
+    background: #18181b;
+    padding: 1px 4px;
+    border-radius: 10px;
+}
+
+.git-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: default;
+}
+
+.git-item:hover {
+    background: #111;
+}
+
+.git-label {
+    font-size: 11px;
+    color: #ccc;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.git-actions {
+    display: none;
+    gap: 2px;
+}
+
+.git-item:hover .git-actions {
+    display: flex;
+}
+
+.btn-git-action {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+.btn-git-action:hover {
+    background: #222;
+    color: #fff;
+}
+
+.empty-state-small {
+    font-size: 10px;
+    color: #52525b;
+    padding: 4px 8px;
+}
+
+/* Monaco Git Gutter Indicators */
+.git-gutter-added {
+    background: #2ea44f !important;
+    width: 3px !important;
+    margin-left: 1px;
+}
+
+.git-gutter-modified {
+    background: #0969da !important;
+    width: 3px !important;
+    margin-left: 1px;
+}
+
+.git-gutter-deleted {
+    border-left: 3px solid #cf222e !important;
+}

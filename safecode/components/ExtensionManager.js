@@ -70,16 +70,29 @@ class ExtensionManager {
         return {
             // Command Registry
             commands: {
-                registerCommand: (commandId, callback) => {
+                registerCommand: (commandId, callback, metadata = {}) => {
                     console.log(`[ExtensionAPI] ${ext.id} registered command: ${commandId}`);
-                    self.commands.set(commandId, callback);
+                    self.commands.set(commandId, {
+                        id: commandId,
+                        callback,
+                        title: metadata.title || commandId,
+                        description: metadata.description || '',
+                        icon: metadata.icon || 'terminal',
+                        extensionId: ext.id
+                    });
                 }
             },
 
             // UI Components
             window: {
                 showInformationMessage: (message) => {
-                    alert(`SafeCode: ${message}`); // Placeholder for a real toast/notification system
+                    alert(`SafeCode (Info): ${message}`);
+                },
+                showWarningMessage: (message) => {
+                    alert(`SafeCode (Warning): ${message}`);
+                },
+                showErrorMessage: (message) => {
+                    alert(`SafeCode (Error): ${message}`);
                 }
             },
 
@@ -87,15 +100,36 @@ class ExtensionManager {
             workspace: {
                 onDidSaveFile: (callback) => self.addEventListener('file-saved', callback),
                 onDidOpenFile: (callback) => self.addEventListener('file-opened', callback),
+            },
+
+            // Language Intelligence API
+            languages: {
+                registerCompletionItemProvider: (language, provider) => {
+                    return self.ide.editorManager.registerCompletionProvider(language, provider);
+                },
+                registerDefinitionProvider: (language, provider) => {
+                    return self.ide.editorManager.registerDefinitionProvider(language, provider);
+                },
+                registerHoverProvider: (language, provider) => {
+                    return self.ide.editorManager.registerHoverProvider(language, provider);
+                }
+            },
+
+            // Source Control Management API
+            scm: {
+                getStatus: () => window.electronAPI.git.status(self.ide.sidebarManager.workspacePath),
+                stage: (filePath) => window.electronAPI.git.stage(self.ide.sidebarManager.workspacePath, filePath),
+                commit: (message) => window.electronAPI.git.commit(self.ide.sidebarManager.workspacePath, message)
             }
         };
     }
 
     // Command Execution
     executeCommand(commandId, ...args) {
-        if (this.commands.has(commandId)) {
+        const cmd = this.commands.get(commandId);
+        if (cmd) {
             try {
-                return this.commands.get(commandId)(...args);
+                return cmd.callback(...args);
             } catch (error) {
                 console.error(`[ExtensionManager] Error executing command ${commandId}:`, error);
             }

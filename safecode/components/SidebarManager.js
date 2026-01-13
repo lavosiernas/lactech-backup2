@@ -2,7 +2,7 @@
  * SidebarManager - Manages sidebar views (Explorer, Search, Git, Extensions)
  */
 
-export class SidebarManager {
+class SidebarManager {
   constructor(ide) {
     this.ide = ide;
     this.currentView = 'explorer';
@@ -314,3 +314,5 @@ export class SidebarManager {
     return iconMap[ext] || 'file';
   }
 }
+
+window.SidebarManager = SidebarManager;

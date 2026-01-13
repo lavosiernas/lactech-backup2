@@ -29,6 +29,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
         saveFile: (defaultPath) => ipcRenderer.invoke('dialog:saveFile', defaultPath)
     },
 
+    // Git API
+    git: {
+        status: (cwd) => ipcRenderer.invoke('git:status', cwd),
+        stage: (cwd, filePath) => ipcRenderer.invoke('git:stage', cwd, filePath),
+        unstage: (cwd, filePath) => ipcRenderer.invoke('git:unstage', cwd, filePath),
+        commit: (cwd, message) => ipcRenderer.invoke('git:commit', cwd, message),
+        diff: (cwd, filePath) => ipcRenderer.invoke('git:diff', cwd, filePath)
+    },
+
     // Menu events
     menu: {
         onNewFile: (callback) => ipcRenderer.on('menu-new-file', callback),

@@ -2,21 +2,7 @@
  * EditorManager - Manages CodeMirror editor instances
  */
 
-import { EditorView, basicSetup } from 'codemirror';
-import { EditorState } from '@codemirror/state';
-import { javascript } from '@codemirror/lang-javascript';
-import { html } from '@codemirror/lang-html';
-import { css } from '@codemirror/lang-css';
-import { json } from '@codemirror/lang-json';
-import { python } from '@codemirror/lang-python';
-import { php } from '@codemirror/lang-php';
-import { markdown } from '@codemirror/lang-markdown';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { keymap } from '@codemirror/view';
-import { indentWithTab, selectNextOccurrence } from '@codemirror/commands';
-import { search, searchKeymap } from '@codemirror/search';
-
-export class EditorManager {
+class EditorManager {
     constructor(ide) {
         this.ide = ide;
         this.editors = new Map(); // filePath -> EditorView
@@ -185,3 +171,5 @@ export class EditorManager {
         return activeWrapper?.dataset.file || null;
     }
 }
+
+window.EditorManager = EditorManager;

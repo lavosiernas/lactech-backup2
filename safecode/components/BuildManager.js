@@ -2,7 +2,7 @@
  * BuildManager - Manages NPM and Composer scripts/packages
  */
 
-export class BuildManager {
+class BuildManager {
     constructor(ide) {
         this.ide = ide;
         this.scripts = {
@@ -130,7 +130,8 @@ export class BuildManager {
 
     executeInTerminal(command) {
         const terminalId = this.ide.terminalManager.createTerminal();
-        this.ide.bottomPanel.switchPanel('terminal');
+        // Show terminal and run
+        this.ide.switchPanel('terminal');
 
         // Give it a tiny bit of time for PTY to initialize
         setTimeout(() => {
@@ -145,3 +146,5 @@ export class BuildManager {
         }, 500);
     }
 }
+
+window.BuildManager = BuildManager;

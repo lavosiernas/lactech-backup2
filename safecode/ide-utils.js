@@ -314,10 +314,28 @@ class CommandPalette {
     filterCommands(query) {
         const lowerQuery = query.toLowerCase();
 
+        // Get core commands
+        let allCommands = [...this.commands];
+
+        // Add extension commands
+        if (this.ide.extensionManager) {
+            this.ide.extensionManager.commands.forEach((cmd, id) => {
+                allCommands.push({
+                    id: id,
+                    title: cmd.title,
+                    description: `Extension: ${cmd.extensionId} - ${cmd.description}`,
+                    icon: cmd.icon,
+                    shortcut: [],
+                    isExtension: true,
+                    action: () => this.ide.extensionManager.executeCommand(id)
+                });
+            });
+        }
+
         if (!query) {
-            this.filteredCommands = [...this.commands];
+            this.filteredCommands = allCommands;
         } else {
-            this.filteredCommands = this.commands.filter(cmd =>
+            this.filteredCommands = allCommands.filter(cmd =>
                 cmd.title.toLowerCase().includes(lowerQuery) ||
                 cmd.description.toLowerCase().includes(lowerQuery) ||
                 cmd.id.toLowerCase().includes(lowerQuery)

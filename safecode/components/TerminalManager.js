@@ -2,11 +2,7 @@
  * TerminalManager - Manages terminal instances using xterm.js
  */
 
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import { WebLinksAddon } from 'xterm-addon-web-links';
-
-export class TerminalManager {
+class TerminalManager {
     constructor(ide) {
         this.ide = ide;
         this.terminals = new Map(); // id -> { terminal, element }
@@ -43,9 +39,9 @@ export class TerminalManager {
             theme: {
                 background: '#000000',
                 foreground: '#e4e4e7',
-                cursor: '#8b5cf6',
+                cursor: '#ffffff',
                 cursorAccent: '#000000',
-                selection: 'rgba(139, 92, 246, 0.3)',
+                selection: 'rgba(255, 255, 255, 0.3)',
                 black: '#000000',
                 red: '#ef4444',
                 green: '#10b981',
@@ -66,14 +62,30 @@ export class TerminalManager {
         });
 
         // Add addons
-        const fitAddon = new FitAddon();
-        const webLinksAddon = new WebLinksAddon();
+        let fitAddon, webLinksAddon;
 
-        terminal.loadAddon(fitAddon);
-        terminal.loadAddon(webLinksAddon);
+        try {
+            if (typeof FitAddon !== 'undefined') {
+                fitAddon = typeof FitAddon.FitAddon === 'function' ? new FitAddon.FitAddon() : new FitAddon();
+            }
+            if (typeof WebLinksAddon !== 'undefined') {
+                webLinksAddon = typeof WebLinksAddon.WebLinksAddon === 'function' ? new WebLinksAddon.WebLinksAddon() : new WebLinksAddon();
+            }
+        } catch (e) {
+            console.warn('Failed to initialize terminal addons:', e);
+        }
+
+        if (fitAddon) terminal.loadAddon(fitAddon);
+        if (webLinksAddon) terminal.loadAddon(webLinksAddon);
 
         // Open terminal
         terminal.open(terminalContainer);
+
+        // Ensure bottom panel is visible
+        const bottomPanelEl = document.getElementById('bottomPanel');
+        if (bottomPanelEl) bottomPanelEl.style.display = 'flex';
+
+        this.ide.switchPanel('terminal');
 
         // Use real PTY if in Electron
         if (this.ide.isElectron && window.electronAPI && window.electronAPI.terminal) {
@@ -119,7 +131,7 @@ export class TerminalManager {
         this.activeTerminal = terminalId;
         this.terminals.forEach((data, id) => {
             if (id === terminalId) {
-                data.element.style.borderTop = '1px solid #8b5cf6';
+                data.element.style.borderTop = '1px solid #ffffff';
                 data.terminal.focus();
             } else {
                 data.element.style.borderTop = '1px solid transparent';
@@ -128,7 +140,15 @@ export class TerminalManager {
     }
 
     async setupPTYTerminal(terminal, terminalId) {
-        await window.electronAPI.terminal.create(terminalId);
+        const result = await window.electronAPI.terminal.create(terminalId);
+
+        if (!result.success) {
+            console.warn('Backend terminal creation failed, falling back to Web Mode:', result.error);
+            terminal.writeln(`\r\n\x1b[1;33mWarning: Native terminal unavailable (${result.error}).\x1b[0m`);
+            terminal.writeln('\x1b[1;35mFalling back to SafeCode Web Mode.\x1b[0m\r\n');
+            this.setupWebTerminal(terminal);
+            return;
+        }
 
         terminal.onData(data => {
             window.electronAPI.terminal.write(terminalId, data);
@@ -213,6 +233,15 @@ export class TerminalManager {
         }
     }
 
+    clearActiveTerminal() {
+        if (this.activeTerminal) {
+            const terminalData = this.terminals.get(this.activeTerminal);
+            if (terminalData) {
+                terminalData.terminal.clear();
+            }
+        }
+    }
+
     async killTerminal(terminalId) {
         const terminalData = this.terminals.get(terminalId);
         if (terminalData) {
@@ -248,3 +277,5 @@ export class TerminalManager {
         });
     }
 }
+
+window.TerminalManager = TerminalManager;

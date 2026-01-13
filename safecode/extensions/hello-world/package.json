@@ -1,7 +1,11 @@
 {
     "name": "hello-world",
     "displayName": "Hello World Extension",
-    "version": "1.0.0",
-    "description": "A simple test extension for SafeCode IDE",
-    "main": "extension.js"
+    "version": "0.0.1",
+    "publisher": "SafeCode Team",
+    "description": "A sample extension that says hello.",
+    "main": "extension.js",
+    "engines": {
+        "safecode": "^1.0.0"
+    }
 }

@@ -2,6 +2,9 @@ const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const chokidar = require('chokidar');
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
 
 let mainWindow;
 let fileWatcher;
@@ -286,6 +289,47 @@ ipcMain.handle('fs:rename', async (event, oldPath, newPath) => {
   }
 });
 
+// Dialog Handlers
+ipcMain.handle('dialog:openFile', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'All Files', extensions: ['*'] },
+      { name: 'JavaScript', extensions: ['js', 'jsx', 'ts', 'tsx'] },
+      { name: 'HTML', extensions: ['html', 'htm'] },
+      { name: 'CSS', extensions: ['css', 'scss', 'sass'] },
+      { name: 'JSON', extensions: ['json'] }
+    ]
+  });
+  if (!result.canceled) {
+    return result.filePaths[0];
+  }
+  return null;
+});
+
+ipcMain.handle('dialog:openDirectory', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory']
+  });
+  if (!result.canceled) {
+    return result.filePaths[0];
+  }
+  return null;
+});
+
+ipcMain.handle('dialog:saveFile', async (event, defaultPath) => {
+  const result = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: defaultPath,
+    filters: [
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+  if (!result.canceled) {
+    return result.filePath;
+  }
+  return null;
+});
+
 // File Watcher
 ipcMain.handle('fs:watchDir', async (event, dirPath) => {
   try {
@@ -312,7 +356,13 @@ ipcMain.handle('fs:watchDir', async (event, dirPath) => {
   }
 });
 
-const pty = require('node-pty');
+let pty = null;
+try {
+  pty = require('node-pty');
+} catch (e) {
+  console.error('Failed to load node-pty. Terminal functionality will be limited.', e);
+}
+
 const os = require('os');
 
 const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
@@ -322,20 +372,29 @@ let previewWindow = null;
 
 // IPC Handlers - PTY Terminal
 ipcMain.handle('terminal:create', (event, terminalId) => {
-  const ptyProcess = pty.spawn(shell, [], {
-    name: 'xterm-color',
-    cols: 80,
-    rows: 30,
-    cwd: process.cwd(),
-    env: process.env
-  });
+  if (!pty) {
+    return { success: false, error: 'Terminal backend (node-pty) not available' };
+  }
 
-  ptyProcess.onData((data) => {
-    mainWindow.webContents.send(`terminal:data-${terminalId}`, data);
-  });
+  try {
+    const ptyProcess = pty.spawn(shell, [], {
+      name: 'xterm-color',
+      cols: 80,
+      rows: 30,
+      cwd: process.cwd(),
+      env: process.env
+    });
 
-  ptyProcesses.set(terminalId, ptyProcess);
-  return { success: true };
+    ptyProcess.onData((data) => {
+      mainWindow.webContents.send(`terminal:data-${terminalId}`, data);
+    });
+
+    ptyProcesses.set(terminalId, ptyProcess);
+    return { success: true };
+  } catch (e) {
+    console.error('Failed to spawn PTY process:', e);
+    return { success: false, error: e.message };
+  }
 });
 
 ipcMain.handle('terminal:write', (event, terminalId, data) => {
@@ -397,6 +456,66 @@ ipcMain.handle('preview:refresh', () => {
     return { success: true };
   }
   return { success: false };
+});
+
+ipcMain.handle('git:init', async (event, cwd) => {
+  try {
+    await execPromise('git init', { cwd });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Git Handlers
+ipcMain.handle('git:status', async (event, cwd) => {
+  try {
+    const { stdout } = await execPromise('git status --porcelain', { cwd });
+    return { success: true, status: stdout };
+  } catch (error) {
+    if (error.message.includes('not a git repository')) {
+      return { success: true, status: null, isRepo: false };
+    }
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('git:stage', async (event, cwd, filePath) => {
+  try {
+    await execPromise(`git add "${filePath}"`, { cwd });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('git:unstage', async (event, cwd, filePath) => {
+  try {
+    await execPromise(`git reset HEAD "${filePath}"`, { cwd });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('git:commit', async (event, cwd, message) => {
+  try {
+    await execPromise(`git commit -m "${message}"`, { cwd });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('git:diff', async (event, cwd, filePath) => {
+  try {
+    // Relative path for git diff
+    const relativePath = path.relative(cwd, filePath);
+    const { stdout } = await execPromise(`git diff -U0 "${relativePath}"`, { cwd });
+    return { success: true, diff: stdout };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });
 
 // Extensions Handlers

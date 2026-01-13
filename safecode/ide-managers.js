@@ -104,6 +104,9 @@ class MonacoEditorManager {
 
             this.editors.set(filePath, { editor, wrapper: editorWrapper });
             this.activeEditor = editor;
+
+            // Initial git decorations
+            this.updateGitDecorations(filePath, editor);
         } else {
             // Fallback to textarea
             const textarea = document.createElement('textarea');
@@ -231,6 +234,12 @@ class MonacoEditorManager {
     onEditorChange(filePath) {
         this.ide.tabManager.markDirty(filePath);
 
+        // Git indicators (debounced)
+        clearTimeout(this.gitTimeout);
+        this.gitTimeout = setTimeout(() => {
+            this.updateGitDecorations(filePath);
+        }, 1000);
+
         // Auto-refresh preview if live server is running
         if (this.ide.liveServer.isRunning && this.ide.liveServer.autoRefresh) {
             clearTimeout(this.refreshTimeout);
@@ -275,6 +284,82 @@ class MonacoEditorManager {
                 'plaintext': 'Plain Text'
             };
             statusLang.innerHTML = `<span>${langNames[lang] || lang}</span>`;
+        }
+    }
+
+    // Provider Registrations (Bridges for Extensions)
+    registerCompletionProvider(language, provider) {
+        if (!this.monacoAvailable || typeof monaco === 'undefined') return { dispose: () => { } };
+        return monaco.languages.registerCompletionItemProvider(language, {
+            provideCompletionItems: (model, position, context, token) => {
+                return provider.provideCompletionItems(model, position, context, token);
+            }
+        });
+    }
+
+    registerDefinitionProvider(language, provider) {
+        if (!this.monacoAvailable || typeof monaco === 'undefined') return { dispose: () => { } };
+        return monaco.languages.registerDefinitionProvider(language, {
+            provideDefinition: (model, position, token) => {
+                return provider.provideDefinition(model, position, token);
+            }
+        });
+    }
+
+    registerHoverProvider(language, provider) {
+        if (!this.monacoAvailable || typeof monaco === 'undefined') return { dispose: () => { } };
+        return monaco.languages.registerHoverProvider(language, {
+            provideHover: (model, position, token) => {
+                return provider.provideHover(model, position, token);
+            }
+        });
+    }
+
+    async updateGitDecorations(filePath, editor = null) {
+        if (!this.monacoAvailable || !this.ide.sidebarManager.workspacePath) return;
+        const targetEditorData = this.editors.get(filePath);
+        const targetEditor = editor || (targetEditorData ? targetEditorData.editor : null);
+        if (!targetEditor || !targetEditor.deltaDecorations) return; // Ensure it's a Monaco editor
+
+        try {
+            const result = await window.electronAPI.git.diff(this.ide.sidebarManager.workspacePath, filePath);
+            if (!result.success) {
+                // Clear existing decorations if diff fails or no changes
+                if (targetEditor._gitDecorations) {
+                    targetEditor.deltaDecorations(targetEditor._gitDecorations, []);
+                    targetEditor._gitDecorations = [];
+                }
+                return;
+            }
+
+            const decorations = [];
+            const lines = result.diff.split('\n');
+
+            lines.forEach(line => {
+                if (line.startsWith('@@')) {
+                    const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/);
+                    if (match) {
+                        const startLine = parseInt(match[1]);
+                        const count = match[2] ? parseInt(match[2]) : 1;
+
+                        // Decoration for added/modified lines
+                        decorations.push({
+                            range: new monaco.Range(startLine, 1, startLine + (count > 0 ? count - 1 : 0), 1),
+                            options: {
+                                isWholeLine: true,
+                                linesDecorationsClassName: 'git-gutter-added'
+                            }
+                        });
+                    }
+                }
+            });
+
+            // Apply decorations (keep track of old ones to clear them)
+            if (!targetEditor._gitDecorations) targetEditor._gitDecorations = [];
+            targetEditor._gitDecorations = targetEditor.deltaDecorations(targetEditor._gitDecorations, decorations);
+
+        } catch (error) {
+            console.error('Git Decoration Error:', error);
         }
     }
 }
@@ -430,7 +515,9 @@ class EnhancedSidebarManager {
         this.workspacePath = path;
         this.expandedFolders.clear();
         this.expandedFolders.add(path);
-        this.showExplorer();
+
+        // Refresh whatever view we are currently in
+        this.switchView(this.currentView);
     }
 
     async loadFileTree() {
@@ -589,27 +676,180 @@ class EnhancedSidebarManager {
         `;
     }
 
-    showGit() {
+    async showGit() {
         const content = document.getElementById('sidebarContent');
         if (!content) return;
+
+        if (!this.workspacePath) {
+            content.innerHTML = `
+                <div class="sidebar-section">
+                    <div class="section-header"><span>SOURCE CONTROL</span></div>
+                    <div class="empty-state"><p>Open a folder to see git status.</p></div>
+                </div>
+            `;
+            return;
+        }
+
         content.innerHTML = `
             <div class="sidebar-section">
                 <div class="section-header"><span>SOURCE CONTROL</span></div>
-                <div class="empty-state"><p>Git integration coming soon</p></div>
+                <div class="git-status-container">
+                    <div class="loading">Fetching status...</div>
+                </div>
             </div>
         `;
+
+        try {
+            const result = await window.electronAPI.git.status(this.workspacePath);
+            if (!result.success) throw new Error(result.error);
+            if (result.status === null) {
+                content.querySelector('.git-status-container').innerHTML = `
+                    <div class="empty-state">
+                        <p>This folder is not a Git repository.</p>
+                        <button class="btn-primary-sm" id="btnGitInit">Initialize Repository</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const files = this.parseGitStatus(result.status);
+            this.renderGitStatus(files);
+        } catch (error) {
+            content.querySelector('.git-status-container').innerHTML = `
+                <div class="error">Git Error: ${error.message}</div>
+            `;
+        }
+    }
+
+    parseGitStatus(status) {
+        const files = [];
+        const lines = status.split('\n').filter(l => l.trim());
+
+        lines.forEach(line => {
+            const code = line.substring(0, 2);
+            const path = line.substring(3);
+            let state = 'untracked';
+
+            if (code === 'M ' || code === 'A ') state = 'staged';
+            else if (code === ' M' || code === 'MM') state = 'modified';
+            else if (code === '??') state = 'untracked';
+            else if (code === ' D') state = 'deleted';
+
+            files.push({ path, state, code });
+        });
+        return files;
+    }
+
+    renderGitStatus(files) {
+        const container = document.querySelector('.git-status-container');
+        if (!container) return;
+
+        const staged = files.filter(f => f.state === 'staged');
+        const changes = files.filter(f => f.state !== 'staged');
+
+        container.innerHTML = `
+            <div class="git-commit-box">
+                <textarea id="gitCommitMsg" placeholder="Message (Ctrl+Enter to commit)"></textarea>
+                <button id="btnGitCommit" class="btn-commit">Commit</button>
+            </div>
+            
+            ${staged.length > 0 ? `
+                <div class="git-group">
+                    <div class="group-header">STAGED CHANGES <span>${staged.length}</span></div>
+                    ${staged.map(f => this.renderGitItem(f)).join('')}
+                </div>
+            ` : ''}
+
+            <div class="git-group">
+                <div class="group-header">CHANGES <span>${changes.length}</span></div>
+                ${changes.length > 0 ? changes.map(f => this.renderGitItem(f)).join('') : '<div class="empty-state-small">No changes detected</div>'}
+            </div>
+        `;
+
+        this.setupGitHandlers();
+        this.ide.initializeLucideIcons();
+    }
+
+    renderGitItem(file) {
+        const icons = {
+            'modified': 'diff',
+            'untracked': 'plus-circle',
+            'staged': 'check-circle',
+            'deleted': 'minus-circle'
+        };
+        const colors = {
+            'modified': '#3b82f6',
+            'untracked': '#10b981',
+            'staged': '#10b981',
+            'deleted': '#ef4444'
+        };
+
+        return `
+            <div class="git-item" data-path="${file.path}">
+                <i data-lucide="${icons[file.state]}" class="w-3.5 h-3.5" style="color: ${colors[file.state]}"></i>
+                <span class="git-label" title="${file.path}">${file.path.split('/').pop()}</span>
+                <div class="git-actions">
+                    ${file.state === 'staged' ? `
+                        <button class="btn-git-action btn-unstage" title="Unstage"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                    ` : `
+                        <button class="btn-git-action btn-stage" title="Stage Change"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                    `}
+                </div>
+            </div>
+        `;
+    }
+
+    setupGitHandlers() {
+        document.querySelectorAll('.btn-stage').forEach(btn => {
+            btn.onclick = async (e) => {
+                const path = e.target.closest('.git-item').dataset.path;
+                await window.electronAPI.git.stage(this.workspacePath, path);
+                this.showGit();
+            };
+        });
+
+        document.querySelectorAll('.btn-unstage').forEach(btn => {
+            btn.onclick = async (e) => {
+                const path = e.target.closest('.git-item').dataset.path;
+                await window.electronAPI.git.unstage(this.workspacePath, path);
+                this.showGit();
+            };
+        });
+
+        document.getElementById('btnGitCommit').onclick = () => this.handleCommit();
+
+        document.getElementById('btnGitInit')?.addEventListener('click', async () => {
+            const result = await window.electronAPI.git.init(this.workspacePath);
+            if (result.success) {
+                this.showGit();
+            } else {
+                alert('Git Init Error: ' + result.error);
+            }
+        });
+
+        document.getElementById('gitCommitMsg').onkeydown = (e) => {
+            if (e.ctrlKey && e.key === 'Enter') this.handleCommit();
+        };
+    }
+
+    async handleCommit() {
+        const msg = document.getElementById('gitCommitMsg').value;
+        if (!msg.trim()) return alert('Please enter a commit message');
+
+        const result = await window.electronAPI.git.commit(this.workspacePath, msg);
+        if (result.success) {
+            document.getElementById('gitCommitMsg').value = '';
+            this.showGit();
+        } else {
+            alert('Commit Error: ' + result.error);
+        }
     }
 
     showExtensions() {
         const content = document.getElementById('sidebarContent');
         if (!content) return;
 
-        const extensions = [
-            { id: 'monochrome-theme', name: 'Obsidian Night', version: '1.2.0', desc: 'Ultra-dark theme for OLED screens.', author: 'SafeCode Team', active: true },
-            { id: 'git-lens-mini', name: 'GitLens Lite', version: '0.9.5', desc: 'Visual git history and blame info.', author: 'Safenode', active: false },
-            { id: 'prettier-bw', name: 'Prettier BW', version: '3.1.0', desc: 'Monochrome code formatter.', author: 'Community', active: true },
-            { id: 'lucide-helper', name: 'Lucide Icons Helper', version: '2.0.1', desc: 'Autocomplete for Lucide icons.', author: 'Lucide', active: false }
-        ];
+        const extensions = Array.from(this.ide.extensionManager.extensions.values());
 
         content.innerHTML = `
             <div class="sidebar-section">
@@ -618,21 +858,21 @@ class EnhancedSidebarManager {
                     <input type="text" placeholder="Search extensions..." id="extSearch" />
                 </div>
                 <div class="extension-list">
-                    ${extensions.map(ext => `
+                    ${extensions.length > 0 ? extensions.map(ext => `
                         <div class="extension-card ${ext.active ? 'active' : ''}">
                             <div class="ext-header">
-                                <span class="ext-name">${ext.name}</span>
-                                <span class="ext-version">v${ext.version}</span>
+                                <span class="ext-name">${ext.manifest.displayName || ext.id}</span>
+                                <span class="ext-version">v${ext.manifest.version || '0.0.1'}</span>
                             </div>
-                            <p class="ext-desc">${ext.desc}</p>
+                            <p class="ext-desc">${ext.manifest.description || 'No description provided.'}</p>
                             <div class="ext-footer">
-                                <span class="ext-author">${ext.author}</span>
+                                <span class="ext-author">${ext.manifest.publisher || 'Unknown'}</span>
                                 <button class="btn-ext-action" data-id="${ext.id}">
                                     ${ext.active ? 'Disable' : 'Enable'}
                                 </button>
                             </div>
                         </div>
-                    `).join('')}
+                    `).join('') : '<div class="empty-state-small">No extensions installed</div>'}
                 </div>
             </div>
         `;

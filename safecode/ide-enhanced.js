@@ -67,12 +67,13 @@ class SafeCodeIDE {
         this.editorManager = new MonacoEditorManager(this);
         this.sidebarManager = new EnhancedSidebarManager(this);
         this.tabManager = new EnhancedTabManager(this);
-        this.terminalManager = new EnhancedTerminalManager(this);
+        this.terminalManager = new TerminalManager(this);
         this.previewManager = new LivePreviewManager(this);
         this.liveServer = new LiveServer(this);
         this.commandPalette = new CommandPalette(this);
         this.settingsView = new SettingsView(this);
         this.updateChecker = new UpdateChecker(this);
+        this.extensionManager = new ExtensionManager(this);
 
         this.currentFile = null;
         this.workspace = null;
@@ -84,14 +85,20 @@ class SafeCodeIDE {
         this.init();
     }
 
-    init() {
+    async init() {
         this.setupEventListeners();
         this.setupMenuListeners();
         this.setupKeyboardShortcuts();
         this.initializeLucideIcons();
 
+        // Initialize Extension System
+        await this.extensionManager.init();
+
         // Apply settings
         this.settingsManager.applySettings();
+
+        // Setup panel handlers
+        this.setupPanelHandlers();
 
         // Load recent projects
         this.loadRecentProjects();
@@ -169,7 +176,7 @@ class SafeCodeIDE {
         document.getElementById('menuItemClearTerminal')?.addEventListener('click', () => this.terminalManager.clearActiveTerminal());
 
         // Extensions
-        document.getElementById('menuItemManageExtensions')?.addEventListener('click', () => alert('Extensions Manager coming soon!'));
+        document.getElementById('menuItemManageExtensions')?.addEventListener('click', () => this.sidebarManager.switchView('extensions'));
 
         // Help
         document.getElementById('menuItemWelcome')?.addEventListener('click', () => {
@@ -284,6 +291,9 @@ class SafeCodeIDE {
             this.currentFile = filePath;
             this.hideWelcomeScreen();
             this.addToRecentProjects(filePath);
+
+            // Emit event to extensions
+            this.extensionManager.emitEvent('file-opened', filePath);
         } catch (error) {
             console.error('Error opening file:', error);
             alert('Error opening file: ' + error.message);
@@ -329,6 +339,9 @@ class SafeCodeIDE {
             const content = this.editorManager.getCurrentContent();
             await this.fileSystem.writeFile(this.currentFile, content);
             this.tabManager.markSaved(this.currentFile);
+
+            // Emit event to extensions
+            this.extensionManager.emitEvent('file-saved', this.currentFile);
 
             // Auto-refresh preview if live server is running
             if (this.liveServer.isRunning) {
@@ -392,6 +405,41 @@ class SafeCodeIDE {
     hideWelcomeScreen() {
         const welcome = document.getElementById('editorWelcome');
         if (welcome) welcome.style.display = 'none';
+    }
+
+    switchPanel(panelId) {
+        const panel = document.getElementById('bottomPanel');
+        if (panel) {
+            panel.style.display = 'flex';
+
+            // Update tabs
+            document.querySelectorAll('.panel-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.panel === panelId);
+            });
+
+            // Update views
+            document.querySelectorAll('.panel-view').forEach(view => {
+                view.classList.toggle('active', view.id === `panel-${panelId}`);
+            });
+
+            if (panelId === 'terminal' && this.terminalManager) {
+                // Resize if possible
+                if (typeof this.terminalManager.resizeTerminals === 'function') {
+                    this.terminalManager.resizeTerminals();
+                }
+            }
+        }
+    }
+
+    setupPanelHandlers() {
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.addEventListener('click', () => this.switchPanel(tab.dataset.panel));
+        });
+
+        const btnClosePanel = document.getElementById('btnClosePanel');
+        if (btnClosePanel) {
+            btnClosePanel.onclick = () => this.toggleBottomPanel();
+        }
     }
 
     showSettings() {
