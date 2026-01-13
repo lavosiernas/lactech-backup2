@@ -198,7 +198,7 @@ function createWindow() {
   mainWindow.setMenuBarVisibility(false);
 
   // Carregar a aplicação
-  mainWindow.loadFile('src/index.html');
+  mainWindow.loadFile('index.html');
   mainWindow.webContents.openDevTools();
 
   createMenu();
@@ -310,6 +310,93 @@ ipcMain.handle('fs:watchDir', async (event, dirPath) => {
   } catch (error) {
     return { success: false, error: error.message };
   }
+});
+
+const pty = require('node-pty');
+const os = require('os');
+
+const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+const ptyProcesses = new Map();
+
+let previewWindow = null;
+
+// IPC Handlers - PTY Terminal
+ipcMain.handle('terminal:create', (event, terminalId) => {
+  const ptyProcess = pty.spawn(shell, [], {
+    name: 'xterm-color',
+    cols: 80,
+    rows: 30,
+    cwd: process.cwd(),
+    env: process.env
+  });
+
+  ptyProcess.onData((data) => {
+    mainWindow.webContents.send(`terminal:data-${terminalId}`, data);
+  });
+
+  ptyProcesses.set(terminalId, ptyProcess);
+  return { success: true };
+});
+
+ipcMain.handle('terminal:write', (event, terminalId, data) => {
+  const ptyProcess = ptyProcesses.get(terminalId);
+  if (ptyProcess) {
+    ptyProcess.write(data);
+    return { success: true };
+  }
+  return { success: false, error: 'Terminal not found' };
+});
+
+ipcMain.handle('terminal:resize', (event, terminalId, cols, rows) => {
+  const ptyProcess = ptyProcesses.get(terminalId);
+  if (ptyProcess) {
+    ptyProcess.resize(cols, rows);
+    return { success: true };
+  }
+  return { success: false, error: 'Terminal not found' };
+});
+
+ipcMain.handle('terminal:kill', (event, terminalId) => {
+  const ptyProcess = ptyProcesses.get(terminalId);
+  if (ptyProcess) {
+    ptyProcess.kill();
+    ptyProcesses.delete(terminalId);
+    return { success: true };
+  }
+  return { success: false, error: 'Terminal not found' };
+});
+
+// Preview Window logic
+ipcMain.handle('preview:open', (event, url) => {
+  if (previewWindow) {
+    previewWindow.loadURL(url);
+    previewWindow.focus();
+  } else {
+    previewWindow = new BrowserWindow({
+      width: 1000,
+      height: 800,
+      title: 'SafeCode Preview',
+      autoHideMenuBar: true,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    });
+
+    previewWindow.loadURL(url);
+    previewWindow.on('closed', () => {
+      previewWindow = null;
+    });
+  }
+  return { success: true };
+});
+
+ipcMain.handle('preview:refresh', () => {
+  if (previewWindow) {
+    previewWindow.webContents.reload();
+    return { success: true };
+  }
+  return { success: false };
 });
 
 // Dialog handlers

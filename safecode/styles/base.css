@@ -11,8 +11,9 @@
     --bg-secondary: #0a0a0a;
     --bg-tertiary: #141414;
     --bg-editor: #000000;
-    --border-color: #222222;
-    --border-hover: #444444;
+    --border-color: rgba(255, 255, 255, 0.08);
+    /* Ultra-thin look */
+    --border-hover: rgba(255, 255, 255, 0.2);
     --text-primary: #ffffff;
     --text-secondary: #a1a1aa;
     --text-tertiary: #52525b;
@@ -21,6 +22,11 @@
     --accent-dim: rgba(255, 255, 255, 0.1);
     --error: #ef4444;
     --success: #22c55e;
+
+    /* Precision Design Tokens */
+    --snap-transition: 0.12s cubic-bezier(0.2, 0, 0, 1);
+    --magnetic-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --precision-border: 1px solid var(--border-color);
 }
 
 body {
@@ -30,6 +36,17 @@ body {
     overflow: hidden;
     height: 100vh;
     -webkit-font-smoothing: antialiased;
+    user-select: none;
+    /* Disable selection globally */
+}
+
+/* Enable selection in interactive editor areas */
+.cm-editor,
+.xterm,
+input,
+textarea,
+[contenteditable="true"] {
+    user-select: text !important;
 }
 
 /* Scrollbars */

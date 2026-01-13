@@ -8,6 +8,7 @@ import { EditorManager } from './components/EditorManager.js';
 import { SidebarManager } from './components/SidebarManager.js';
 import { TabManager } from './components/TabManager.js';
 import { TerminalManager } from './components/TerminalManager.js';
+import { BuildManager } from './components/BuildManager.js';
 
 class SafeCodeIDE {
     constructor() {
@@ -16,6 +17,7 @@ class SafeCodeIDE {
         this.sidebarManager = null;
         this.tabManager = null;
         this.terminalManager = null;
+        this.buildManager = null; // Initialize BuildManager
         this.currentFile = null;
         this.isElectron = typeof window !== 'undefined' && window.electronAPI;
 
@@ -30,10 +32,14 @@ class SafeCodeIDE {
         this.editorManager = new EditorManager(this);
         this.sidebarManager = new SidebarManager(this);
         this.terminalManager = new TerminalManager(this);
+        this.buildManager = new BuildManager(this); // Initialize BuildManager
 
         // Setup event listeners
         this.setupEventListeners();
         this.setupMenuListeners();
+        this.setupPanelHandlers();
+
+        // Initialize UI components();
         this.setupKeyboardShortcuts();
 
         // Initialize Lucide icons
@@ -72,6 +78,7 @@ class SafeCodeIDE {
         // Preview buttons
         const btnClosePreview = document.getElementById('btnClosePreview');
         const btnRefreshPreview = document.getElementById('btnRefreshPreview');
+        const btnSyncPreview = document.getElementById('btnSyncPreview');
 
         if (btnClosePreview) {
             btnClosePreview.addEventListener('click', () => this.togglePreview());
@@ -79,6 +86,10 @@ class SafeCodeIDE {
 
         if (btnRefreshPreview) {
             btnRefreshPreview.addEventListener('click', () => this.refreshPreview());
+        }
+
+        if (btnSyncPreview) {
+            btnSyncPreview.addEventListener('click', () => this.syncPreview());
         }
 
         // Panel buttons
@@ -305,14 +316,36 @@ class SafeCodeIDE {
 
     toggleBottomPanel() {
         const panel = document.getElementById('bottomPanel');
-        if (panel) {
-            if (panel.style.display === 'none') {
-                panel.style.display = 'flex';
-                this.terminalManager.createTerminal();
-            } else {
-                panel.style.display = 'none';
-            }
+        if (panel.style.display === 'none') {
+            panel.style.display = 'flex';
+            this.terminalManager.resizeTerminals();
+        } else {
+            panel.style.display = 'none';
         }
+    }
+
+    switchPanel(panelId) {
+        // Update tabs
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.panel === panelId);
+        });
+
+        // Update views
+        document.querySelectorAll('.panel-view').forEach(view => {
+            view.classList.toggle('active', view.id === `panel-${panelId}`);
+        });
+
+        if (panelId === 'terminal') {
+            this.terminalManager.resizeTerminals();
+        }
+    }
+
+    setupPanelHandlers() {
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.onclick = () => this.switchPanel(tab.dataset.panel);
+        });
+
+        document.getElementById('btnClosePanel').onclick = () => this.toggleBottomPanel();
     }
 
     togglePreview() {
@@ -330,6 +363,18 @@ class SafeCodeIDE {
         const frame = document.getElementById('preview-frame');
         if (frame) {
             frame.src = frame.src;
+            if (this.isElectron && window.electronAPI && window.electronAPI.preview) {
+                window.electronAPI.preview.refresh();
+            }
+        }
+    }
+
+    syncPreview() {
+        const frame = document.getElementById('preview-frame');
+        if (frame && this.isElectron && window.electronAPI && window.electronAPI.preview) {
+            window.electronAPI.preview.open(frame.src);
+        } else if (!this.isElectron) {
+            alert('External preview is only available in Desktop mode.');
         }
     }
 

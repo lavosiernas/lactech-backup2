@@ -12,6 +12,9 @@ import { python } from '@codemirror/lang-python';
 import { php } from '@codemirror/lang-php';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { keymap } from '@codemirror/view';
+import { indentWithTab, selectNextOccurrence } from '@codemirror/commands';
+import { search, searchKeymap } from '@codemirror/search';
 
 export class EditorManager {
     constructor(ide) {
@@ -44,6 +47,12 @@ export class EditorManager {
                 basicSetup,
                 language,
                 oneDark,
+                search({ top: true }),
+                keymap.of([
+                    indentWithTab,
+                    ...searchKeymap,
+                    { key: "Mod-d", run: selectNextOccurrence }
+                ]),
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         this.onEditorChange(filePath);

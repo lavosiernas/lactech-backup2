@@ -217,6 +217,12 @@ class LiveServer {
     stop() {
         this.isRunning = false;
         this.updateUI();
+
+        // Auto-close preview
+        if (this.ide.previewManager.isOpen) {
+            this.ide.previewManager.close();
+        }
+
         console.log('Live Server stopped');
     }
 
@@ -226,9 +232,9 @@ class LiveServer {
 
         if (btn) {
             btn.classList.toggle('active', this.isRunning);
-            btn.innerHTML = this.isRunning
-                ? '<i data-lucide="radio" class="w-4 h-4"></i> Port: ' + this.port
-                : '<i data-lucide="radio" class="w-4 h-4"></i> Go Live';
+            // In Activity Bar, we only want the icon
+            btn.innerHTML = '<i data-lucide="radio" class="w-5 h-5"></i>';
+            btn.title = this.isRunning ? `Live Server: Port ${this.port}` : 'Go Live';
             lucide.createIcons();
         }
 

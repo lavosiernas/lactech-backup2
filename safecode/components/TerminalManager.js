@@ -19,10 +19,21 @@ export class TerminalManager {
         const panelContent = document.getElementById('panelContent');
         if (!panelContent) return;
 
+        // Ensure panelContent has flex layout for splitting
+        panelContent.style.display = 'flex';
+        panelContent.style.gap = '1px';
+        panelContent.style.height = '100%';
+        panelContent.style.background = 'rgba(255,255,255,0.05)';
+
         // Create terminal container
         const terminalContainer = document.createElement('div');
         terminalContainer.className = 'terminal-instance';
         terminalContainer.id = terminalId;
+        terminalContainer.style.flex = '1';
+        terminalContainer.style.minWidth = '0';
+        terminalContainer.style.height = '100%';
+        terminalContainer.style.background = '#000000';
+        terminalContainer.style.position = 'relative';
 
         // Create xterm instance
         const terminal = new Terminal({
@@ -63,19 +74,23 @@ export class TerminalManager {
 
         // Open terminal
         terminal.open(terminalContainer);
-        fitAddon.fit();
 
-        // Add welcome message
-        terminal.writeln('\x1b[1;35mSafeCode IDE Terminal\x1b[0m');
-        terminal.writeln('Type commands here...\n');
-
-        // For web mode, create a simple shell simulation
-        if (!this.ide.isElectron) {
+        // Use real PTY if in Electron
+        if (this.ide.isElectron && window.electronAPI && window.electronAPI.terminal) {
+            this.setupPTYTerminal(terminal, terminalId);
+        } else {
             this.setupWebTerminal(terminal);
+            terminal.writeln('\x1b[1;35mSafeCode IDE Terminal (Web Mode)\x1b[0m');
+            terminal.writeln('Type commands here...\n');
         }
 
         // Add to panel
         panelContent.appendChild(terminalContainer);
+
+        // Force layout and fit
+        setTimeout(() => {
+            fitAddon.fit();
+        }, 100);
 
         // Store terminal
         this.terminals.set(terminalId, {
@@ -84,7 +99,7 @@ export class TerminalManager {
             fitAddon
         });
 
-        this.activeTerminal = terminalId;
+        this.setActiveTerminal(terminalId);
 
         // Show terminal panel
         const panel = document.getElementById('bottomPanel');
@@ -92,12 +107,43 @@ export class TerminalManager {
             panel.style.display = 'flex';
         }
 
-        // Handle resize
-        window.addEventListener('resize', () => {
-            fitAddon.fit();
+        // Handle focus
+        terminalContainer.addEventListener('mousedown', () => {
+            this.setActiveTerminal(terminalId);
         });
 
         return terminalId;
+    }
+
+    setActiveTerminal(terminalId) {
+        this.activeTerminal = terminalId;
+        this.terminals.forEach((data, id) => {
+            if (id === terminalId) {
+                data.element.style.borderTop = '1px solid #8b5cf6';
+                data.terminal.focus();
+            } else {
+                data.element.style.borderTop = '1px solid transparent';
+            }
+        });
+    }
+
+    async setupPTYTerminal(terminal, terminalId) {
+        await window.electronAPI.terminal.create(terminalId);
+
+        terminal.onData(data => {
+            window.electronAPI.terminal.write(terminalId, data);
+        });
+
+        window.electronAPI.terminal.onData(terminalId, data => {
+            terminal.write(data);
+        });
+
+        // Initial resize
+        const dims = terminal.element.getBoundingClientRect();
+        // Rough estimate of cols/rows
+        const cols = Math.floor(dims.width / 8);
+        const rows = Math.floor(dims.height / 18);
+        window.electronAPI.terminal.resize(terminalId, cols || 80, rows || 30);
     }
 
     setupWebTerminal(terminal) {
@@ -158,7 +204,6 @@ export class TerminalManager {
     }
 
     splitTerminal() {
-        // TODO: Implement split terminal
         this.createTerminal();
     }
 
@@ -168,9 +213,12 @@ export class TerminalManager {
         }
     }
 
-    killTerminal(terminalId) {
+    async killTerminal(terminalId) {
         const terminalData = this.terminals.get(terminalId);
         if (terminalData) {
+            if (this.ide.isElectron && window.electronAPI && window.electronAPI.terminal) {
+                await window.electronAPI.terminal.kill(terminalId);
+            }
             terminalData.terminal.dispose();
             terminalData.element.remove();
             this.terminals.delete(terminalId);
@@ -184,14 +232,19 @@ export class TerminalManager {
                 this.activeTerminal = null;
             } else {
                 // Activate another terminal
-                this.activeTerminal = Array.from(this.terminals.keys())[0];
+                this.setActiveTerminal(Array.from(this.terminals.keys())[0]);
             }
         }
     }
 
     resizeTerminals() {
-        this.terminals.forEach(({ fitAddon }) => {
+        this.terminals.forEach(({ terminal, fitAddon, element }, id) => {
             fitAddon.fit();
+            if (this.ide.isElectron && window.electronAPI && window.electronAPI.terminal) {
+                const dims = terminal; // terminal object contains some info, but fitAddon handles rows/cols
+                // We can't easily get core/cols from fitAddon directly without access to internal, but terminal.cols/rows exist
+                window.electronAPI.terminal.resize(id, terminal.cols, terminal.rows);
+            }
         });
     }
 }

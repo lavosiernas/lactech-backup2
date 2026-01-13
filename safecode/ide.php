@@ -37,7 +37,7 @@ if (isset($_SESSION['safefig_project_data']) && !empty($_SESSION['safefig_projec
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeCode IDE | SafeNode Mail</title>
-    <link rel="icon" type="image/png" href="assets/img/logos (6).png">
+    <link rel="icon" type="image/png" href="assets/img/logos%20(6).png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -1471,7 +1471,7 @@ if (isset($_SESSION['safefig_project_data']) && !empty($_SESSION['safefig_projec
                 <button onclick="window.close()" class="btn-icon" style="padding: 4px !important; border: none !important;">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 </button>
-                <img src="assets/img/logos (6).png" alt="SafeNode">
+                <img src="assets/img/logos%20(6).png" alt="SafeNode">
                 <span>SAFECODE IDE</span>
             </div>
             <div class="flex items-center gap-3">

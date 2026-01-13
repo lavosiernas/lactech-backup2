@@ -50,6 +50,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
         onAbout: (callback) => ipcRenderer.on('menu-about', callback)
     },
 
+    // Terminal API
+    terminal: {
+        create: (id) => ipcRenderer.invoke('terminal:create', id),
+        write: (id, data) => ipcRenderer.invoke('terminal:write', id, data),
+        resize: (id, cols, rows) => ipcRenderer.invoke('terminal:resize', id, cols, rows),
+        kill: (id) => ipcRenderer.invoke('terminal:kill', id),
+        onData: (id, callback) => ipcRenderer.on(`terminal:data-${id}`, (event, data) => callback(data))
+    },
+
+    // Preview API
+    preview: {
+        open: (url) => ipcRenderer.invoke('preview:open', url),
+        refresh: () => ipcRenderer.invoke('preview:refresh')
+    },
+
     // Platform info
     platform: process.platform,
     isElectron: true

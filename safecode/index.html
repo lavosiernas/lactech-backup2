@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeCode IDE</title>
-    <link rel="icon" type="image/png" href="../assets/img/logos (6).png">
+    <link rel="icon" type="image/png" href="assets/img/logos%20(6).png">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
         rel="stylesheet">
@@ -32,7 +32,7 @@
         <header class="ide-header">
             <div class="ide-header-left">
                 <div class="ide-header-title">
-                    <img src="../assets/img/logos (6).png" alt="SafeNode" style="height: 20px;">
+                    <img src="assets/img/logos%20(6).png" alt="SafeNode" style="height: 20px;">
                 </div>
                 <nav class="ide-menu">
                     <div class="menu-item-dropdown">
@@ -95,10 +95,6 @@
                 </nav>
             </div>
             <div class="header-actions">
-                <button id="btnGoLive" class="btn-go-live">
-                    <i data-lucide="radio" class="w-3.5 h-3.5"></i>
-                    <span>Go Live</span>
-                </button>
                 <button id="btnSettings" class="btn-icon" title="Settings">
                     <i data-lucide="settings" class="w-4 h-4"></i>
                 </button>
@@ -125,6 +121,10 @@
                     <button class="sidebar-tab" data-view="extensions" title="Extensions">
                         <i data-lucide="puzzle" class="w-5 h-5"></i>
                     </button>
+                    <div class="sidebar-activity-spacer" style="flex: 1;"></div>
+                    <button class="sidebar-tab btn-go-live-activity" id="btnGoLive" title="Go Live">
+                        <i data-lucide="radio" class="w-5 h-5"></i>
+                    </button>
                 </div>
 
                 <div class="sidebar-panel" id="sidebarPanel">
@@ -145,7 +145,7 @@
                     <!-- Welcome Screen -->
                     <div class="editor-welcome" id="editorWelcome">
                         <div class="welcome-content">
-                            <img src="../assets/img/logos (6).png" alt="SafeCode" class="welcome-logo">
+                            <img src="assets/img/logos%20(6).png" alt="SafeCode" class="welcome-logo">
                             <h1>SafeCode IDE</h1>
                             <p>Professional monochrome development environment.</p>
 
@@ -289,10 +289,17 @@
             <div class="panel-tabs">
                 <button class="panel-tab active" data-panel="terminal">Terminal</button>
                 <button class="panel-tab" data-panel="output">Output</button>
+                <button class="panel-tab" data-panel="npm">NPM</button>
+                <button class="panel-tab" data-panel="composer">Composer</button>
             </div>
             <button id="btnClosePanel" class="btn-icon"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
         </div>
-        <div class="panel-content" id="panelContent"></div>
+        <div class="panel-content" id="panelContent">
+            <div id="panel-terminal" class="panel-view active"></div>
+            <div id="panel-output" class="panel-view"></div>
+            <div id="panel-npm" class="panel-view"></div>
+            <div id="panel-composer" class="panel-view"></div>
+        </div>
     </footer>
 
     <!-- Status Bar -->
@@ -303,7 +310,6 @@
             <div class="status-item"><i data-lucide="alert-triangle" class="w-3 h-3"></i> 0</div>
         </div>
         <div class="status-right">
-            <div class="status-item" id="statusLiveServer">Live Server: Stopped</div>
             <div class="status-item" id="statusLanguage">Plain Text</div>
             <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
         </div>
