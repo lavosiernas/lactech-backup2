@@ -31,11 +31,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // Git API
     git: {
+        init: (cwd) => ipcRenderer.invoke('git:init', cwd),
         status: (cwd) => ipcRenderer.invoke('git:status', cwd),
         stage: (cwd, filePath) => ipcRenderer.invoke('git:stage', cwd, filePath),
         unstage: (cwd, filePath) => ipcRenderer.invoke('git:unstage', cwd, filePath),
         commit: (cwd, message) => ipcRenderer.invoke('git:commit', cwd, message),
-        diff: (cwd, filePath) => ipcRenderer.invoke('git:diff', cwd, filePath)
+        diff: (cwd, filePath) => ipcRenderer.invoke('git:diff', cwd, filePath),
+        clone: (url, targetPath) => ipcRenderer.invoke('git:clone', url, targetPath)
     },
 
     // Menu events
@@ -77,7 +79,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Extensions API
     extensions: {
         list: () => ipcRenderer.invoke('extensions:list'),
-        readFile: (extensionId, fileName) => ipcRenderer.invoke('extensions:readFile', extensionId, fileName)
+        readFile: (extensionId, fileName) => ipcRenderer.invoke('extensions:readFile', extensionId, fileName),
+        install: (repositoryUrl, extensionId) => ipcRenderer.invoke('extensions:install', repositoryUrl, extensionId)
+    },
+
+    // Search API
+    search: {
+        query: (workspacePath, query, options) => ipcRenderer.invoke('search:query', workspacePath, query, options),
+        index: (workspacePath) => ipcRenderer.invoke('search:index', workspacePath)
     },
 
     // Platform info

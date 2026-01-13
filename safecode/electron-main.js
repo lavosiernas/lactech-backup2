@@ -518,6 +518,15 @@ ipcMain.handle('git:diff', async (event, cwd, filePath) => {
   }
 });
 
+ipcMain.handle('git:clone', async (event, url, targetPath) => {
+  try {
+    await execPromise(`git clone "${url}"`, { cwd: targetPath });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 // Extensions Handlers
 ipcMain.handle('extensions:list', async () => {
   try {
@@ -562,6 +571,124 @@ ipcMain.handle('extensions:readFile', async (event, extensionId, fileName) => {
   } catch (error) {
     return { success: false, error: error.message };
   }
+});
+
+ipcMain.handle('extensions:install', async (event, repositoryUrl, extensionId) => {
+  try {
+    const extensionsPath = path.join(__dirname, 'extensions');
+    const extensionPath = path.join(extensionsPath, extensionId);
+
+    // Create extensions directory if not exists
+    try {
+      await fs.access(extensionsPath);
+    } catch {
+      await fs.mkdir(extensionsPath, { recursive: true });
+    }
+
+    // Check if extension already exists
+    try {
+      await fs.access(extensionPath);
+      return { success: false, error: 'Extension already installed' };
+    } catch {
+      // Extension doesn't exist, proceed with installation
+    }
+
+    // Clone the repository
+    await execPromise(`git clone "${repositoryUrl}" "${extensionPath}"`);
+
+    // Verify package.json exists
+    const packageJsonPath = path.join(extensionPath, 'package.json');
+    try {
+      await fs.access(packageJsonPath);
+    } catch {
+      // No package.json, remove the directory
+      await fs.rmdir(extensionPath, { recursive: true });
+      return { success: false, error: 'Invalid extension: package.json not found' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Search Handlers
+const IGNORED_DIRS = ['node_modules', '.git', 'dist', 'build', '.vscode', '.next', '.cache'];
+
+async function searchInDirectory(dir, query, options, results = []) {
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        if (!IGNORED_DIRS.includes(entry.name)) {
+          await searchInDirectory(fullPath, query, options, results);
+        }
+      } else if (entry.isFile()) {
+        try {
+          const content = await fs.readFile(fullPath, 'utf-8');
+          const lines = content.split('\n');
+          const regex = options.useRegex
+            ? new RegExp(query, options.caseSensitive ? 'g' : 'gi')
+            : null;
+
+          lines.forEach((line, index) => {
+            let match = false;
+            let matchIndex = -1;
+
+            if (options.useRegex) {
+              const m = regex.exec(line);
+              if (m) {
+                match = true;
+                matchIndex = m.index;
+              }
+            } else {
+              const searchStr = options.caseSensitive ? query : query.toLowerCase();
+              const lineStr = options.caseSensitive ? line : line.toLowerCase();
+              matchIndex = lineStr.indexOf(searchStr);
+              match = matchIndex !== -1;
+            }
+
+            if (match) {
+              results.push({
+                path: fullPath,
+                line: index + 1,
+                content: line.trim(),
+                matchIndex: matchIndex
+              });
+            }
+          });
+        } catch (e) {
+          // Skip binary or unreadable files
+        }
+      }
+
+      // Limit results for performance
+      if (results.length > 1000) break;
+    }
+  } catch (error) {
+    console.error(`Error searching directory ${dir}:`, error);
+  }
+  return results;
+}
+
+ipcMain.handle('search:query', async (event, workspacePath, query, options) => {
+  if (!workspacePath || !query) return { success: false, error: 'Missing path or query' };
+
+  try {
+    const results = await searchInDirectory(workspacePath, query, options);
+    return { success: true, results };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('search:index', async (event, workspacePath) => {
+  // For a more advanced IDE, we would index files here
+  // For now, we perform real-time search which is more accurate
+  return { success: true, message: 'Workspace indexed' };
 });
 
 // App lifecycle

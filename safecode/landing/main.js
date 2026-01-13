@@ -1,20 +1,20 @@
-// Initialize ScrollReveal
+// Minimal ScrollReveal
 const sr = ScrollReveal({
     origin: 'bottom',
-    distance: '60px',
-    duration: 1000,
-    delay: 200,
-    reset: false
+    distance: '30px',
+    duration: 600,
+    delay: 100,
+    reset: false,
+    easing: 'ease-out'
 });
 
-// Animations
-sr.reveal('.hero-content', { delay: 100 });
-sr.reveal('.hero-visual', { delay: 300, origin: 'right' });
-sr.reveal('.section-title');
-sr.reveal('.feature-card', { interval: 100 });
-sr.reveal('.install-card', { delay: 200 });
+sr.reveal('.hero-content', { delay: 0 });
+sr.reveal('.hero-visual', { delay: 100 });
+sr.reveal('.section-title', { delay: 0 });
+sr.reveal('.feature-card', { interval: 50 });
+sr.reveal('.install-card', { delay: 0 });
 
-// Copy to Clipboard
+// Copy to clipboard
 const copyBtn = document.getElementById('copyBtn');
 const installCommand = document.getElementById('installCommand');
 
@@ -22,7 +22,6 @@ if (copyBtn && installCommand) {
     copyBtn.addEventListener('click', () => {
         const text = installCommand.innerText;
         navigator.clipboard.writeText(text).then(() => {
-            // Visual feedback
             const icon = copyBtn.querySelector('i');
             const originalData = icon.getAttribute('data-lucide');
 
@@ -39,14 +38,44 @@ if (copyBtn && installCommand) {
     });
 }
 
-// Navbar scroll effect
+// Navbar scroll
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
     if (window.scrollY > 50) {
-        navbar.style.background = 'rgba(5, 5, 5, 0.8)';
-        navbar.style.padding = '0.5rem 0';
+        navbar.classList.add('scrolled');
     } else {
-        navbar.style.background = 'transparent';
-        navbar.style.padding = '1.5rem 0';
+        navbar.classList.remove('scrolled');
     }
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// FAQ Accordion
+document.querySelectorAll('.faq-question').forEach(question => {
+    question.addEventListener('click', () => {
+        const faqItem = question.parentElement;
+        const isActive = faqItem.classList.contains('active');
+
+        // Close all FAQ items
+        document.querySelectorAll('.faq-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Toggle current item
+        if (!isActive) {
+            faqItem.classList.add('active');
+        }
+    });
 });

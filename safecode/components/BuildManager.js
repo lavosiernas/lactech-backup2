@@ -12,7 +12,7 @@ class BuildManager {
     }
 
     async refresh() {
-        if (!this.ide.sidebar.workspacePath) return;
+        if (!this.ide.workspace) return;
 
         await this.loadNpmScripts();
         await this.loadComposerScripts();
@@ -21,7 +21,7 @@ class BuildManager {
 
     async loadNpmScripts() {
         try {
-            const pkgPath = `${this.ide.sidebar.workspacePath}/package.json`;
+            const pkgPath = `${this.ide.workspace}/package.json`;
             const content = await this.ide.fileSystem.readFile(pkgPath);
             const pkg = JSON.parse(content);
             this.scripts.npm = Object.keys(pkg.scripts || {}).map(name => ({
@@ -35,7 +35,7 @@ class BuildManager {
 
     async loadComposerScripts() {
         try {
-            const compPath = `${this.ide.sidebar.workspacePath}/composer.json`;
+            const compPath = `${this.ide.workspace}/composer.json`;
             const content = await this.ide.fileSystem.readFile(compPath);
             const comp = JSON.parse(content);
             this.scripts.composer = Object.keys(comp.scripts || {}).map(name => ({

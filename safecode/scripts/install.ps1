@@ -1,5 +1,5 @@
 # SafeCode IDE Professional Installer for Windows
-# Usage: irm https://safecode.ai/install.ps1 | iex
+# Usage: irm https://safenode.cloud/safenode/safecode/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 
@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 $installDir = Join-Path $HOME ".local\bin"
 $exeName = "safecode.exe"
 $targetPath = Join-Path $installDir $exeName
-$downloadUrl = "https://github.com/lavosiernas/lactech-backup2/releases/latest/download/safecode.exe" # Placeholder URL
+$downloadUrl = "https://github.com/safenode/safecode/releases/latest/download/safecode.exe"
 
 function Write-Step($msg) {
     Write-Host "`n[🚀] $msg" -ForegroundColor Cyan
@@ -43,7 +43,8 @@ try {
         $newPath = "$currentPath;$installDir"
         [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
         Write-Success "SafeCode added to User PATH."
-    } else {
+    }
+    else {
         Write-Success "SafeCode already in PATH."
     }
 
@@ -54,7 +55,8 @@ try {
     Write-Host "Restart your terminal for PATH changes to take effect." -ForegroundColor Yellow
     Write-Host "------------------------------------------------`n" -ForegroundColor Gray
 
-} catch {
+}
+catch {
     Write-Error-Custom "An error occurred during installation: $($_.Exception.Message)"
     exit 1
 }

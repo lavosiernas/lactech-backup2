@@ -1,0 +1,211 @@
+{
+    "extensions": [
+        {
+            "id": "prettier-code-formatter",
+            "name": "Prettier - Code formatter",
+            "displayName": "Prettier",
+            "description": "Code formatter using prettier",
+            "version": "10.1.0",
+            "publisher": "esbenp",
+            "icon": "https://esbenp.gallerycdn.vsassets.io/extensions/esbenp/prettier-vscode/10.1.0/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Formatters"
+            ],
+            "tags": [
+                "formatter",
+                "javascript",
+                "typescript",
+                "html",
+                "css"
+            ],
+            "downloads": 45000000,
+            "rating": 4.5,
+            "repositoryUrl": "https://github.com/prettier/prettier-vscode"
+        },
+        {
+            "id": "vscode-eslint",
+            "name": "ESLint",
+            "displayName": "ESLint",
+            "description": "Integrates ESLint JavaScript into VS Code",
+            "version": "2.4.2",
+            "publisher": "dbaeumer",
+            "icon": "https://dbaeumer.gallerycdn.vsassets.io/extensions/dbaeumer/vscode-eslint/2.4.2/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Linters"
+            ],
+            "tags": [
+                "linter",
+                "javascript",
+                "lint"
+            ],
+            "downloads": 35000000,
+            "rating": 4.3,
+            "repositoryUrl": "https://github.com/microsoft/vscode-eslint"
+        },
+        {
+            "id": "vscode-icons",
+            "name": "vscode-icons",
+            "displayName": "Material Icon Theme",
+            "description": "Material Design Icons for Visual Studio Code",
+            "version": "12.4.0",
+            "publisher": "PKief",
+            "icon": "https://pkief.gallerycdn.vsassets.io/extensions/pkief/material-icon-theme/4.28.0/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Themes"
+            ],
+            "tags": [
+                "icons",
+                "theme"
+            ],
+            "downloads": 28000000,
+            "rating": 4.8,
+            "repositoryUrl": "https://github.com/PKief/vscode-material-icon-theme"
+        },
+        {
+            "id": "gitlens",
+            "name": "GitLens",
+            "displayName": "GitLens — Git supercharged",
+            "description": "Supercharge Git within VS Code",
+            "version": "14.1.1",
+            "publisher": "eamodio",
+            "icon": "https://eamodio.gallerycdn.vsassets.io/extensions/eamodio/gitlens/14.1.1/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Source Control"
+            ],
+            "tags": [
+                "git",
+                "version control"
+            ],
+            "downloads": 25000000,
+            "rating": 4.6,
+            "repositoryUrl": "https://github.com/gitkraken/vscode-gitlens"
+        },
+        {
+            "id": "live-server",
+            "name": "Live Server",
+            "displayName": "Live Server",
+            "description": "Launch a development local Server with live reload feature",
+            "version": "5.7.9",
+            "publisher": "ritwickdey",
+            "icon": "https://ritwickdey.gallerycdn.vsassets.io/extensions/ritwickdey/liveserver/5.7.9/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Other"
+            ],
+            "tags": [
+                "live",
+                "server",
+                "preview"
+            ],
+            "downloads": 22000000,
+            "rating": 4.7,
+            "repositoryUrl": "https://github.com/ritwickdey/vscode-live-server"
+        },
+        {
+            "id": "path-intellisense",
+            "name": "Path Intellisense",
+            "displayName": "Path Intellisense",
+            "description": "Visual Studio Code plugin that autocompletes filenames",
+            "version": "2.8.4",
+            "publisher": "christian-kohler",
+            "icon": "https://christian-kohler.gallerycdn.vsassets.io/extensions/christian-kohler/path-intellisense/2.8.4/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Other"
+            ],
+            "tags": [
+                "autocomplete",
+                "path"
+            ],
+            "downloads": 15000000,
+            "rating": 4.4,
+            "repositoryUrl": "https://github.com/ChristianKohler/PathIntellisense"
+        },
+        {
+            "id": "bracket-pair-colorizer",
+            "name": "Bracket Pair Colorizer",
+            "displayName": "Bracket Pair Colorizer 2",
+            "description": "A customizable extension for colorizing matching brackets",
+            "version": "0.2.2",
+            "publisher": "CoenraadS",
+            "icon": "https://coenraads.gallerycdn.vsassets.io/extensions/coenraads/bracket-pair-colorizer-2/0.2.2/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Other"
+            ],
+            "tags": [
+                "brackets",
+                "colorizer"
+            ],
+            "downloads": 12000000,
+            "rating": 4.5,
+            "repositoryUrl": "https://github.com/CoenraadS/Bracket-Pair-Colorizer-2"
+        },
+        {
+            "id": "auto-rename-tag",
+            "name": "Auto Rename Tag",
+            "displayName": "Auto Rename Tag",
+            "description": "Auto rename paired HTML/XML tag",
+            "version": "0.1.10",
+            "publisher": "formulahendry",
+            "icon": "https://formulahendry.gallerycdn.vsassets.io/extensions/formulahendry/auto-rename-tag/0.1.10/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Other"
+            ],
+            "tags": [
+                "html",
+                "xml",
+                "tag"
+            ],
+            "downloads": 11000000,
+            "rating": 4.6,
+            "repositoryUrl": "https://github.com/formulahendry/vscode-auto-rename-tag"
+        },
+        {
+            "id": "indent-rainbow",
+            "name": "indent-rainbow",
+            "displayName": "Indent Rainbow",
+            "description": "Makes indentation easier to read",
+            "version": "8.3.1",
+            "publisher": "oderwat",
+            "icon": "https://oderwat.gallerycdn.vsassets.io/extensions/oderwat/indent-rainbow/8.3.1/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Other"
+            ],
+            "tags": [
+                "indent",
+                "colorizer"
+            ],
+            "downloads": 9500000,
+            "rating": 4.3,
+            "repositoryUrl": "https://github.com/oderwat/vscode-indent-rainbow"
+        },
+        {
+            "id": "vscode-peacock",
+            "name": "Peacock",
+            "displayName": "Peacock",
+            "description": "Subtly change the workspace color of your workspace",
+            "version": "4.2.2",
+            "publisher": "johnpapa",
+            "icon": "https://johnpapa.gallerycdn.vsassets.io/extensions/johnpapa/vscode-peacock/4.2.2/1684368946000/Microsoft.VisualStudio.Services.Icons.Default",
+            "categories": [
+                "Other"
+            ],
+            "tags": [
+                "theme",
+                "color"
+            ],
+            "downloads": 8000000,
+            "rating": 4.7,
+            "repositoryUrl": "https://github.com/johnpapa/vscode-peacock"
+        }
+    ],
+    "categories": [
+        "Formatters",
+        "Linters",
+        "Themes",
+        "Source Control",
+        "Debuggers",
+        "Snippets",
+        "Language Packs",
+        "Other"
+    ],
+    "lastUpdated": "2026-01-13T12:57:00Z"
+}

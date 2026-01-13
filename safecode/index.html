@@ -46,6 +46,7 @@
                                     class="shortcut">Ctrl+O</span></div>
                             <div class="dropdown-item" id="menuItemOpenFolder">Open Folder <span
                                     class="shortcut">Ctrl+Shift+O</span></div>
+                            <div class="dropdown-item" id="menuItemCloneRepo">Clone Repository...</div>
                             <div class="divider"></div>
                             <div class="dropdown-item" id="menuItemSave">Save <span class="shortcut">Ctrl+S</span></div>
                             <div class="dropdown-item" id="menuItemSaveAs">Save As... <span
@@ -294,7 +295,12 @@
                 <button class="panel-tab" data-panel="npm">NPM</button>
                 <button class="panel-tab" data-panel="composer">Composer</button>
             </div>
-            <button id="btnClosePanel" class="btn-icon"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            <div class="panel-actions" style="display: flex; gap: 0.5rem; margin-left: auto;">
+                <button id="btnNewTerminalPanel" class="btn-icon" title="New Terminal"><i data-lucide="plus"
+                        class="w-3.5 h-3.5"></i></button>
+                <button id="btnClosePanel" class="btn-icon" title="Close Panel"><i data-lucide="x"
+                        class="w-3.5 h-3.5"></i></button>
+            </div>
         </div>
         <div class="panel-content" id="panelContent">
             <div id="panel-terminal" class="panel-view active"></div>
@@ -337,9 +343,12 @@
     <script src="./ide-managers.js"></script>
     <script src="./ide-features.js"></script>
     <script src="components/ExtensionManager.js"></script>
+    <script src="components/ExtensionMarketplace.js"></script>
     <script src="components/TerminalManager.js"></script>
     <script src="components/EditorManager.js"></script>
     <script src="components/SidebarManager.js"></script>
+    <script src="components/SidebarManagerExtended.js"></script>
+    <script src="components/GitManager.js"></script>
     <script src="components/BuildManager.js"></script>
     <script src="./update-checker.js"></script>
     <script src="./ide-enhanced.js"></script>

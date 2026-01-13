@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCode Documentation | Complete Guide</title>
+    <link rel="icon" type="image/png" href="../assets/img/logos%20(6).png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="docs.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="../assets/img/logos%20(6).png" alt="SafeCode Logo">
+                <span>SafeCode Docs</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="https://github.com/safenode/safecode" target="_blank" class="btn-github">
+                    <i data-lucide="github" class="w-4 h-4"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="docs-layout">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3>Getting Started</h3>
+                    <a href="#introduction" class="active">Introduction</a>
+                    <a href="#installation">Installation</a>
+                    <a href="#quick-start">Quick Start</a>
+                </div>
+                <div class="nav-section">
+                    <h3>Features</h3>
+                    <a href="#editor">Editor</a>
+                    <a href="#terminal">Terminal</a>
+                    <a href="#git">Git Integration</a>
+                    <a href="#extensions">Extensions</a>
+                </div>
+                <div class="nav-section">
+                    <h3>Configuration</h3>
+                    <a href="#settings">Settings</a>
+                    <a href="#themes">Themes</a>
+                    <a href="#shortcuts">Keyboard Shortcuts</a>
+                </div>
+                <div class="nav-section">
+                    <h3>Development</h3>
+                    <a href="#extension-api">Extension API</a>
+                    <a href="#contributing">Contributing</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="docs-content">
+            <section id="introduction">
+                <h1>Introduction</h1>
+                <p>SafeCode is a professional, high-performance IDE built for speed and aesthetics. With a monochrome
+                    design philosophy and native performance, it provides everything you need for modern development
+                    without the bloat.</p>
+
+                <div class="info-box">
+                    <i data-lucide="info"></i>
+                    <div>
+                        <strong>Version 1.0.0</strong>
+                        <p>This documentation covers SafeCode version 1.0.0 and above.</p>
+                    </div>
+                </div>
+
+                <h2>Why SafeCode?</h2>
+                <ul>
+                    <li><strong>Minimalist Design</strong> - Clean, distraction-free interface that puts your code first
+                    </li>
+                    <li><strong>Native Performance</strong> - Built with Electron for fast, responsive editing</li>
+                    <li><strong>Monaco Editor</strong> - Industry-standard editor with IntelliSense and syntax
+                        highlighting</li>
+                    <li><strong>Extensible</strong> - Comprehensive API for building custom extensions</li>
+                </ul>
+            </section>
+
+            <section id="installation">
+                <h1>Installation</h1>
+                <p>SafeCode can be installed on Windows, macOS, and Linux. Choose your platform below:</p>
+
+                <h2>Windows</h2>
+                <p>Install SafeCode using PowerShell:</p>
+                <div class="code-block">
+                    <code>powershell -ExecutionPolicy ByPass -c "irm https://safenode.cloud/safenode/safecode/install.ps1 | iex"</code>
+                </div>
+
+                <h2>macOS / Linux</h2>
+                <p>Install using the install script:</p>
+                <div class="code-block">
+                    <code>curl -fsSL https://safenode.cloud/safenode/safecode/install.sh | bash</code>
+                </div>
+
+                <h2>Requirements</h2>
+                <ul>
+                    <li>Node.js 16 or higher</li>
+                    <li>Git (for version control features)</li>
+                    <li>Electron (installed automatically)</li>
+                </ul>
+
+                <div class="info-box warning">
+                    <i data-lucide="alert-triangle"></i>
+                    <div>
+                        <strong>Note</strong>
+                        <p>Make sure you have Node.js installed before running the installation command.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="quick-start">
+                <h1>Quick Start</h1>
+                <p>Get up and running with SafeCode in minutes.</p>
+
+                <h2>1. Launch SafeCode</h2>
+                <p>After installation, launch SafeCode from your applications menu or command line:</p>
+                <div class="code-block">
+                    <code>safecode</code>
+                </div>
+
+                <h2>2. Open a Project</h2>
+                <p>Open a folder or create a new file:</p>
+                <ul>
+                    <li><kbd>Ctrl+O</kbd> - Open folder</li>
+                    <li><kbd>Ctrl+N</kbd> - New file</li>
+                </ul>
+
+                <h2>3. Start Coding</h2>
+                <p>SafeCode provides IntelliSense, syntax highlighting, and code completion out of the box for 100+
+                    languages.</p>
+            </section>
+
+            <section id="editor">
+                <h1>Editor</h1>
+                <p>The SafeCode editor is powered by Monaco, the same editor that powers VS Code.</p>
+
+                <h2>Features</h2>
+                <ul>
+                    <li><strong>IntelliSense</strong> - Intelligent code completion</li>
+                    <li><strong>Syntax Highlighting</strong> - Support for 100+ languages</li>
+                    <li><strong>Multi-cursor Editing</strong> - Edit multiple locations simultaneously</li>
+                    <li><strong>Code Folding</strong> - Collapse code blocks for better readability</li>
+                    <li><strong>Find and Replace</strong> - Powerful search with regex support</li>
+                </ul>
+
+                <h2>Split View</h2>
+                <p>Work with multiple files side by side:</p>
+                <ul>
+                    <li><kbd>Ctrl+\\</kbd> - Split editor vertically</li>
+                    <li><kbd>Ctrl+K Ctrl+\\</kbd> - Split editor horizontally</li>
+                </ul>
+            </section>
+
+            <section id="terminal">
+                <h1>Terminal</h1>
+                <p>SafeCode includes an integrated terminal with PTY support and custom themes.</p>
+
+                <h2>Opening the Terminal</h2>
+                <ul>
+                    <li><kbd>Ctrl+`</kbd> - Toggle terminal</li>
+                    <li><kbd>Ctrl+Shift+`</kbd> - Create new terminal</li>
+                </ul>
+
+                <h2>Features</h2>
+                <ul>
+                    <li>Multiple terminal instances</li>
+                    <li>Split terminal view</li>
+                    <li>Custom shell integration</li>
+                    <li>Monochrome theme matching the editor</li>
+                </ul>
+            </section>
+
+            <section id="git">
+                <h1>Git Integration</h1>
+                <p>SafeCode provides built-in Git support for version control.</p>
+
+                <h2>Features</h2>
+                <ul>
+                    <li><strong>Visual Diff</strong> - See changes inline in the editor</li>
+                    <li><strong>Commit Management</strong> - Stage and commit changes</li>
+                    <li><strong>Branch Management</strong> - Create, switch, and merge branches</li>
+                    <li><strong>Conflict Resolution</strong> - Visual merge conflict resolution</li>
+                </ul>
+
+                <h2>Common Operations</h2>
+                <div class="code-block">
+                    <code># Stage all changes
+git add .
+
+# Commit with message
+git commit -m "Your message"
+
+# Push to remote
+git push origin main</code>
+                </div>
+            </section>
+
+            <section id="extensions">
+                <h1>Extensions</h1>
+                <p>Extend SafeCode's functionality with custom extensions.</p>
+
+                <h2>Installing Extensions</h2>
+                <p>Extensions are installed in the <code>extensions</code> directory:</p>
+                <div class="code-block">
+                    <code>~/.safecode/extensions/</code>
+                </div>
+
+                <h2>Popular Extensions</h2>
+                <ul>
+                    <li><strong>Core Intelligence</strong> - AI-powered code completion</li>
+                    <li><strong>Theme Pack</strong> - Additional color themes</li>
+                    <li><strong>Snippets</strong> - Code snippet library</li>
+                </ul>
+            </section>
+
+            <section id="settings">
+                <h1>Settings</h1>
+                <p>Customize SafeCode to match your workflow.</p>
+
+                <h2>Accessing Settings</h2>
+                <ul>
+                    <li><kbd>Ctrl+,</kbd> - Open settings</li>
+                </ul>
+
+                <h2>Common Settings</h2>
+                <div class="code-block">
+                    <code>{
+  "editor.fontSize": 14,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "on",
+  "theme": "monochrome-true-dark",
+  "terminal.shell": "powershell"
+}</code>
+                </div>
+            </section>
+
+            <section id="themes">
+                <h1>Themes</h1>
+                <p>SafeCode comes with a carefully crafted monochrome theme system.</p>
+
+                <h2>Available Themes</h2>
+                <ul>
+                    <li><strong>Monochrome True Dark</strong> - Pure black background</li>
+                    <li><strong>Monochrome Dark</strong> - Dark gray background</li>
+                    <li><strong>Monochrome Light</strong> - Light theme variant</li>
+                </ul>
+
+                <h2>Changing Themes</h2>
+                <p>Change themes from the command palette:</p>
+                <ul>
+                    <li><kbd>Ctrl+Shift+P</kbd> - Open command palette</li>
+                    <li>Type "theme" and select your preferred theme</li>
+                </ul>
+            </section>
+
+            <section id="shortcuts">
+                <h1>Keyboard Shortcuts</h1>
+                <p>Master SafeCode with these essential keyboard shortcuts.</p>
+
+                <h2>General</h2>
+                <table>
+                    <tr>
+                        <td><kbd>Ctrl+Shift+P</kbd></td>
+                        <td>Command palette</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl+P</kbd></td>
+                        <td>Quick file open</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl+,</kbd></td>
+                        <td>Settings</td>
+                    </tr>
+                </table>
+
+                <h2>Editor</h2>
+                <table>
+                    <tr>
+                        <td><kbd>Ctrl+S</kbd></td>
+                        <td>Save file</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl+F</kbd></td>
+                        <td>Find</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl+H</kbd></td>
+                        <td>Find and replace</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl+/</kbd></td>
+                        <td>Toggle comment</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section id="extension-api">
+                <h1>Extension API</h1>
+                <p>Build powerful extensions for SafeCode using our comprehensive API.</p>
+
+                <h2>Creating an Extension</h2>
+                <p>Extensions are Node.js modules with a specific structure:</p>
+                <div class="code-block">
+                    <code>my-extension/
+├── extension.js
+├── package.json
+└── README.md</code>
+                </div>
+
+                <h2>Basic Extension</h2>
+                <div class="code-block">
+                    <code>// extension.js
+module.exports = {
+  activate(context) {
+    console.log('Extension activated!');
+    
+    // Register commands, add UI elements, etc.
+  },
+  
+  deactivate() {
+    console.log('Extension deactivated');
+  }
+};</code>
+                </div>
+
+                <h2>API Reference</h2>
+                <p>The SafeCode API provides access to:</p>
+                <ul>
+                    <li>Editor manipulation</li>
+                    <li>File system operations</li>
+                    <li>Terminal integration</li>
+                    <li>UI customization</li>
+                    <li>Command registration</li>
+                </ul>
+            </section>
+
+            <section id="contributing">
+                <h1>Contributing</h1>
+                <p>SafeCode is open source and welcomes contributions!</p>
+
+                <h2>Getting Started</h2>
+                <ol>
+                    <li>Fork the repository on GitHub</li>
+                    <li>Clone your fork locally</li>
+                    <li>Create a new branch for your feature</li>
+                    <li>Make your changes</li>
+                    <li>Submit a pull request</li>
+                </ol>
+
+                <h2>Development Setup</h2>
+                <div class="code-block">
+                    <code># Clone the repository
+git clone https://github.com/safenode/safecode.git
+
+# Install dependencies
+cd safecode
+npm install
+
+# Run in development mode
+npm run dev</code>
+                </div>
+
+                <div class="info-box">
+                    <i data-lucide="heart"></i>
+                    <div>
+                        <strong>Thank You!</strong>
+                        <p>Every contribution, no matter how small, helps make SafeCode better for everyone.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 SafeNode Group. Licensed under MIT.</p>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="https://github.com/safenode/safecode">GitHub</a>
+                    <a href="#">Privacy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Smooth scroll for sidebar links
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Update active state
+                document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                // Smooth scroll to section
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Update active link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (window.scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -856,6 +856,10 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                     <a href="#contact" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Contato</a>
                     <a href="mail-landing.php" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Mail</a>
                     <a href="docs.php" class="px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">Documentação</a>
+                    <a href="../safecode/landing/index.html" class="px-4 py-2 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-all flex items-center gap-2 border border-white/5">
+                        <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+                        SafeCode IDE
+                    </a>
                 </div>
 
                 <!-- CTA Button -->
@@ -894,6 +898,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                 <a href="#contact" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Contato</a>
                 <a href="mail-landing.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Mail</a>
                 <a href="docs.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Documentação</a>
+                <a href="../safecode/landing/index.html" class="block px-4 py-3 rounded-xl text-base font-bold text-white bg-white/10 hover:bg-white/20 transition-all">Instalar SafeCode IDE</a>
                 <a href="login.php" class="block px-4 py-3 rounded-xl text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900 transition-all">Login</a>
                 <a href="register.php" class="block px-4 py-3 mt-4 text-center rounded-full bg-white text-black font-bold hover:bg-zinc-100 transition-all">Começar Grátis</a>
             </div>
@@ -938,10 +943,14 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                 Sem complicação. Sem configurar SMTP manualmente. E-mails funcionando em 10 minutos.
             </p>
             
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4">
                 <a href="register.php" class="w-full sm:w-auto px-8 py-4 bg-white text-black rounded-full font-semibold hover:bg-zinc-200 transition-all transform hover:scale-105 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]">
                     Começar Gratuitamente
-                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+                <a href="../safecode/landing/index.html" class="w-full sm:w-auto px-8 py-4 bg-zinc-900/80 text-white border border-white/10 rounded-full font-medium hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 backdrop-blur-sm group shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                    <i data-lucide="code-2" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+                    Instalar SafeCode IDE
                 </a>
                 <a href="#features" class="w-full sm:w-auto px-8 py-4 bg-zinc-900/50 text-white border border-zinc-800 rounded-full font-medium hover:bg-zinc-800 transition-all flex items-center justify-center gap-2 backdrop-blur-sm hover:border-zinc-600">
                     <i data-lucide="play-circle" class="w-4 h-4"></i>

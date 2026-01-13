@@ -74,6 +74,8 @@ class SafeCodeIDE {
         this.settingsView = new SettingsView(this);
         this.updateChecker = new UpdateChecker(this);
         this.extensionManager = new ExtensionManager(this);
+        this.gitManager = new GitManager(this);
+        this.buildManager = new BuildManager(this);
 
         this.currentFile = null;
         this.workspace = null;
@@ -93,6 +95,11 @@ class SafeCodeIDE {
 
         // Initialize Extension System
         await this.extensionManager.init();
+
+        // Initialize Git Manager (if workspace is open)
+        if (this.workspace && this.gitManager) {
+            await this.gitManager.init();
+        }
 
         // Apply settings
         this.settingsManager.applySettings();
@@ -160,6 +167,13 @@ class SafeCodeIDE {
         document.getElementById('menuItemNewFile')?.addEventListener('click', () => this.newFile());
         document.getElementById('menuItemOpenFile')?.addEventListener('click', () => this.openFile());
         document.getElementById('menuItemOpenFolder')?.addEventListener('click', () => this.openFolder());
+        document.getElementById('menuItemCloneRepo')?.addEventListener('click', () => {
+            if (this.gitManager) {
+                this.gitManager.cloneRepository();
+            } else {
+                alert('Git functionality requires opening the IDE in Electron mode');
+            }
+        });
         document.getElementById('menuItemSave')?.addEventListener('click', () => this.saveCurrentFile());
         document.getElementById('menuItemSaveAs')?.addEventListener('click', () => this.saveCurrentFileAs());
 
@@ -170,7 +184,13 @@ class SafeCodeIDE {
 
         // Terminal
         document.getElementById('menuItemNewTerminal')?.addEventListener('click', () => {
-            if (this.bottomPanel?.style.display === 'none') this.toggleBottomPanel();
+            if (this.bottomPanel) {
+                this.bottomPanel.style.display = 'flex';
+                this.switchPanel('terminal');
+            }
+            this.terminalManager.createTerminal();
+        });
+        document.getElementById('btnNewTerminalPanel')?.addEventListener('click', () => {
             this.terminalManager.createTerminal();
         });
         document.getElementById('menuItemClearTerminal')?.addEventListener('click', () => this.terminalManager.clearActiveTerminal());
@@ -322,8 +342,14 @@ class SafeCodeIDE {
             if (sidebar) sidebar.classList.remove('hidden');
 
             this.sidebarManager.loadWorkspace(folderPath);
+            this.buildManager.refresh();
             this.hideWelcomeScreen();
             this.addToRecentProjects(folderPath, true);
+
+            // Trigger search indexing
+            if (this.isElectron && window.electronAPI.search) {
+                window.electronAPI.search.index(folderPath);
+            }
         } catch (error) {
             console.error('Error opening folder:', error);
             alert('Error opening folder: ' + error.message);
@@ -381,16 +407,17 @@ class SafeCodeIDE {
     }
 
     toggleBottomPanel() {
-        const panel = document.getElementById('bottomPanel');
-        if (panel) {
-            if (panel.style.display === 'none' || !panel.style.display) {
-                panel.style.display = 'flex';
-                if (this.terminalManager.terminals.size === 0) {
-                    this.terminalManager.createTerminal();
-                }
-            } else {
-                panel.style.display = 'none';
+        if (!this.bottomPanel) return;
+
+        const isHidden = this.bottomPanel.style.display === 'none' || !this.bottomPanel.style.display;
+
+        if (isHidden) {
+            this.bottomPanel.style.display = 'flex';
+            if (this.terminalManager && this.terminalManager.terminals.size === 0) {
+                this.terminalManager.createTerminal();
             }
+        } else {
+            this.bottomPanel.style.display = 'none';
         }
     }
 
