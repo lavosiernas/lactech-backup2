@@ -1,5 +1,5 @@
 # SafeCode IDE Professional Installer for Windows
-# Usage: irm https://safenode.cloud/safenode/safecode/install.ps1 | iex
+# Usage: irm https://safenode.cloud/safecode/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 

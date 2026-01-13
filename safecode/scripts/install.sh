@@ -1,6 +1,6 @@
 #!/bin/bash
 # SafeCode IDE Professional Installer for macOS/Linux
-# Usage: curl -fsSL https://safenode.cloud/safenode/safecode/install.sh | bash
+# Usage: curl -fsSL https://safenode.cloud/safecode/install.sh | bash
 
 set -e
 
