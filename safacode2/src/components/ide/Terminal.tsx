@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Plus, X, Terminal as TerminalIcon, Trash2 } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
+import { executeCommand } from '@/services/terminalCommands';
+
+interface TerminalState {
+  currentDirectory: string;
+  environment: Record<string, string>;
+}
 
 export const Terminal: React.FC = () => {
   const { 
@@ -9,14 +15,36 @@ export const Terminal: React.FC = () => {
     addTerminal, 
     removeTerminal, 
     setActiveTerminal,
-    addTerminalLine 
+    addTerminalLine,
+    files,
+    clearTerminal: clearTerminalStore
   } = useIDEStore();
   
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
+  const [terminalStates, setTerminalStates] = useState<Map<string, TerminalState>>(new Map());
 
   const activeTerminal = terminals.find(t => t.id === activeTerminalId);
+
+  // Initialize terminal state
+  useEffect(() => {
+    if (activeTerminalId && !terminalStates.has(activeTerminalId)) {
+      setTerminalStates(prev => {
+        const newMap = new Map(prev);
+        newMap.set(activeTerminalId, {
+          currentDirectory: '/',
+          environment: {
+            USER: 'developer',
+            HOME: '/',
+            PATH: '/usr/bin:/bin',
+            PWD: '/'
+          }
+        });
+        return newMap;
+      });
+    }
+  }, [activeTerminalId, terminalStates]);
 
   useEffect(() => {
     if (outputRef.current) {
@@ -24,78 +52,99 @@ export const Terminal: React.FC = () => {
     }
   }, [activeTerminal?.history]);
 
-  const handleCommand = (command: string) => {
+  const handleCommand = async (command: string) => {
     if (!activeTerminalId || !command.trim()) return;
+
+    const state = terminalStates.get(activeTerminalId) || {
+      currentDirectory: '/',
+      environment: { USER: 'developer', HOME: '/', PATH: '/usr/bin:/bin', PWD: '/' }
+    };
+
+    // Handle clear command
+    if (command.trim().toLowerCase() === 'clear' || command.trim().toLowerCase() === 'cls') {
+      clearTerminalStore(activeTerminalId);
+      setInput('');
+      return;
+    }
+
+    // Handle cd command separately to update state
+    const parts = command.trim().split(/\s+/);
+    if (parts[0].toLowerCase() === 'cd' && parts.length > 0) {
+      const path = parts[1] || '/';
+      let targetPath: string;
+
+      if (path === '~' || path === '~/' || path === '$HOME') {
+        targetPath = '/';
+      } else if (path.startsWith('/')) {
+        targetPath = path;
+      } else if (path === '..') {
+        const dirParts = (state.currentDirectory || '/').split('/').filter(p => p);
+        dirParts.pop();
+        targetPath = dirParts.length > 0 ? `/${dirParts.join('/')}` : '/';
+      } else if (path === '.') {
+        setInput('');
+        return;
+      } else {
+        targetPath = state.currentDirectory === '/' ? `/${path}` : `${state.currentDirectory}/${path}`;
+      }
+
+      // Check if directory exists
+      const findNodeByPath = (files: any[], path: string): any => {
+        if (path === '/' || path === '') {
+          return { type: 'folder', children: files };
+        }
+        const parts = path.split('/').filter(p => p);
+        let current: any = { type: 'folder', children: files };
+        for (const part of parts) {
+          if (!current || current.type !== 'folder' || !current.children) return null;
+          const found = current.children.find((child: any) => child.name === part);
+          if (!found) return null;
+          current = found;
+        }
+        return current;
+      };
+
+      const node = findNodeByPath(files, targetPath);
+      if (node && node.type === 'folder') {
+        setTerminalStates(prev => {
+          const newMap = new Map(prev);
+          const newState = { ...state, currentDirectory: targetPath, environment: { ...state.environment, PWD: targetPath } };
+          newMap.set(activeTerminalId, newState);
+          return newMap;
+        });
+        addTerminalLine(activeTerminalId, { type: 'input', content: `$ ${command}` });
+        setInput('');
+        return;
+      } else {
+        addTerminalLine(activeTerminalId, { type: 'input', content: `$ ${command}` });
+        addTerminalLine(activeTerminalId, { type: 'error', content: `cd: no such file or directory: ${path}` });
+        setInput('');
+        return;
+      }
+    }
 
     // Add input line
     addTerminalLine(activeTerminalId, { type: 'input', content: `$ ${command}` });
 
-    // Process command
-    const [cmd, ...args] = command.trim().split(' ');
-    let response: { type: 'output' | 'error' | 'info'; content: string };
+    // Execute command
+    const updatedState = terminalStates.get(activeTerminalId) || state;
+    const result = await executeCommand(command, {
+      ...updatedState,
+      files
+    });
 
-    switch (cmd.toLowerCase()) {
-      case 'help':
-        response = {
-          type: 'info',
-          content: `Available commands:
-  help          - Show this help message
-  clear         - Clear terminal
-  ls            - List files
-  pwd           - Print working directory
-  echo <text>   - Print text
-  date          - Show current date
-  whoami        - Show current user
-  node -v       - Node version
-  npm -v        - NPM version
-  git status    - Git status
-  git branch    - Show branches`
-        };
-        break;
-      case 'clear':
-        // Clear is handled separately
-        return;
-      case 'ls':
-        response = {
-          type: 'output',
-          content: 'No files loaded. Open a folder to see files.'
-        };
-        break;
-      case 'pwd':
-        response = { type: 'output', content: 'No working directory. Open a folder first.' };
-        break;
-      case 'echo':
-        response = { type: 'output', content: args.join(' ') };
-        break;
-      case 'date':
-        response = { type: 'output', content: new Date().toString() };
-        break;
-      case 'whoami':
-        response = { type: 'output', content: 'developer' };
-        break;
-      case 'node':
-        response = { type: 'output', content: 'v20.10.0' };
-        break;
-      case 'npm':
-        response = { type: 'output', content: '10.2.3' };
-        break;
-      case 'git':
-        if (args[0] === 'status') {
-          response = {
-            type: 'output',
-            content: 'Not a git repository. Open a folder with a git repository to use git commands.'
-          };
-        } else if (args[0] === 'branch') {
-          response = { type: 'output', content: 'Not a git repository.' };
-        } else {
-          response = { type: 'info', content: `git: '${args[0]}' is not a git command.` };
-        }
-        break;
-      default:
-        response = { type: 'error', content: `Command not found: ${cmd}` };
+    // Handle special output for clear
+    if (result.content === '\x1b[2J\x1b[H') {
+      clearTerminalStore(activeTerminalId);
+      setInput('');
+      return;
     }
 
-    addTerminalLine(activeTerminalId, response);
+    // Add output
+    if (result.content) {
+      addTerminalLine(activeTerminalId, result);
+    }
+
     setInput('');
   };
 
@@ -149,6 +198,11 @@ export const Terminal: React.FC = () => {
             <Plus className="w-4 h-4 text-muted-foreground" />
           </button>
           <button
+            onClick={() => {
+              if (activeTerminalId) {
+                clearTerminalStore(activeTerminalId);
+              }
+            }}
             className="p-1 rounded hover:bg-muted transition-colors"
             title="Clear Terminal"
           >
@@ -171,7 +225,14 @@ export const Terminal: React.FC = () => {
         
         {/* Input line */}
         <div className="flex items-center mt-1">
-          <span className="text-foreground mr-2">$</span>
+          <span className="text-foreground mr-2">
+            {(() => {
+              const state = terminalStates.get(activeTerminalId || '');
+              const dir = state?.currentDirectory || '/';
+              const displayDir = dir === '/' ? '~' : dir.split('/').pop() || '~';
+              return `${state?.environment.USER || 'developer'}@safecode:${displayDir}$`;
+            })()}
+          </span>
           <input
             ref={inputRef}
             type="text"

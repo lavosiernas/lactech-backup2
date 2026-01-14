@@ -29,6 +29,7 @@ interface IDEState {
   removeTerminal: (id: string) => void;
   setActiveTerminal: (id: string) => void;
   addTerminalLine: (terminalId: string, line: { type: 'input' | 'output' | 'error' | 'info'; content: string }) => void;
+  clearTerminal: (terminalId: string) => void;
   
   // Panels
   sidebarOpen: boolean;
@@ -479,6 +480,13 @@ export const useIDEStore = create<IDEState>((set, get) => ({
     terminals: state.terminals.map(t => 
       t.id === terminalId 
         ? { ...t, history: [...t.history, { ...line, timestamp: new Date() }] }
+        : t
+    )
+  })),
+  clearTerminal: (terminalId) => set((state) => ({
+    terminals: state.terminals.map(t => 
+      t.id === terminalId 
+        ? { ...t, history: [] }
         : t
     )
   })),
