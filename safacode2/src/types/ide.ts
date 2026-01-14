@@ -57,4 +57,4 @@ export interface Command {
 }
 
 export type PanelType = 'explorer' | 'search' | 'git' | 'extensions';
-export type PreviewMode = 'desktop' | 'tablet' | 'mobile';
+export type PreviewMode = 'desktop' | 'tablet' | 'ios' | 'android';
