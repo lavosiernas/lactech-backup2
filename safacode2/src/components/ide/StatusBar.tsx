@@ -45,10 +45,10 @@ export const StatusBar: React.FC = () => {
           <div className="flex items-center gap-1 hover:bg-muted px-1.5 py-0.5 cursor-pointer transition-all rounded group">
             <GitBranch className="w-3 h-3 transition-transform group-hover:rotate-12" />
             <span className="text-[10px] font-medium">{gitStatus.branch}</span>
-            {gitStatus.modified.length > 0 && (
+          {gitStatus.modified.length > 0 && (
               <span className="text-[10px] text-warning font-bold animate-pulse">●</span>
-            )}
-          </div>
+          )}
+        </div>
         )}
 
         {/* Problems */}

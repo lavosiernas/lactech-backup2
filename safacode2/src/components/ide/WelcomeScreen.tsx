@@ -343,26 +343,26 @@ export const WelcomeScreen: React.FC = () => {
             <div className="space-y-1.5">
               {recentProjects.length > 0 ? (
                 recentProjects.map((project) => (
-                  <button
+                <button
                     key={project.path}
-                    className="welcome-card w-full text-left group"
+                  className="welcome-card w-full text-left group"
                     onClick={async () => {
                       // Reopen folder
                       await handleOpenFolder();
                     }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <FolderOpen className="w-4 h-4 text-primary" />
-                        <div>
-                          <div className="font-medium text-sm">{project.name}</div>
-                          <div className="text-xs text-muted-foreground truncate max-w-48">
-                            {project.path}
-                          </div>
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FolderOpen className="w-4 h-4 text-primary" />
+                      <div>
+                        <div className="font-medium text-sm">{project.name}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-48">
+                          {project.path}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="w-3 h-3" />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />
                         {formatLastOpened(project.lastOpened)}
                       </div>
                     </div>
@@ -371,7 +371,7 @@ export const WelcomeScreen: React.FC = () => {
               ) : (
                 <div className="text-center py-4 text-muted-foreground text-sm">
                   No recent projects
-                </div>
+                  </div>
               )}
             </div>
           </div>
@@ -391,12 +391,12 @@ export const WelcomeScreen: React.FC = () => {
           >
             Keyboard Shortcuts
           </button>
-          <button
+            <button
             onClick={() => setSettingsDialogOpen(true)}
             className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-          >
+            >
             Settings
-          </button>
+            </button>
         </div>
 
         {/* Version */}
