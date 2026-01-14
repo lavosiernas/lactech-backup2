@@ -380,7 +380,7 @@ export const WelcomeScreen: React.FC = () => {
         {/* Footer links */}
         <div className="mt-10 pt-4 border-t border-panel-border flex justify-center gap-4">
           <button
-            onClick={() => window.open('/landing/docs.html', '_blank')}
+            onClick={() => window.open('/lp/docs.html', '_blank')}
             className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
           >
             Documentation

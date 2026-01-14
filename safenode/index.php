@@ -939,7 +939,7 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                     Começar Gratuitamente
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </a>
-                <a href="safecode/landing/app" class="w-full sm:w-auto px-8 py-4 bg-zinc-900/80 text-white border border-white/10 rounded-full font-medium hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 backdrop-blur-sm group shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                <a href="/safecode/lp/index.php" class="w-full sm:w-auto px-8 py-4 bg-zinc-900/80 text-white border border-white/10 rounded-full font-medium hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 backdrop-blur-sm group shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]">
                     <i data-lucide="code-2" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
                     Instalar SafeCode IDE
                 </a>
@@ -2423,7 +2423,7 @@ hv.<span class="code-syntax-function">init</span>().<span class="code-syntax-fun
                 <div>
                     <h4 class="font-semibold text-white mb-5 text-sm uppercase tracking-wider">Desenvolvedores</h4>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2 group">
+                        <li><a href="docs.php" class="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-2 group">
                             <i data-lucide="book-open" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                             Documentação
                         </a></li>

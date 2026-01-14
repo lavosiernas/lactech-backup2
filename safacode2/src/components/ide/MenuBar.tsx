@@ -438,7 +438,7 @@ export const MenuBar: React.FC = () => {
             setShowWelcome(true);
             break;
           case 'Documentation':
-            window.open('/landing/docs.html', '_blank');
+            window.open('/lp/docs.html', '_blank');
             break;
           case 'Keyboard Shortcuts':
             setShortcutsDialog(true);
