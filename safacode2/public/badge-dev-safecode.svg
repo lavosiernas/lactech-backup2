@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="180" height="32">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#000000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="180" height="32" fill="url(#grad)" rx="6"/>
+  <!-- Logo da SAFECODE -->
+  <image x="8" y="4" width="24" height="24" xlink:href="https://i.postimg.cc/9fMqbs8k/logos-(6).png" preserveAspectRatio="xMidYMid meet"/>
+  <!-- Texto Dev SAFECODE -->
+  <text x="40" y="21" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" letter-spacing="1">Dev SAFECODE</text>
+</svg>
+

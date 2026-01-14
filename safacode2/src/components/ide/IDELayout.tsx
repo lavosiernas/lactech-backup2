@@ -9,6 +9,7 @@ import { StatusBar } from './StatusBar';
 import { CommandPalette } from './CommandPalette';
 import { WelcomeScreen } from './WelcomeScreen';
 import { FindReplace } from './FindReplace';
+import { AchievementModal } from './AchievementModal';
 import { useIDEStore } from '@/stores/ideStore';
 
 export const IDELayout: React.FC = () => {
@@ -170,6 +171,9 @@ export const IDELayout: React.FC = () => {
 
       {/* Command Palette */}
       <CommandPalette />
+
+      {/* Achievement Modal */}
+      <AchievementModal />
     </div>
   );
 };

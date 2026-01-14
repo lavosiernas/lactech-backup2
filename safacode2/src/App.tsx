@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MobileBlock } from "@/components/MobileBlock";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import AchievementPage from "./pages/AchievementPage";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
         >
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/achievement" element={<AchievementPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
