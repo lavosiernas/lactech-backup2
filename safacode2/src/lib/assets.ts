@@ -6,11 +6,7 @@ export function getAssetPath(path: string): string {
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   // Retorna com o base path (BASE_URL já inclui a barra final)
   const baseUrl = import.meta.env.BASE_URL || '/safecode/';
-  // Codificar espaços e caracteres especiais no nome do arquivo
-  const encodedPath = cleanPath.split('/').map(part => 
-    encodeURIComponent(part).replace(/%20/g, ' ')
-  ).join('/');
-  return `${baseUrl}${encodedPath}`;
+  return `${baseUrl}${cleanPath}`;
 }
 
 /**
