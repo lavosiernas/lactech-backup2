@@ -104,7 +104,7 @@ export const Terminal: React.FC = () => {
       case 'input': return 'text-foreground';
       case 'output': return 'text-terminal-foreground';
       case 'error': return 'text-destructive';
-      case 'info': return 'text-primary';
+      case 'info': return 'text-muted-foreground';
       default: return 'text-foreground';
     }
   };
@@ -171,7 +171,7 @@ export const Terminal: React.FC = () => {
         
         {/* Input line */}
         <div className="flex items-center mt-1">
-          <span className="text-primary mr-2">$</span>
+          <span className="text-foreground mr-2">$</span>
           <input
             ref={inputRef}
             type="text"
@@ -182,7 +182,13 @@ export const Terminal: React.FC = () => {
                 handleCommand(input);
               }
             }}
-            className="flex-1 bg-transparent outline-none text-foreground font-mono"
+            className="flex-1 bg-transparent outline-none text-foreground font-mono border-none"
+            style={{ 
+              outline: 'none',
+              border: 'none',
+              boxShadow: 'none',
+              caretColor: 'hsl(var(--foreground))'
+            }}
             autoFocus
           />
         </div>
