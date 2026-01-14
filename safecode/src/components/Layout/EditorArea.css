@@ -1,0 +1,35 @@
+.ide-editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #000000;
+}
+
+.editor-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #71717a;
+}
+
+.editor-welcome h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #e4e4e7;
+}
+
+.editor-welcome p {
+  font-size: 14px;
+}
+
+

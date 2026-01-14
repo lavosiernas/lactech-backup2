@@ -1143,14 +1143,21 @@ body {
 
 /* Bottom Panel Styling - Precision Studio */
 .ide-bottom-panel {
-  height: 250px;
+  max-height: 0;
+  overflow: hidden;
   background: var(--bg-primary);
   border-top: var(--precision-border);
   display: flex;
   flex-direction: column;
   position: relative;
   z-index: 20;
-  transition: var(--snap-transition);
+  transition: max-height 0.3s ease-in-out;
+}
+
+.ide-bottom-panel.open {
+  max-height: 250px;
+  min-height: 250px;
+  height: 250px;
 }
 
 .panel-resizer {

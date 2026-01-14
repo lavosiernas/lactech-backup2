@@ -1,17 +1,14 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
+    plugins: [react()],
     root: './src',
     base: './',
     build: {
         outDir: '../build',
-        emptyOutDir: true,
-        rollupOptions: {
-            input: {
-                main: path.resolve(__dirname, 'src/index.html')
-            }
-        }
+        emptyOutDir: true
     },
     server: {
         port: 5173,
@@ -20,10 +17,11 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
-            '@core': path.resolve(__dirname, './src/core'),
             '@components': path.resolve(__dirname, './src/components'),
-            '@languages': path.resolve(__dirname, './src/languages'),
-            '@utils': path.resolve(__dirname, './src/utils')
+            '@hooks': path.resolve(__dirname, './src/hooks'),
+            '@contexts': path.resolve(__dirname, './src/contexts'),
+            '@utils': path.resolve(__dirname, './src/utils'),
+            '@types': path.resolve(__dirname, './src/types')
         }
     }
 });

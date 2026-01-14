@@ -1,0 +1,95 @@
+.ide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 35px;
+  background: #18181b;
+  border-bottom: 1px solid #27272a;
+  padding: 0 8px;
+  user-select: none;
+}
+
+.ide-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ide-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ide-menu {
+  display: flex;
+  gap: 4px;
+}
+
+.menu-item-dropdown {
+  position: relative;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 3px;
+}
+
+.menu-item-dropdown:hover {
+  background: #27272a;
+}
+
+.menu-item-dropdown > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 4px;
+  min-width: 200px;
+  padding: 4px 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.menu-item-dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dropdown-item:hover {
+  background: #27272a;
+}
+
+.shortcut {
+  color: #71717a;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.divider {
+  height: 1px;
+  background: #27272a;
+  margin: 4px 0;
+}
+
+
