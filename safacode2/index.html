@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/safecode/logos%20(6).png" />
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/9fMqbs8k/logos-(6).png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SAFECODE IDE - Modern Code Editor</title>
     <meta name="description" content="SAFECODE IDE - A powerful, modern code editor with syntax highlighting, integrated terminal, live preview, and Git integration." />
@@ -35,30 +35,26 @@
       // Detectar dispositivos móveis e bloquear acesso
       (function() {
         function isMobileDevice() {
-          // Verificar user agent primeiro (mais confiável)
-          const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-          const isMobileUA = mobileRegex.test(navigator.userAgent);
+          const ua = navigator.userAgent;
           
-          // Verificar largura da tela APENAS se for mobile user agent
-          // Desktops podem ter telas pequenas em modo de desenvolvedor
-          if (isMobileUA && window.innerWidth < 768) {
-            return true;
-          }
+          // Verificar APENAS se é claramente um smartphone pequeno pelo user agent
+          // Padrões muito específicos para smartphones (não tablets, não desktops)
+          // iPhone, Android Mobile, Windows Phone, etc.
+          const isSmallPhone = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|BB10|Mobile.*Firefox|Opera Mini/i.test(ua);
           
-          // Se não é mobile user agent, não bloquear (mesmo que tenha touch)
-          if (!isMobileUA) {
-            return false;
-          }
-          
-          // Se é mobile user agent, bloquear independente do tamanho
-          return isMobileUA;
+          // Bloquear APENAS se for smartphone pequeno
+          // Desktops, tablets e qualquer outro dispositivo NÃO será bloqueado
+          return isSmallPhone;
         }
         
         if (isMobileDevice()) {
           document.getElementById('mobile-block').style.display = 'flex';
           document.getElementById('root').style.display = 'none';
-          // Prevenir scroll
           document.body.style.overflow = 'hidden';
+        } else {
+          // Garantir que não está bloqueado
+          document.getElementById('mobile-block').style.display = 'none';
+          document.getElementById('root').style.display = 'block';
         }
       })();
     </script>

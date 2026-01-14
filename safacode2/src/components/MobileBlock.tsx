@@ -5,29 +5,15 @@ export const MobileBlock = () => {
 
   useEffect(() => {
     const checkMobile = () => {
-      // Verificar user agent primeiro (mais confiável)
-      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-      const isMobileUA = mobileRegex.test(navigator.userAgent);
+      const ua = navigator.userAgent;
       
-      // Se não é mobile user agent, não bloquear (mesmo que tenha touch ou tela pequena)
-      if (!isMobileUA) {
-        setIsMobile(false);
-        return;
-      }
+      // Verificar APENAS se é claramente um smartphone pequeno pelo user agent
+      // Padrões muito específicos para smartphones (não tablets, não desktops)
+      const isSmallPhone = /iPhone|iPod|Android.*Mobile|Windows Phone|BlackBerry|BB10|Mobile.*Firefox|Opera Mini/i.test(ua);
       
-      // Se é mobile user agent, verificar largura da tela
-      if (isMobileUA && window.innerWidth < 768) {
-        setIsMobile(true);
-        return;
-      }
-      
-      // Se é mobile user agent mas tela grande, ainda bloquear (tablets grandes podem tentar usar)
-      if (isMobileUA) {
-        setIsMobile(true);
-        return;
-      }
-
-      setIsMobile(false);
+      // Bloquear APENAS se for smartphone pequeno
+      // Desktops, tablets e qualquer outro dispositivo NÃO será bloqueado
+      setIsMobile(isSmallPhone);
     };
 
     checkMobile();

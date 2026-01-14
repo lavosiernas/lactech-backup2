@@ -85,7 +85,7 @@
         <div class="max-w-6xl mx-auto px-6">
             <div class="flex items-center justify-between h-14">
                 <div class="flex items-center gap-2">
-                    <img src="../public/logos (6).png" alt="SafeCode Logo" class="h-8 w-8 object-contain">
+                    <img src="https://i.postimg.cc/9fMqbs8k/logos-(6).png" alt="SafeCode Logo" class="h-8 w-8 object-contain">
                     <span class="font-medium text-sm tracking-tight">SafeCode</span>
                     <span class="text-xs text-muted-foreground/50 ml-1">by SafeNode</span>
                 </div>
@@ -296,7 +296,7 @@
             <div class="grid md:grid-cols-4 gap-12 mb-12">
                 <div class="md:col-span-2">
                     <div class="flex items-center gap-2 mb-4">
-                        <img src="../public/logos (6).png" alt="SafeCode Logo" class="h-8 w-8 object-contain">
+                        <img src="https://i.postimg.cc/9fMqbs8k/logos-(6).png" alt="SafeCode Logo" class="h-8 w-8 object-contain">
                         <span class="font-medium text-sm tracking-tight">SafeCode</span>
                     </div>
                     <p class="text-sm text-muted-foreground/60 leading-relaxed max-w-sm">
