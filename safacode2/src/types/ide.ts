@@ -58,6 +58,7 @@ export interface IDESettings {
   wordWrap: boolean;
   minimap: boolean;
   syntaxColors?: SyntaxColors;
+  activeTheme?: string; // ID do tema ativo da extensão
 }
 
 export interface Command {

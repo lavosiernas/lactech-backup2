@@ -345,7 +345,8 @@ const defaultSettings: IDESettings = {
   autoSave: false,
   wordWrap: true,
   minimap: true,
-  syntaxColors: defaultSyntaxColors
+  syntaxColors: defaultSyntaxColors,
+  activeTheme: 'default',
 };
 
 export const useIDEStore = create<IDEState>((set, get) => ({

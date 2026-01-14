@@ -58,3 +58,4 @@
 - Priorizar funcionalidades críticas
 
 
+

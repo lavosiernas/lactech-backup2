@@ -112,13 +112,13 @@ export const Terminal: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-terminal">
       {/* Terminal tabs */}
-      <div className="flex items-center border-b h-7" style={{ backgroundColor: 'hsl(var(--tab))', borderBottomColor: 'hsl(var(--panel-border))' }}>
-        <div className="flex items-center flex-1 overflow-x-auto">
+      <div className="flex items-center h-7" style={{ backgroundColor: 'hsl(var(--tab))' }}>
+        <div className="flex items-center flex-1 overflow-x-auto hide-scrollbar">
           {terminals.map((terminal) => (
             <div
               key={terminal.id}
               onClick={() => setActiveTerminal(terminal.id)}
-              className={`flex items-center gap-1.5 px-2 py-1 text-xs cursor-pointer border-r border-panel-border transition-colors ${
+              className={`flex items-center gap-1.5 px-2 py-1 text-xs cursor-pointer transition-colors ${
                 terminal.id === activeTerminalId 
                   ? 'bg-terminal text-foreground' 
                   : 'text-muted-foreground hover:bg-muted'
@@ -160,7 +160,7 @@ export const Terminal: React.FC = () => {
       {/* Terminal output */}
       <div 
         ref={outputRef}
-        className="flex-1 overflow-auto p-2 font-mono text-xs scrollbar-thin"
+        className="flex-1 overflow-auto hide-scrollbar p-2 font-mono text-xs"
         onClick={() => inputRef.current?.focus()}
       >
         {activeTerminal?.history.map((line, index) => (

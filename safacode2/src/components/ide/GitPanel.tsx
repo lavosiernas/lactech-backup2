@@ -22,7 +22,7 @@ export const GitPanel: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-2 py-1.5 border-b border-panel-border">
+      <div className="flex items-center justify-between px-2 py-1.5">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Source Control
         </span>
@@ -59,7 +59,7 @@ export const GitPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto scrollbar-thin p-2">
+      <div className="flex-1 overflow-auto hide-scrollbar p-2">
         {/* Branch info */}
         {gitStatus.branch ? (
           <div className="flex items-center gap-2 px-2 py-1.5 mb-3">

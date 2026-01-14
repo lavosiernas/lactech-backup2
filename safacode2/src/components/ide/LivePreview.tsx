@@ -1519,7 +1519,7 @@ ${cssContent}
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: '#000000' }}>
       {/* Preview toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-panel-border h-9" style={{ backgroundColor: '#000000' }}>
+      <div className="flex items-center justify-between px-3 py-2 h-9" style={{ backgroundColor: '#000000' }}>
         <div className="flex items-center gap-1">
           {previewModes.map(({ mode, icon, label }) => (
             <button

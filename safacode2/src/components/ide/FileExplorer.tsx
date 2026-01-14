@@ -1,10 +1,12 @@
+import React, { useState } from 'react';
 import { ChevronRight, ChevronDown, MoreHorizontal, Plus, FolderPlus, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
 import { FileIcon } from './FileIcon';
 import { useIDEStore } from '@/stores/ideStore';
 import { ConfirmDialog } from './ConfirmDialog';
 import { NewFileDialog } from './NewFileDialog';
 import { useToast } from '@/components/ui/use-toast';
+import { OutlinePanel } from './OutlinePanel';
+import { TimelinePanel } from './TimelinePanel';
 import type { FileNode } from '@/types/ide';
 import {
   ContextMenu,
@@ -177,56 +179,165 @@ export const FileExplorer: React.FC = () => {
   const { toast } = useToast();
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; path: string; name: string }>({ open: false, path: '', name: '' });
   const [newFileDialog, setNewFileDialog] = useState<{ open: boolean; type: 'file' | 'folder'; parentPath: string }>({ open: false, type: 'file', parentPath: '/' });
+  const [outlineExpanded, setOutlineExpanded] = useState(false);
+  const [timelineExpanded, setTimelineExpanded] = useState(false);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-2 py-1.5 border-b border-panel-border">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          Explorer
-        </span>
-        <div className="flex items-center gap-0.5">
-          <button 
-            onClick={() => setNewFileDialog({ open: true, type: 'file', parentPath: '/' })}
-            className="p-1 hover:bg-sidebar-hover rounded transition-colors"
-            title="New File"
+    <div className="h-full flex flex-col" style={{ backgroundColor: '#000000' }}>
+      {/* Explorer Section */}
+      <div className="flex flex-col flex-1 min-h-0">
+        <div 
+          className="flex items-center justify-between px-3 py-2" 
+          style={{ 
+            backgroundColor: '#000000'
+          }}
+        >
+          <span 
+            className="text-[11px] font-semibold uppercase tracking-wider"
+            style={{ color: 'rgba(255, 255, 255, 0.7)' }}
           >
-            <Plus className="w-3 h-3 text-muted-foreground hover:text-foreground" />
-          </button>
-          <button 
-            onClick={() => setNewFileDialog({ open: true, type: 'folder', parentPath: '/' })}
-            className="p-1 hover:bg-sidebar-hover rounded transition-colors"
-            title="New Folder"
-          >
-            <FolderPlus className="w-3 h-3 text-muted-foreground hover:text-foreground" />
-          </button>
-          <button 
-            className="p-1 hover:bg-sidebar-hover rounded transition-colors"
-            title="Refresh"
-          >
-            <RefreshCw className="w-3 h-3 text-muted-foreground hover:text-foreground" />
-          </button>
+            Explorer
+          </span>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => setNewFileDialog({ open: true, type: 'file', parentPath: '/' })}
+              className="p-1.5 rounded transition-colors"
+              style={{ 
+                color: 'rgba(255, 255, 255, 0.5)',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+              }}
+              title="New File"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={() => setNewFileDialog({ open: true, type: 'folder', parentPath: '/' })}
+              className="p-1.5 rounded transition-colors"
+              style={{ 
+                color: 'rgba(255, 255, 255, 0.5)',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+              }}
+              title="New Folder"
+            >
+              <FolderPlus className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              className="p-1.5 rounded transition-colors"
+              style={{ 
+                color: 'rgba(255, 255, 255, 0.5)',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+              }}
+              title="Refresh"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto hide-scrollbar py-1 min-h-0">
+          <FileTreeRecursive 
+            nodes={files}
+            onRename={(path, name) => {
+              renameFile(path, name);
+              toast({
+                title: 'File renamed',
+                description: `Renamed to ${name}`,
+              });
+            }}
+            onDelete={(path, name) => {
+              setDeleteConfirm({ open: true, path, name });
+            }}
+            onNewFile={(parentPath, type) => {
+              setNewFileDialog({ open: true, type, parentPath });
+            }}
+            onNewFolder={(parentPath, type) => {
+              setNewFileDialog({ open: true, type, parentPath });
+            }}
+          />
         </div>
       </div>
-      <div className="flex-1 overflow-auto scrollbar-thin py-1">
-        <FileTreeRecursive 
-          nodes={files}
-          onRename={(path, name) => {
-            renameFile(path, name);
-            toast({
-              title: 'File renamed',
-              description: `Renamed to ${name}`,
-            });
-          }}
-          onDelete={(path, name) => {
-            setDeleteConfirm({ open: true, path, name });
-          }}
-          onNewFile={(parentPath, type) => {
-            setNewFileDialog({ open: true, type, parentPath });
-          }}
-          onNewFolder={(parentPath, type) => {
-            setNewFileDialog({ open: true, type, parentPath });
-          }}
-        />
+
+      {/* Outline Section */}
+      <div className="flex-shrink-0">
+        <div 
+          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-sidebar-hover transition-colors"
+          onClick={() => setOutlineExpanded(!outlineExpanded)}
+          style={{ backgroundColor: '#000000' }}
+        >
+          <div className="flex items-center gap-2">
+            <ChevronRight 
+              className="w-3 h-3 transition-transform"
+              style={{ 
+                transform: outlineExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                color: 'rgba(255, 255, 255, 0.5)'
+              }}
+            />
+            <span 
+              className="text-[11px] font-semibold uppercase tracking-wider"
+              style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+            >
+              Outline
+            </span>
+          </div>
+        </div>
+        {outlineExpanded && (
+          <div style={{ height: '200px', minHeight: '180px', maxHeight: '300px' }}>
+            <OutlinePanel />
+          </div>
+        )}
+      </div>
+
+      {/* Timeline Section */}
+      <div className="flex-shrink-0">
+        <div 
+          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-sidebar-hover transition-colors"
+          onClick={() => setTimelineExpanded(!timelineExpanded)}
+          style={{ backgroundColor: '#000000' }}
+        >
+          <div className="flex items-center gap-2">
+            <ChevronRight 
+              className="w-3 h-3 transition-transform"
+              style={{ 
+                transform: timelineExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                color: 'rgba(255, 255, 255, 0.5)'
+              }}
+            />
+            <span 
+              className="text-[11px] font-semibold uppercase tracking-wider"
+              style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+            >
+              Timeline
+            </span>
+          </div>
+        </div>
+        {timelineExpanded && (
+          <div style={{ height: '200px', minHeight: '180px', maxHeight: '300px' }}>
+            <TimelinePanel />
+          </div>
+        )}
       </div>
 
       {/* Dialogs */}

@@ -10,7 +10,7 @@ export const EditorTabs: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center border-b overflow-x-auto scrollbar-thin" style={{ backgroundColor: 'hsl(var(--tab))', borderBottomColor: 'hsl(var(--panel-border))' }}>
+    <div className="flex items-center overflow-x-auto hide-scrollbar" style={{ backgroundColor: 'hsl(var(--tab))' }}>
       {tabs.map((tab) => (
         <div
           key={tab.id}

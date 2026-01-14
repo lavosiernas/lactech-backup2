@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <summary className="text-xs text-muted-foreground cursor-pointer">
                   Error Details
                 </summary>
-                <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto max-h-40">
+                <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto hide-scrollbar max-h-40">
                   {this.state.error.stack}
                 </pre>
               </details>
@@ -73,4 +73,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
 

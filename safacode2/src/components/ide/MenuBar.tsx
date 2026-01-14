@@ -539,7 +539,12 @@ export const MenuBar: React.FC = () => {
               {menu.label}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="border-panel-border min-w-48" style={{ backgroundColor: '#000000' }}>
+          <DropdownMenuContent 
+            className="border-panel-border min-w-48" 
+            style={{ backgroundColor: '#000000' }}
+            side="bottom"
+            align="start"
+          >
             {menu.items.map((item, index) => 
               item.type === 'separator' ? (
                 <DropdownMenuSeparator key={index} />
@@ -607,7 +612,7 @@ export const MenuBar: React.FC = () => {
       />
 
       {/* Quick actions */}
-      <div className="flex items-center gap-0.5 border-l border-panel-border pl-1.5 ml-1.5">
+      <div className="flex items-center gap-0.5 pl-1.5 ml-1.5">
         <button
           onClick={toggleSidebar}
           className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-all rounded group"

@@ -220,7 +220,7 @@ export const CommandPalette: React.FC = () => {
           />
         </div>
 
-        <div className="max-h-72 overflow-auto scrollbar-thin">
+        <div className="max-h-72 overflow-auto hide-scrollbar">
           {filteredItems.commands.length > 0 && (
             <div className="py-1.5">
               <div className="px-3 py-1 text-[10px] text-muted-foreground uppercase">Commands</div>

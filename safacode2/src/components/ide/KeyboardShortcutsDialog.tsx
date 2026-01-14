@@ -46,7 +46,7 @@ const shortcuts = [
 export const KeyboardShortcutsDialog: React.FC<{ open: boolean; onOpenChange: (open: boolean) => void }> = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto hide-scrollbar">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
@@ -69,4 +69,5 @@ export const KeyboardShortcutsDialog: React.FC<{ open: boolean; onOpenChange: (o
     </Dialog>
   );
 };
+
 

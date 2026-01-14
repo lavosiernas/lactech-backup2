@@ -71,7 +71,7 @@ export const SearchPanel: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-panel-border">
+      <div className="flex items-center justify-between px-3 py-2">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Search
         </span>
@@ -94,19 +94,64 @@ export const SearchPanel: React.FC = () => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+          <label 
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded cursor-pointer transition-all group"
+            style={{
+              backgroundColor: caseSensitive ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+              border: caseSensitive ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)',
+              color: caseSensitive ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.6)'
+            }}
+            onMouseEnter={(e) => {
+              if (!caseSensitive) {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!caseSensitive) {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
+              }
+            }}
+          >
+            <div 
+              className="relative w-4 h-4 rounded flex items-center justify-center transition-all"
+              style={{
+                backgroundColor: caseSensitive ? '#3b82f6' : 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid ' + (caseSensitive ? '#3b82f6' : 'rgba(255, 255, 255, 0.2)')
+              }}
+            >
+              {caseSensitive && (
+                <svg 
+                  className="w-2.5 h-2.5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                  style={{ color: '#ffffff' }}
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={3} 
+                    d="M5 13l4 4L19 7" 
+                  />
+                </svg>
+              )}
+            </div>
+            <span className="text-xs font-medium select-none">Match case</span>
             <input
               type="checkbox"
               checked={caseSensitive}
               onChange={(e) => setCaseSensitive(e.target.checked)}
-              className="w-3.5 h-3.5"
+              className="sr-only"
             />
-            Match case
           </label>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto scrollbar-thin">
+      <div className="flex-1 overflow-auto hide-scrollbar">
         {!query ? (
           <div className="text-center py-8 text-muted-foreground text-sm px-2">
             <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />

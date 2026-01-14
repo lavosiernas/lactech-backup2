@@ -39,3 +39,4 @@ Tornar a IDE totalmente funcional, implementando todas as funcionalidades faltan
 4. Atualizar STATUS_FUNCIONALIDADES.md
 
 
+
