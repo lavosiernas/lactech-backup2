@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Monitor, Tablet, Smartphone, RefreshCw, RotateCcw, Lock, Power, Flashlight, Camera, Moon, Sun } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, RefreshCw, RotateCcw, Lock, Power, Flashlight, Camera, Moon, Sun, Globe, Code, Phone, MessageSquare, Music, Mail, Calendar, Image, Video, Settings, Map, Heart, Wallet, Cloud, Search, Clock } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
 import type { PreviewMode } from '@/types/ide';
 
@@ -9,6 +9,9 @@ export const LivePreview: React.FC = () => {
   const [rotated, setRotated] = useState(false);
   const [isLocked, setIsLocked] = useState(true);
   const [screenOff, setScreenOff] = useState(false);
+  const [showHomeScreen, setShowHomeScreen] = useState(true);
+  const [activeApp, setActiveApp] = useState<string | null>(null);
+  const [browserUrl, setBrowserUrl] = useState('https://www.google.com');
   const [key, setKey] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -17,6 +20,95 @@ export const LivePreview: React.FC = () => {
   const [isUnlocking, setIsUnlocking] = useState(false);
   
   const activeTab = tabs.find(t => t.id === activeTabId);
+
+  // App Icon Component
+  const AppIcon: React.FC<{
+    icon: React.ReactNode;
+    label: string;
+    bgColor: string;
+    iconColor?: string;
+    onClick: () => void;
+  }> = ({ icon, label, bgColor, iconColor, onClick }) => (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '6px',
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '4px',
+        transition: 'all 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+      }}
+    >
+      <div style={{
+        width: '60px',
+        height: '60px',
+        borderRadius: '13px',
+        background: bgColor.includes('gradient') ? bgColor : bgColor,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+      }}>
+        <div style={{ color: iconColor || '#fff' }}>
+          {icon}
+        </div>
+      </div>
+      <span style={{ 
+        fontSize: '10px', 
+        color: '#fff', 
+        fontFamily: 'SF Pro Display, -apple-system, sans-serif',
+        textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+      }}>
+        {label}
+      </span>
+    </button>
+  );
+
+  // Dock Icon Component
+  const DockIcon: React.FC<{
+    icon: React.ReactNode;
+    bgColor: string;
+    onClick?: () => void;
+  }> = ({ icon, bgColor, onClick }) => (
+    <button
+      onClick={onClick}
+      style={{
+        width: '60px',
+        height: '60px',
+        borderRadius: '13px',
+        background: bgColor,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: 'none',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.2s',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+      }}
+      onMouseEnter={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = 'scale(1.15)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = 'scale(1)';
+        }
+      }}
+    >
+      {icon}
+    </button>
+  );
 
   // Handle swipe to unlock for iOS
   const handleSwipeStart = (e: React.TouchEvent | React.MouseEvent) => {
@@ -39,6 +131,7 @@ export const LivePreview: React.FC = () => {
       setSwipeOffset(100);
       setTimeout(() => {
         setIsLocked(false);
+        setShowHomeScreen(true);
         setIsUnlocking(false);
         setSwipeStart(null);
         setSwipeOffset(0);
@@ -495,8 +588,238 @@ ${cssContent}
           </div>
         )}
 
-        {/* Content iframe */}
-        {!isLocked && !screenOff && (
+        {/* iOS Home Screen */}
+        {!isLocked && !screenOff && showHomeScreen && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundImage: 'url(https://i.postimg.cc/zGQQWV9n/wwlp.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: 30,
+            paddingTop: '54px',
+            paddingBottom: '120px',
+            overflowY: 'auto',
+            animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}>
+            {/* Main App Grid - Only Safari, Chrome, SAFECODE */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '20px',
+              padding: '32px 24px 24px',
+              maxWidth: '100%',
+            }}>
+              {/* Safari */}
+              <button
+                onClick={() => {
+                  setActiveApp('safari');
+                  setShowHomeScreen(false);
+                }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '13px',
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(20px) saturate(180%)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                  overflow: 'hidden',
+                }}>
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Safari_browser_logo.svg/500px-Safari_browser_logo.svg.png"
+                    alt="Safari"
+                    style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                  />
+                </div>
+                <span style={{ fontSize: '10px', color: '#fff', fontFamily: 'SF Pro Display, -apple-system, sans-serif', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Safari</span>
+              </button>
+
+              {/* Chrome */}
+              <button
+                onClick={() => {
+                  setActiveApp('chrome');
+                  setShowHomeScreen(false);
+                }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '13px',
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(20px) saturate(180%)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                  overflow: 'hidden',
+                }}>
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/2048px-Google_Chrome_icon_%28February_2022%29.svg.png"
+                    alt="Chrome"
+                    style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                  />
+                </div>
+                <span style={{ fontSize: '10px', color: '#fff', fontFamily: 'SF Pro Display, -apple-system, sans-serif', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Chrome</span>
+              </button>
+
+              {/* SAFECODE */}
+              <button
+                onClick={() => {
+                  setActiveApp('safecode');
+                  setShowHomeScreen(false);
+                }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '13px',
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  backdropFilter: 'blur(20px) saturate(180%)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                  overflow: 'hidden',
+                }}>
+                  <img 
+                    src="/logos (6).png"
+                    alt="SAFECODE"
+                    style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div style="width: 50px; height: 50px; background: #000; display: flex; align-items: center; justify-content: center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M16 18h6M12 18h2M8 18h2M4 18h2M16 6h6M12 6h2M8 6h2M4 6h2"/></svg></div>';
+                      }
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: '10px', color: '#fff', fontFamily: 'SF Pro Display, -apple-system, sans-serif', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>SAFECODE</span>
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              padding: '0 24px 16px',
+            }}>
+              <div style={{
+                width: '100%',
+                maxWidth: '340px',
+                height: '36px',
+                background: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 12px',
+                gap: '8px',
+                border: '0.5px solid rgba(255, 255, 255, 0.2)',
+              }}>
+                <Search className="w-4 h-4" style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)', fontFamily: 'SF Pro Display, -apple-system, sans-serif' }}>Search</span>
+              </div>
+            </div>
+
+            {/* Dock */}
+            <div style={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 'calc(100% - 48px)',
+              maxWidth: '340px',
+              height: '80px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(30px) saturate(180%)',
+              borderRadius: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '32px',
+              padding: '0 20px',
+              border: '0.5px solid rgba(255, 255, 255, 0.2)',
+            }}>
+              <DockIcon icon={<Phone className="w-6 h-6" style={{ color: '#fff' }} />} bgColor="#34C759" />
+              <DockIcon 
+                icon={<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Safari_browser_logo.svg/500px-Safari_browser_logo.svg.png" alt="Safari" style={{ width: '24px', height: '24px' }} />}
+                bgColor="#fff"
+                onClick={() => {
+                  setActiveApp('safari');
+                  setShowHomeScreen(false);
+                }}
+              />
+              <DockIcon icon={<MessageSquare className="w-6 h-6" style={{ color: '#fff' }} />} bgColor="#34C759" />
+              <DockIcon icon={<Music className="w-6 h-6" style={{ color: '#fff' }} />} bgColor="#FF3B30" />
+            </div>
+          </div>
+        )}
+
+        {/* Content iframe - Only show when SAFECODE app is active */}
+        {!isLocked && !screenOff && !showHomeScreen && activeApp === 'safecode' && (
           <iframe
             key={key}
             srcDoc={getPreviewContent()}
@@ -511,6 +834,140 @@ ${cssContent}
               animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           />
+        )}
+
+        {/* Browser for Safari/Chrome - Functional */}
+        {!isLocked && !screenOff && !showHomeScreen && (activeApp === 'safari' || activeApp === 'chrome') && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: '#fff',
+            zIndex: 30,
+            paddingTop: '54px',
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}>
+            <div style={{
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 12px',
+              background: '#f5f5f5',
+              borderBottom: '1px solid #e0e0e0',
+              gap: '8px',
+            }}>
+              <button
+                onClick={() => {
+                  setShowHomeScreen(true);
+                  setActiveApp(null);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <div style={{
+                flex: 1,
+                height: '32px',
+                background: '#fff',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 12px',
+                fontSize: '13px',
+                color: '#333',
+                border: '1px solid #e0e0e0',
+                gap: '8px',
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input
+                  type="text"
+                  value={browserUrl}
+                  onChange={(e) => setBrowserUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const url = e.currentTarget.value;
+                      let finalUrl = url;
+                      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        if (url.includes('.') && !url.includes(' ')) {
+                          finalUrl = 'https://' + url;
+                        } else {
+                          finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+                        }
+                      }
+                      setBrowserUrl(finalUrl);
+                      setKey(k => k + 1);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '13px',
+                    color: '#333',
+                  }}
+                  placeholder="Search or enter website name"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  let finalUrl = browserUrl;
+                  if (!browserUrl.startsWith('http://') && !browserUrl.startsWith('https://')) {
+                    if (browserUrl.includes('.') && !browserUrl.includes(' ')) {
+                      finalUrl = 'https://' + browserUrl;
+                    } else {
+                      finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(browserUrl);
+                    }
+                  }
+                  setBrowserUrl(finalUrl);
+                  setKey(k => k + 1);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+            <iframe
+              key={`browser-${activeApp}-${key}`}
+              src={browserUrl}
+              className="w-full flex-1 border-0"
+              title={activeApp === 'safari' ? 'Safari Browser' : 'Chrome Browser'}
+              style={{
+                width: '100%',
+                flex: 1,
+                border: 'none',
+              }}
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+            />
+          </div>
         )}
       </div>
 
@@ -547,17 +1004,18 @@ ${cssContent}
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      {/* Android 14 - Centered Punch Hole */}
+      {/* Android 14 - Floating Camera (Round) */}
       <div style={{
         position: 'absolute',
-        top: '12px',
+        top: '16px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '32px',
-        height: '20px',
+        width: '24px',
+        height: '24px',
         background: '#000',
-        borderRadius: '0 0 16px 16px',
+        borderRadius: '50%',
         zIndex: 100,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
       }} />
 
       {/* Android Screen */}
@@ -667,6 +1125,7 @@ ${cssContent}
                   setIsUnlocking(true);
                   setTimeout(() => {
                     setIsLocked(false);
+                    setShowHomeScreen(true);
                     setIsUnlocking(false);
                   }, 400);
                 }}
@@ -722,8 +1181,137 @@ ${cssContent}
           </div>
         )}
 
-        {/* Content iframe */}
-        {!isLocked && !screenOff && (
+        {/* Android Home Screen */}
+        {!isLocked && !screenOff && showHomeScreen && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundImage: 'url(https://i.postimg.cc/K82JP2XK/androidwlp.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: 30,
+            paddingTop: '28px',
+            paddingBottom: '80px',
+            overflowY: 'auto',
+            animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '32px',
+              padding: '40px 24px',
+              maxWidth: '100%',
+            }}>
+              {/* Chrome */}
+              <button
+                onClick={() => {
+                  setActiveApp('chrome');
+                  setShowHomeScreen(false);
+                }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '12px',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(20px) saturate(180%)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                  overflow: 'hidden',
+                }}>
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/2048px-Google_Chrome_icon_%28February_2022%29.svg.png"
+                    alt="Chrome"
+                    style={{ width: '46px', height: '46px', objectFit: 'contain' }}
+                  />
+                </div>
+                <span style={{ fontSize: '12px', color: '#fff', fontFamily: 'Roboto, system-ui, sans-serif', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Chrome</span>
+              </button>
+
+              {/* SAFECODE IDE App */}
+              <button
+                onClick={() => {
+                  setActiveApp('safecode');
+                  setShowHomeScreen(false);
+                }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '12px',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '12px',
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  backdropFilter: 'blur(20px) saturate(180%)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                  overflow: 'hidden',
+                }}>
+                  <img 
+                    src="/logos (6).png"
+                    alt="SAFECODE"
+                    style={{ width: '46px', height: '46px', objectFit: 'contain' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div style="width: 46px; height: 46px; background: #000; display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M16 18h6M12 18h2M8 18h2M4 18h2M16 6h6M12 6h2M8 6h2M4 6h2"/></svg></div>';
+                      }
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: '12px', color: '#fff', fontFamily: 'Roboto, system-ui, sans-serif', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>SAFECODE</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Content iframe - Only show when SAFECODE app is active */}
+        {!isLocked && !screenOff && !showHomeScreen && activeApp === 'safecode' && (
           <iframe
             key={key}
             srcDoc={getPreviewContent()}
@@ -732,12 +1320,147 @@ ${cssContent}
             sandbox="allow-scripts"
             style={{
               width: '100%',
-              height: 'calc(100% - 24px)',
+              height: 'calc(100% - 28px)',
               border: 'none',
-              marginTop: '24px',
+              marginTop: '28px',
               animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           />
+        )}
+
+        {/* Browser for Chrome - Functional */}
+        {!isLocked && !screenOff && !showHomeScreen && activeApp === 'chrome' && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: '#fff',
+            zIndex: 30,
+            paddingTop: '28px',
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}>
+            <div style={{
+              height: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 12px',
+              background: '#f5f5f5',
+              borderBottom: '1px solid #e0e0e0',
+              gap: '8px',
+            }}>
+              <button
+                onClick={() => {
+                  setShowHomeScreen(true);
+                  setActiveApp(null);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <div style={{
+                flex: 1,
+                height: '36px',
+                background: '#fff',
+                borderRadius: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 16px',
+                fontSize: '13px',
+                color: '#333',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                border: '1px solid #e0e0e0',
+                gap: '8px',
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input
+                  type="text"
+                  value={browserUrl}
+                  onChange={(e) => setBrowserUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const url = e.currentTarget.value;
+                      let finalUrl = url;
+                      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        if (url.includes('.') && !url.includes(' ')) {
+                          finalUrl = 'https://' + url;
+                        } else {
+                          finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+                        }
+                      }
+                      setBrowserUrl(finalUrl);
+                      setKey(k => k + 1);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '13px',
+                    color: '#333',
+                  }}
+                  placeholder="Search Google or type URL"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  let finalUrl = browserUrl;
+                  if (!browserUrl.startsWith('http://') && !browserUrl.startsWith('https://')) {
+                    if (browserUrl.includes('.') && !browserUrl.includes(' ')) {
+                      finalUrl = 'https://' + browserUrl;
+                    } else {
+                      finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(browserUrl);
+                    }
+                  }
+                  setBrowserUrl(finalUrl);
+                  setKey(k => k + 1);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+            <iframe
+              key={`browser-chrome-${key}`}
+              src={browserUrl}
+              className="w-full flex-1 border-0"
+              title="Chrome Browser"
+              style={{
+                width: '100%',
+                flex: 1,
+                border: 'none',
+              }}
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+            />
+          </div>
         )}
 
         {/* Screen Off Overlay */}
@@ -769,6 +1492,11 @@ ${cssContent}
                 setPreviewMode(mode);
                 if (mode === 'desktop' || mode === 'tablet') {
                   setIsLocked(false);
+                  setShowHomeScreen(false);
+                  setActiveApp('safecode');
+                } else {
+                  setShowHomeScreen(true);
+                  setActiveApp(null);
                 }
               }}
               className={`p-1.5 rounded transition-colors ${
@@ -812,7 +1540,7 @@ ${cssContent}
 
       {/* Preview frame */}
       <div 
-        className="flex-1 flex flex-col items-center justify-center p-4 relative mobile-preview-container" 
+        className="flex-1 flex items-center justify-center p-4 relative mobile-preview-container" 
         style={{ 
           backgroundColor: '#000000',
           overflow: 'auto',
@@ -865,7 +1593,7 @@ ${cssContent}
             className="device-controls-menu"
             style={{
               position: 'absolute',
-              bottom: '20px',
+              bottom: 'clamp(-20px, -2%, -14px)',
               left: '50%',
               transform: 'translateX(-50%)',
               display: 'flex',
