@@ -765,7 +765,7 @@ ${cssContent}
                   overflow: 'hidden',
                 }}>
                   <img 
-                    src="/logos (6).png"
+                    src={getLogoPath()}
                     alt="SAFECODE"
                     style={{ width: '50px', height: '50px', objectFit: 'contain' }}
                     onError={(e) => {
@@ -1324,7 +1324,7 @@ ${cssContent}
                   overflow: 'hidden',
                 }}>
                   <img 
-                    src="/logos (6).png"
+                    src={getLogoPath()}
                     alt="SAFECODE"
                     style={{ width: '46px', height: '46px', objectFit: 'contain' }}
                     onError={(e) => {

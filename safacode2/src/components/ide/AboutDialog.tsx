@@ -15,7 +15,7 @@ export const AboutDialog: React.FC<{ open: boolean; onOpenChange: (open: boolean
         <div className="space-y-4 py-4">
           <div className="flex items-center gap-4">
             <img 
-              src="/logos (6).png" 
+              src={getLogoPath()} 
               alt="SAFECODE" 
               className="w-16 h-16 object-contain"
               onError={(e) => {

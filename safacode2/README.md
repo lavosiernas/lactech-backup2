@@ -59,7 +59,7 @@ npm run preview
 ## Project Structure
 
 ```
-safacode2/
+safecode/
 ├── src/
 │   ├── components/
 │   │   ├── ide/          # IDE-specific components

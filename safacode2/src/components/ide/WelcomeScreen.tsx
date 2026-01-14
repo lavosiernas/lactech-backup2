@@ -2,6 +2,7 @@ import { FolderOpen, Clock, Plus, GitBranch } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
 import { useState, useEffect } from 'react';
 import { useFilePicker } from './FilePicker';
+import { getLogoPath } from '@/lib/assets';
 import { useToast } from '@/components/ui/use-toast';
 import { CloneRepositoryDialog } from './CloneRepositoryDialog';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
@@ -284,7 +285,7 @@ export const WelcomeScreen: React.FC = () => {
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center mb-5">
             <img 
-              src="/logos (6).png" 
+              src={getLogoPath()} 
               alt="SAFECODE IDE" 
               className="w-16 h-16 object-contain"
               onError={(e) => {

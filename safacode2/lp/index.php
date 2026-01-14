@@ -121,19 +121,14 @@
                         <div class="text-xs font-medium text-muted-foreground/60 mb-3 uppercase tracking-wider">
                             Get Started
                         </div>
-                        <div class="rounded-lg border border-border/30 bg-card/50 p-4 font-mono text-sm flex items-center justify-between gap-4 mb-4">
-                            <code class="text-muted-foreground/80 flex-1 text-left text-xs md:text-sm" id="install-command">
-                                irm https://safenode.cloud/safecode/install.ps1 | iex
-                            </code>
-                            <button onclick="copyToClipboard()" class="h-8 px-3 rounded-md hover:bg-muted transition-colors flex items-center gap-2 flex-shrink-0">
-                                <svg id="copy-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
-                                <span id="copy-text" class="hidden sm:inline text-sm">Copy</span>
-                            </button>
-                        </div>
                         <div class="flex flex-wrap items-center gap-3">
-                            <a href="/lp/docs.html" class="h-11 px-6 bg-foreground text-background rounded-md text-sm font-medium hover:bg-foreground/90 transition-colors inline-flex items-center gap-2">
+                            <a href="https://safenode.cloud/safecode" target="_blank" class="h-11 px-6 bg-foreground text-background rounded-md text-sm font-medium hover:bg-foreground/90 transition-colors inline-flex items-center gap-2">
+                                Abrir IDE Online
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </a>
+                            <a href="/lp/docs.html" class="h-11 px-6 border border-border/30 bg-transparent rounded-md text-sm font-medium hover:bg-muted/50 transition-colors inline-flex items-center gap-2">
                                 IDE Documentation
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -339,25 +334,6 @@
     </footer>
 
     <script>
-        // Copy to clipboard functionality
-        function copyToClipboard() {
-            const command = document.getElementById('install-command').textContent;
-            navigator.clipboard.writeText(command.trim()).then(() => {
-                const icon = document.getElementById('copy-icon');
-                const text = document.getElementById('copy-text');
-                
-                // Change to check icon
-                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />';
-                text.textContent = 'Copied';
-                
-                // Reset after 2 seconds
-                setTimeout(() => {
-                    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />';
-                    text.textContent = 'Copy';
-                }, 2000);
-            });
-        }
-
         // FAQ toggle functionality
         function toggleFaq(index) {
             const answer = document.getElementById(`answer-${index}`);

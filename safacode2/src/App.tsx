@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { MobileBlock } from "@/components/MobileBlock";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -11,11 +12,13 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <ErrorBoundary>
+    <MobileBlock />
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter
+          basename="/safecode"
           future={{
             v7_startTransition: true,
             v7_relativeSplatPath: true,

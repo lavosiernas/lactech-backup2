@@ -31,7 +31,7 @@ export const StatusBar: React.FC = () => {
         {/* Logo */}
         <div className="flex items-center gap-1 mr-1">
           <img 
-            src="/logos (6).png" 
+            src={getLogoPath()} 
             alt="SAFECODE" 
             className="w-3 h-3 object-contain opacity-70"
             onError={(e) => {

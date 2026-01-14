@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logos (6).png" />
+    <link rel="icon" type="image/png" href="/safecode/logos%20(6).png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SAFECODE IDE - Modern Code Editor</title>
     <meta name="description" content="SAFECODE IDE - A powerful, modern code editor with syntax highlighting, integrated terminal, live preview, and Git integration." />
@@ -17,7 +17,51 @@
   </head>
 
   <body>
+    <!-- Mobile Block Screen -->
+    <div id="mobile-block" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+      <div style="text-align: center; padding: 2rem; max-width: 500px;">
+        <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 600;">SafeCode IDE</h1>
+        <p style="color: #999; line-height: 1.6; margin-bottom: 1.5rem;">
+          A SafeCode IDE não está disponível para dispositivos móveis.
+        </p>
+        <p style="color: #666; font-size: 0.9rem;">
+          Por favor, acesse de um desktop ou tablet com tela maior.
+        </p>
+      </div>
+    </div>
+    
     <div id="root"></div>
+    <script>
+      // Detectar dispositivos móveis e bloquear acesso
+      (function() {
+        function isMobileDevice() {
+          // Verificar user agent primeiro (mais confiável)
+          const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+          const isMobileUA = mobileRegex.test(navigator.userAgent);
+          
+          // Verificar largura da tela APENAS se for mobile user agent
+          // Desktops podem ter telas pequenas em modo de desenvolvedor
+          if (isMobileUA && window.innerWidth < 768) {
+            return true;
+          }
+          
+          // Se não é mobile user agent, não bloquear (mesmo que tenha touch)
+          if (!isMobileUA) {
+            return false;
+          }
+          
+          // Se é mobile user agent, bloquear independente do tamanho
+          return isMobileUA;
+        }
+        
+        if (isMobileDevice()) {
+          document.getElementById('mobile-block').style.display = 'flex';
+          document.getElementById('root').style.display = 'none';
+          // Prevenir scroll
+          document.body.style.overflow = 'hidden';
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -6,6 +6,7 @@ import {
   Eye
 } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
+import { getLogoPath } from '@/lib/assets';
 import { useToast } from '@/components/ui/use-toast';
 import { useFilePicker } from './FilePicker';
 import { NewFileDialog } from './NewFileDialog';
@@ -521,7 +522,7 @@ export const MenuBar: React.FC = () => {
       {/* Logo */}
       <div className="flex items-center gap-1.5 px-1.5 mr-2">
         <img 
-          src="/logos (6).png" 
+          src={getLogoPath()}
           alt="SAFECODE" 
           className="w-3.5 h-3.5 object-contain"
           onError={(e) => {
