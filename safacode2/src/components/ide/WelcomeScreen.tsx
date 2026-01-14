@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useFilePicker } from './FilePicker';
 import { useToast } from '@/components/ui/use-toast';
 import { CloneRepositoryDialog } from './CloneRepositoryDialog';
+import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
+import { SettingsDialog } from './SettingsDialog';
 
 interface RecentProject {
   name: string;
@@ -23,6 +25,8 @@ export const WelcomeScreen: React.FC = () => {
   const { toast } = useToast();
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
+  const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
 
   // Load recent projects from localStorage
   useEffect(() => {
@@ -375,14 +379,24 @@ export const WelcomeScreen: React.FC = () => {
 
         {/* Footer links */}
         <div className="mt-10 pt-4 border-t border-panel-border flex justify-center gap-4">
-          {['Documentation', 'Keyboard Shortcuts', 'Settings'].map((link) => (
-            <button
-              key={link}
-              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link}
-            </button>
-          ))}
+          <button
+            onClick={() => window.open('/landing/docs.html', '_blank')}
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Documentation
+          </button>
+          <button
+            onClick={() => setShortcutsDialogOpen(true)}
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Keyboard Shortcuts
+          </button>
+          <button
+            onClick={() => setSettingsDialogOpen(true)}
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Settings
+          </button>
         </div>
 
         {/* Version */}
@@ -396,6 +410,18 @@ export const WelcomeScreen: React.FC = () => {
         open={cloneDialogOpen}
         onOpenChange={setCloneDialogOpen}
         onConfirm={handleCloneRepository}
+      />
+      
+      {/* Keyboard Shortcuts Dialog */}
+      <KeyboardShortcutsDialog
+        open={shortcutsDialogOpen}
+        onOpenChange={setShortcutsDialogOpen}
+      />
+      
+      {/* Settings Dialog */}
+      <SettingsDialog
+        open={settingsDialogOpen}
+        onOpenChange={setSettingsDialogOpen}
       />
     </div>
   );

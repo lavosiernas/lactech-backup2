@@ -5,7 +5,7 @@ import { useIDEStore } from '@/stores/ideStore';
 type MonacoEditor = Parameters<OnMount>[0];
 
 export const CodeEditor: React.FC = () => {
-  const { tabs, activeTabId, updateTabContent, updateCursorPosition, saveTab, settings } = useIDEStore();
+  const { tabs, activeTabId, updateTabContent, updateCursorPosition, saveTab, settings, addProblem, removeProblem } = useIDEStore();
   const editorRef = useRef<MonacoEditor | null>(null);
   
   const activeTab = tabs.find(t => t.id === activeTabId);
@@ -78,6 +78,52 @@ export const CodeEditor: React.FC = () => {
     
     // Store monaco instance for theme updates
     (window as any).monacoInstance = monaco;
+    
+    // Listen for markers (errors/warnings) changes
+    const updateProblems = () => {
+      if (!activeTabId || !activeTab) return;
+      
+      const model = editor.getModel();
+      if (!model) return;
+      
+      const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+      const fileName = activeTab.name;
+      
+      // Remove existing problems for this file
+      const { problems, removeProblem } = useIDEStore.getState();
+      problems
+        .filter(p => p.file === fileName)
+        .forEach(p => removeProblem(p.id));
+      
+      // Add new problems
+      markers.forEach(marker => {
+        const severity = marker.severity;
+        const type = severity === monaco.MarkerSeverity.Error ? 'error' :
+                     severity === monaco.MarkerSeverity.Warning ? 'warning' : 'info';
+        
+        addProblem({
+          type,
+          message: marker.message,
+          file: fileName,
+          line: marker.startLineNumber,
+          column: marker.startColumn,
+          source: marker.source || 'TypeScript'
+        });
+      });
+    };
+    
+    // Update problems when markers change
+    const disposable = monaco.editor.onDidChangeMarkers(() => {
+      updateProblems();
+    });
+    
+    // Initial update
+    setTimeout(updateProblems, 500);
+    
+    // Cleanup
+    return () => {
+      disposable.dispose();
+    };
   };
   
   // Update theme when syntax colors change

@@ -67,6 +67,53 @@ interface IDEState {
   // Find/Replace
   findReplaceOpen: boolean;
   toggleFindReplace: () => void;
+  
+  // Problems
+  problems: Array<{
+    id: string;
+    type: 'error' | 'warning' | 'info';
+    message: string;
+    file?: string;
+    line?: number;
+    column?: number;
+    source?: string;
+  }>;
+  addProblem: (problem: {
+    type: 'error' | 'warning' | 'info';
+    message: string;
+    file?: string;
+    line?: number;
+    column?: number;
+    source?: string;
+  }) => void;
+  removeProblem: (id: string) => void;
+  clearProblems: () => void;
+  
+  // Notifications
+  notifications: Array<{
+    id: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message?: string;
+    timestamp: Date;
+    read: boolean;
+    action?: {
+      label: string;
+      onClick: () => void;
+    };
+  }>;
+  addNotification: (notification: {
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message?: string;
+    action?: {
+      label: string;
+      onClick: () => void;
+    };
+  }) => void;
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
+  clearNotifications: () => void;
 }
 
 const defaultFiles: FileNode[] = [
@@ -577,7 +624,40 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   
   // Find/Replace
   findReplaceOpen: false,
-  toggleFindReplace: () => set((state) => ({ findReplaceOpen: !state.findReplaceOpen }))
+  toggleFindReplace: () => set((state) => ({ findReplaceOpen: !state.findReplaceOpen })),
+  
+  // Problems
+  problems: [],
+  addProblem: (problem) => set((state) => ({
+    problems: [...state.problems, {
+      ...problem,
+      id: `problem-${Date.now()}-${Math.random()}`,
+    }]
+  })),
+  removeProblem: (id) => set((state) => ({
+    problems: state.problems.filter(p => p.id !== id)
+  })),
+  clearProblems: () => set({ problems: [] }),
+  
+  // Notifications
+  notifications: [],
+  addNotification: (notification) => set((state) => ({
+    notifications: [{
+      ...notification,
+      id: `notification-${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      read: false,
+    }, ...state.notifications].slice(0, 50) // Keep last 50 notifications
+  })),
+  markNotificationAsRead: (id) => set((state) => ({
+    notifications: state.notifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    )
+  })),
+  markAllNotificationsAsRead: () => set((state) => ({
+    notifications: state.notifications.map(n => ({ ...n, read: true }))
+  })),
+  clearNotifications: () => set({ notifications: [] }),
 }));
 
 function toggleFolderRecursive(nodes: FileNode[], path: string): FileNode[] {

@@ -1,10 +1,29 @@
+import { useState } from 'react';
 import { GitBranch, AlertCircle, Bell, Check } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
+import { ProblemsPanel } from './ProblemsPanel';
+import { NotificationsPanel } from './NotificationsPanel';
 
 export const StatusBar: React.FC = () => {
-  const { tabs, activeTabId, gitStatus } = useIDEStore();
+  const { 
+    tabs, 
+    activeTabId, 
+    gitStatus,
+    problems,
+    notifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    clearNotifications
+  } = useIDEStore();
+  
+  const [problemsOpen, setProblemsOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   
   const activeTab = tabs.find(t => t.id === activeTabId);
+  
+  const errors = problems.filter(p => p.type === 'error').length;
+  const warnings = problems.filter(p => p.type === 'warning').length;
+  const unreadNotifications = notifications.filter(n => !n.read).length;
 
   return (
     <div className="status-bar">
@@ -33,12 +52,15 @@ export const StatusBar: React.FC = () => {
         )}
 
         {/* Problems */}
-        <div className="flex items-center gap-1 hover:bg-muted px-1.5 py-0.5 cursor-pointer transition-all rounded group">
+        <button
+          onClick={() => setProblemsOpen(true)}
+          className="flex items-center gap-1 hover:bg-muted px-1.5 py-0.5 cursor-pointer transition-all rounded group"
+        >
           <AlertCircle className="w-3 h-3 transition-transform group-hover:scale-110" />
-          <span className="text-[10px]">0</span>
+          <span className="text-[10px]">{errors}</span>
           <span className="mx-0.5 text-[10px]">⚠</span>
-          <span className="text-[10px]">0</span>
-        </div>
+          <span className="text-[10px]">{warnings}</span>
+        </button>
       </div>
 
       <div className="flex items-center gap-2">
@@ -62,8 +84,14 @@ export const StatusBar: React.FC = () => {
         </span>
 
         {/* Notifications */}
-        <button className="flex items-center gap-0.5 hover:bg-muted px-1.5 py-0.5 transition-colors rounded">
+        <button
+          onClick={() => setNotificationsOpen(true)}
+          className="flex items-center gap-0.5 hover:bg-muted px-1.5 py-0.5 transition-colors rounded relative"
+        >
           <Bell className="w-3 h-3" />
+          {unreadNotifications > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-primary rounded-full" />
+          )}
         </button>
 
         {/* Sync status */}
@@ -71,6 +99,23 @@ export const StatusBar: React.FC = () => {
           <Check className="w-3 h-3" />
         </div>
       </div>
+
+      {/* Problems Panel */}
+      <ProblemsPanel
+        open={problemsOpen}
+        onOpenChange={setProblemsOpen}
+        problems={problems}
+      />
+
+      {/* Notifications Panel */}
+      <NotificationsPanel
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+        notifications={notifications}
+        onMarkAsRead={markNotificationAsRead}
+        onMarkAllAsRead={markAllNotificationsAsRead}
+        onClear={clearNotifications}
+      />
     </div>
   );
 };

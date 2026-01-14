@@ -7,7 +7,7 @@
     <title>SafeCode IDE | Professional Monochrome Development</title>
     <meta name="description"
         content="A professional, high-performance IDE built for speed and aesthetics. Monochrome by design, powerful by nature. Hosted on SafeNode Cloud.">
-    <link rel="icon" type="image/png" href="../assets/img/logos%20(6).png">
+    <link rel="icon" type="image/png" href="/logos (6).png">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
         rel="stylesheet">
@@ -20,7 +20,7 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <img src="../assets/img/logos%20(6).png" alt="SafeCode Logo">
+                <img src="/logos (6).png" alt="SafeCode Logo">
                 <span>SafeCode</span>
             </div>
             <div class="nav-links">
@@ -42,10 +42,24 @@
                 <span class="badge">Version 1.0.0 is out</span>
                 <h1>Code at the speed <br> of <span class="gradient-text">thought.</span></h1>
                 <p>A professional, high-performance IDE built for speed and aesthetics. Monochrome by design, powerful
-                    by nature.</p>
+                    by nature. Built with React, TypeScript, and Monaco Editor for the ultimate development experience.</p>
                 <div class="hero-actions">
                     <a href="#install" class="btn-primary">Get Started</a>
                     <a href="docs.html" class="btn-secondary">Read Documentation</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="stat-value">100+</span>
+                        <span class="stat-label">Languages</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="stat-value">10ms</span>
+                        <span class="stat-label">Startup</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="stat-value">Open</span>
+                        <span class="stat-label">Source</span>
+                    </div>
                 </div>
             </div>
             <div class="hero-visual">
@@ -119,6 +133,16 @@
                     <i data-lucide="puzzle"></i>
                     <h3>Extensions</h3>
                     <p>A flexible extension system that allows you to customize and expand the IDE to your needs.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="smartphone"></i>
+                    <h3>Live Preview</h3>
+                    <p>Preview your code in real-time with iOS and Android device frames, complete with lock screens and home screens.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="palette"></i>
+                    <h3>Custom Themes</h3>
+                    <p>Install themes from the extension marketplace and customize syntax highlighting colors to your preference.</p>
                 </div>
             </div>
         </div>
@@ -201,6 +225,62 @@
                     <i data-lucide="git-merge"></i>
                     <h3>Git Workflow</h3>
                     <p>Stage, commit, and push without leaving your editor</p>
+                </div>
+                <div class="extended-card">
+                    <i data-lucide="smartphone"></i>
+                    <h3>Live Preview</h3>
+                    <p>Preview your code in real-time with desktop, tablet, and mobile device frames</p>
+                </div>
+                <div class="extended-card">
+                    <i data-lucide="palette"></i>
+                    <h3>Custom Themes</h3>
+                    <p>Install and use themes from the extension marketplace</p>
+                </div>
+                <div class="extended-card">
+                    <i data-lucide="code"></i>
+                    <h3>Syntax Highlighting</h3>
+                    <p>Customize syntax colors to match your preferences</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech" class="tech-stack">
+        <div class="container">
+            <div class="section-title">
+                <h2>Built with Modern Technology</h2>
+                <p>Powered by the best tools in the industry</p>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-icon">⚛️</div>
+                    <h3>React</h3>
+                    <p>Modern UI framework for responsive interfaces</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">📝</div>
+                    <h3>Monaco Editor</h3>
+                    <p>VS Code's powerful editor engine</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">⚡</div>
+                    <h3>Vite</h3>
+                    <p>Lightning-fast build tool and dev server</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">💻</div>
+                    <h3>TypeScript</h3>
+                    <p>Type-safe development experience</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">🎨</div>
+                    <h3>Tailwind CSS</h3>
+                    <p>Utility-first CSS framework</p>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">🔌</div>
+                    <h3>Open VSX</h3>
+                    <p>Extension marketplace integration</p>
                 </div>
             </div>
         </div>
@@ -291,16 +371,19 @@
                 <div class="command-box">
                     <div class="command-line">
                         <code
-                            id="installCommand">powershell -ExecutionPolicy ByPass -c "irm https://safenode.cloud/safecode/install.ps1 | iex"</code>
+                            id="installCommand">irm https://safenode.cloud/safecode/install.ps1 | iex</code>
                         <button class="btn-copy" id="copyBtn" title="Copy to clipboard">
                             <i data-lucide="copy" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
+                <div class="install-info">
+                    <p class="install-note">💡 <strong>Note:</strong> Open PowerShell as Administrator, then paste and run the command above.</p>
+                </div>
                 <div class="requirements">
-                    <span><i data-lucide="check" class="w-4 h-4"></i> Node.js 16+</span>
+                    <span><i data-lucide="check" class="w-4 h-4"></i> Node.js 18+</span>
                     <span><i data-lucide="check" class="w-4 h-4"></i> Git</span>
-                    <span><i data-lucide="check" class="w-4 h-4"></i> Electron</span>
+                    <span><i data-lucide="check" class="w-4 h-4"></i> npm</span>
                 </div>
             </div>
         </div>
@@ -309,7 +392,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-left">
-                <img src="../assets/img/logos%20(6).png" alt="SafeCode">
+                <img src="/logos (6).png" alt="SafeCode">
                 <p>&copy; 2026 SafeNode Group. Licensed under MIT.</p>
             </div>
             <div class="footer-right">

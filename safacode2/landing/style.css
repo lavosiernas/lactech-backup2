@@ -187,6 +187,35 @@ body {
 .hero-actions {
     display: flex;
     gap: 1rem;
+    margin-top: 2rem;
+}
+
+.hero-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+}
+
+.hero-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .btn-primary {
@@ -329,11 +358,34 @@ pre code {
 .feature-card {
     padding: 3rem;
     background: var(--bg);
-    transition: background 0.2s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover::before {
+    transform: scaleX(1);
 }
 
 .feature-card:hover {
     background: #0f0f0f;
+    border-color: var(--text-dim);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .feature-card i {
@@ -462,11 +514,34 @@ pre code {
     padding: 2rem;
     border: 1px solid var(--line);
     border-radius: 8px;
-    transition: border-color 0.2s ease;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+    position: relative;
+    overflow: hidden;
+}
+
+.extended-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.extended-card:hover::before {
+    transform: scaleX(1);
 }
 
 .extended-card:hover {
+    background: rgba(255, 255, 255, 0.04);
     border-color: var(--text-dim);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .extended-card i {
@@ -647,18 +722,84 @@ pre code {
     color: var(--accent);
 }
 
+.install-info {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+}
+
+.install-note {
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.install-note strong {
+    color: var(--text);
+}
+
 .requirements {
     display: flex;
     justify-content: center;
     gap: 2rem;
     color: var(--text-dim);
     font-size: 0.875rem;
+    margin-top: 1.5rem;
 }
 
 .requirements span {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Tech Stack Section */
+.tech-stack {
+    padding: 6rem 0;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.tech-item {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.tech-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--text-dim);
+    transform: translateY(-4px);
+}
+
+.tech-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.tech-item h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.tech-item p {
+    font-size: 0.875rem;
+    color: var(--text-dim);
+    line-height: 1.6;
 }
 
 /* Footer - Minimal */
