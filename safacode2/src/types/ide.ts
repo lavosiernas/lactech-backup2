@@ -39,6 +39,17 @@ export interface GitStatus {
   untracked: string[];
 }
 
+export interface SyntaxColors {
+  comment: string;
+  keyword: string;
+  string: string;
+  number: string;
+  type: string;
+  function: string;
+  variable: string;
+  operator: string;
+}
+
 export interface IDESettings {
   fontSize: number;
   tabSize: number;
@@ -46,6 +57,7 @@ export interface IDESettings {
   autoSave: boolean;
   wordWrap: boolean;
   minimap: boolean;
+  syntaxColors?: SyntaxColors;
 }
 
 export interface Command {

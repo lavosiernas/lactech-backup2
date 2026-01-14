@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeCode Documentation | Complete Guide</title>
-    <link rel="icon" type="image/png" href="../assets/img/logos%20(6).png">
+    <link rel="icon" type="image/png" href="/logos (6).png">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
         rel="stylesheet">
@@ -17,13 +17,19 @@
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <img src="../assets/img/logos%20(6).png" alt="SafeCode Logo">
-                <span>SafeCode Docs</span>
+                <img src="/logos (6).png" alt="SafeCode Logo">
+                <span data-i18n="nav.title">SafeCode Docs</span>
             </div>
             <div class="nav-links">
-                <a href="index.html">Home</a>
+                <a href="index.html" data-i18n="nav.home">Home</a>
+                <div class="language-selector">
+                    <button id="langToggle" class="lang-btn" title="Switch Language">
+                        <i data-lucide="languages" class="w-4 h-4"></i>
+                        <span id="langText">EN</span>
+                    </button>
+                </div>
                 <a href="https://github.com/safenode/safecode" target="_blank" class="btn-github">
-                    <i data-lucide="github" class="w-4 h-4"></i> GitHub
+                    <i data-lucide="github" class="w-4 h-4"></i> <span data-i18n="nav.github">GitHub</span>
                 </a>
             </div>
         </div>
@@ -33,165 +39,164 @@
         <aside class="sidebar">
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <h3>Getting Started</h3>
-                    <a href="#introduction" class="active">Introduction</a>
-                    <a href="#installation">Installation</a>
-                    <a href="#quick-start">Quick Start</a>
+                    <h3 data-i18n="nav.gettingStarted">Getting Started</h3>
+                    <a href="#introduction" class="active" data-i18n="nav.introduction">Introduction</a>
+                    <a href="#installation" data-i18n="nav.installation">Installation</a>
+                    <a href="#quick-start" data-i18n="nav.quickStart">Quick Start</a>
                 </div>
                 <div class="nav-section">
-                    <h3>Features</h3>
-                    <a href="#editor">Editor</a>
-                    <a href="#terminal">Terminal</a>
-                    <a href="#git">Git Integration</a>
-                    <a href="#extensions">Extensions</a>
+                    <h3 data-i18n="nav.features">Features</h3>
+                    <a href="#editor" data-i18n="nav.editor">Editor</a>
+                    <a href="#terminal" data-i18n="nav.terminal">Terminal</a>
+                    <a href="#git" data-i18n="nav.git">Git Integration</a>
+                    <a href="#live-preview" data-i18n="nav.livePreview">Live Preview</a>
                 </div>
                 <div class="nav-section">
-                    <h3>Configuration</h3>
-                    <a href="#settings">Settings</a>
-                    <a href="#themes">Themes</a>
-                    <a href="#shortcuts">Keyboard Shortcuts</a>
+                    <h3 data-i18n="nav.configuration">Configuration</h3>
+                    <a href="#settings" data-i18n="nav.settings">Settings</a>
+                    <a href="#themes" data-i18n="nav.themes">Themes</a>
+                    <a href="#shortcuts" data-i18n="nav.shortcuts">Keyboard Shortcuts</a>
                 </div>
                 <div class="nav-section">
-                    <h3>Development</h3>
-                    <a href="#extension-api">Extension API</a>
-                    <a href="#contributing">Contributing</a>
+                    <h3 data-i18n="nav.development">Development</h3>
+                    <a href="#contributing" data-i18n="nav.contributing">Contributing</a>
                 </div>
             </nav>
         </aside>
 
         <main class="docs-content">
             <section id="introduction">
-                <h1>Introduction</h1>
-                <p>SafeCode is a professional, high-performance IDE built for speed and aesthetics. With a monochrome
-                    design philosophy and native performance, it provides everything you need for modern development
-                    without the bloat.</p>
+                <h1 data-i18n="intro.title">Introduction</h1>
+                <p data-i18n="intro.description">SafeCode is a modern, web-based IDE built with React, TypeScript, and Vite. With a minimalist design philosophy and powerful features, it provides everything you need for modern web and mobile development without the bloat.</p>
 
                 <div class="info-box">
                     <i data-lucide="info"></i>
                     <div>
-                        <strong>Version 1.0.0</strong>
-                        <p>This documentation covers SafeCode version 1.0.0 and above.</p>
+                        <strong data-i18n="intro.version">Version 2.0.0</strong>
+                        <p data-i18n="intro.versionNote">This documentation covers SafeCode version 2.0.0 and above.</p>
                     </div>
                 </div>
 
-                <h2>Why SafeCode?</h2>
+                <h2 data-i18n="intro.whyTitle">Why SafeCode?</h2>
                 <ul>
-                    <li><strong>Minimalist Design</strong> - Clean, distraction-free interface that puts your code first
-                    </li>
-                    <li><strong>Native Performance</strong> - Built with Electron for fast, responsive editing</li>
-                    <li><strong>Monaco Editor</strong> - Industry-standard editor with IntelliSense and syntax
-                        highlighting</li>
-                    <li><strong>Extensible</strong> - Comprehensive API for building custom extensions</li>
+                    <li><strong data-i18n="intro.minimalist">Minimalist Design</strong> - <span data-i18n="intro.minimalistDesc">Clean, distraction-free interface that puts your code first</span></li>
+                    <li><strong data-i18n="intro.modern">Modern Stack</strong> - <span data-i18n="intro.modernDesc">Built with React, TypeScript, and Vite for fast, responsive editing</span></li>
+                    <li><strong data-i18n="intro.monaco">Monaco Editor</strong> - <span data-i18n="intro.monacoDesc">Industry-standard editor with IntelliSense and syntax highlighting</span></li>
+                    <li><strong data-i18n="intro.livePreview">Live Preview</strong> - <span data-i18n="intro.livePreviewDesc">Real-time preview with iOS and Android device simulation</span></li>
+                    <li><strong data-i18n="intro.webBased">Web-Based</strong> - <span data-i18n="intro.webBasedDesc">Runs entirely in the browser, no installation required</span></li>
                 </ul>
             </section>
 
             <section id="installation">
-                <h1>Installation</h1>
-                <p>SafeCode can be installed on Windows, macOS, and Linux. Choose your platform below:</p>
+                <h1 data-i18n="install.title">Installation</h1>
+                <p data-i18n="install.description">SafeCode runs entirely in the browser. Simply clone the repository and start the development server.</p>
 
-                <h2>Windows</h2>
-                <p>Install SafeCode using PowerShell:</p>
+                <h2 data-i18n="install.cloneTitle">Clone Repository</h2>
                 <div class="code-block">
-                    <code>powershell -ExecutionPolicy ByPass -c "irm https://safenode.cloud/safecode/install.ps1 | iex"</code>
+                    <code>git clone https://github.com/safenode/safecode.git
+cd safecode/safacode2</code>
                 </div>
 
-                <h2>macOS / Linux</h2>
-                <p>Install using the install script:</p>
+                <h2 data-i18n="install.installTitle">Install Dependencies</h2>
                 <div class="code-block">
-                    <code>curl -fsSL https://safenode.cloud/safecode/install.sh | bash</code>
+                    <code>npm install</code>
                 </div>
 
-                <h2>Requirements</h2>
+                <h2 data-i18n="install.runTitle">Run Development Server</h2>
+                <div class="code-block">
+                    <code>npm run dev</code>
+                </div>
+
+                <h2 data-i18n="install.requirements">Requirements</h2>
                 <ul>
-                    <li>Node.js 16 or higher</li>
-                    <li>Git (for version control features)</li>
-                    <li>Electron (installed automatically)</li>
+                    <li data-i18n="install.nodejs">Node.js 18 or higher</li>
+                    <li data-i18n="install.npm">npm or yarn</li>
+                    <li data-i18n="install.git">Git (for version control features)</li>
                 </ul>
 
                 <div class="info-box warning">
                     <i data-lucide="alert-triangle"></i>
                     <div>
-                        <strong>Note</strong>
-                        <p>Make sure you have Node.js installed before running the installation command.</p>
+                        <strong data-i18n="install.note">Note</strong>
+                        <p data-i18n="install.noteDesc">Make sure you have Node.js installed before running the installation commands.</p>
                     </div>
                 </div>
             </section>
 
             <section id="quick-start">
-                <h1>Quick Start</h1>
-                <p>Get up and running with SafeCode in minutes.</p>
+                <h1 data-i18n="quick.title">Quick Start</h1>
+                <p data-i18n="quick.description">Get up and running with SafeCode in minutes.</p>
 
-                <h2>1. Launch SafeCode</h2>
-                <p>After installation, launch SafeCode from your applications menu or command line:</p>
+                <h2 data-i18n="quick.launchTitle">1. Launch SafeCode</h2>
+                <p data-i18n="quick.launchDesc">After starting the development server, open your browser and navigate to:</p>
                 <div class="code-block">
-                    <code>safecode</code>
+                    <code>http://localhost:8080</code>
                 </div>
 
-                <h2>2. Open a Project</h2>
-                <p>Open a folder or create a new file:</p>
+                <h2 data-i18n="quick.openTitle">2. Open a Project</h2>
+                <p data-i18n="quick.openDesc">Open a folder or create a new file:</p>
                 <ul>
-                    <li><kbd>Ctrl+O</kbd> - Open folder</li>
-                    <li><kbd>Ctrl+N</kbd> - New file</li>
+                    <li><kbd>Ctrl+Shift+O</kbd> - <span data-i18n="quick.openFolder">Open folder</span></li>
+                    <li><kbd>Ctrl+N</kbd> - <span data-i18n="quick.newFile">New file</span></li>
                 </ul>
 
-                <h2>3. Start Coding</h2>
-                <p>SafeCode provides IntelliSense, syntax highlighting, and code completion out of the box for 100+
-                    languages.</p>
+                <h2 data-i18n="quick.codeTitle">3. Start Coding</h2>
+                <p data-i18n="quick.codeDesc">SafeCode provides IntelliSense, syntax highlighting, and code completion out of the box for 100+ languages.</p>
             </section>
 
             <section id="editor">
-                <h1>Editor</h1>
-                <p>The SafeCode editor is powered by Monaco, the same editor that powers VS Code.</p>
+                <h1 data-i18n="editor.title">Editor</h1>
+                <p data-i18n="editor.description">The SafeCode editor is powered by Monaco, the same editor that powers VS Code.</p>
 
-                <h2>Features</h2>
+                <h2 data-i18n="editor.features">Features</h2>
                 <ul>
-                    <li><strong>IntelliSense</strong> - Intelligent code completion</li>
-                    <li><strong>Syntax Highlighting</strong> - Support for 100+ languages</li>
-                    <li><strong>Multi-cursor Editing</strong> - Edit multiple locations simultaneously</li>
-                    <li><strong>Code Folding</strong> - Collapse code blocks for better readability</li>
-                    <li><strong>Find and Replace</strong> - Powerful search with regex support</li>
+                    <li><strong data-i18n="editor.intellisense">IntelliSense</strong> - <span data-i18n="editor.intellisenseDesc">Intelligent code completion</span></li>
+                    <li><strong data-i18n="editor.syntax">Syntax Highlighting</strong> - <span data-i18n="editor.syntaxDesc">Support for 100+ languages</span></li>
+                    <li><strong data-i18n="editor.multicursor">Multi-cursor Editing</strong> - <span data-i18n="editor.multicursorDesc">Edit multiple locations simultaneously</span></li>
+                    <li><strong data-i18n="editor.folding">Code Folding</strong> - <span data-i18n="editor.foldingDesc">Collapse code blocks for better readability</span></li>
+                    <li><strong data-i18n="editor.find">Find and Replace</strong> - <span data-i18n="editor.findDesc">Powerful search with regex support</span></li>
                 </ul>
 
-                <h2>Split View</h2>
-                <p>Work with multiple files side by side:</p>
+                <h2 data-i18n="editor.splitTitle">Split View</h2>
+                <p data-i18n="editor.splitDesc">Work with multiple files side by side:</p>
                 <ul>
-                    <li><kbd>Ctrl+\\</kbd> - Split editor vertically</li>
-                    <li><kbd>Ctrl+K Ctrl+\\</kbd> - Split editor horizontally</li>
+                    <li><kbd>Ctrl+\\</kbd> - <span data-i18n="editor.splitVertical">Split editor vertically</span></li>
+                    <li><kbd>Ctrl+K Ctrl+\\</kbd> - <span data-i18n="editor.splitHorizontal">Split editor horizontally</span></li>
                 </ul>
             </section>
 
             <section id="terminal">
-                <h1>Terminal</h1>
-                <p>SafeCode includes an integrated terminal with PTY support and custom themes.</p>
+                <h1 data-i18n="terminal.title">Terminal</h1>
+                <p data-i18n="terminal.description">SafeCode includes an integrated terminal powered by xterm.js.</p>
 
-                <h2>Opening the Terminal</h2>
+                <h2 data-i18n="terminal.opening">Opening the Terminal</h2>
                 <ul>
-                    <li><kbd>Ctrl+`</kbd> - Toggle terminal</li>
-                    <li><kbd>Ctrl+Shift+`</kbd> - Create new terminal</li>
+                    <li><kbd>Ctrl+`</kbd> - <span data-i18n="terminal.toggle">Toggle terminal</span></li>
+                    <li><kbd>Ctrl+Shift+`</kbd> - <span data-i18n="terminal.new">Create new terminal</span></li>
                 </ul>
 
-                <h2>Features</h2>
+                <h2 data-i18n="terminal.features">Features</h2>
                 <ul>
-                    <li>Multiple terminal instances</li>
-                    <li>Split terminal view</li>
-                    <li>Custom shell integration</li>
-                    <li>Monochrome theme matching the editor</li>
+                    <li data-i18n="terminal.multiple">Multiple terminal instances</li>
+                    <li data-i18n="terminal.split">Split terminal view</li>
+                    <li data-i18n="terminal.custom">Custom shell integration</li>
+                    <li data-i18n="terminal.theme">Monochrome theme matching the editor</li>
                 </ul>
             </section>
 
             <section id="git">
-                <h1>Git Integration</h1>
-                <p>SafeCode provides built-in Git support for version control.</p>
+                <h1 data-i18n="git.title">Git Integration</h1>
+                <p data-i18n="git.description">SafeCode provides built-in Git support for version control.</p>
 
-                <h2>Features</h2>
+                <h2 data-i18n="git.features">Features</h2>
                 <ul>
-                    <li><strong>Visual Diff</strong> - See changes inline in the editor</li>
-                    <li><strong>Commit Management</strong> - Stage and commit changes</li>
-                    <li><strong>Branch Management</strong> - Create, switch, and merge branches</li>
-                    <li><strong>Conflict Resolution</strong> - Visual merge conflict resolution</li>
+                    <li><strong data-i18n="git.visual">Visual Diff</strong> - <span data-i18n="git.visualDesc">See changes inline in the editor</span></li>
+                    <li><strong data-i18n="git.commit">Commit Management</strong> - <span data-i18n="git.commitDesc">Stage and commit changes</span></li>
+                    <li><strong data-i18n="git.branch">Branch Management</strong> - <span data-i18n="git.branchDesc">Create, switch, and merge branches</span></li>
+                    <li><strong data-i18n="git.clone">Clone Repository</strong> - <span data-i18n="git.cloneDesc">Clone repositories directly from the IDE</span></li>
                 </ul>
 
-                <h2>Common Operations</h2>
+                <h2 data-i18n="git.common">Common Operations</h2>
                 <div class="code-block">
                     <code># Stage all changes
 git add .
@@ -204,34 +209,33 @@ git push origin main</code>
                 </div>
             </section>
 
-            <section id="extensions">
-                <h1>Extensions</h1>
-                <p>Extend SafeCode's functionality with custom extensions.</p>
+            <section id="live-preview">
+                <h1 data-i18n="preview.title">Live Preview</h1>
+                <p data-i18n="preview.description">SafeCode features an advanced live preview system with iOS and Android device simulation.</p>
 
-                <h2>Installing Extensions</h2>
-                <p>Extensions are installed in the <code>extensions</code> directory:</p>
-                <div class="code-block">
-                    <code>~/.safecode/extensions/</code>
-                </div>
-
-                <h2>Popular Extensions</h2>
+                <h2 data-i18n="preview.features">Features</h2>
                 <ul>
-                    <li><strong>Core Intelligence</strong> - AI-powered code completion</li>
-                    <li><strong>Theme Pack</strong> - Additional color themes</li>
-                    <li><strong>Snippets</strong> - Code snippet library</li>
+                    <li><strong data-i18n="preview.devices">Device Simulation</strong> - <span data-i18n="preview.devicesDesc">Preview your code on iOS and Android devices with realistic lock screens and home screens</span></li>
+                    <li><strong data-i18n="preview.realtime">Real-time Updates</strong> - <span data-i18n="preview.realtimeDesc">See your changes instantly as you code</span></li>
+                    <li><strong data-i18n="preview.browsers">Browser Integration</strong> - <span data-i18n="preview.browsersDesc">Test with Safari (iOS) and Chrome (Android) browsers</span></li>
+                    <li><strong data-i18n="preview.controls">Device Controls</strong> - <span data-i18n="preview.controlsDesc">Rotate, lock, power, and navigate between screens</span></li>
+                    <li><strong data-i18n="preview.modes">Multiple Modes</strong> - <span data-i18n="preview.modesDesc">Desktop, tablet, and mobile preview modes</span></li>
                 </ul>
+
+                <h2 data-i18n="preview.usage">Usage</h2>
+                <p data-i18n="preview.usageDesc">Open the Live Preview panel and select your preferred device mode. The preview updates automatically as you edit your code.</p>
             </section>
 
             <section id="settings">
-                <h1>Settings</h1>
-                <p>Customize SafeCode to match your workflow.</p>
+                <h1 data-i18n="settings.title">Settings</h1>
+                <p data-i18n="settings.description">Customize SafeCode to match your workflow.</p>
 
-                <h2>Accessing Settings</h2>
+                <h2 data-i18n="settings.accessing">Accessing Settings</h2>
                 <ul>
-                    <li><kbd>Ctrl+,</kbd> - Open settings</li>
+                    <li><kbd>Ctrl+,</kbd> - <span data-i18n="settings.open">Open settings</span></li>
                 </ul>
 
-                <h2>Common Settings</h2>
+                <h2 data-i18n="settings.common">Common Settings</h2>
                 <div class="code-block">
                     <code>{
   "editor.fontSize": 14,
@@ -244,125 +248,85 @@ git push origin main</code>
             </section>
 
             <section id="themes">
-                <h1>Themes</h1>
-                <p>SafeCode comes with a carefully crafted monochrome theme system.</p>
+                <h1 data-i18n="themes.title">Themes</h1>
+                <p data-i18n="themes.description">SafeCode comes with a carefully crafted monochrome theme system.</p>
 
-                <h2>Available Themes</h2>
+                <h2 data-i18n="themes.available">Available Themes</h2>
                 <ul>
-                    <li><strong>Monochrome True Dark</strong> - Pure black background</li>
-                    <li><strong>Monochrome Dark</strong> - Dark gray background</li>
-                    <li><strong>Monochrome Light</strong> - Light theme variant</li>
+                    <li><strong data-i18n="themes.trueDark">Monochrome True Dark</strong> - <span data-i18n="themes.trueDarkDesc">Pure black background</span></li>
+                    <li><strong data-i18n="themes.dark">Monochrome Dark</strong> - <span data-i18n="themes.darkDesc">Dark gray background</span></li>
+                    <li><strong data-i18n="themes.light">Monochrome Light</strong> - <span data-i18n="themes.lightDesc">Light theme variant</span></li>
                 </ul>
 
-                <h2>Changing Themes</h2>
-                <p>Change themes from the command palette:</p>
+                <h2 data-i18n="themes.changing">Changing Themes</h2>
+                <p data-i18n="themes.changingDesc">Change themes from the command palette:</p>
                 <ul>
-                    <li><kbd>Ctrl+Shift+P</kbd> - Open command palette</li>
-                    <li>Type "theme" and select your preferred theme</li>
+                    <li><kbd>Ctrl+Shift+P</kbd> - <span data-i18n="themes.palette">Open command palette</span></li>
+                    <li data-i18n="themes.select">Type "theme" and select your preferred theme</li>
                 </ul>
             </section>
 
             <section id="shortcuts">
-                <h1>Keyboard Shortcuts</h1>
-                <p>Master SafeCode with these essential keyboard shortcuts.</p>
+                <h1 data-i18n="shortcuts.title">Keyboard Shortcuts</h1>
+                <p data-i18n="shortcuts.description">Master SafeCode with these essential keyboard shortcuts.</p>
 
-                <h2>General</h2>
+                <h2 data-i18n="shortcuts.general">General</h2>
                 <table>
                     <tr>
                         <td><kbd>Ctrl+Shift+P</kbd></td>
-                        <td>Command palette</td>
+                        <td data-i18n="shortcuts.palette">Command palette</td>
                     </tr>
                     <tr>
                         <td><kbd>Ctrl+P</kbd></td>
-                        <td>Quick file open</td>
+                        <td data-i18n="shortcuts.quickOpen">Quick file open</td>
                     </tr>
                     <tr>
                         <td><kbd>Ctrl+,</kbd></td>
-                        <td>Settings</td>
+                        <td data-i18n="shortcuts.settings">Settings</td>
                     </tr>
                 </table>
 
-                <h2>Editor</h2>
+                <h2 data-i18n="shortcuts.editor">Editor</h2>
                 <table>
                     <tr>
                         <td><kbd>Ctrl+S</kbd></td>
-                        <td>Save file</td>
+                        <td data-i18n="shortcuts.save">Save file</td>
                     </tr>
                     <tr>
                         <td><kbd>Ctrl+F</kbd></td>
-                        <td>Find</td>
+                        <td data-i18n="shortcuts.find">Find</td>
                     </tr>
                     <tr>
                         <td><kbd>Ctrl+H</kbd></td>
-                        <td>Find and replace</td>
+                        <td data-i18n="shortcuts.replace">Find and replace</td>
                     </tr>
                     <tr>
                         <td><kbd>Ctrl+/</kbd></td>
-                        <td>Toggle comment</td>
+                        <td data-i18n="shortcuts.comment">Toggle comment</td>
                     </tr>
                 </table>
             </section>
 
-            <section id="extension-api">
-                <h1>Extension API</h1>
-                <p>Build powerful extensions for SafeCode using our comprehensive API.</p>
-
-                <h2>Creating an Extension</h2>
-                <p>Extensions are Node.js modules with a specific structure:</p>
-                <div class="code-block">
-                    <code>my-extension/
-├── extension.js
-├── package.json
-└── README.md</code>
-                </div>
-
-                <h2>Basic Extension</h2>
-                <div class="code-block">
-                    <code>// extension.js
-module.exports = {
-  activate(context) {
-    console.log('Extension activated!');
-    
-    // Register commands, add UI elements, etc.
-  },
-  
-  deactivate() {
-    console.log('Extension deactivated');
-  }
-};</code>
-                </div>
-
-                <h2>API Reference</h2>
-                <p>The SafeCode API provides access to:</p>
-                <ul>
-                    <li>Editor manipulation</li>
-                    <li>File system operations</li>
-                    <li>Terminal integration</li>
-                    <li>UI customization</li>
-                    <li>Command registration</li>
-                </ul>
-            </section>
-
             <section id="contributing">
-                <h1>Contributing</h1>
-                <p>SafeCode is open source and welcomes contributions!</p>
+                <h1 data-i18n="contrib.title">Contributing</h1>
+                <p data-i18n="contrib.description">SafeCode is open source and welcomes contributions!</p>
 
-                <h2>Getting Started</h2>
+                <h2 data-i18n="contrib.gettingStarted">Getting Started</h2>
                 <ol>
-                    <li>Fork the repository on GitHub</li>
-                    <li>Clone your fork locally</li>
-                    <li>Create a new branch for your feature</li>
-                    <li>Make your changes</li>
-                    <li>Submit a pull request</li>
+                    <li data-i18n="contrib.fork">Fork the repository on GitHub</li>
+                    <li data-i18n="contrib.clone">Clone your fork locally</li>
+                    <li data-i18n="contrib.branch">Create a new branch for your feature</li>
+                    <li data-i18n="contrib.changes">Make your changes</li>
+                    <li data-i18n="contrib.pr">Submit a pull request</li>
                 </ol>
 
-                <h2>Development Setup</h2>
+                <h2 data-i18n="contrib.setup">Development Setup</h2>
                 <div class="code-block">
                     <code># Clone the repository
 git clone https://github.com/safenode/safecode.git
 
 # Install dependencies
-cd safecode
+cd safecode/safacode2
 npm install
 
 # Run in development mode
@@ -372,8 +336,8 @@ npm run dev</code>
                 <div class="info-box">
                     <i data-lucide="heart"></i>
                     <div>
-                        <strong>Thank You!</strong>
-                        <p>Every contribution, no matter how small, helps make SafeCode better for everyone.</p>
+                        <strong data-i18n="contrib.thanks">Thank You!</strong>
+                        <p data-i18n="contrib.thanksDesc">Every contribution, no matter how small, helps make SafeCode better for everyone.</p>
                     </div>
                 </div>
             </section>
@@ -383,11 +347,11 @@ npm run dev</code>
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2026 SafeNode Group. Licensed under MIT.</p>
+                <p>&copy; 2026 SafeNode Group. <span data-i18n="footer.licensed">Licensed under MIT</span>.</p>
                 <div class="footer-links">
-                    <a href="index.html">Home</a>
-                    <a href="https://github.com/safenode/safecode">GitHub</a>
-                    <a href="#">Privacy</a>
+                    <a href="index.html" data-i18n="footer.home">Home</a>
+                    <a href="https://github.com/safenode/safecode" data-i18n="footer.github">GitHub</a>
+                    <a href="#" data-i18n="footer.privacy">Privacy</a>
                 </div>
             </div>
         </div>
@@ -395,6 +359,364 @@ npm run dev</code>
 
     <script>
         lucide.createIcons();
+
+        // Translation system
+        const translations = {
+            en: {
+                'nav.title': 'SafeCode Docs',
+                'nav.home': 'Home',
+                'nav.github': 'GitHub',
+                'nav.gettingStarted': 'Getting Started',
+                'nav.introduction': 'Introduction',
+                'nav.installation': 'Installation',
+                'nav.quickStart': 'Quick Start',
+                'nav.features': 'Features',
+                'nav.editor': 'Editor',
+                'nav.terminal': 'Terminal',
+                'nav.git': 'Git Integration',
+                'nav.livePreview': 'Live Preview',
+                'nav.configuration': 'Configuration',
+                'nav.settings': 'Settings',
+                'nav.themes': 'Themes',
+                'nav.shortcuts': 'Keyboard Shortcuts',
+                'nav.development': 'Development',
+                'nav.contributing': 'Contributing',
+                'intro.title': 'Introduction',
+                'intro.description': 'SafeCode is a modern, web-based IDE built with React, TypeScript, and Vite. With a minimalist design philosophy and powerful features, it provides everything you need for modern web and mobile development without the bloat.',
+                'intro.version': 'Version 2.0.0',
+                'intro.versionNote': 'This documentation covers SafeCode version 2.0.0 and above.',
+                'intro.whyTitle': 'Why SafeCode?',
+                'intro.minimalist': 'Minimalist Design',
+                'intro.minimalistDesc': 'Clean, distraction-free interface that puts your code first',
+                'intro.modern': 'Modern Stack',
+                'intro.modernDesc': 'Built with React, TypeScript, and Vite for fast, responsive editing',
+                'intro.monaco': 'Monaco Editor',
+                'intro.monacoDesc': 'Industry-standard editor with IntelliSense and syntax highlighting',
+                'intro.livePreview': 'Live Preview',
+                'intro.livePreviewDesc': 'Real-time preview with iOS and Android device simulation',
+                'intro.webBased': 'Web-Based',
+                'intro.webBasedDesc': 'Runs entirely in the browser, no installation required',
+                'install.title': 'Installation',
+                'install.description': 'SafeCode runs entirely in the browser. Simply clone the repository and start the development server.',
+                'install.cloneTitle': 'Clone Repository',
+                'install.installTitle': 'Install Dependencies',
+                'install.runTitle': 'Run Development Server',
+                'install.requirements': 'Requirements',
+                'install.nodejs': 'Node.js 18 or higher',
+                'install.npm': 'npm or yarn',
+                'install.git': 'Git (for version control features)',
+                'install.note': 'Note',
+                'install.noteDesc': 'Make sure you have Node.js installed before running the installation commands.',
+                'quick.title': 'Quick Start',
+                'quick.description': 'Get up and running with SafeCode in minutes.',
+                'quick.launchTitle': '1. Launch SafeCode',
+                'quick.launchDesc': 'After starting the development server, open your browser and navigate to:',
+                'quick.openTitle': '2. Open a Project',
+                'quick.openDesc': 'Open a folder or create a new file:',
+                'quick.openFolder': 'Open folder',
+                'quick.newFile': 'New file',
+                'quick.codeTitle': '3. Start Coding',
+                'quick.codeDesc': 'SafeCode provides IntelliSense, syntax highlighting, and code completion out of the box for 100+ languages.',
+                'editor.title': 'Editor',
+                'editor.description': 'The SafeCode editor is powered by Monaco, the same editor that powers VS Code.',
+                'editor.features': 'Features',
+                'editor.intellisense': 'IntelliSense',
+                'editor.intellisenseDesc': 'Intelligent code completion',
+                'editor.syntax': 'Syntax Highlighting',
+                'editor.syntaxDesc': 'Support for 100+ languages',
+                'editor.multicursor': 'Multi-cursor Editing',
+                'editor.multicursorDesc': 'Edit multiple locations simultaneously',
+                'editor.folding': 'Code Folding',
+                'editor.foldingDesc': 'Collapse code blocks for better readability',
+                'editor.find': 'Find and Replace',
+                'editor.findDesc': 'Powerful search with regex support',
+                'editor.splitTitle': 'Split View',
+                'editor.splitDesc': 'Work with multiple files side by side:',
+                'editor.splitVertical': 'Split editor vertically',
+                'editor.splitHorizontal': 'Split editor horizontally',
+                'terminal.title': 'Terminal',
+                'terminal.description': 'SafeCode includes an integrated terminal powered by xterm.js.',
+                'terminal.opening': 'Opening the Terminal',
+                'terminal.toggle': 'Toggle terminal',
+                'terminal.new': 'Create new terminal',
+                'terminal.features': 'Features',
+                'terminal.multiple': 'Multiple terminal instances',
+                'terminal.split': 'Split terminal view',
+                'terminal.custom': 'Custom shell integration',
+                'terminal.theme': 'Monochrome theme matching the editor',
+                'git.title': 'Git Integration',
+                'git.description': 'SafeCode provides built-in Git support for version control.',
+                'git.features': 'Features',
+                'git.visual': 'Visual Diff',
+                'git.visualDesc': 'See changes inline in the editor',
+                'git.commit': 'Commit Management',
+                'git.commitDesc': 'Stage and commit changes',
+                'git.branch': 'Branch Management',
+                'git.branchDesc': 'Create, switch, and merge branches',
+                'git.clone': 'Clone Repository',
+                'git.cloneDesc': 'Clone repositories directly from the IDE',
+                'git.common': 'Common Operations',
+                'preview.title': 'Live Preview',
+                'preview.description': 'SafeCode features an advanced live preview system with iOS and Android device simulation.',
+                'preview.features': 'Features',
+                'preview.devices': 'Device Simulation',
+                'preview.devicesDesc': 'Preview your code on iOS and Android devices with realistic lock screens and home screens',
+                'preview.realtime': 'Real-time Updates',
+                'preview.realtimeDesc': 'See your changes instantly as you code',
+                'preview.browsers': 'Browser Integration',
+                'preview.browsersDesc': 'Test with Safari (iOS) and Chrome (Android) browsers',
+                'preview.controls': 'Device Controls',
+                'preview.controlsDesc': 'Rotate, lock, power, and navigate between screens',
+                'preview.modes': 'Multiple Modes',
+                'preview.modesDesc': 'Desktop, tablet, and mobile preview modes',
+                'preview.usage': 'Usage',
+                'preview.usageDesc': 'Open the Live Preview panel and select your preferred device mode. The preview updates automatically as you edit your code.',
+                'settings.title': 'Settings',
+                'settings.description': 'Customize SafeCode to match your workflow.',
+                'settings.accessing': 'Accessing Settings',
+                'settings.open': 'Open settings',
+                'settings.common': 'Common Settings',
+                'themes.title': 'Themes',
+                'themes.description': 'SafeCode comes with a carefully crafted monochrome theme system.',
+                'themes.available': 'Available Themes',
+                'themes.trueDark': 'Monochrome True Dark',
+                'themes.trueDarkDesc': 'Pure black background',
+                'themes.dark': 'Monochrome Dark',
+                'themes.darkDesc': 'Dark gray background',
+                'themes.light': 'Monochrome Light',
+                'themes.lightDesc': 'Light theme variant',
+                'themes.changing': 'Changing Themes',
+                'themes.changingDesc': 'Change themes from the command palette:',
+                'themes.palette': 'Open command palette',
+                'themes.select': 'Type "theme" and select your preferred theme',
+                'shortcuts.title': 'Keyboard Shortcuts',
+                'shortcuts.description': 'Master SafeCode with these essential keyboard shortcuts.',
+                'shortcuts.general': 'General',
+                'shortcuts.palette': 'Command palette',
+                'shortcuts.quickOpen': 'Quick file open',
+                'shortcuts.settings': 'Settings',
+                'shortcuts.editor': 'Editor',
+                'shortcuts.save': 'Save file',
+                'shortcuts.find': 'Find',
+                'shortcuts.replace': 'Find and replace',
+                'shortcuts.comment': 'Toggle comment',
+                'contrib.title': 'Contributing',
+                'contrib.description': 'SafeCode is open source and welcomes contributions!',
+                'contrib.gettingStarted': 'Getting Started',
+                'contrib.fork': 'Fork the repository on GitHub',
+                'contrib.clone': 'Clone your fork locally',
+                'contrib.branch': 'Create a new branch for your feature',
+                'contrib.changes': 'Make your changes',
+                'contrib.pr': 'Submit a pull request',
+                'contrib.setup': 'Development Setup',
+                'contrib.thanks': 'Thank You!',
+                'contrib.thanksDesc': 'Every contribution, no matter how small, helps make SafeCode better for everyone.',
+                'footer.licensed': 'Licensed under MIT',
+                'footer.home': 'Home',
+                'footer.github': 'GitHub',
+                'footer.privacy': 'Privacy'
+            },
+            pt: {
+                'nav.title': 'Documentação SafeCode',
+                'nav.home': 'Início',
+                'nav.github': 'GitHub',
+                'nav.gettingStarted': 'Começando',
+                'nav.introduction': 'Introdução',
+                'nav.installation': 'Instalação',
+                'nav.quickStart': 'Início Rápido',
+                'nav.features': 'Recursos',
+                'nav.editor': 'Editor',
+                'nav.terminal': 'Terminal',
+                'nav.git': 'Integração Git',
+                'nav.livePreview': 'Visualização ao Vivo',
+                'nav.configuration': 'Configuração',
+                'nav.settings': 'Configurações',
+                'nav.themes': 'Temas',
+                'nav.shortcuts': 'Atalhos de Teclado',
+                'nav.development': 'Desenvolvimento',
+                'nav.contributing': 'Contribuindo',
+                'intro.title': 'Introdução',
+                'intro.description': 'SafeCode é uma IDE moderna baseada na web, construída com React, TypeScript e Vite. Com uma filosofia de design minimalista e recursos poderosos, fornece tudo que você precisa para desenvolvimento web e mobile moderno sem bloat.',
+                'intro.version': 'Versão 2.0.0',
+                'intro.versionNote': 'Esta documentação cobre SafeCode versão 2.0.0 e acima.',
+                'intro.whyTitle': 'Por que SafeCode?',
+                'intro.minimalist': 'Design Minimalista',
+                'intro.minimalistDesc': 'Interface limpa e sem distrações que coloca seu código em primeiro lugar',
+                'intro.modern': 'Stack Moderna',
+                'intro.modernDesc': 'Construído com React, TypeScript e Vite para edição rápida e responsiva',
+                'intro.monaco': 'Editor Monaco',
+                'intro.monacoDesc': 'Editor padrão da indústria com IntelliSense e destaque de sintaxe',
+                'intro.livePreview': 'Visualização ao Vivo',
+                'intro.livePreviewDesc': 'Visualização em tempo real com simulação de dispositivos iOS e Android',
+                'intro.webBased': 'Baseado na Web',
+                'intro.webBasedDesc': 'Executa inteiramente no navegador, sem necessidade de instalação',
+                'install.title': 'Instalação',
+                'install.description': 'SafeCode executa inteiramente no navegador. Simplesmente clone o repositório e inicie o servidor de desenvolvimento.',
+                'install.cloneTitle': 'Clonar Repositório',
+                'install.installTitle': 'Instalar Dependências',
+                'install.runTitle': 'Executar Servidor de Desenvolvimento',
+                'install.requirements': 'Requisitos',
+                'install.nodejs': 'Node.js 18 ou superior',
+                'install.npm': 'npm ou yarn',
+                'install.git': 'Git (para recursos de controle de versão)',
+                'install.note': 'Nota',
+                'install.noteDesc': 'Certifique-se de ter o Node.js instalado antes de executar os comandos de instalação.',
+                'quick.title': 'Início Rápido',
+                'quick.description': 'Comece a usar o SafeCode em minutos.',
+                'quick.launchTitle': '1. Iniciar SafeCode',
+                'quick.launchDesc': 'Após iniciar o servidor de desenvolvimento, abra seu navegador e navegue para:',
+                'quick.openTitle': '2. Abrir um Projeto',
+                'quick.openDesc': 'Abra uma pasta ou crie um novo arquivo:',
+                'quick.openFolder': 'Abrir pasta',
+                'quick.newFile': 'Novo arquivo',
+                'quick.codeTitle': '3. Começar a Programar',
+                'quick.codeDesc': 'SafeCode fornece IntelliSense, destaque de sintaxe e conclusão de código prontos para uso para mais de 100 idiomas.',
+                'editor.title': 'Editor',
+                'editor.description': 'O editor SafeCode é alimentado pelo Monaco, o mesmo editor que alimenta o VS Code.',
+                'editor.features': 'Recursos',
+                'editor.intellisense': 'IntelliSense',
+                'editor.intellisenseDesc': 'Conclusão inteligente de código',
+                'editor.syntax': 'Destaque de Sintaxe',
+                'editor.syntaxDesc': 'Suporte para mais de 100 idiomas',
+                'editor.multicursor': 'Edição Multi-cursor',
+                'editor.multicursorDesc': 'Edite vários locais simultaneamente',
+                'editor.folding': 'Dobramento de Código',
+                'editor.foldingDesc': 'Recolha blocos de código para melhor legibilidade',
+                'editor.find': 'Localizar e Substituir',
+                'editor.findDesc': 'Busca poderosa com suporte a regex',
+                'editor.splitTitle': 'Visualização Dividida',
+                'editor.splitDesc': 'Trabalhe com vários arquivos lado a lado:',
+                'editor.splitVertical': 'Dividir editor verticalmente',
+                'editor.splitHorizontal': 'Dividir editor horizontalmente',
+                'terminal.title': 'Terminal',
+                'terminal.description': 'SafeCode inclui um terminal integrado alimentado por xterm.js.',
+                'terminal.opening': 'Abrindo o Terminal',
+                'terminal.toggle': 'Alternar terminal',
+                'terminal.new': 'Criar novo terminal',
+                'terminal.features': 'Recursos',
+                'terminal.multiple': 'Múltiplas instâncias de terminal',
+                'terminal.split': 'Visualização dividida do terminal',
+                'terminal.custom': 'Integração de shell personalizada',
+                'terminal.theme': 'Tema monocromático correspondente ao editor',
+                'git.title': 'Integração Git',
+                'git.description': 'SafeCode fornece suporte Git integrado para controle de versão.',
+                'git.features': 'Recursos',
+                'git.visual': 'Diff Visual',
+                'git.visualDesc': 'Veja as alterações inline no editor',
+                'git.commit': 'Gerenciamento de Commit',
+                'git.commitDesc': 'Preparar e fazer commit de alterações',
+                'git.branch': 'Gerenciamento de Branch',
+                'git.branchDesc': 'Criar, alternar e mesclar branches',
+                'git.clone': 'Clonar Repositório',
+                'git.cloneDesc': 'Clone repositórios diretamente da IDE',
+                'git.common': 'Operações Comuns',
+                'preview.title': 'Visualização ao Vivo',
+                'preview.description': 'SafeCode apresenta um sistema avançado de visualização ao vivo com simulação de dispositivos iOS e Android.',
+                'preview.features': 'Recursos',
+                'preview.devices': 'Simulação de Dispositivos',
+                'preview.devicesDesc': 'Visualize seu código em dispositivos iOS e Android com telas de bloqueio e home screens realistas',
+                'preview.realtime': 'Atualizações em Tempo Real',
+                'preview.realtimeDesc': 'Veja suas alterações instantaneamente enquanto programa',
+                'preview.browsers': 'Integração de Navegadores',
+                'preview.browsersDesc': 'Teste com navegadores Safari (iOS) e Chrome (Android)',
+                'preview.controls': 'Controles do Dispositivo',
+                'preview.controlsDesc': 'Girar, bloquear, ligar/desligar e navegar entre telas',
+                'preview.modes': 'Múltiplos Modos',
+                'preview.modesDesc': 'Modos de visualização desktop, tablet e mobile',
+                'preview.usage': 'Uso',
+                'preview.usageDesc': 'Abra o painel de Visualização ao Vivo e selecione seu modo de dispositivo preferido. A visualização é atualizada automaticamente conforme você edita seu código.',
+                'settings.title': 'Configurações',
+                'settings.description': 'Personalize o SafeCode para corresponder ao seu fluxo de trabalho.',
+                'settings.accessing': 'Acessando Configurações',
+                'settings.open': 'Abrir configurações',
+                'settings.common': 'Configurações Comuns',
+                'themes.title': 'Temas',
+                'themes.description': 'SafeCode vem com um sistema de tema monocromático cuidadosamente elaborado.',
+                'themes.available': 'Temas Disponíveis',
+                'themes.trueDark': 'Monocromático True Dark',
+                'themes.trueDarkDesc': 'Fundo preto puro',
+                'themes.dark': 'Monocromático Dark',
+                'themes.darkDesc': 'Fundo cinza escuro',
+                'themes.light': 'Monocromático Light',
+                'themes.lightDesc': 'Variante de tema claro',
+                'themes.changing': 'Alterando Temas',
+                'themes.changingDesc': 'Altere os temas da paleta de comandos:',
+                'themes.palette': 'Abrir paleta de comandos',
+                'themes.select': 'Digite "theme" e selecione seu tema preferido',
+                'shortcuts.title': 'Atalhos de Teclado',
+                'shortcuts.description': 'Domine o SafeCode com estes atalhos de teclado essenciais.',
+                'shortcuts.general': 'Geral',
+                'shortcuts.palette': 'Paleta de comandos',
+                'shortcuts.quickOpen': 'Abertura rápida de arquivo',
+                'shortcuts.settings': 'Configurações',
+                'shortcuts.editor': 'Editor',
+                'shortcuts.save': 'Salvar arquivo',
+                'shortcuts.find': 'Localizar',
+                'shortcuts.replace': 'Localizar e substituir',
+                'shortcuts.comment': 'Alternar comentário',
+                'contrib.title': 'Contribuindo',
+                'contrib.description': 'SafeCode é open source e recebe contribuições!',
+                'contrib.gettingStarted': 'Começando',
+                'contrib.fork': 'Faça um fork do repositório no GitHub',
+                'contrib.clone': 'Clone seu fork localmente',
+                'contrib.branch': 'Crie uma nova branch para sua funcionalidade',
+                'contrib.changes': 'Faça suas alterações',
+                'contrib.pr': 'Envie uma pull request',
+                'contrib.setup': 'Configuração de Desenvolvimento',
+                'contrib.thanks': 'Obrigado!',
+                'contrib.thanksDesc': 'Toda contribuição, por menor que seja, ajuda a tornar o SafeCode melhor para todos.',
+                'footer.licensed': 'Licenciado sob MIT',
+                'footer.home': 'Início',
+                'footer.github': 'GitHub',
+                'footer.privacy': 'Privacidade'
+            }
+        };
+
+        let currentLang = localStorage.getItem('docs-lang') || 'en';
+
+        function translate(key) {
+            return translations[currentLang][key] || translations.en[key] || key;
+        }
+
+        function updateLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('docs-lang', lang);
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translation = translate(key);
+                
+                // Save icons if they exist
+                const icons = Array.from(el.querySelectorAll('i[data-lucide]'));
+                const iconData = icons.map(icon => ({
+                    name: icon.getAttribute('data-lucide'),
+                    classes: icon.className
+                }));
+                
+                // Update text content
+                el.textContent = translation;
+                
+                // Restore icons
+                iconData.forEach(iconInfo => {
+                    const icon = document.createElement('i');
+                    icon.setAttribute('data-lucide', iconInfo.name);
+                    icon.className = iconInfo.classes;
+                    el.appendChild(icon);
+                });
+            });
+
+            document.getElementById('langText').textContent = lang === 'pt' ? 'PT' : 'EN';
+            lucide.createIcons();
+        }
+
+        document.getElementById('langToggle').addEventListener('click', () => {
+            const newLang = currentLang === 'en' ? 'pt' : 'en';
+            updateLanguage(newLang);
+        });
+
+        // Initialize language
+        updateLanguage(currentLang);
 
         // Smooth scroll for sidebar links
         document.querySelectorAll('.sidebar-nav a').forEach(link => {

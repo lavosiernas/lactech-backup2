@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { useIDEStore } from '@/stores/ideStore';
 
@@ -15,19 +15,31 @@ export const CodeEditor: React.FC = () => {
     // Expose editor globally for FindReplace
     (window as any).monacoEditor = editor;
     
+    // Get syntax colors from settings
+    const syntaxColors = settings.syntaxColors || {
+      comment: '6b7280',
+      keyword: '60a5fa',
+      string: '4ade80',
+      number: 'fb923c',
+      type: 'fbbf24',
+      function: '60a5fa',
+      variable: '38bdf8',
+      operator: 'f472b6',
+    };
+    
     // Custom theme - Deep Black Minimalist
     monaco.editor.defineTheme('safecode-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: '6b7280', fontStyle: 'italic' },
-        { token: 'keyword', foreground: '60a5fa' },
-        { token: 'string', foreground: '4ade80' },
-        { token: 'number', foreground: 'fb923c' },
-        { token: 'type', foreground: 'fbbf24' },
-        { token: 'function', foreground: '60a5fa' },
-        { token: 'variable', foreground: '38bdf8' },
-        { token: 'operator', foreground: 'f472b6' },
+        { token: 'comment', foreground: syntaxColors.comment, fontStyle: 'italic' },
+        { token: 'keyword', foreground: syntaxColors.keyword },
+        { token: 'string', foreground: syntaxColors.string },
+        { token: 'number', foreground: syntaxColors.number },
+        { token: 'type', foreground: syntaxColors.type },
+        { token: 'function', foreground: syntaxColors.function },
+        { token: 'variable', foreground: syntaxColors.variable },
+        { token: 'operator', foreground: syntaxColors.operator },
       ],
       colors: {
         'editor.background': '#000000',
@@ -63,7 +75,50 @@ export const CodeEditor: React.FC = () => {
         updateCursorPosition(activeTabId, e.position.lineNumber, e.position.column);
       }
     });
+    
+    // Store monaco instance for theme updates
+    (window as any).monacoInstance = monaco;
   };
+  
+  // Update theme when syntax colors change
+  useEffect(() => {
+    const monaco = (window as any).monacoInstance;
+    if (!monaco || !settings.syntaxColors) return;
+    
+    const syntaxColors = settings.syntaxColors;
+    monaco.editor.defineTheme('safecode-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: syntaxColors.comment, fontStyle: 'italic' },
+        { token: 'keyword', foreground: syntaxColors.keyword },
+        { token: 'string', foreground: syntaxColors.string },
+        { token: 'number', foreground: syntaxColors.number },
+        { token: 'type', foreground: syntaxColors.type },
+        { token: 'function', foreground: syntaxColors.function },
+        { token: 'variable', foreground: syntaxColors.variable },
+        { token: 'operator', foreground: syntaxColors.operator },
+      ],
+      colors: {
+        'editor.background': '#000000',
+        'editor.foreground': '#f5f5f5',
+        'editorLineNumber.foreground': '#404040',
+        'editorLineNumber.activeForeground': '#808080',
+        'editor.lineHighlightBackground': '#0a0a0a',
+        'editor.selectionBackground': '#3b82f640',
+        'editorCursor.foreground': '#3b82f6',
+        'editorIndentGuide.background': '#1a1a1a',
+        'editorIndentGuide.activeBackground': '#2a2a2a',
+        'editorWhitespace.foreground': '#2a2a2a',
+        'editorRuler.foreground': '#1a1a1a',
+        'scrollbarSlider.background': '#2a2a2a',
+        'scrollbarSlider.hoverBackground': '#3a3a3a',
+        'editorWidget.background': '#0a0a0a',
+        'editorWidget.border': '#1a1a1a',
+      },
+    });
+    monaco.editor.setTheme('safecode-dark');
+  }, [settings.syntaxColors]);
 
   const handleChange: OnChange = useCallback((value) => {
     if (activeTabId && value !== undefined) {

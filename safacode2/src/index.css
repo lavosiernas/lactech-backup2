@@ -507,6 +507,43 @@
     height: 0;
   }
 
+  /* Hide scrollbars in mobile frame containers */
+  .iphone-frame > div,
+  .android-frame > div {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .iphone-frame > div::-webkit-scrollbar,
+  .android-frame > div::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Hide scrollbars in mobile frame iframes */
+  .iphone-frame iframe,
+  .android-frame iframe {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .iphone-frame iframe::-webkit-scrollbar,
+  .android-frame iframe::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Hide scrollbar class for mobile containers */
+  .hide-scrollbar {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
   /* Smooth transitions - melhoradas */
   * {
     transition-property: color, background-color, border-color, opacity, transform, box-shadow;

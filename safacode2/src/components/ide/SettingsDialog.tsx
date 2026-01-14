@@ -15,7 +15,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export const SettingsDialog: React.FC<{ open: boolean; onOpenChange: (open: boolean) => void }> = ({ open, onOpenChange }) => {
   const { settings, updateSettings } = useIDEStore();
-  const [localSettings, setLocalSettings] = useState(settings);
+  const [localSettings, setLocalSettings] = useState({
+    ...settings,
+    syntaxColors: settings.syntaxColors || {
+      comment: '6b7280',
+      keyword: '60a5fa',
+      string: '4ade80',
+      number: 'fb923c',
+      type: 'fbbf24',
+      function: '60a5fa',
+      variable: '38bdf8',
+      operator: 'f472b6',
+    }
+  });
 
   const handleSave = () => {
     updateSettings(localSettings);
@@ -29,7 +41,17 @@ export const SettingsDialog: React.FC<{ open: boolean; onOpenChange: (open: bool
       theme: 'dark',
       autoSave: false,
       wordWrap: true,
-      minimap: true
+      minimap: true,
+      syntaxColors: {
+        comment: '6b7280',
+        keyword: '60a5fa',
+        string: '4ade80',
+        number: 'fb923c',
+        type: 'fbbf24',
+        function: '60a5fa',
+        variable: '38bdf8',
+        operator: 'f472b6',
+      }
     });
   };
 
@@ -129,6 +151,52 @@ export const SettingsDialog: React.FC<{ open: boolean; onOpenChange: (open: bool
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          </div>
+
+          {/* Syntax Colors */}
+          <div>
+            <h3 className="text-sm font-semibold mb-3">Syntax Highlighting Colors</h3>
+            <div className="space-y-3">
+              {(['comment', 'keyword', 'string', 'number', 'type', 'function', 'variable', 'operator'] as const).map((colorKey) => (
+                <div key={colorKey} className="flex items-center justify-between">
+                  <Label htmlFor={colorKey} className="capitalize">{colorKey}</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id={colorKey}
+                      type="color"
+                      value={`#${localSettings.syntaxColors?.[colorKey] || 'ffffff'}`}
+                      onChange={(e) => {
+                        const color = e.target.value.replace('#', '');
+                        setLocalSettings({
+                          ...localSettings,
+                          syntaxColors: {
+                            ...localSettings.syntaxColors,
+                            [colorKey]: color
+                          }
+                        });
+                      }}
+                      className="w-16 h-8 cursor-pointer"
+                    />
+                    <Input
+                      type="text"
+                      value={localSettings.syntaxColors?.[colorKey] || 'ffffff'}
+                      onChange={(e) => {
+                        const color = e.target.value.replace('#', '');
+                        setLocalSettings({
+                          ...localSettings,
+                          syntaxColors: {
+                            ...localSettings.syntaxColors,
+                            [colorKey]: color
+                          }
+                        });
+                      }}
+                      className="w-20 text-xs font-mono"
+                      placeholder="ffffff"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

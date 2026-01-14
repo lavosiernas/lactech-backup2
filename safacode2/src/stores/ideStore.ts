@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { FileNode, EditorTab, TerminalInstance, GitStatus, IDESettings, PanelType, PreviewMode } from '@/types/ide';
+import type { FileNode, EditorTab, TerminalInstance, GitStatus, IDESettings, PanelType, PreviewMode, SyntaxColors } from '@/types/ide';
 
 interface IDEState {
   // Files
@@ -327,13 +327,25 @@ Check out the [SAFECODE docs](https://safecode.dev/docs) for more info.
   }
 ];
 
+const defaultSyntaxColors: SyntaxColors = {
+  comment: '6b7280',
+  keyword: '60a5fa',
+  string: '4ade80',
+  number: 'fb923c',
+  type: 'fbbf24',
+  function: '60a5fa',
+  variable: '38bdf8',
+  operator: 'f472b6',
+};
+
 const defaultSettings: IDESettings = {
   fontSize: 14,
   tabSize: 2,
   theme: 'dark',
   autoSave: false,
   wordWrap: true,
-  minimap: true
+  minimap: true,
+  syntaxColors: defaultSyntaxColors
 };
 
 export const useIDEStore = create<IDEState>((set, get) => ({

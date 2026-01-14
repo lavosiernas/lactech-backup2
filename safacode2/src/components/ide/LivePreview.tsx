@@ -357,17 +357,31 @@ ${cssContent}
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
         }}
       >
-        {isLocked && (
-          <Lock className="w-3.5 h-3.5" style={{ color: '#fff', opacity: 0.85 }} />
+        {isLocked ? (
+          <>
+            <Lock className="w-3.5 h-3.5" style={{ color: '#fff', opacity: 0.85 }} />
+            <div style={{
+              width: '14px',
+              height: '14px',
+              background: 'radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, #1a1a1a 40%, #000 100%)',
+              borderRadius: '50%',
+              border: '0.5px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: 'inset 0 0 6px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.1)',
+            }} />
+          </>
+        ) : (
+          <>
+            <div style={{ width: '14px' }} />
+            <div style={{
+              width: '14px',
+              height: '14px',
+              background: 'radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, #1a1a1a 40%, #000 100%)',
+              borderRadius: '50%',
+              border: '0.5px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: 'inset 0 0 6px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.1)',
+            }} />
+          </>
         )}
-        <div style={{
-          width: '14px',
-          height: '14px',
-          background: 'radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, #1a1a1a 40%, #000 100%)',
-          borderRadius: '50%',
-          border: '0.5px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: 'inset 0 0 6px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.1)',
-        }} />
       </div>
 
       {/* iPhone Screen */}
@@ -409,21 +423,26 @@ ${cssContent}
               letterSpacing: '0.01em',
               fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif',
             }}>{formatTime(currentTime)}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.95 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', opacity: 0.95 }}>
               {/* Signal Bars - iOS 18+ style */}
-              <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                <path d="M1 11L1 9M3.5 11L3.5 6M6 11L6 3M8.5 11L8.5 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+                <path d="M1 11V9" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M4 11V6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M7 11V3" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M10 11V1" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
               {/* Wi-Fi - iOS 18+ style */}
-              <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                <path d="M8 1C10.5 1 12.5 2 13.5 3.5M8 4.5C9.5 4.5 10.5 5.2 11 6M8 7.5L8.5 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="8" cy="9.5" r="1" fill="white"/>
+              <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+                <path d="M1.5 4.5A7.5 7.5 0 0 1 9 1A7.5 7.5 0 0 1 16.5 4.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+                <path d="M4.5 6A4.5 4.5 0 0 1 9 4A4.5 4.5 0 0 1 13.5 6" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+                <path d="M7.2 8A1.8 1.8 0 0 1 9 7A1.8 1.8 0 0 1 10.8 8" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+                <circle cx="9" cy="11" r="1.2" fill="white"/>
               </svg>
               {/* Battery - iOS 18+ style */}
-              <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
-                <rect x="1" y="3" width="16" height="6" rx="1.5" stroke="white" strokeWidth="1.5" fill="none"/>
-                <rect x="17.5" y="5" width="1.5" height="2" rx="0.5" fill="white"/>
-                <rect x="2.5" y="4.5" width="13" height="5" rx="1" fill="white"/>
+              <svg width="22" height="12" viewBox="0 0 22 12" fill="none">
+                <rect x="1" y="2.5" width="17" height="7" rx="1.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                <rect x="18.5" y="4.5" width="1.5" height="3" rx="0.5" fill="white"/>
+                <rect x="2.5" y="4" width="14" height="4" rx="0.8" fill="white"/>
               </svg>
             </div>
           </div>
@@ -605,7 +624,9 @@ ${cssContent}
             paddingBottom: '120px',
             overflowY: 'auto',
             animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}>
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }} className="hide-scrollbar">
             {/* Main App Grid - Only Safari, Chrome, SAFECODE */}
             <div style={{
               display: 'grid',
@@ -823,7 +844,7 @@ ${cssContent}
           <iframe
             key={key}
             srcDoc={getPreviewContent()}
-            className="w-full h-full border-0"
+            className="w-full h-full border-0 hide-scrollbar"
             title="Preview"
             sandbox="allow-scripts"
             style={{
@@ -832,6 +853,8 @@ ${cssContent}
               border: 'none',
               marginTop: '54px',
               animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
           />
         )}
@@ -958,12 +981,14 @@ ${cssContent}
             <iframe
               key={`browser-${activeApp}-${key}`}
               src={browserUrl}
-              className="w-full flex-1 border-0"
+              className="w-full flex-1 border-0 hide-scrollbar"
               title={activeApp === 'safari' ? 'Safari Browser' : 'Chrome Browser'}
               style={{
                 width: '100%',
                 flex: 1,
                 border: 'none',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
               }}
               sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
             />
@@ -1049,21 +1074,26 @@ ${cssContent}
               fontFamily: 'Roboto, system-ui, sans-serif',
               letterSpacing: '0.01em',
             }}>{formatTime(currentTime)}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.95 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', opacity: 0.95 }}>
               {/* Signal Bars - Android 14 style */}
-              <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                <path d="M1 11L1 9M3.5 11L3.5 6M6 11L6 3M8.5 11L8.5 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+                <path d="M1 11V9" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M4 11V6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M7 11V3" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M10 11V1" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
               {/* Wi-Fi - Android 14 style */}
-              <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                <path d="M8 1C10.5 1 12.5 2 13.5 3.5M8 4.5C9.5 4.5 10.5 5.2 11 6M8 7.5L8.5 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="8" cy="9.5" r="1" fill="white"/>
+              <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+                <path d="M1.5 4.5A7.5 7.5 0 0 1 9 1A7.5 7.5 0 0 1 16.5 4.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+                <path d="M4.5 6A4.5 4.5 0 0 1 9 4A4.5 4.5 0 0 1 13.5 6" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+                <path d="M7.2 8A1.8 1.8 0 0 1 9 7A1.8 1.8 0 0 1 10.8 8" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
+                <circle cx="9" cy="11" r="1.2" fill="white"/>
               </svg>
               {/* Battery - Android 14 style */}
-              <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
-                <rect x="1" y="3" width="16" height="6" rx="1.5" stroke="white" strokeWidth="1.5" fill="none"/>
-                <rect x="17.5" y="5" width="1.5" height="2" rx="0.5" fill="white"/>
-                <rect x="2.5" y="4.5" width="13" height="5" rx="1" fill="white"/>
+              <svg width="22" height="12" viewBox="0 0 22 12" fill="none">
+                <rect x="1" y="2.5" width="17" height="7" rx="1.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                <rect x="18.5" y="4.5" width="1.5" height="3" rx="0.5" fill="white"/>
+                <rect x="2.5" y="4" width="14" height="4" rx="0.8" fill="white"/>
               </svg>
             </div>
           </div>
@@ -1198,7 +1228,9 @@ ${cssContent}
             paddingBottom: '80px',
             overflowY: 'auto',
             animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}>
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }} className="hide-scrollbar">
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
@@ -1315,7 +1347,7 @@ ${cssContent}
           <iframe
             key={key}
             srcDoc={getPreviewContent()}
-            className="w-full h-full border-0"
+            className="w-full h-full border-0 hide-scrollbar"
             title="Preview"
             sandbox="allow-scripts"
             style={{
@@ -1324,6 +1356,8 @@ ${cssContent}
               border: 'none',
               marginTop: '28px',
               animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
           />
         )}
@@ -1451,12 +1485,14 @@ ${cssContent}
             <iframe
               key={`browser-chrome-${key}`}
               src={browserUrl}
-              className="w-full flex-1 border-0"
+              className="w-full flex-1 border-0 hide-scrollbar"
               title="Chrome Browser"
               style={{
                 width: '100%',
                 flex: 1,
                 border: 'none',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
               }}
               sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
             />
@@ -1607,6 +1643,29 @@ ${cssContent}
               boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
             }}
           >
+            <button
+              onClick={() => {
+                setShowHomeScreen(true);
+                setActiveApp(null);
+              }}
+              className="control-btn"
+              title="Home"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                border: 'none',
+                background: showHomeScreen ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                color: showHomeScreen ? '#3b82f6' : '#ccc',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+            >
+              <Home className="w-4 h-4" />
+            </button>
             <button
               onClick={() => setRotated(!rotated)}
               className="control-btn"
