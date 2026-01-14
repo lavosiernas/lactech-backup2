@@ -51,7 +51,7 @@ export const AchievementPage: React.FC = () => {
               <img 
                 src={getLogoPath()} 
                 alt="SAFECODE Logo" 
-                className="h-24 w-24 object-contain relative z-10"
+                className="h-16 w-16 object-contain relative z-10"
               />
             </div>
           </div>
