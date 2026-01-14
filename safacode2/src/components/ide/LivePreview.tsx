@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Monitor, Tablet, Smartphone, RefreshCw, RotateCcw, Lock, Power, Flashlight, Camera, Moon, Sun, Globe, Code, Phone, MessageSquare, Music, Mail, Calendar, Image, Video, Settings, Map, Heart, Wallet, Cloud, Search, Clock, Home } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
 import type { PreviewMode } from '@/types/ide';
+import { getLogoPath } from '@/lib/assets';
 
 export const LivePreview: React.FC = () => {
   const { previewMode, setPreviewMode, tabs, activeTabId } = useIDEStore();
