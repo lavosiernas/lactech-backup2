@@ -3,6 +3,7 @@ import { GitBranch, AlertCircle, Bell, Check } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
 import { ProblemsPanel } from './ProblemsPanel';
 import { NotificationsPanel } from './NotificationsPanel';
+import { getLogoPath } from '@/lib/assets';
 
 export const StatusBar: React.FC = () => {
   const { 
