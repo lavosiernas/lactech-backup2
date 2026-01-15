@@ -176,6 +176,8 @@ try {
             error_log("SafeNode Challenge Count Error: " . $e->getMessage());
         }
         
+        // Buscar dados da tabela unificada safenode_human_verification_logs
+        // Agora inclui dados tanto do middleware (site_id) quanto do SDK (api_key_id)
         $sqlToday = "SELECT 
             COUNT(*) as total_requests,
             COALESCE(SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END), 0) as blocked_requests,
@@ -184,17 +186,23 @@ try {
             FROM safenode_human_verification_logs 
             WHERE DATE(created_at) = CURDATE()";
             
-        // Adicionar filtro de site se necessário
+        // Adicionar filtro de site ou API key do usuário
         $params = [];
         if ($currentSiteId > 0) {
             $sqlToday .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sqlToday .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sqlToday .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
             
         $stmt = $db->prepare($sqlToday);
+        $logsData = ['total_requests' => 0, 'blocked_requests' => 0, 'allowed_requests' => 0, 'unique_ips' => 0];
         if ($stmt) {
             if (!empty($params)) {
                 $stmt->execute($params);
@@ -203,27 +211,35 @@ try {
             }
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result) {
-                $todayStats = [
+                $logsData = [
                     'total_requests' => (int)($result['total_requests'] ?? 0),
                     'blocked_requests' => (int)($result['blocked_requests'] ?? 0) ?: 0,
                     'allowed_requests' => (int)($result['allowed_requests'] ?? 0) ?: 0,
-                    'challenged_requests' => $challengeCount,
-                    'rate_limited_requests' => 0,
-                    'unique_ips' => (int)($result['unique_ips'] ?? 0),
-                    'avg_threat_score' => 0,
-                    'max_threat_score' => 0,
-                    'critical_threats' => 0,
-                    'sql_injection_count' => 0,
-                    'xss_count' => 0,
-                    'brute_force_count' => 0,
-                    'rate_limit_count' => 0,
-                    'ddos_count' => 0,
-                    'path_traversal_count' => 0,
-                    'command_injection_count' => 0,
-                    'rce_php_count' => 0
+                    'unique_ips' => (int)($result['unique_ips'] ?? 0)
                 ];
             }
         }
+        
+        // Dados já estão unificados na tabela safenode_human_verification_logs
+        $todayStats = [
+            'total_requests' => $logsData['total_requests'],
+            'blocked_requests' => $logsData['blocked_requests'],
+            'allowed_requests' => $logsData['allowed_requests'],
+            'challenged_requests' => $challengeCount,
+            'rate_limited_requests' => 0,
+            'unique_ips' => $logsData['unique_ips'],
+            'avg_threat_score' => 0,
+            'max_threat_score' => 0,
+            'critical_threats' => 0,
+            'sql_injection_count' => 0,
+            'xss_count' => 0,
+            'brute_force_count' => 0,
+            'rate_limit_count' => 0,
+            'ddos_count' => 0,
+            'path_traversal_count' => 0,
+            'command_injection_count' => 0,
+            'rce_php_count' => 0
+        ];
     } catch (PDOException $e) {
         error_log("SafeNode Today Stats Query Error: " . $e->getMessage());
         // Manter valores padrão
@@ -232,7 +248,7 @@ try {
         // Manter valores padrão
     }
     
-    // Estatísticas das últimas 24 horas
+    // Estatísticas das últimas 24 horas - tabela unificada
     $last24hStats = ['total_requests' => 0, 'blocked_requests' => 0, 'unique_ips' => 0];
     try {
         $sql24h = "SELECT 
@@ -247,30 +263,37 @@ try {
             $sql24h .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sql24h .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sql24h .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
         
         $stmt = $db->prepare($sql24h);
-        if (!empty($params)) {
-            $stmt->execute($params);
-        } else {
-            $stmt->execute();
-        }
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($result) {
-            $last24hStats = [
-                'total_requests' => (int)($result['total_requests'] ?? 0),
-                'blocked_requests' => (int)($result['blocked_requests'] ?? 0) ?: 0,
-                'unique_ips' => (int)($result['unique_ips'] ?? 0)
-            ];
+        if ($stmt) {
+            if (!empty($params)) {
+                $stmt->execute($params);
+            } else {
+                $stmt->execute();
+            }
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($result) {
+                $last24hStats = [
+                    'total_requests' => (int)($result['total_requests'] ?? 0),
+                    'blocked_requests' => (int)($result['blocked_requests'] ?? 0) ?: 0,
+                    'unique_ips' => (int)($result['unique_ips'] ?? 0)
+                ];
+            }
         }
     } catch (PDOException $e) {
         error_log("SafeNode 24h Stats Query Error: " . $e->getMessage());
         // Manter valores padrão
     }
     
-    // Estatísticas de ontem para comparação
+    // Estatísticas de ontem para comparação - tabela unificada
     $yesterdayStats = ['total_requests' => 0, 'blocked_requests' => 0, 'unique_ips' => 0];
     try {
         $sqlYesterday = "SELECT 
@@ -285,23 +308,30 @@ try {
             $sqlYesterday .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sqlYesterday .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sqlYesterday .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
         
         $stmt = $db->prepare($sqlYesterday);
-        if (!empty($params)) {
-            $stmt->execute($params);
-        } else {
-            $stmt->execute();
-        }
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($result) {
-            $yesterdayStats = [
-                'total_requests' => (int)($result['total_requests'] ?? 0),
-                'blocked_requests' => (int)($result['blocked_requests'] ?? 0) ?: 0,
-                'unique_ips' => (int)($result['unique_ips'] ?? 0)
-            ];
+        if ($stmt) {
+            if (!empty($params)) {
+                $stmt->execute($params);
+            } else {
+                $stmt->execute();
+            }
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($result) {
+                $yesterdayStats = [
+                    'total_requests' => (int)($result['total_requests'] ?? 0),
+                    'blocked_requests' => (int)($result['blocked_requests'] ?? 0) ?: 0,
+                    'unique_ips' => (int)($result['unique_ips'] ?? 0)
+                ];
+            }
         }
     } catch (PDOException $e) {
         error_log("SafeNode Yesterday Stats Query Error: " . $e->getMessage());
@@ -320,35 +350,44 @@ try {
     // Calcular latência - removido (não é core)
     $latencyData = null;
     
-    // Últimos logs (últimos 10)
+    // Logs recentes - tabela unificada
     $recentLogs = [];
     try {
-        $sqlRecent = "SELECT * FROM safenode_human_verification_logs WHERE 1=1";
+        $sqlRecent = "SELECT 
+            id, site_id, api_key_id, ip_address, event_type, request_uri, request_method, user_agent, referer, country_code, reason, created_at
+            FROM safenode_human_verification_logs WHERE 1=1";
         
         $params = [];
         if ($currentSiteId > 0) {
             $sqlRecent .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sqlRecent .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sqlRecent .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
         
         $sqlRecent .= " ORDER BY created_at DESC LIMIT 10";
         
         $stmt = $db->prepare($sqlRecent);
-        if (!empty($params)) {
-            $stmt->execute($params);
-        } else {
-            $stmt->execute();
+        if ($stmt) {
+            if (!empty($params)) {
+                $stmt->execute($params);
+            } else {
+                $stmt->execute();
+            }
+            $recentLogs = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         }
-        $recentLogs = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     } catch (PDOException $e) {
         error_log("SafeNode Recent Logs Query Error: " . $e->getMessage());
         $recentLogs = [];
     }
     
-    // Top IPs bloqueados (últimos 7 dias)
+    // Top IPs bloqueados (últimos 7 dias) - tabela unificada
     $topBlockedIPs = [];
     try {
         $sqlTopIPs = "SELECT 
@@ -366,21 +405,28 @@ try {
             $sqlTopIPs .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sqlTopIPs .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sqlTopIPs .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
         $sqlTopIPs .= " GROUP BY ip_address ORDER BY COUNT(*) DESC LIMIT 10";
         $stmt = !empty($params) ? $db->prepare($sqlTopIPs) : $db->query($sqlTopIPs);
-        if (!empty($params)) {
-            $stmt->execute($params);
+        if ($stmt) {
+            if (!empty($params)) {
+                $stmt->execute($params);
+            }
+            $topBlockedIPs = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         }
-        $topBlockedIPs = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     } catch (PDOException $e) {
         error_log("SafeNode Top IPs Query Error: " . $e->getMessage());
         $topBlockedIPs = [];
     }
     
-    // Top Tipos de Evento (últimos 7 dias)
+    // Top Tipos de Evento (últimos 7 dias) - tabela unificada
     $topThreatTypes = [];
     try {
         $sqlThreatTypes = "SELECT 
@@ -395,7 +441,12 @@ try {
             $sqlThreatTypes .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sqlThreatTypes .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sqlThreatTypes .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
         $sqlThreatTypes .= " GROUP BY threat_type ORDER BY COUNT(*) DESC LIMIT 10";
@@ -409,7 +460,7 @@ try {
         $topThreatTypes = [];
     }
     
-    // Top Países (últimos 7 dias)
+    // Top Países (últimos 7 dias) - tabela unificada
     $topCountries = [];
     try {
         $sqlCountries = "SELECT 
@@ -424,7 +475,12 @@ try {
             $sqlCountries .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sqlCountries .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sqlCountries .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
         $sqlCountries .= " GROUP BY country_code ORDER BY total_requests DESC LIMIT 5";
@@ -447,7 +503,7 @@ try {
         $recentIncidents = [];
     }
     
-    // Dados para gráfico de linha (últimas 24 horas por hora)
+    // Dados para gráfico de linha (últimas 24 horas por hora) - tabela unificada
     $hourlyData = [];
     try {
         $sqlHourly = "SELECT 
@@ -461,34 +517,64 @@ try {
             $sqlHourly .= " AND site_id = ?";
             $params[] = $currentSiteId;
         } elseif ($userId) {
-            $sqlHourly .= " AND site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)";
+            // Incluir logs do middleware (site_id) E do SDK (api_key_id)
+            $sqlHourly .= " AND (
+                site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?)
+            )";
+            $params[] = $userId;
             $params[] = $userId;
         }
+        $sqlHourly .= " GROUP BY HOUR(created_at) ORDER BY hour ASC";
         $stmt = $db->prepare($sqlHourly);
-        if (!empty($params)) {
-            $stmt->execute($params);
-        } else {
-            $stmt->execute();
+        if ($stmt) {
+            if (!empty($params)) {
+                $stmt->execute($params);
+            } else {
+                $stmt->execute();
+            }
+            $hourlyData = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
         }
-        $hourlyData = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     } catch (PDOException $e) {
         error_log("SafeNode Hourly Data Query Error: " . $e->getMessage());
         $hourlyData = [];
     }
     
     // Processar dados horários (últimas 7 horas)
+    // Garantir que sempre temos dados para as últimas 7 horas
     $hourlyStats = [];
     for ($i = 6; $i >= 0; $i--) {
         $hour = date('H', strtotime("-$i hours"));
-        $hourlyStats[$hour] = ['requests' => 0, 'blocked' => 0];
+        $hourPadded = str_pad($hour, 2, '0', STR_PAD_LEFT);
+        $hourlyStats[$hourPadded] = ['requests' => 0, 'blocked' => 0];
+        // Também criar entrada com hora sem padding para compatibilidade
+        $hourlyStats[(int)$hour] = ['requests' => 0, 'blocked' => 0];
     }
+    
+    // Preencher com dados reais
     foreach ($hourlyData as $data) {
-        $hour = str_pad($data['hour'], 2, '0', STR_PAD_LEFT);
+        $hour = (int)$data['hour'];
+        $hourPadded = str_pad($hour, 2, '0', STR_PAD_LEFT);
+        
+        // Atualizar ambas as chaves (com e sem padding)
+        if (isset($hourlyStats[$hourPadded])) {
+            $hourlyStats[$hourPadded]['requests'] = (int)$data['requests'];
+            $hourlyStats[$hourPadded]['blocked'] = (int)$data['blocked'];
+        }
         if (isset($hourlyStats[$hour])) {
             $hourlyStats[$hour]['requests'] = (int)$data['requests'];
             $hourlyStats[$hour]['blocked'] = (int)$data['blocked'];
         }
     }
+    
+    // Garantir que temos pelo menos as últimas 7 horas preenchidas
+    $finalHourlyStats = [];
+    for ($i = 6; $i >= 0; $i--) {
+        $hour = date('H', strtotime("-$i hours"));
+        $hourPadded = str_pad($hour, 2, '0', STR_PAD_LEFT);
+        $finalHourlyStats[$hourPadded] = $hourlyStats[$hourPadded] ?? ['requests' => 0, 'blocked' => 0];
+    }
+    $hourlyStats = $finalHourlyStats;
     
     // Calcular variações percentuais
     $requests24h = (int)($last24hStats['total_requests'] ?? 0);
@@ -559,6 +645,7 @@ try {
             ],
             'hourly_stats' => $hourlyStats,
             'recent_logs' => array_map(function($log) {
+                // Processar dados de ambas as tabelas
                 $eventType = $log['event_type'] ?? 'access_allowed';
                 $isBlocked = $eventType === 'bot_blocked';
                 return [
@@ -568,7 +655,8 @@ try {
                     'action_taken' => $isBlocked ? 'blocked' : 'allowed',
                     'threat_type' => $eventType,
                     'threat_score' => 0,
-                    'created_at' => $log['created_at'] ?? date('Y-m-d H:i:s')
+                    'created_at' => $log['created_at'] ?? date('Y-m-d H:i:s'),
+                    'domain' => isset($log['request_uri']) ? parse_url($log['request_uri'], PHP_URL_HOST) : null
                 ];
             }, $recentLogs),
             'top_countries' => array_map(function($country) {
@@ -583,6 +671,7 @@ try {
             }, $topCountries),
             'recent_incidents' => [],
             'top_blocked_ips' => array_map(function($ip) {
+                $lastBlocked = $ip['last_blocked'] ?? null;
                 return [
                     'ip_address' => $ip['ip_address'] ?? '',
                     'block_count' => (int)($ip['block_count'] ?? 0),
@@ -591,8 +680,8 @@ try {
                     'avg_threat_score' => 0,
                     'max_threat_score' => 0,
                     'first_seen' => $ip['first_seen'] ?? null,
-                    'last_blocked' => $ip['last_blocked'] ?? null,
-                    'last_seen' => $ip['last_blocked'] ?? null // Alias para compatibilidade
+                    'last_blocked' => $lastBlocked,
+                    'last_seen' => $lastBlocked // Alias para compatibilidade
                 ];
             }, $topBlockedIPs),
             'top_threat_types' => array_map(function($threat) {
@@ -605,6 +694,7 @@ try {
                 ];
             }, $topThreatTypes),
             'event_logs' => array_map(function($log) {
+                // Processar dados de ambas as tabelas
                 $eventType = $log['event_type'] ?? 'access_allowed';
                 $isBlocked = $eventType === 'bot_blocked';
                 $isCritical = $isBlocked;
@@ -617,7 +707,8 @@ try {
                     'threat_score' => 0,
                     'created_at' => $log['created_at'] ?? date('Y-m-d H:i:s'),
                     'is_critical' => $isCritical,
-                    'show_mitigated' => $isCritical && $isBlocked
+                    'show_mitigated' => $isCritical && $isBlocked,
+                    'domain' => isset($log['request_uri']) ? parse_url($log['request_uri'], PHP_URL_HOST) : null
                 ];
             }, array_slice($recentLogs ?: [], 0, 5))
         ]

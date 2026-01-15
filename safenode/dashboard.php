@@ -1817,14 +1817,14 @@ if ($db) {
             
             <!-- Eventos Recentes -->
             <div class="chart-card mb-8">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Eventos Recentes</h3>
-                        <p class="text-sm text-gray-600 dark:text-zinc-500 mt-1">Últimos 10 eventos de verificação</p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white break-words">Eventos Recentes</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-500 mt-1">Últimos 10 eventos de verificação</p>
                     </div>
-                    <a href="logs.php" class="text-sm text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2">
+                    <a href="logs.php" class="text-xs sm:text-sm text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-0 sm:py-0 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 flex-shrink-0 whitespace-nowrap">
                         <span>Ver todos</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0"></i>
                     </a>
                 </div>
                 <div id="recent-events" class="space-y-3">
@@ -2413,36 +2413,48 @@ if ($db) {
         }
         
         function updateHumansVsBotsChart(hourlyStats) {
-            if (!humansVsBotsChart) return;
+            if (!humansVsBotsChart) {
+                console.warn('Gráfico humansVsBotsChart não está inicializado');
+                return;
+            }
             
             try {
-                // Usar dados reais da API - últimas 7 horas
-                const labels = Object.keys(hourlyStats).sort();
+                // Gerar labels das últimas 7 horas (garantir que sempre temos 7 horas)
+                const labels = [];
                 const humansData = [];
                 const botsData = [];
                 
-                labels.forEach(hour => {
-                    const stats = hourlyStats[hour] || { requests: 0, blocked: 0 };
+                // Criar array com as últimas 7 horas
+                for (let i = 6; i >= 0; i--) {
+                    const hour = new Date();
+                    hour.setHours(hour.getHours() - i);
+                    const hourStr = hour.getHours().toString().padStart(2, '0');
+                    labels.push(hourStr);
+                    
+                    // Buscar dados da API para esta hora
+                    const stats = hourlyStats[hourStr] || hourlyStats[parseInt(hourStr)] || { requests: 0, blocked: 0 };
                     const total = stats.requests || 0;
                     const blocked = stats.blocked || 0;
                     const humans = Math.max(0, total - blocked); // Humanos = total - bloqueados
                     
                     humansData.push(humans);
                     botsData.push(blocked);
-                });
+                }
                 
-                // Se não houver dados, manter zeros
-                if (humansData.length === 0) {
+                // Garantir que temos pelo menos 7 pontos de dados
+                while (humansData.length < 7) {
                     humansData.push(0);
                     botsData.push(0);
                 }
                 
+                // Atualizar gráfico
                 humansVsBotsChart.data.labels = labels.map(h => h + 'h');
-                humansVsBotsChart.data.datasets[0].data = humansData;
-                humansVsBotsChart.data.datasets[1].data = botsData;
+                humansVsBotsChart.data.datasets[0].data = humansData.slice(0, 7);
+                humansVsBotsChart.data.datasets[1].data = botsData.slice(0, 7);
                 humansVsBotsChart.update('none'); // 'none' para evitar animação desnecessária
             } catch (error) {
                 console.error('Erro ao atualizar gráfico Humans vs Bots:', error);
+                console.error('Dados recebidos:', hourlyStats);
             }
         }
         

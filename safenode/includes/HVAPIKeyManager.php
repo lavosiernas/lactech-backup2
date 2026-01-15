@@ -233,40 +233,105 @@ class HVAPIKeyManager
         try {
             $countryCode = self::detectCountryCode();
             
-            // Verificar se o campo country_code existe na tabela
-            $hasCountryCode = false;
-            try {
-                // Usar DESCRIBE ou SHOW COLUMNS para verificar se o campo existe
-                $checkStmt = $db->query("DESCRIBE safenode_hv_attempts");
-                $columns = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
-                $hasCountryCode = in_array('country_code', $columns);
-            } catch (PDOException $e) {
-                // Fallback: tentar com SHOW COLUMNS LIKE
+            // Mapear attempt_type para event_type
+            $eventTypeMap = [
+                'init' => 'access_allowed',
+                'validate' => 'human_validated',
+                'failed' => 'bot_blocked',
+                'suspicious' => 'bot_blocked'
+            ];
+            $eventType = $eventTypeMap[$type] ?? 'access_allowed';
+            
+            // Tentar descobrir site_id através do referer/allowed_domains
+            $siteId = null;
+            if ($apiKeyId && $referer) {
                 try {
-                    $checkStmt = $db->query("SHOW COLUMNS FROM safenode_hv_attempts LIKE 'country_code'");
-                    $hasCountryCode = $checkStmt->rowCount() > 0;
-                } catch (PDOException $e2) {
-                    // Se não conseguir verificar, assumir que não existe
-                    $hasCountryCode = false;
+                    // Buscar domínio do referer
+                    $refererHost = parse_url($referer, PHP_URL_HOST);
+                    if ($refererHost) {
+                        // Buscar site pelo domínio do usuário da API key
+                        $stmt = $db->prepare("
+                            SELECT s.id 
+                            FROM safenode_sites s
+                            INNER JOIN safenode_hv_api_keys k ON s.user_id = k.user_id
+                            WHERE k.id = ? AND (s.domain = ? OR s.domain = ? OR ? LIKE CONCAT('%.', s.domain))
+                            LIMIT 1
+                        ");
+                        $stmt->execute([$apiKeyId, $refererHost, 'www.' . $refererHost, $refererHost]);
+                        $site = $stmt->fetch();
+                        if ($site) {
+                            $siteId = (int)$site['id'];
+                        }
+                    }
+                } catch (PDOException $e) {
+                    // Ignorar erro, site_id será NULL
+                    error_log("HVAPIKeyManager::logAttempt Site ID lookup Error: " . $e->getMessage());
                 }
             }
-
-            if ($hasCountryCode) {
-                // Inserir com country_code
+            
+            // Extrair request_uri do referer
+            $requestUri = $referer;
+            if ($referer) {
+                $parsed = parse_url($referer);
+                $requestUri = ($parsed['path'] ?? '/') . (isset($parsed['query']) ? '?' . $parsed['query'] : '');
+            }
+            
+            // Verificar se a tabela unificada tem os campos necessários
+            $hasApiKeyId = false;
+            $hasReason = false;
+            try {
+                $checkStmt = $db->query("DESCRIBE safenode_human_verification_logs");
+                $columns = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
+                $hasApiKeyId = in_array('api_key_id', $columns);
+                $hasReason = in_array('reason', $columns);
+            } catch (PDOException $e) {
+                // Se não conseguir verificar, assumir que não existe
+            }
+            
+            // SALVAR NA TABELA UNIFICADA (safenode_human_verification_logs)
+            if ($hasApiKeyId && $hasReason) {
+                // Tabela já foi atualizada com api_key_id e reason
                 $stmt = $db->prepare("
-                    INSERT INTO safenode_hv_attempts 
-                    (api_key_id, ip_address, user_agent, referer, country_code, attempt_type, reason)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO safenode_human_verification_logs 
+                    (api_key_id, site_id, ip_address, event_type, request_uri, request_method, user_agent, referer, country_code, reason, created_at) 
+                    VALUES (?, ?, ?, ?, ?, 'GET', ?, ?, ?, ?, NOW())
                 ");
-                $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $countryCode, $type, $reason]);
+                $stmt->execute([$apiKeyId, $siteId, $ipAddress, $eventType, $requestUri, $userAgent, $referer, $countryCode, $reason]);
+            } elseif ($hasApiKeyId) {
+                // Tem api_key_id mas não tem reason ainda
+                $stmt = $db->prepare("
+                    INSERT INTO safenode_human_verification_logs 
+                    (api_key_id, site_id, ip_address, event_type, request_uri, request_method, user_agent, referer, country_code, created_at) 
+                    VALUES (?, ?, ?, ?, ?, 'GET', ?, ?, ?, NOW())
+                ");
+                $stmt->execute([$apiKeyId, $siteId, $ipAddress, $eventType, $requestUri, $userAgent, $referer, $countryCode]);
             } else {
-                // Inserir sem country_code (campo ainda não existe)
-                $stmt = $db->prepare("
-                    INSERT INTO safenode_hv_attempts 
-                    (api_key_id, ip_address, user_agent, referer, attempt_type, reason)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ");
-                $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $type, $reason]);
+                // Tabela ainda não foi atualizada - salvar em safenode_hv_attempts temporariamente
+                // Verificar se o campo country_code existe em safenode_hv_attempts
+                $hasCountryCode = false;
+                try {
+                    $checkStmt = $db->query("DESCRIBE safenode_hv_attempts");
+                    $columns = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
+                    $hasCountryCode = in_array('country_code', $columns);
+                } catch (PDOException $e) {
+                    $hasCountryCode = false;
+                }
+
+                if ($hasCountryCode) {
+                    $stmt = $db->prepare("
+                        INSERT INTO safenode_hv_attempts 
+                        (api_key_id, ip_address, user_agent, referer, country_code, attempt_type, reason)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $countryCode, $type, $reason]);
+                } else {
+                    $stmt = $db->prepare("
+                        INSERT INTO safenode_hv_attempts 
+                        (api_key_id, ip_address, user_agent, referer, attempt_type, reason)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    ");
+                    $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $type, $reason]);
+                }
             }
         } catch (PDOException $e) {
             error_log("HVAPIKeyManager::logAttempt Error: " . $e->getMessage());
@@ -733,19 +798,26 @@ HTML;
                 default => '24 HOUR'
             };
 
-            // Total de requisições
+            // Total de requisições - tabela unificada
             $stmt = $db->prepare("
                 SELECT COUNT(*) as total
-                FROM safenode_hv_attempts
+                FROM safenode_human_verification_logs
                 WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
             ");
             $stmt->execute([$apiKeyId]);
             $total = (int)$stmt->fetchColumn();
 
-            // Requisições por tipo
+            // Requisições por tipo (mapear event_type para attempt_type para compatibilidade)
             $stmt = $db->prepare("
-                SELECT attempt_type, COUNT(*) as count
-                FROM safenode_hv_attempts
+                SELECT 
+                    CASE 
+                        WHEN event_type = 'access_allowed' THEN 'init'
+                        WHEN event_type = 'human_validated' THEN 'validate'
+                        WHEN event_type = 'bot_blocked' THEN 'failed'
+                        ELSE 'init'
+                    END as attempt_type,
+                    COUNT(*) as count
+                FROM safenode_human_verification_logs
                 WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
                 GROUP BY attempt_type
             ");
@@ -760,15 +832,14 @@ HTML;
             $failed = ($byType['failed'] ?? 0) + ($byType['suspicious'] ?? 0);
             $successRate = $total > 0 ? round(($success / $total) * 100, 2) : 0;
 
-            // Requisições por hora (últimas 24h)
-            // Primeiro, buscar dados existentes
+            // Requisições por hora (últimas 24h) - tabela unificada
             $stmt = $db->prepare("
                 SELECT 
                     DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') as hour,
                     COUNT(*) as count,
-                    SUM(CASE WHEN attempt_type IN ('init', 'validate') THEN 1 ELSE 0 END) as success,
-                    SUM(CASE WHEN attempt_type IN ('failed', 'suspicious') THEN 1 ELSE 0 END) as failed
-                FROM safenode_hv_attempts
+                    SUM(CASE WHEN event_type IN ('human_validated', 'access_allowed') THEN 1 ELSE 0 END) as success,
+                    SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END) as failed
+                FROM safenode_human_verification_logs
                 WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
                 GROUP BY hour
                 ORDER BY hour ASC
@@ -808,10 +879,10 @@ HTML;
                 }
             }
 
-            // IPs mais frequentes
+            // IPs mais frequentes - tabela unificada
             $stmt = $db->prepare("
                 SELECT ip_address, COUNT(*) as count
-                FROM safenode_hv_attempts
+                FROM safenode_human_verification_logs
                 WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
                 GROUP BY ip_address
                 ORDER BY count DESC
@@ -826,7 +897,7 @@ HTML;
                 ];
             }
 
-            // Domínios mais frequentes (do referer)
+            // Domínios mais frequentes (do referer) - tabela unificada
             $stmt = $db->prepare("
                 SELECT 
                     CASE 
@@ -835,7 +906,7 @@ HTML;
                         ELSE 'Direct'
                     END as domain,
                     COUNT(*) as count
-                FROM safenode_hv_attempts
+                FROM safenode_human_verification_logs
                 WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
                 GROUP BY domain
                 ORDER BY count DESC
@@ -893,12 +964,12 @@ HTML;
                 default => '24 HOUR'
             };
 
-            // Requisições por minuto (última hora)
+            // Requisições por minuto (última hora) - tabela unificada
             $stmt = $db->prepare("
                 SELECT 
                     DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:00') as minute,
                     COUNT(*) as count
-                FROM safenode_hv_attempts
+                FROM safenode_human_verification_logs
                 WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
                 GROUP BY minute
                 ORDER BY minute ASC
@@ -920,13 +991,18 @@ HTML;
                 }
             }
 
-            // Distribuição por tipo de requisição
+            // Distribuição por tipo de requisição - tabela unificada
             $stmt = $db->prepare("
                 SELECT 
-                    attempt_type,
+                    CASE 
+                        WHEN event_type = 'access_allowed' THEN 'init'
+                        WHEN event_type = 'human_validated' THEN 'validate'
+                        WHEN event_type = 'bot_blocked' THEN 'failed'
+                        ELSE 'init'
+                    END as attempt_type,
                     COUNT(*) as count,
-                    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM safenode_hv_attempts WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)), 2) as percentage
-                FROM safenode_hv_attempts
+                    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM safenode_human_verification_logs WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)), 2) as percentage
+                FROM safenode_human_verification_logs
                 WHERE api_key_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
                 GROUP BY attempt_type
             ");
@@ -990,111 +1066,30 @@ HTML;
                 default => '24 HOUR'
             };
 
-            // Verificar se o campo country_code existe na tabela safenode_hv_attempts
-            $hasCountryCode = false;
-            try {
-                $checkStmt = $db->query("SHOW COLUMNS FROM safenode_hv_attempts LIKE 'country_code'");
-                $hasCountryCode = $checkStmt->rowCount() > 0;
-            } catch (PDOException $e) {
-                $hasCountryCode = false;
-            }
-
+            // Buscar dados geográficos da tabela unificada
             $countries = [];
-            
-            if ($hasCountryCode) {
-                // Buscar de safenode_hv_attempts se o campo existir
-                try {
-                    $stmt = $db->prepare("
-                        SELECT 
-                            country_code, 
-                            COUNT(*) as count,
-                            SUM(CASE WHEN attempt_type IN ('init', 'validate') THEN 1 ELSE 0 END) as success,
-                            SUM(CASE WHEN attempt_type IN ('failed', 'suspicious') THEN 1 ELSE 0 END) as failed
-                        FROM safenode_hv_attempts
-                        WHERE api_key_id = ? 
-                          AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
-                          AND country_code IS NOT NULL
-                          AND country_code != ''
-                          AND LENGTH(country_code) = 2
-                        GROUP BY country_code
-                        ORDER BY count DESC
-                    ");
-                    $stmt->execute([$apiKeyId]);
-                    $countries = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                } catch (PDOException $e) {
-                    error_log("HVAPIKeyManager::getGeoStats Query Error: " . $e->getMessage());
-                    $countries = [];
-                }
-            }
-            
-            // Se não encontrou dados em safenode_hv_attempts, tentar buscar de safenode_human_verification_logs
-            // através dos IPs que foram usados com esta API key
-            if (empty($countries)) {
-                try {
-                    // Buscar IPs únicos que foram usados com esta API key
-                    $stmt = $db->prepare("
-                        SELECT DISTINCT ip_address 
-                        FROM safenode_hv_attempts
-                        WHERE api_key_id = ? 
-                          AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
-                        LIMIT 100
-                    ");
-                    $stmt->execute([$apiKeyId]);
-                    $ips = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                    
-                    if (!empty($ips)) {
-                        // Buscar dados geográficos dos logs de verificação humana usando os mesmos IPs
-                        $placeholders = implode(',', array_fill(0, count($ips), '?'));
-                        $stmt = $db->prepare("
-                            SELECT 
-                                country_code, 
-                                COUNT(*) as count,
-                                SUM(CASE WHEN event_type IN ('human_validated', 'access_allowed') THEN 1 ELSE 0 END) as success,
-                                SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END) as failed
-                            FROM safenode_human_verification_logs
-                            WHERE ip_address IN ($placeholders)
-                              AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
-                              AND country_code IS NOT NULL
-                              AND country_code != ''
-                              AND LENGTH(country_code) = 2
-                            GROUP BY country_code
-                            ORDER BY count DESC
-                        ");
-                        $stmt->execute($ips);
-                        $countries = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    }
-                } catch (PDOException $e) {
-                    error_log("HVAPIKeyManager::getGeoStats Fallback Error: " . $e->getMessage());
-                }
-            }
-            
-            // Se ainda não encontrou dados, tentar buscar diretamente dos logs sem filtrar por IP
-            // (útil quando a API key está sendo usada mas não há registros em safenode_hv_attempts ainda)
-            if (empty($countries)) {
-                try {
-                    // Buscar dados geográficos dos logs de verificação humana do usuário
-                    // (assumindo que os logs estão relacionados aos sites do usuário)
-                    $stmt = $db->prepare("
-                        SELECT 
-                            country_code, 
-                            COUNT(*) as count,
-                            SUM(CASE WHEN event_type IN ('human_validated', 'access_allowed') THEN 1 ELSE 0 END) as success,
-                            SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END) as failed
-                        FROM safenode_human_verification_logs
-                        WHERE site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
-                          AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
-                          AND country_code IS NOT NULL
-                          AND country_code != ''
-                          AND LENGTH(country_code) = 2
-                        GROUP BY country_code
-                        ORDER BY count DESC
-                        LIMIT 10
-                    ");
-                    $stmt->execute([$userId]);
-                    $countries = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                } catch (PDOException $e) {
-                    error_log("HVAPIKeyManager::getGeoStats User Logs Fallback Error: " . $e->getMessage());
-                }
+            try {
+                $stmt = $db->prepare("
+                    SELECT 
+                        country_code, 
+                        COUNT(*) as count,
+                        SUM(CASE WHEN event_type IN ('human_validated', 'access_allowed') THEN 1 ELSE 0 END) as success,
+                        SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END) as failed
+                    FROM safenode_human_verification_logs
+                    WHERE api_key_id = ? 
+                      AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                      AND country_code IS NOT NULL
+                      AND country_code != ''
+                      AND LENGTH(country_code) = 2
+                    GROUP BY country_code
+                    ORDER BY count DESC
+                    LIMIT 10
+                ");
+                $stmt->execute([$apiKeyId]);
+                $countries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                error_log("HVAPIKeyManager::getGeoStats Query Error: " . $e->getMessage());
+                $countries = [];
             }
 
             $formatted = [];

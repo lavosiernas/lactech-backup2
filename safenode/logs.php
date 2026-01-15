@@ -101,12 +101,31 @@ if ($dateTo) {
 
 $whereClause = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
 
-// Contar total
+// Contar total da tabela unificada
 $totalLogs = 0;
 if ($db) {
     try {
-        $countStmt = $db->prepare("SELECT COUNT(*) as total FROM safenode_human_verification_logs $whereClause");
-        $countStmt->execute($params);
+        // Atualizar whereClause para incluir api_key_id quando necessário
+        $whereClauseUnified = $whereClause;
+        $paramsUnified = $params;
+        
+        // Se não há filtro de site específico e há userId, incluir api_key_id
+        if ($currentSiteId <= 0 && $userId) {
+            // Verificar se já tem filtro de site_id no whereClause
+            if (strpos($whereClauseUnified, 'site_id') === false) {
+                // Adicionar filtro para incluir logs do middleware (site_id) E do SDK (api_key_id)
+                if (strpos($whereClauseUnified, 'WHERE') !== false) {
+                    $whereClauseUnified .= " AND (site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?) OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?))";
+                } else {
+                    $whereClauseUnified .= " WHERE (site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?) OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?))";
+                }
+                $paramsUnified[] = $userId;
+                $paramsUnified[] = $userId;
+            }
+        }
+        
+        $countStmt = $db->prepare("SELECT COUNT(*) as total FROM safenode_human_verification_logs $whereClauseUnified");
+        $countStmt->execute($paramsUnified);
         $totalLogs = (int)$countStmt->fetch()['total'];
     } catch (PDOException $e) {
         error_log("Erro ao contar logs: " . $e->getMessage());
@@ -115,16 +134,37 @@ if ($db) {
 
 $totalPages = ceil($totalLogs / $limit);
 
-// Buscar logs
+// Buscar logs da tabela unificada
 $logs = [];
 if ($db) {
     try {
-        $sql = "SELECT * FROM safenode_human_verification_logs $whereClause ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        // Atualizar whereClause para incluir api_key_id quando necessário
+        $whereClauseUnified = $whereClause;
+        $paramsUnified = $params;
+        
+        // Se não há filtro de site específico e há userId, incluir api_key_id
+        if ($currentSiteId <= 0 && $userId) {
+            // Verificar se já tem filtro de site_id no whereClause
+            if (strpos($whereClauseUnified, 'site_id') === false) {
+                // Adicionar filtro para incluir logs do middleware (site_id) E do SDK (api_key_id)
+                if (strpos($whereClauseUnified, 'WHERE') !== false) {
+                    $whereClauseUnified .= " AND (site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?) OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?))";
+                } else {
+                    $whereClauseUnified .= " WHERE (site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?) OR api_key_id IN (SELECT id FROM safenode_hv_api_keys WHERE user_id = ?))";
+                }
+                $paramsUnified[] = $userId;
+                $paramsUnified[] = $userId;
+            }
+        }
+        
+        // Buscar logs da tabela unificada
+        $sql = "SELECT 
+            id, site_id, api_key_id, ip_address, event_type, request_uri, request_method, user_agent, referer, country_code, reason, created_at
+            FROM safenode_human_verification_logs $whereClauseUnified ORDER BY created_at DESC LIMIT ? OFFSET ?";
         $stmt = $db->prepare($sql);
-        $params[] = (int)$limit;
-        $params[] = (int)$offset;
-        $stmt->execute($params);
-        $logs = $stmt->fetchAll();
+        $paramsQuery = array_merge($paramsUnified, [(int)$limit, (int)$offset]);
+        $stmt->execute($paramsQuery);
+        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Erro ao buscar logs: " . $e->getMessage());
     }
@@ -137,13 +177,18 @@ $eventTypes = [
     'acesso_permitido' => 'Acesso Permitido'
 ];
 
-// Mapear valores do banco para linguagem clara (tabela safenode_human_verification_logs)
+// Mapear valores do banco para linguagem clara (ambas as tabelas)
 function getEventTypeLabel($eventType) {
     $map = [
         'human_validated' => 'Humano Validado',
         'access_allowed' => 'Acesso Permitido',
         'bot_blocked' => 'Bot Bloqueado',
-        'challenge_shown' => 'Desafio Exibido'
+        'challenge_shown' => 'Desafio Exibido',
+        // Tipos da tabela safenode_hv_attempts (já mapeados na query)
+        'validate' => 'Humano Validado',
+        'init' => 'Acesso Permitido',
+        'failed' => 'Bot Bloqueado',
+        'suspicious' => 'Bot Bloqueado'
     ];
     return $map[$eventType] ?? $eventType;
 }
@@ -153,7 +198,12 @@ function getEventTypeIcon($eventType) {
         'human_validated' => 'check-circle-2',
         'access_allowed' => 'check-circle-2',
         'bot_blocked' => 'shield-off',
-        'challenge_shown' => 'shield-alert'
+        'challenge_shown' => 'shield-alert',
+        // Tipos da tabela safenode_hv_attempts
+        'validate' => 'check-circle-2',
+        'init' => 'check-circle-2',
+        'failed' => 'shield-off',
+        'suspicious' => 'shield-off'
     ];
     return $map[$eventType] ?? 'info';
 }
@@ -163,7 +213,12 @@ function getEventTypeColor($eventType) {
         'human_validated' => 'green',
         'access_allowed' => 'green',
         'bot_blocked' => 'red',
-        'challenge_shown' => 'amber'
+        'challenge_shown' => 'amber',
+        // Tipos da tabela safenode_hv_attempts
+        'validate' => 'green',
+        'init' => 'green',
+        'failed' => 'red',
+        'suspicious' => 'red'
     ];
     return $map[$eventType] ?? 'zinc';
 }
@@ -1352,7 +1407,19 @@ function getEventTypeColor($eventType) {
                                         $eventLabel = getEventTypeLabel($log['event_type']);
                                         $eventIcon = getEventTypeIcon($log['event_type']);
                                         $eventColor = getEventTypeColor($log['event_type']);
-                                        $domain = $selectedSite['domain'] ?? ($log['request_uri'] ?? 'N/A');
+                                        
+                                        // Extrair domínio do request_uri se disponível
+                                        $domain = 'N/A';
+                                        if (!empty($log['request_uri'])) {
+                                            try {
+                                                $parsedUrl = parse_url($log['request_uri']);
+                                                $domain = $parsedUrl['host'] ?? ($selectedSite['domain'] ?? substr($log['request_uri'], 0, 50));
+                                            } catch (Exception $e) {
+                                                $domain = $selectedSite['domain'] ?? substr($log['request_uri'], 0, 50);
+                                            }
+                                        } elseif ($selectedSite) {
+                                            $domain = $selectedSite['domain'];
+                                        }
                                         ?>
                                         <tr class="border-b border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-mono">
