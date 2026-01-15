@@ -170,6 +170,25 @@ if ($db) {
     }
 }
 
+// Função helper para formatar data com timezone correto
+if (!function_exists('formatDateTime')) {
+    function formatDateTime($dateString, $format = 'd/m/Y H:i:s') {
+        if (empty($dateString)) {
+            return '';
+        }
+        try {
+            // Assumir que o banco armazena em UTC
+            $dateTime = new DateTime($dateString, new DateTimeZone('UTC'));
+            // Converter para timezone local (Brasil)
+            $dateTime->setTimezone(new DateTimeZone('America/Sao_Paulo'));
+            return $dateTime->format($format);
+        } catch (Exception $e) {
+            // Fallback caso haja erro na conversão
+            return date($format, strtotime($dateString));
+        }
+    }
+}
+
 // Tipos de eventos de verificação humana (linguagem clara)
 $eventTypes = [
     'humano_validado' => 'Humano Validado',
@@ -1423,7 +1442,7 @@ function getEventTypeColor($eventType) {
                                         ?>
                                         <tr class="border-b border-gray-200 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white font-mono">
-                                                <?php echo date('d/m/Y H:i:s', strtotime($log['created_at'])); ?>
+                                                <?php echo formatDateTime($log['created_at']); ?>
                                             </td>
                                             <td class="py-3 px-4">
                                                 <div class="flex items-center gap-2">
