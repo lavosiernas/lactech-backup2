@@ -53,13 +53,11 @@
                     this.initTime = Date.now();
                     this.initialized = true;
                     
-                    // Mostrar indicador visual de verificação ativa (se o método existir)
-                    if (typeof this.showVerificationIndicator === 'function') {
-                        try {
-                            this.showVerificationIndicator();
-                        } catch (e) {
-                            console.warn('SafeNode HV: Erro ao mostrar indicador', e);
-                        }
+                    // Sempre mostrar indicador visual de verificação ativa
+                    try {
+                        this.showVerificationIndicator();
+                    } catch (e) {
+                        console.warn('SafeNode HV: Erro ao mostrar indicador', e);
                     }
                     
                     return true;
@@ -305,14 +303,24 @@
                 const forms = document.querySelectorAll('form');
                 console.log('SafeNode HV: Tentativa', attempt + 1, '- Formulários encontrados:', forms.length);
                 
-                if (forms.length === 0 && attempt < 5) {
+                if (forms.length === 0 && attempt < 10) {
                     console.warn('SafeNode HV: Nenhum formulário encontrado, tentando novamente em 500ms...');
                     setTimeout(() => tryInsert(attempt + 1), 500);
                     return;
                 }
                 
                 if (forms.length === 0) {
-                    console.error('SafeNode HV: Nenhum formulário encontrado após 5 tentativas');
+                    console.warn('SafeNode HV: Nenhum formulário encontrado após 10 tentativas. A caixa aparecerá quando um formulário for adicionado à página.');
+                    // Criar um observer para detectar quando formulários forem adicionados
+                    const observer = new MutationObserver((mutations) => {
+                        const newForms = document.querySelectorAll('form');
+                        if (newForms.length > 0) {
+                            console.log('SafeNode HV: Formulário detectado, inserindo caixa de verificação...');
+                            this._insertVerificationBox(newForms);
+                            observer.disconnect();
+                        }
+                    });
+                    observer.observe(document.body, { childList: true, subtree: true });
                     return;
                 }
                 
@@ -321,7 +329,9 @@
             
             // Aguardar DOM estar pronto
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => tryInsert(0));
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => tryInsert(0), 100);
+                });
             } else {
                 // DOM já está pronto, aguardar um pouco para garantir
                 setTimeout(() => tryInsert(0), 100);

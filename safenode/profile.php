@@ -1430,18 +1430,18 @@ if ($db) {
         <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-dark-950">
         <!-- Header -->
-        <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-8 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-6">
-                <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+        <header class="min-h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 flex-shrink-0">
+            <div class="flex items-center gap-3 md:gap-6 min-w-0 flex-1">
+                <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors flex-shrink-0">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight"><?php echo $pageTitle; ?></h2>
-                    <p class="text-sm text-gray-600 dark:text-zinc-500 mt-0.5">Gerencie suas informações pessoais</p>
+                <div class="min-w-0 flex-1">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight break-words"><?php echo $pageTitle; ?></h2>
+                    <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-500 mt-0.5 break-words">Gerencie suas informações pessoais</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                 <div class="relative hidden md:block">
                     <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"></i>
                     <input type="text" placeholder="Buscar..." class="search-input">

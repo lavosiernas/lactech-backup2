@@ -1068,39 +1068,27 @@ $threatsPerDay = formatNumber($indexStats['threats_blocked_24h']);
                                     
                                     <a href="#" class="nav-item active">
                                         <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                                        <span class="font-medium">Home</span>
+                                        <span class="font-medium">Dashboard</span>
                                     </a>
                                     <a href="#" class="nav-item">
                                         <i data-lucide="globe" class="w-5 h-5"></i>
                                         <span class="font-medium">Gerenciar Sites</span>
                                     </a>
                                     <a href="#" class="nav-item">
-                                        <i data-lucide="activity" class="w-5 h-5"></i>
-                                        <span class="font-medium">Network</span>
+                                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                        <span class="font-medium">Verificação Humana</span>
                                     </a>
                                     <a href="#" class="nav-item">
-                                        <i data-lucide="cpu" class="w-5 h-5"></i>
-                                        <span class="font-medium">Kubernetes</span>
+                                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                                        <span class="font-medium">Logs</span>
                                     </a>
                                     <a href="#" class="nav-item">
-                                        <i data-lucide="compass" class="w-5 h-5"></i>
-                                        <span class="font-medium">Explorar</span>
-                                    </a>
-                                    <a href="#" class="nav-item">
-                                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                                        <span class="font-medium">Analisar</span>
-                                    </a>
-                                    <a href="#" class="nav-item">
-                                        <i data-lucide="users-2" class="w-5 h-5"></i>
-                                        <span class="font-medium">Grupos</span>
+                                        <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+                                        <span class="font-medium">IPs Suspeitos</span>
                                     </a>
                                     
                                     <div class="pt-6 mt-6 border-t border-white/5">
                                         <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-3">Sistema</p>
-                                        <a href="#" class="nav-item">
-                                            <i data-lucide="shield-check" class="w-5 h-5"></i>
-                                            <span class="font-medium">Verificação Humana</span>
-                                        </a>
                                         <a href="#" class="nav-item">
                                             <i data-lucide="settings-2" class="w-5 h-5"></i>
                                             <span class="font-medium">Configurações</span>

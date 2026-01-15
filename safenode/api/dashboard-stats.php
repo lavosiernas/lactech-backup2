@@ -354,6 +354,7 @@ try {
         $sqlTopIPs = "SELECT 
                       ip_address, 
                       COUNT(*) AS block_count, 
+                      MIN(created_at) AS first_seen,
                       MAX(created_at) AS last_blocked,
                       COUNT(DISTINCT event_type) AS threat_types_count,
                       SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT event_type ORDER BY event_type ASC SEPARATOR ','), ',', 10) AS threat_types 
@@ -589,7 +590,9 @@ try {
                     'threat_types_count' => (int)($ip['threat_types_count'] ?? 0),
                     'avg_threat_score' => 0,
                     'max_threat_score' => 0,
-                    'last_blocked' => $ip['last_blocked'] ?? null
+                    'first_seen' => $ip['first_seen'] ?? null,
+                    'last_blocked' => $ip['last_blocked'] ?? null,
+                    'last_seen' => $ip['last_blocked'] ?? null // Alias para compatibilidade
                 ];
             }, $topBlockedIPs),
             'top_threat_types' => array_map(function($threat) {

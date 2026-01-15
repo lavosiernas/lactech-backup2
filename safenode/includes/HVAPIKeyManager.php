@@ -96,26 +96,36 @@ class HVAPIKeyManager
             }
 
             // Validar domínio permitido se configurado
-            if (!empty($key['allowed_domains']) && $origin) {
-                $allowedDomains = array_map('trim', explode(',', $key['allowed_domains']));
-                $originHost = parse_url($origin, PHP_URL_HOST);
-                $isAllowed = false;
-                
-                foreach ($allowedDomains as $domain) {
-                    if (empty($domain)) continue;
-                    // Permitir domínio exato ou subdomínios
-                    if ($originHost === $domain || 
-                        $originHost === "www.$domain" ||
-                        strpos($originHost, ".$domain") !== false) {
-                        $isAllowed = true;
-                        break;
+            // Se allowed_domains estiver vazio/null, permitir qualquer domínio
+            if (!empty($key['allowed_domains'])) {
+                // Se não há origin, não podemos validar - permitir em desenvolvimento
+                if (empty($origin)) {
+                    // Em desenvolvimento, permitir sem origin
+                    // Em produção, isso pode ser mais restritivo
+                    error_log("HVAPIKeyManager: Origin não fornecido, permitindo em desenvolvimento");
+                } else {
+                    $allowedDomains = array_map('trim', explode(',', $key['allowed_domains']));
+                    $originHost = parse_url($origin, PHP_URL_HOST);
+                    $isAllowed = false;
+                    
+                    foreach ($allowedDomains as $domain) {
+                        if (empty($domain)) continue;
+                        // Permitir domínio exato ou subdomínios
+                        if ($originHost === $domain || 
+                            $originHost === "www.$domain" ||
+                            strpos($originHost, ".$domain") !== false ||
+                            strpos($originHost, $domain) !== false) {
+                            $isAllowed = true;
+                            break;
+                        }
                     }
-                }
-                
-                if (!$isAllowed) {
-                    self::logAttempt($key['id'], $_SERVER['REMOTE_ADDR'] ?? '', 
-                        $_SERVER['HTTP_USER_AGENT'] ?? '', $origin, 'failed', 'Domínio não permitido');
-                    return null;
+                    
+                    if (!$isAllowed) {
+                        error_log("HVAPIKeyManager: Domínio não permitido. Origin: $originHost, Permitidos: " . implode(', ', $allowedDomains));
+                        self::logAttempt($key['id'], $_SERVER['REMOTE_ADDR'] ?? '', 
+                            $_SERVER['HTTP_USER_AGENT'] ?? '', $origin, 'failed', 'Domínio não permitido: ' . $originHost);
+                        return null;
+                    }
                 }
             }
 
@@ -222,27 +232,160 @@ class HVAPIKeyManager
 
         try {
             $countryCode = self::detectCountryCode();
+            
+            // Verificar se o campo country_code existe na tabela
+            $hasCountryCode = false;
+            try {
+                // Usar DESCRIBE ou SHOW COLUMNS para verificar se o campo existe
+                $checkStmt = $db->query("DESCRIBE safenode_hv_attempts");
+                $columns = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
+                $hasCountryCode = in_array('country_code', $columns);
+            } catch (PDOException $e) {
+                // Fallback: tentar com SHOW COLUMNS LIKE
+                try {
+                    $checkStmt = $db->query("SHOW COLUMNS FROM safenode_hv_attempts LIKE 'country_code'");
+                    $hasCountryCode = $checkStmt->rowCount() > 0;
+                } catch (PDOException $e2) {
+                    // Se não conseguir verificar, assumir que não existe
+                    $hasCountryCode = false;
+                }
+            }
 
-            $stmt = $db->prepare("
-                INSERT INTO safenode_hv_attempts 
-                (api_key_id, ip_address, user_agent, referer, country_code, attempt_type, reason)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $countryCode, $type, $reason]);
+            if ($hasCountryCode) {
+                // Inserir com country_code
+                $stmt = $db->prepare("
+                    INSERT INTO safenode_hv_attempts 
+                    (api_key_id, ip_address, user_agent, referer, country_code, attempt_type, reason)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $countryCode, $type, $reason]);
+            } else {
+                // Inserir sem country_code (campo ainda não existe)
+                $stmt = $db->prepare("
+                    INSERT INTO safenode_hv_attempts 
+                    (api_key_id, ip_address, user_agent, referer, attempt_type, reason)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([$apiKeyId, $ipAddress, $userAgent, $referer, $type, $reason]);
+            }
         } catch (PDOException $e) {
             error_log("HVAPIKeyManager::logAttempt Error: " . $e->getMessage());
         }
     }
 
     /**
-     * Detecta o código do país baseado em headers HTTP
+     * Chama uma API externa de geolocalização usando curl ou file_get_contents
+     */
+    private static function callGeoAPI(string $url, callable $parser): ?string
+    {
+        // Tentar usar curl primeiro (mais confiável)
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 3,
+                CURLOPT_CONNECTTIMEOUT => 2,
+                CURLOPT_USERAGENT => 'SafeNode/1.0',
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_HTTPHEADER => [
+                    'Accept: application/json'
+                ]
+            ]);
+            
+            $response = @curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            curl_close($ch);
+            
+            if ($response === false || $httpCode !== 200) {
+                return null;
+            }
+            
+            return $parser($response);
+        }
+        
+        // Fallback para file_get_contents
+        if (ini_get('allow_url_fopen')) {
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 3,
+                    'method' => 'GET',
+                    'header' => [
+                        'User-Agent: SafeNode/1.0',
+                        'Accept: application/json'
+                    ],
+                    'ignore_errors' => true
+                ],
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false
+                ]
+            ]);
+            
+            $response = @file_get_contents($url, false, $context);
+            if ($response === false) {
+                return null;
+            }
+            
+            return $parser($response);
+        }
+        
+        return null;
+    }
+
+    /**
+     * Obtém o IP real do cliente, considerando proxies e CDNs
+     */
+    private static function getRealIP(): string
+    {
+        // Lista de headers que podem conter o IP real
+        $ipHeaders = [
+            'HTTP_CF_CONNECTING_IP',      // Cloudflare
+            'HTTP_X_REAL_IP',             // Nginx proxy
+            'HTTP_X_FORWARDED_FOR',       // Proxies padrão
+            'HTTP_CLIENT_IP',             // Alguns proxies
+            'REMOTE_ADDR'                 // IP direto
+        ];
+        
+        foreach ($ipHeaders as $header) {
+            if (!empty($_SERVER[$header])) {
+                $ip = trim($_SERVER[$header]);
+                
+                // Se for X-Forwarded-For, pegar o primeiro IP (cliente real)
+                if ($header === 'HTTP_X_FORWARDED_FOR') {
+                    $ips = explode(',', $ip);
+                    $ip = trim($ips[0]);
+                }
+                
+                // Validar se é um IP válido
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                    return $ip;
+                } elseif (filter_var($ip, FILTER_VALIDATE_IP)) {
+                    // Aceitar também IPs privados (para fallback)
+                    return $ip;
+                }
+            }
+        }
+        
+        return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    }
+
+    /**
+     * Detecta o código do país baseado em headers HTTP, histórico ou API externa
      */
     private static function detectCountryCode(): ?string
     {
+        $ipAddress = self::getRealIP();
+        
+        // 1. Tentar headers HTTP primeiro (Cloudflare, proxies, etc)
         $headerKeys = [
             'HTTP_CF_IPCOUNTRY',
             'HTTP_X_COUNTRY_CODE',
             'HTTP_GEOIP_COUNTRY_CODE',
+            'HTTP_X_FORWARDED_FOR_COUNTRY',
             'GEOIP_COUNTRY_CODE'
         ];
         foreach ($headerKeys as $key) {
@@ -253,6 +396,125 @@ class HVAPIKeyManager
                 }
             }
         }
+        
+        // 2. Fallback: Tentar buscar do histórico usando a tabela safenode_human_verification_logs
+        if (!empty($ipAddress)) {
+            try {
+                $db = getSafeNodeDatabase();
+                if ($db) {
+                    // Buscar o último country_code usado para este IP
+                    $stmt = $db->prepare("
+                        SELECT country_code 
+                        FROM safenode_human_verification_logs 
+                        WHERE ip_address = ? 
+                          AND country_code IS NOT NULL 
+                          AND country_code != ''
+                        ORDER BY created_at DESC 
+                        LIMIT 1
+                    ");
+                    $stmt->execute([$ipAddress]);
+                    $result = $stmt->fetch();
+                    if ($result && !empty($result['country_code'])) {
+                        $code = strtoupper(trim($result['country_code']));
+                        if (preg_match('/^[A-Z]{2}$/', $code)) {
+                            return $code;
+                        }
+                    }
+                    
+                    // Também tentar buscar de safenode_hv_attempts se o campo existir
+                    try {
+                        $checkStmt = $db->query("DESCRIBE safenode_hv_attempts");
+                        $columns = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
+                        if (in_array('country_code', $columns)) {
+                            $stmt = $db->prepare("
+                                SELECT country_code 
+                                FROM safenode_hv_attempts 
+                                WHERE ip_address = ? 
+                                  AND country_code IS NOT NULL 
+                                  AND country_code != ''
+                                ORDER BY created_at DESC 
+                                LIMIT 1
+                            ");
+                            $stmt->execute([$ipAddress]);
+                            $result = $stmt->fetch();
+                            if ($result && !empty($result['country_code'])) {
+                                $code = strtoupper(trim($result['country_code']));
+                                if (preg_match('/^[A-Z]{2}$/', $code)) {
+                                    return $code;
+                                }
+                            }
+                        }
+                    } catch (PDOException $e) {
+                        // Ignorar
+                    }
+                }
+            } catch (PDOException $e) {
+                // Ignorar erro e continuar
+            }
+        }
+        
+        // 3. Fallback final: Usar API externa (apenas para IPs públicos)
+        if (!empty($ipAddress) && filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            // Tentar múltiplas APIs de geolocalização como fallback
+            $apis = [
+                // API 1: ip-api.com (HTTP - mais rápido)
+                [
+                    'url' => "http://ip-api.com/json/{$ipAddress}?fields=status,countryCode",
+                    'parser' => function($response) {
+                        $data = json_decode($response, true);
+                        if (isset($data['status']) && $data['status'] === 'success' && !empty($data['countryCode'])) {
+                            return strtoupper(trim($data['countryCode']));
+                        }
+                        return null;
+                    }
+                ],
+                // API 2: ip-api.com (HTTPS - mais seguro)
+                [
+                    'url' => "https://ip-api.com/json/{$ipAddress}?fields=status,countryCode",
+                    'parser' => function($response) {
+                        $data = json_decode($response, true);
+                        if (isset($data['status']) && $data['status'] === 'success' && !empty($data['countryCode'])) {
+                            return strtoupper(trim($data['countryCode']));
+                        }
+                        return null;
+                    }
+                ],
+                // API 3: ipapi.co (alternativa)
+                [
+                    'url' => "https://ipapi.co/{$ipAddress}/country_code/",
+                    'parser' => function($response) {
+                        $code = trim($response);
+                        if (preg_match('/^[A-Z]{2}$/', $code)) {
+                            return strtoupper($code);
+                        }
+                        return null;
+                    }
+                ],
+                // API 4: ip-api.com JSON completo (fallback)
+                [
+                    'url' => "http://ip-api.com/json/{$ipAddress}",
+                    'parser' => function($response) {
+                        $data = json_decode($response, true);
+                        if (isset($data['status']) && $data['status'] === 'success' && !empty($data['countryCode'])) {
+                            return strtoupper(trim($data['countryCode']));
+                        }
+                        return null;
+                    }
+                ]
+            ];
+            
+            foreach ($apis as $api) {
+                try {
+                    $code = self::callGeoAPI($api['url'], $api['parser']);
+                    if ($code && preg_match('/^[A-Z]{2}$/', $code) && $code !== 'XX') {
+                        return $code;
+                    }
+                } catch (Exception $e) {
+                    continue;
+                }
+            }
+        }
+        
         return null;
     }
 
@@ -359,46 +621,83 @@ class HVAPIKeyManager
     const apiUrl = '{$apiUrlEscaped}';
     const hv = new SafeNodeHV(apiUrl, apiKey);
     
+    // Função para configurar um formulário
+    const setupForm = (form) => {
+        if (form.hasAttribute('data-safenode-setup')) {
+            return; // Já configurado
+        }
+        
+        form.setAttribute('data-safenode-setup', 'true');
+        
+        if (!form.id) {
+            const tempId = 'safenode_form_' + Math.random().toString(36).substr(2, 9);
+            form.id = tempId;
+        }
+        
+        // Anexar campos hidden ao formulário
+        try {
+            hv.attachToForm('#' + form.id);
+        } catch (e) {
+            console.warn('SafeNode HV: Erro ao anexar ao formulário', form.id, e);
+        }
+        
+        // Configurar handler de submit
+        const submitHandler = async (e) => {
+            e.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+            let originalText = '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                originalText = submitBtn.textContent || submitBtn.value || '';
+                if (submitBtn.textContent) submitBtn.textContent = 'Validando...';
+                if (submitBtn.value) submitBtn.value = 'Validando...';
+            }
+            try {
+                await hv.validateForm('#' + form.id);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+                form.removeEventListener('submit', submitHandler);
+                form.submit();
+            } catch (error) {
+                console.error('SafeNode HV: Erro na validação:', error);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    if (submitBtn.textContent) submitBtn.textContent = originalText;
+                    if (submitBtn.value) submitBtn.value = originalText;
+                }
+                alert('Verificação de segurança falhou. Por favor, tente novamente.');
+            }
+        };
+        
+        // Remover listener anterior se existir e adicionar novo
+        form.removeEventListener('submit', submitHandler);
+        form.addEventListener('submit', submitHandler);
+    };
+    
+    // Inicializar SDK
     hv.init().then(() => {
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
-            if (form.id) {
-                hv.attachToForm('#' + form.id);
-            } else {
-                const tempId = 'safenode_form_' + Math.random().toString(36).substr(2, 9);
-                form.id = tempId;
-                hv.attachToForm('#' + tempId);
+        console.log('SafeNode HV: SDK inicializado com sucesso!');
+        
+        // A caixa de verificação será mostrada automaticamente pelo SDK
+        // Aguardar um pouco para garantir que os formulários estejam no DOM
+        setTimeout(() => {
+            // Configurar formulários existentes
+            const existingForms = document.querySelectorAll('form');
+            existingForms.forEach(setupForm);
+            
+            // Observar novos formulários adicionados dinamicamente
+            const observer = new MutationObserver((mutations) => {
+                const newForms = document.querySelectorAll('form:not([data-safenode-setup])');
+                newForms.forEach(setupForm);
+            });
+            
+            if (document.body) {
+                observer.observe(document.body, { childList: true, subtree: true });
             }
             
-            const submitHandler = async (e) => {
-                e.preventDefault();
-                const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
-                let originalText = '';
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    originalText = submitBtn.textContent || submitBtn.value || '';
-                    if (submitBtn.textContent) submitBtn.textContent = 'Validando...';
-                    if (submitBtn.value) submitBtn.value = 'Validando...';
-                }
-                try {
-                    await hv.validateForm('#' + form.id);
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                    }
-                    form.removeEventListener('submit', submitHandler);
-                    form.submit();
-                } catch (error) {
-                    console.error('SafeNode HV: Erro na validação:', error);
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        if (submitBtn.textContent) submitBtn.textContent = originalText;
-                        if (submitBtn.value) submitBtn.value = originalText;
-                    }
-                    alert('Verificação de segurança falhou. Por favor, tente novamente.');
-                }
-            };
-            form.addEventListener('submit', submitHandler);
-        });
+            console.log('SafeNode HV: Verificação humana ativa 🛡️');
+        }, 500);
     }).catch((error) => {
         console.error('SafeNode HV: Erro ao inicializar', error);
     });
@@ -462,6 +761,7 @@ HTML;
             $successRate = $total > 0 ? round(($success / $total) * 100, 2) : 0;
 
             // Requisições por hora (últimas 24h)
+            // Primeiro, buscar dados existentes
             $stmt = $db->prepare("
                 SELECT 
                     DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') as hour,
@@ -474,14 +774,38 @@ HTML;
                 ORDER BY hour ASC
             ");
             $stmt->execute([$apiKeyId]);
-            $hourly = [];
+            $hourlyData = [];
             while ($row = $stmt->fetch()) {
-                $hourly[] = [
-                    'hour' => $row['hour'],
+                $hourlyData[$row['hour']] = [
                     'total' => (int)$row['count'],
                     'success' => (int)$row['success'],
                     'failed' => (int)$row['failed']
                 ];
+            }
+            
+            // Preencher todas as últimas 24 horas com zeros se não houver dados
+            $hourly = [];
+            $now = new DateTime();
+            for ($i = 23; $i >= 0; $i--) {
+                $hour = clone $now;
+                $hour->modify("-{$i} hours");
+                $hourKey = $hour->format('Y-m-d H:00:00');
+                
+                if (isset($hourlyData[$hourKey])) {
+                    $hourly[] = [
+                        'hour' => $hourKey,
+                        'total' => $hourlyData[$hourKey]['total'],
+                        'success' => $hourlyData[$hourKey]['success'],
+                        'failed' => $hourlyData[$hourKey]['failed']
+                    ];
+                } else {
+                    $hourly[] = [
+                        'hour' => $hourKey,
+                        'total' => 0,
+                        'success' => 0,
+                        'failed' => 0
+                    ];
+                }
             }
 
             // IPs mais frequentes
@@ -666,30 +990,123 @@ HTML;
                 default => '24 HOUR'
             };
 
-            // Requisições por país
-            $stmt = $db->prepare("
-                SELECT 
-                    country_code, 
-                    COUNT(*) as count,
-                    SUM(CASE WHEN attempt_type IN ('init', 'validate') THEN 1 ELSE 0 END) as success,
-                    SUM(CASE WHEN attempt_type IN ('failed', 'suspicious') THEN 1 ELSE 0 END) as failed
-                FROM safenode_hv_attempts
-                WHERE api_key_id = ? 
-                  AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
-                  AND country_code IS NOT NULL
-                GROUP BY country_code
-                ORDER BY count DESC
-            ");
-            $stmt->execute([$apiKeyId]);
-            $countries = $stmt->fetchAll();
+            // Verificar se o campo country_code existe na tabela safenode_hv_attempts
+            $hasCountryCode = false;
+            try {
+                $checkStmt = $db->query("SHOW COLUMNS FROM safenode_hv_attempts LIKE 'country_code'");
+                $hasCountryCode = $checkStmt->rowCount() > 0;
+            } catch (PDOException $e) {
+                $hasCountryCode = false;
+            }
+
+            $countries = [];
+            
+            if ($hasCountryCode) {
+                // Buscar de safenode_hv_attempts se o campo existir
+                try {
+                    $stmt = $db->prepare("
+                        SELECT 
+                            country_code, 
+                            COUNT(*) as count,
+                            SUM(CASE WHEN attempt_type IN ('init', 'validate') THEN 1 ELSE 0 END) as success,
+                            SUM(CASE WHEN attempt_type IN ('failed', 'suspicious') THEN 1 ELSE 0 END) as failed
+                        FROM safenode_hv_attempts
+                        WHERE api_key_id = ? 
+                          AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                          AND country_code IS NOT NULL
+                          AND country_code != ''
+                          AND LENGTH(country_code) = 2
+                        GROUP BY country_code
+                        ORDER BY count DESC
+                    ");
+                    $stmt->execute([$apiKeyId]);
+                    $countries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (PDOException $e) {
+                    error_log("HVAPIKeyManager::getGeoStats Query Error: " . $e->getMessage());
+                    $countries = [];
+                }
+            }
+            
+            // Se não encontrou dados em safenode_hv_attempts, tentar buscar de safenode_human_verification_logs
+            // através dos IPs que foram usados com esta API key
+            if (empty($countries)) {
+                try {
+                    // Buscar IPs únicos que foram usados com esta API key
+                    $stmt = $db->prepare("
+                        SELECT DISTINCT ip_address 
+                        FROM safenode_hv_attempts
+                        WHERE api_key_id = ? 
+                          AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                        LIMIT 100
+                    ");
+                    $stmt->execute([$apiKeyId]);
+                    $ips = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                    
+                    if (!empty($ips)) {
+                        // Buscar dados geográficos dos logs de verificação humana usando os mesmos IPs
+                        $placeholders = implode(',', array_fill(0, count($ips), '?'));
+                        $stmt = $db->prepare("
+                            SELECT 
+                                country_code, 
+                                COUNT(*) as count,
+                                SUM(CASE WHEN event_type IN ('human_validated', 'access_allowed') THEN 1 ELSE 0 END) as success,
+                                SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END) as failed
+                            FROM safenode_human_verification_logs
+                            WHERE ip_address IN ($placeholders)
+                              AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                              AND country_code IS NOT NULL
+                              AND country_code != ''
+                              AND LENGTH(country_code) = 2
+                            GROUP BY country_code
+                            ORDER BY count DESC
+                        ");
+                        $stmt->execute($ips);
+                        $countries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    }
+                } catch (PDOException $e) {
+                    error_log("HVAPIKeyManager::getGeoStats Fallback Error: " . $e->getMessage());
+                }
+            }
+            
+            // Se ainda não encontrou dados, tentar buscar diretamente dos logs sem filtrar por IP
+            // (útil quando a API key está sendo usada mas não há registros em safenode_hv_attempts ainda)
+            if (empty($countries)) {
+                try {
+                    // Buscar dados geográficos dos logs de verificação humana do usuário
+                    // (assumindo que os logs estão relacionados aos sites do usuário)
+                    $stmt = $db->prepare("
+                        SELECT 
+                            country_code, 
+                            COUNT(*) as count,
+                            SUM(CASE WHEN event_type IN ('human_validated', 'access_allowed') THEN 1 ELSE 0 END) as success,
+                            SUM(CASE WHEN event_type = 'bot_blocked' THEN 1 ELSE 0 END) as failed
+                        FROM safenode_human_verification_logs
+                        WHERE site_id IN (SELECT id FROM safenode_sites WHERE user_id = ?)
+                          AND created_at >= DATE_SUB(NOW(), INTERVAL $interval)
+                          AND country_code IS NOT NULL
+                          AND country_code != ''
+                          AND LENGTH(country_code) = 2
+                        GROUP BY country_code
+                        ORDER BY count DESC
+                        LIMIT 10
+                    ");
+                    $stmt->execute([$userId]);
+                    $countries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (PDOException $e) {
+                    error_log("HVAPIKeyManager::getGeoStats User Logs Fallback Error: " . $e->getMessage());
+                }
+            }
 
             $formatted = [];
             foreach ($countries as $c) {
-                $formatted[$c['country_code']] = [
-                    'count' => (int)$c['count'],
-                    'success' => (int)$c['success'],
-                    'failed' => (int)$c['failed']
-                ];
+                $code = strtoupper(trim($c['country_code'] ?? ''));
+                if (!empty($code) && preg_match('/^[A-Z]{2}$/', $code)) {
+                    $formatted[$code] = [
+                        'count' => (int)($c['count'] ?? 0),
+                        'success' => (int)($c['success'] ?? 0),
+                        'failed' => (int)($c['failed'] ?? 0)
+                    ];
+                }
             }
 
             return $formatted;

@@ -1082,15 +1082,15 @@ if ($db && $currentSiteId > 0) {
         <!-- Main Content -->
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-dark-950">
             <!-- Header -->
-            <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0">
-                <div class="flex items-center gap-6">
-                    <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            <header class="min-h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 flex-shrink-0">
+                <div class="flex items-center gap-3 md:gap-6 min-w-0 flex-1">
+                    <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors flex-shrink-0">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">IPs que Falharam Verificação</h2>
+                    <div class="min-w-0 flex-1">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight break-words">IPs que Falharam Verificação</h2>
                         <?php if ($selectedSite): ?>
-                            <p class="text-sm text-gray-600 dark:text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
+                            <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-500 font-mono mt-0.5 break-words"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -1124,7 +1124,8 @@ if ($db && $currentSiteId > 0) {
                 console.log('API Response:', data);
                 
                 if (data.success) {
-                    suspiciousData = data.data?.analytics?.suspicious_ips || [];
+                    // Tentar buscar de analytics primeiro, se não existir usar top_blocked_ips
+                    suspiciousData = data.data?.analytics?.suspicious_ips || data.data?.top_blocked_ips || [];
                     console.log('Suspicious IPs Data:', suspiciousData);
                     updateSuspiciousPage();
                 } else {
@@ -1181,22 +1182,30 @@ if ($db && $currentSiteId > 0) {
                 
                 <div class="space-y-4">
                     ${ips.map(ip => {
+                        // Calcular nível de suspeição baseado em block_count ou suspicion_score
+                        const blockCount = ip.block_count || ip.total_attacks || 0;
+                        const suspicionScore = ip.suspicion_score || (blockCount > 10 ? 70 : blockCount > 5 ? 50 : 30);
+                        
                         let suspicionLevel = 'Médio';
                         let suspicionColor = 'amber';
-                        if (ip.suspicion_score >= 70) {
+                        if (suspicionScore >= 70 || blockCount > 10) {
                             suspicionLevel = 'Crítico';
                             suspicionColor = 'red';
-                        } else if (ip.suspicion_score >= 50) {
+                        } else if (suspicionScore >= 50 || blockCount > 5) {
                             suspicionLevel = 'Alto';
                             suspicionColor = 'orange';
                         }
                         
                         let suspicionBadgeClass = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-                        if (ip.suspicion_score >= 70) {
+                        if (suspicionScore >= 70 || blockCount > 10) {
                             suspicionBadgeClass = 'bg-red-500/20 text-red-400 border-red-500/30';
-                        } else if (ip.suspicion_score >= 50) {
+                        } else if (suspicionScore >= 50 || blockCount > 5) {
                             suspicionBadgeClass = 'bg-orange-500/20 text-orange-400 border-orange-500/30';
                         }
+                        
+                        // Usar last_blocked se last_seen não existir
+                        const lastSeen = ip.last_seen || ip.last_blocked || null;
+                        const firstSeen = ip.first_seen || null;
                         
                         return `
                             <div class="glass rounded-xl p-6">
@@ -1209,7 +1218,7 @@ if ($db && $currentSiteId > 0) {
                                             </span>
                                         </div>
                                         <p class="text-sm text-gray-600 dark:text-zinc-400">
-                                            Bloqueios: <span class="text-gray-900 dark:text-white font-semibold">${ip.block_count || 0}</span>
+                                            Bloqueios: <span class="text-gray-900 dark:text-white font-semibold">${blockCount}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -1217,15 +1226,15 @@ if ($db && $currentSiteId > 0) {
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                     <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                         <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1">Tentativas Bloqueadas</p>
-                                        <p class="text-xl font-bold text-red-600 dark:text-red-400">${ip.block_count || 0}</p>
+                                        <p class="text-xl font-bold text-red-600 dark:text-red-400">${blockCount}</p>
                                     </div>
                                     <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                         <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1">Primeira Tentativa</p>
-                                        <p class="text-sm font-bold text-gray-900 dark:text-white">${ip.first_seen ? new Date(ip.first_seen).toLocaleString('pt-BR') : 'N/A'}</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">${firstSeen ? new Date(firstSeen).toLocaleString('pt-BR') : 'N/A'}</p>
                                     </div>
                                     <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                         <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1">Última Tentativa</p>
-                                        <p class="text-sm font-bold text-gray-900 dark:text-white">${ip.last_seen ? new Date(ip.last_seen).toLocaleString('pt-BR') : 'N/A'}</p>
+                                        <p class="text-sm font-bold text-gray-900 dark:text-white">${lastSeen ? new Date(lastSeen).toLocaleString('pt-BR') : 'N/A'}</p>
                                     </div>
                                 </div>
                                 
@@ -1236,10 +1245,12 @@ if ($db && $currentSiteId > 0) {
                                     </div>
                                 ` : ''}
                                 
-                                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
-                                    <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1 font-semibold">Última atividade</p>
-                                    <p class="text-sm text-gray-900 dark:text-white">${new Date(ip.last_seen).toLocaleString('pt-BR')}</p>
-                                </div>
+                                ${lastSeen ? `
+                                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                                        <p class="text-xs text-gray-600 dark:text-zinc-400 mb-1 font-semibold">Última atividade</p>
+                                        <p class="text-sm text-gray-900 dark:text-white">${new Date(lastSeen).toLocaleString('pt-BR')}</p>
+                                    </div>
+                                ` : ''}
                             </div>
                         `;
                     }).join('')}

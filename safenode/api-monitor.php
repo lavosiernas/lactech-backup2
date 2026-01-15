@@ -61,6 +61,32 @@ $countryNames = [
     'JP' => 'Japão', 'CA' => 'Canadá', 'AR' => 'Argentina', 'PT' => 'Portugal',
     'ES' => 'Espanha', 'MX' => 'México', 'IN' => 'Índia', 'SG' => 'Singapura'
 ];
+
+/**
+ * Retorna HTML com imagem da bandeira do país usando flagcdn.com
+ */
+function getCountryFlag($code) {
+    if (empty($code) || strlen($code) !== 2) {
+        return '<span class="text-gray-400">🌐</span>';
+    }
+    
+    $code = strtolower(trim($code));
+    
+    // Validar que são letras válidas
+    if (!preg_match('/^[a-z]{2}$/', $code)) {
+        return '<span class="text-gray-400">🌐</span>';
+    }
+    
+    // Usar flagcdn.com para exibir bandeiras como imagens SVG
+    // Isso funciona em todos os sistemas operacionais e navegadores
+    return '<img src="https://flagcdn.com/w20/' . htmlspecialchars($code) . '.png" 
+                 srcset="https://flagcdn.com/w40/' . htmlspecialchars($code) . '.png 2x"
+                 width="20" 
+                 height="15" 
+                 alt="' . htmlspecialchars(strtoupper($code)) . '"
+                 class="inline-block align-middle rounded-sm"
+                 style="object-fit: cover; border: 1px solid rgba(0,0,0,0.1);">';
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full">
@@ -248,18 +274,17 @@ $countryNames = [
             <!-- Header -->
             <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center gap-6">
-                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-gray-500 dark:text-zinc-400">
-                        <i data-lucide="menu" class="w-6 h-6"></i>
-                    </button>
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight"><?php echo $pageTitle; ?></h2>
                         <p class="text-sm text-gray-700 dark:text-zinc-500 mt-0.5">Estatísticas detalhadas para <?php echo htmlspecialchars($apiKeyData['name']); ?></p>
                     </div>
                 </div>
-                <a href="human-verification.php" class="px-4 py-2 bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-sm font-semibold flex items-center gap-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    Voltar
-                </a>
+                <div class="flex items-center gap-3">
+                    <a href="human-verification.php" class="px-4 py-2 bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-sm font-semibold flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        Voltar
+                    </a>
+                </div>
             </header>
 
             <!-- Scrollable Content -->
@@ -319,7 +344,7 @@ $countryNames = [
                         </div>
                         <div class="glass p-6 rounded-2xl stat-card">
                             <p class="text-xs font-bold text-gray-500 dark:text-zinc-500 uppercase tracking-widest mb-1">Países Ativos</p>
-                            <h3 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight"><?php echo count($stats['geo']); ?></h3>
+                            <h3 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight"><?php echo count($stats['geo'] ?? []); ?></h3>
                             <div class="mt-4 flex items-center text-red-500 gap-1 text-xs font-bold">
                                 <i data-lucide="globe" class="w-3 h-3"></i>
                                 <span>Global</span>
@@ -349,21 +374,24 @@ $countryNames = [
                             <!-- Country List -->
                             <div class="space-y-4">
                                 <h4 class="text-xs font-bold text-gray-400 dark:text-zinc-600 uppercase tracking-widest mb-2">Principais Países</h4>
-                                <?php if (empty($stats['geo'])): ?>
-                                    <div class="p-8 text-center glass rounded-xl border-dashed">
-                                        <p class="text-sm text-zinc-500">Dados geográficos indisponíveis para este período.</p>
+                                <?php if (empty($stats['geo'] ?? [])): ?>
+                                    <div class="p-8 text-center glass rounded-xl border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                        <i data-lucide="map-pin" class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-600"></i>
+                                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                                            Nenhum dado geográfico disponível ainda
+                                        </p>
                                     </div>
                                 <?php else: ?>
                                     <?php 
-                                    $topGeo = array_slice($stats['geo'], 0, 5, true);
+                                    $topGeo = array_slice($stats['geo'] ?? [], 0, 5, true);
                                     foreach ($topGeo as $code => $data): 
                                         $name = $countryNames[$code] ?? $code;
-                                        $percent = round(($data['count'] / $stats['usage']['total']) * 100, 1);
+                                        $percent = ($stats['usage']['total'] ?? 0) > 0 ? round(($data['count'] / $stats['usage']['total']) * 100, 1) : 0;
                                     ?>
                                     <div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/5">
                                         <div class="flex items-center justify-between mb-2">
                                             <div class="flex items-center gap-3">
-                                                <span class="text-base"><?php echo $code == 'BR' ? '🇧🇷' : ($code == 'US' ? '🇺🇸' : '🌐'); ?></span>
+                                                <?php echo getCountryFlag($code); ?>
                                                 <span class="text-sm font-bold text-gray-900 dark:text-white"><?php echo $name; ?></span>
                                             </div>
                                             <span class="text-xs font-bold text-blue-500"><?php echo $percent; ?>%</span>
@@ -392,12 +420,18 @@ $countryNames = [
                                 <canvas id="typeDistributionChart"></canvas>
                             </div>
                             <div class="space-y-3">
-                                <?php foreach ($stats['performance']['distribution'] as $item): ?>
-                                <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5">
-                                    <span class="text-sm font-semibold capitalize text-gray-700 dark:text-zinc-400"><?php echo $item['type']; ?></span>
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white"><?php echo $item['percentage']; ?>%</span>
-                                </div>
-                                <?php endforeach; ?>
+                                <?php if (empty($stats['performance']['distribution'] ?? [])): ?>
+                                    <div class="p-4 text-center text-sm text-zinc-500">
+                                        Nenhum dado disponível
+                                    </div>
+                                <?php else: ?>
+                                    <?php foreach ($stats['performance']['distribution'] ?? [] as $item): ?>
+                                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5">
+                                        <span class="text-sm font-semibold capitalize text-gray-700 dark:text-zinc-400"><?php echo htmlspecialchars($item['type'] ?? 'unknown'); ?></span>
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white"><?php echo number_format($item['percentage'] ?? 0, 1); ?>%</span>
+                                    </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -410,13 +444,16 @@ $countryNames = [
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
             const isDark = document.documentElement.classList.contains('dark');
+            
 
             // --- WORLD MAP ---
-            const geoData = <?php echo json_encode($stats['geo']); ?>;
+            const geoData = <?php echo json_encode($stats['geo'] ?? []); ?>;
             const mapValues = {};
-            Object.keys(geoData).forEach(code => {
-                mapValues[code] = geoData[code].count;
-            });
+            if (geoData && Object.keys(geoData).length > 0) {
+                Object.keys(geoData).forEach(code => {
+                    mapValues[code] = geoData[code].count || 0;
+                });
+            }
 
             const map = new jsVectorMap({
                 selector: '#world-map',
@@ -455,17 +492,17 @@ $countryNames = [
             });
 
             // --- USAGE CHART ---
-            const usageData = <?php echo json_encode($stats['usage']['hourly']); ?>;
+            const usageData = <?php echo json_encode($stats['usage']['hourly'] ?? []); ?>;
             const usageCtx = document.getElementById('usageChart').getContext('2d');
             
             new Chart(usageCtx, {
                 type: 'line',
                 data: {
-                    labels: usageData.map(d => d.hour.split(' ')[1].substr(0, 5)),
+                    labels: usageData.length > 0 ? usageData.map(d => d.hour ? d.hour.split(' ')[1].substr(0, 5) : '') : [],
                     datasets: [
                         {
                             label: 'Total',
-                            data: usageData.map(d => d.total),
+                            data: usageData.length > 0 ? usageData.map(d => d.total || 0) : [0],
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
@@ -473,7 +510,7 @@ $countryNames = [
                         },
                         {
                             label: 'Sucesso',
-                            data: usageData.map(d => d.success),
+                            data: usageData.length > 0 ? usageData.map(d => d.success || 0) : [0],
                             borderColor: '#22c55e',
                             backgroundColor: 'transparent',
                             tension: 0.4
@@ -487,11 +524,20 @@ $countryNames = [
                     scales: {
                         y: { 
                             beginAtZero: true, 
-                            grid: { color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' },
+                            grid: { 
+                                color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: true,
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
                             ticks: { color: '#71717a' }
                         },
                         x: { 
-                            grid: { display: false },
+                            grid: { 
+                                display: true,
+                                color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: true,
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
                             ticks: { color: '#71717a' }
                         }
                     }
@@ -499,27 +545,35 @@ $countryNames = [
             });
 
             // --- DISTRIBUTION CHART ---
-            const typeData = <?php echo json_encode($stats['performance']['distribution']); ?>;
+            const typeData = <?php echo json_encode($stats['performance']['distribution'] ?? []); ?>;
             const typeCtx = document.getElementById('typeDistributionChart').getContext('2d');
             
-            new Chart(typeCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: typeData.map(d => d.type.toUpperCase()),
-                    datasets: [{
-                        data: typeData.map(d => d.count),
-                        backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#f59e0b', '#8b5cf6'],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '80%',
-                    plugins: { legend: { display: false } }
-                }
-            });
+            if (typeData.length > 0) {
+                new Chart(typeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: typeData.map(d => (d.type || 'unknown').toUpperCase()),
+                        datasets: [{
+                            data: typeData.map(d => d.count || 0),
+                            backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#f59e0b', '#8b5cf6'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '80%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            } else {
+                // Mostrar mensagem quando não há dados
+                typeCtx.fillStyle = '#71717a';
+                typeCtx.font = '14px Inter';
+                typeCtx.textAlign = 'center';
+                typeCtx.fillText('Nenhum dado disponível', typeCtx.canvas.width / 2, typeCtx.canvas.height / 2);
+            }
         });
     </script>
 </body>

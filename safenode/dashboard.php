@@ -1794,24 +1794,24 @@ if ($db) {
             
             <!-- Gráfico: Humanos vs Bots -->
             <div class="chart-card mb-8">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tráfego: Humanos vs Bots</h3>
-                        <p class="text-sm text-gray-600 dark:text-zinc-500 mt-1">Últimas 24 horas</p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white break-words">Tráfego: Humanos vs Bots</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-500 mt-1">Últimas 24 horas</p>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                            <span class="text-sm text-gray-700 dark:text-zinc-400">Humanos</span>
+                    <div class="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+                        <div class="flex items-center gap-1.5 sm:gap-2">
+                            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 flex-shrink-0"></div>
+                            <span class="text-xs sm:text-sm text-gray-700 dark:text-zinc-400 whitespace-nowrap">Humanos</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <span class="text-sm text-gray-700 dark:text-zinc-400">Bots</span>
+                        <div class="flex items-center gap-1.5 sm:gap-2">
+                            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500 flex-shrink-0"></div>
+                            <span class="text-xs sm:text-sm text-gray-700 dark:text-zinc-400 whitespace-nowrap">Bots</span>
                         </div>
                     </div>
                 </div>
-                <div class="relative" style="height: 250px;">
-                    <canvas id="humansVsBotsChart"></canvas>
+                <div class="relative w-full overflow-hidden" style="height: 250px; min-height: 200px;">
+                    <canvas id="humansVsBotsChart" class="w-full h-full"></canvas>
                 </div>
             </div>
             
@@ -1923,6 +1923,9 @@ if ($db) {
                 labels.push(hour.getHours().toString().padStart(2, '0'));
             }
             
+            // Detectar se é mobile
+            const isMobile = window.innerWidth < 640;
+            
             try {
                 humansVsBotsChart = new ChartLib(ctx, {
                     type: 'line',
@@ -1956,6 +1959,14 @@ if ($db) {
                         },
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                left: isMobile ? 0 : 5,
+                                right: isMobile ? 0 : 5,
+                                top: 10,
+                                bottom: isMobile ? 5 : 10
+                            }
+                        },
                         plugins: {
                             legend: {
                                 display: false
@@ -1966,9 +1977,15 @@ if ($db) {
                                 bodyColor: '#a1a1aa',
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
-                                padding: 12,
+                                padding: isMobile ? 8 : 12,
                                 cornerRadius: 8,
-                                displayColors: true
+                                displayColors: true,
+                                titleFont: {
+                                    size: isMobile ? 11 : 12
+                                },
+                                bodyFont: {
+                                    size: isMobile ? 10 : 11
+                                }
                             }
                         },
                         scales: {
@@ -1979,7 +1996,12 @@ if ($db) {
                                 },
                                 ticks: {
                                     color: '#6b7280',
-                                    font: { size: 11 }
+                                    font: { 
+                                        size: isMobile ? 9 : 11
+                                    },
+                                    padding: isMobile ? 4 : 8,
+                                    maxRotation: isMobile ? 45 : 0,
+                                    minRotation: 0
                                 }
                             },
                             y: {
@@ -1990,7 +2012,11 @@ if ($db) {
                                 },
                                 ticks: {
                                     color: '#6b7280',
-                                    font: { size: 11 }
+                                    font: { 
+                                        size: isMobile ? 9 : 11
+                                    },
+                                    padding: isMobile ? 4 : 8,
+                                    maxTicksLimit: isMobile ? 5 : 10
                                 }
                             }
                         },
@@ -2079,18 +2105,6 @@ if ($db) {
             return num >= 0 ? `+${num.toFixed(1)}%` : `${num.toFixed(1)}%`;
         }
         
-        function formatThreatType(type) {
-            const types = {
-                'sql_injection': 'SQL Injection',
-                'xss': 'XSS',
-                'brute_force': 'Brute Force',
-                'ddos': 'DDoS',
-                'rate_limit': 'Rate Limit',
-                'path_traversal': 'Path Traversal'
-            };
-            return types[type] || type;
-        }
-        
         async function fetchDashboardStats() {
             try {
                 const response = await fetch('api/dashboard-stats.php');
@@ -2176,36 +2190,49 @@ if ($db) {
             const changes = dashboardData.changes || {};
             
             // Calcular métricas de verificação humana
-            // Assumindo que blocked = bots bloqueados e total - blocked = humanos validados
-            const totalRequests = today.total_requests || 0;
-            const botsBlocked = today.blocked || 0;
+            // Usar dados de hoje ou últimas 24h como fallback
+            const totalRequests = today.total_requests || last24h.total_requests || 0;
+            const botsBlocked = today.blocked || last24h.blocked || 0;
             const humansValidated = Math.max(totalRequests - botsBlocked, 0);
             const totalEvents = totalRequests;
             
             // Taxa de bloqueio
             const blockRate = totalRequests > 0 
                 ? ((botsBlocked / totalRequests) * 100).toFixed(1)
-                : 0;
+                : '0.0';
             
             // Update stat cards
             animateValue('human-traffic', humansValidated);
             animateValue('bots-blocked', botsBlocked);
-            document.getElementById('block-rate-value').textContent = blockRate;
+            const blockRateEl = document.getElementById('block-rate-value');
+            if (blockRateEl) {
+                blockRateEl.textContent = blockRate;
+            }
             animateValue('total-events', totalEvents);
             
-            // Changes
-            const humanChange = changes.humans || changes.requests || 0;
-            const botsChange = changes.blocked || 0;
-            const eventsChange = changes.requests || 0;
+            // Changes - usar dados das últimas 24h comparado com ontem
+            const humanChange = changes.requests || 0; // Mudança em requisições totais
+            const botsChange = changes.blocked || 0; // Mudança em bots bloqueados
+            const eventsChange = changes.requests || 0; // Mudança em eventos totais
             
-            document.getElementById('human-change').innerHTML = formatPercent(humanChange);
-            document.getElementById('human-change').className = `text-xs sm:text-sm font-semibold ${humanChange >= 0 ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
+            // Atualizar mudanças percentuais
+            const humanChangeEl = document.getElementById('human-change');
+            if (humanChangeEl) {
+                humanChangeEl.innerHTML = formatPercent(humanChange);
+                humanChangeEl.className = `text-xs sm:text-sm font-semibold ${humanChange >= 0 ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
+            }
             
-            document.getElementById('bots-change').innerHTML = formatPercent(botsChange);
-            document.getElementById('bots-change').className = `text-xs sm:text-sm font-semibold ${botsChange >= 0 ? 'text-red-400 bg-red-500/10' : 'text-green-400 bg-green-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
+            const botsChangeEl = document.getElementById('bots-change');
+            if (botsChangeEl) {
+                botsChangeEl.innerHTML = formatPercent(botsChange);
+                botsChangeEl.className = `text-xs sm:text-sm font-semibold ${botsChange >= 0 ? 'text-red-400 bg-red-500/10' : 'text-green-400 bg-green-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
+            }
             
-            document.getElementById('events-change').innerHTML = formatPercent(eventsChange);
-            document.getElementById('events-change').className = `text-xs sm:text-sm font-semibold ${eventsChange >= 0 ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10' : 'text-red-600 dark:text-red-400 bg-red-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
+            const eventsChangeEl = document.getElementById('events-change');
+            if (eventsChangeEl) {
+                eventsChangeEl.innerHTML = formatPercent(eventsChange);
+                eventsChangeEl.className = `text-xs sm:text-sm font-semibold ${eventsChange >= 0 ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10' : 'text-red-600 dark:text-red-400 bg-red-500/10'} px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg`;
+            }
             
             // Status Geral
             let status = 'operational';
@@ -2225,8 +2252,11 @@ if ($db) {
                 statusColor = 'amber';
             }
             
+            // Atualizar status geral
             const statusBadge = document.getElementById('status-badge');
             const statusDescEl = document.getElementById('status-description');
+            const statusDot = document.querySelector('#status-general .w-3.h-3');
+            
             if (statusBadge) {
                 statusBadge.textContent = statusText;
                 statusBadge.className = `px-3 py-1.5 rounded-lg bg-${statusColor}-500/10 text-${statusColor}-400 text-xs font-semibold`;
@@ -2234,50 +2264,67 @@ if ($db) {
             if (statusDescEl) {
                 statusDescEl.textContent = statusDesc;
             }
+            if (statusDot) {
+                statusDot.className = `w-3 h-3 rounded-full bg-${statusColor}-500 animate-pulse`;
+            }
             
             // Último Evento Relevante
             const recentLogs = dashboardData.event_logs || dashboardData.recent_logs || [];
             const lastEventContainer = document.getElementById('last-event');
-            if (recentLogs.length > 0) {
-                const lastEvent = recentLogs[0];
-                const eventType = lastEvent.action_taken || 'unknown';
-                let eventIcon = 'check-circle-2';
-                let eventText = 'Acesso Permitido';
-                let eventColor = 'green';
-                
-                if (eventType === 'blocked' || eventType === 'bot_detected') {
-                    eventIcon = 'shield-off';
-                    eventText = 'Bot Bloqueado';
-                    eventColor = 'red';
-                } else if (eventType === 'verified' || eventType === 'human_validated') {
-                    eventIcon = 'check-circle-2';
-                    eventText = 'Humano Validado';
-                    eventColor = 'green';
+            if (lastEventContainer) {
+                if (recentLogs.length > 0) {
+                    const lastEvent = recentLogs[0];
+                    const eventType = lastEvent.action_taken || lastEvent.threat_type || 'unknown';
+                    let eventIcon = 'check-circle-2';
+                    let eventText = 'Acesso Permitido';
+                    let eventColor = 'green';
+                    
+                    if (eventType === 'blocked' || eventType === 'bot_blocked' || eventType === 'bot_detected') {
+                        eventIcon = 'shield-off';
+                        eventText = 'Bot Bloqueado';
+                        eventColor = 'red';
+                    } else if (eventType === 'verified' || eventType === 'human_validated' || eventType === 'access_allowed') {
+                        eventIcon = 'check-circle-2';
+                        eventText = 'Humano Validado';
+                        eventColor = 'green';
+                    }
+                    
+                    const eventDate = new Date(lastEvent.created_at || new Date());
+                    const timeAgo = getTimeAgo(eventDate);
+                    
+                    // Extrair domínio da URI se disponível
+                    let domain = 'N/A';
+                    if (lastEvent.request_uri) {
+                        try {
+                            const url = new URL(lastEvent.request_uri, window.location.origin);
+                            domain = url.hostname;
+                        } catch (e) {
+                            domain = lastEvent.request_uri.substring(0, 30);
+                        }
+                    }
+                    
+                    lastEventContainer.innerHTML = `
+                        <div class="w-12 h-12 rounded-xl bg-${eventColor}-500/10 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="${eventIcon}" class="w-6 h-6 text-${eventColor}-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">${eventText}</p>
+                            <p class="text-xs text-gray-600 dark:text-zinc-500 mt-1">IP: ${lastEvent.ip_address || 'N/A'}${domain !== 'N/A' ? ' | ' + domain : ''}</p>
+                        </div>
+                        <span class="text-xs text-gray-600 dark:text-zinc-500">${timeAgo}</span>
+                    `;
+                    lucide.createIcons();
+                } else {
+                    lastEventContainer.innerHTML = `
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                            <i data-lucide="info" class="w-6 h-6 text-gray-600 dark:text-zinc-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-700 dark:text-zinc-400">Nenhum evento ainda</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
                 }
-                
-                const eventDate = new Date(lastEvent.created_at || new Date());
-                const timeAgo = getTimeAgo(eventDate);
-                
-                lastEventContainer.innerHTML = `
-                    <div class="w-12 h-12 rounded-xl bg-${eventColor}-500/10 flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="${eventIcon}" class="w-6 h-6 text-${eventColor}-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white">${eventText}</p>
-                        <p class="text-xs text-gray-600 dark:text-zinc-500 mt-1">IP: ${lastEvent.ip_address || 'N/A'} | Domínio: ${lastEvent.domain || 'N/A'}</p>
-                    </div>
-                    <span class="text-xs text-gray-600 dark:text-zinc-500">${timeAgo}</span>
-                `;
-                lucide.createIcons();
-            } else {
-                lastEventContainer.innerHTML = `
-                    <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center">
-                        <i data-lucide="info" class="w-6 h-6 text-gray-600 dark:text-zinc-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm text-gray-700 dark:text-zinc-400">Nenhum evento ainda</p>
-                    </div>
-                `;
             }
             
             // Atualizar gráfico Humans vs Bots
@@ -2287,51 +2334,66 @@ if ($db) {
             
             // Eventos Recentes
             const recentEventsContainer = document.getElementById('recent-events');
-            if (recentLogs.length > 0) {
-                recentEventsContainer.innerHTML = recentLogs.slice(0, 10).map(log => {
-                    const eventType = log.action_taken || 'unknown';
-                    let eventIcon = 'check-circle-2';
-                    let eventText = 'Acesso Permitido';
-                    let eventColor = 'green';
-                    
-                    if (eventType === 'blocked' || eventType === 'bot_detected') {
-                        eventIcon = 'shield-off';
-                        eventText = 'Bot Bloqueado';
-                        eventColor = 'red';
-                    } else if (eventType === 'verified' || eventType === 'human_validated') {
-                        eventIcon = 'check-circle-2';
-                        eventText = 'Humano Validado';
-                        eventColor = 'green';
-                    }
-                    
-                    const eventDate = new Date(log.created_at || new Date());
-                    const timeAgo = getTimeAgo(eventDate);
-                    
-                    return `
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/[0.04] transition-all">
-                            <div class="w-8 h-8 rounded-lg bg-${eventColor}-500/10 flex items-center justify-center flex-shrink-0">
-                                <i data-lucide="${eventIcon}" class="w-4 h-4 text-${eventColor}-400"></i>
+            if (recentEventsContainer) {
+                if (recentLogs.length > 0) {
+                    recentEventsContainer.innerHTML = recentLogs.slice(0, 10).map(log => {
+                        const eventType = log.action_taken || log.threat_type || 'unknown';
+                        let eventIcon = 'check-circle-2';
+                        let eventText = 'Acesso Permitido';
+                        let eventColor = 'green';
+                        
+                        if (eventType === 'blocked' || eventType === 'bot_blocked' || eventType === 'bot_detected') {
+                            eventIcon = 'shield-off';
+                            eventText = 'Bot Bloqueado';
+                            eventColor = 'red';
+                        } else if (eventType === 'verified' || eventType === 'human_validated' || eventType === 'access_allowed') {
+                            eventIcon = 'check-circle-2';
+                            eventText = 'Humano Validado';
+                            eventColor = 'green';
+                        }
+                        
+                        const eventDate = new Date(log.created_at || new Date());
+                        const timeAgo = getTimeAgo(eventDate);
+                        
+                        // Extrair domínio da URI se disponível
+                        let domain = 'N/A';
+                        if (log.request_uri) {
+                            try {
+                                const url = new URL(log.request_uri, window.location.origin);
+                                domain = url.hostname;
+                            } catch (e) {
+                                domain = log.request_uri.substring(0, 30);
+                            }
+                        } else if (log.domain) {
+                            domain = log.domain;
+                        }
+                        
+                        return `
+                            <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/[0.04] transition-all">
+                                <div class="w-8 h-8 rounded-lg bg-${eventColor}-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="${eventIcon}" class="w-4 h-4 text-${eventColor}-400"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">${eventText}</p>
+                                    <p class="text-xs text-gray-600 dark:text-zinc-500 truncate">${log.ip_address || 'N/A'}${domain !== 'N/A' ? ' | ' + domain : ''}</p>
+                                </div>
+                                <span class="text-xs text-gray-600 dark:text-zinc-500 flex-shrink-0">${timeAgo}</span>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">${eventText}</p>
-                                <p class="text-xs text-gray-600 dark:text-zinc-500 truncate">${log.ip_address || 'N/A'} | ${log.domain || 'N/A'}</p>
+                        `;
+                    }).join('');
+                    lucide.createIcons();
+                } else {
+                    recentEventsContainer.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="inbox" class="w-8 h-8 text-gray-400 dark:text-zinc-600"></i>
                             </div>
-                            <span class="text-xs text-gray-600 dark:text-zinc-500 flex-shrink-0">${timeAgo}</span>
+                            <p class="text-sm font-medium text-gray-700 dark:text-zinc-400 mb-1">Nenhum evento recente</p>
+                            <p class="text-xs text-gray-600 dark:text-zinc-600">Os eventos de verificação aparecerão aqui</p>
                         </div>
                     `;
-                }).join('');
-                lucide.createIcons();
-            } else {
-                recentEventsContainer.innerHTML = `
-                    <div class="text-center py-12">
-                        <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
-                            <i data-lucide="inbox" class="w-8 h-8 text-gray-400 dark:text-zinc-600"></i>
-                        </div>
-                        <p class="text-sm font-medium text-gray-700 dark:text-zinc-400 mb-1">Nenhum evento recente</p>
-                        <p class="text-xs text-gray-600 dark:text-zinc-600">Os eventos de verificação aparecerão aqui</p>
-                    </div>
-                `;
-                lucide.createIcons();
+                    lucide.createIcons();
+                }
             }
             
             lucide.createIcons();

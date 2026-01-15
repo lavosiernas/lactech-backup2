@@ -31,11 +31,13 @@ function getValidOrigin($origin) {
     return null;
 }
 
-// Configurar CORS headers
+// Configurar CORS headers - permitir qualquer origem em desenvolvimento
 $validOrigin = getValidOrigin($origin);
 if ($validOrigin) {
     header('Access-Control-Allow-Origin: ' . $validOrigin);
 } else {
+    // Em desenvolvimento, permitir qualquer origem
+    // Em produção, isso deve ser mais restritivo
     header('Access-Control-Allow-Origin: *');
 }
 

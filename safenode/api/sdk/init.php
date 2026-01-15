@@ -31,11 +31,13 @@ function getValidOrigin($origin) {
     return null;
 }
 
-// Configurar CORS headers
+// Configurar CORS headers - permitir qualquer origem em desenvolvimento
 $validOrigin = getValidOrigin($origin);
 if ($validOrigin) {
     header('Access-Control-Allow-Origin: ' . $validOrigin);
 } else {
+    // Em desenvolvimento, permitir qualquer origem
+    // Em produção, isso deve ser mais restritivo
     header('Access-Control-Allow-Origin: *');
 }
 
@@ -57,6 +59,18 @@ $apiKey = $_GET['api_key'] ?? $_POST['api_key'] ?? $_SERVER['HTTP_X_API_KEY'] ??
 $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '';
 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
+// Debug (apenas em desenvolvimento)
+$isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', '::1']) || 
+           strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+           strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+if ($isLocal || (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL')) {
+    error_log("SafeNode Init Debug:");
+    error_log("  API Key: " . ($apiKey ? substr($apiKey, 0, 10) . '...' : 'não fornecida'));
+    error_log("  Origin: " . ($origin ?: 'não fornecido'));
+    error_log("  IP: $ipAddress");
+    error_log("  User Agent: " . substr($userAgent, 0, 50));
+}
+
 if (empty($apiKey)) {
     http_response_code(401);
     echo json_encode([
@@ -69,11 +83,19 @@ if (empty($apiKey)) {
 // Validar API key com origem
 $keyData = HVAPIKeyManager::validateKey($apiKey, $origin);
 if (!$keyData) {
+    $errorMsg = 'API key inválida ou inativa';
+    if (!empty($origin)) {
+        $errorMsg .= ' (verifique se o domínio está permitido)';
+    }
     HVAPIKeyManager::logAttempt(null, $ipAddress, $userAgent, $origin, 'failed', 'API key inválida');
     http_response_code(401);
     echo json_encode([
         'success' => false,
-        'error' => 'API key inválida ou inativa'
+        'error' => $errorMsg,
+        'debug' => ($isLocal || (defined('ENVIRONMENT') && ENVIRONMENT === 'LOCAL')) ? [
+            'origin' => $origin,
+            'api_key_prefix' => substr($apiKey, 0, 10)
+        ] : null
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }

@@ -307,7 +307,23 @@ if ($db && $userId) {
             color: var(--text-muted);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
             text-decoration: none;
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
         }
         
         .nav-item:hover {
@@ -318,6 +334,10 @@ if ($db && $userId) {
         :root:not(.dark) .nav-item:hover {
             background: #f1f3f5;
             color: #000000;
+        }
+        
+        .nav-item:hover::before {
+            opacity: 0.5;
         }
         
         :root:not(.dark) .nav-item:hover::before {
@@ -332,6 +352,10 @@ if ($db && $userId) {
         :root:not(.dark) .nav-item.active {
             background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, transparent 100%);
             color: #000000;
+        }
+        
+        .nav-item.active::before {
+            opacity: 1;
         }
         
         .upgrade-card {
@@ -423,10 +447,6 @@ if ($db && $userId) {
     <style>
         /* Nav-item styles já estão definidos acima com variáveis CSS - este bloco foi removido para evitar duplicação */
         
-        .nav-item.active::before {
-            opacity: 1;
-        }
-        
         .nav-item.active::after {
             content: '';
             position: absolute;
@@ -435,9 +455,14 @@ if ($db && $userId) {
             transform: translateY(-50%);
             width: 3px;
             height: 24px;
-            background: #ffffff;
+            background: var(--accent);
             border-radius: 0 4px 4px 0;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        
+        :root:not(.dark) .nav-item.active::after {
+            background: #000000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
         }
         
         .sidebar {
@@ -1306,15 +1331,15 @@ if ($db && $userId) {
         <!-- Main Content -->
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-dark-950">
             <!-- Header -->
-            <header class="h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0">
-                <div class="flex items-center gap-3 md:gap-6">
-                    <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            <header class="min-h-20 bg-white/80 dark:bg-dark-900/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 flex-shrink-0">
+                <div class="flex items-center gap-3 md:gap-6 min-w-0 flex-1">
+                    <button data-sidebar-toggle class="lg:hidden text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white transition-colors flex-shrink-0">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
-                    <div>
-                        <h2 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Gerenciar Sites</h2>
+                    <div class="min-w-0 flex-1">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight break-words">Gerenciar Sites</h2>
                         <?php if ($selectedSite): ?>
-                            <p class="text-sm text-zinc-500 font-mono mt-0.5"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
+                            <p class="text-xs sm:text-sm text-zinc-500 font-mono mt-0.5 break-words"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
