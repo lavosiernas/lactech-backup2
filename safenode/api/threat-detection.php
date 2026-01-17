@@ -9,12 +9,24 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ob_start();
 
+// CORS Headers - devem ser definidos ANTES de qualquer output
+// Permitir requisições de qualquer origem (desenvolvimento)
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+header('Access-Control-Allow-Origin: ' . $origin);
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Max-Age: 86400'); // Cache preflight por 24 horas
+
+// Tratar requisição OPTIONS (preflight)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 session_start();
 
 header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
-header('Access-Control-Allow-Headers: Content-Type');
 
 if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !== true) {
     http_response_code(401);
@@ -205,11 +217,11 @@ try {
         if (!isset($threatTimeline[$hour])) {
             $threatTimeline[$hour] = [
                 'hour' => $hour,
-                'total' => 0,
+                'threats' => 0,
                 'by_type' => []
             ];
         }
-        $threatTimeline[$hour]['total']++;
+        $threatTimeline[$hour]['threats']++;
         if (!isset($threatTimeline[$hour]['by_type'][$threatType])) {
             $threatTimeline[$hour]['by_type'][$threatType] = 0;
         }
@@ -238,6 +250,22 @@ try {
         ];
     }
     
+    // Calcular estatísticas por severidade
+    $bySeverity = [
+        'critical' => 0,
+        'high' => 0,
+        'medium' => 0,
+        'low' => 0
+    ];
+    foreach ($threats as $threat) {
+        $severity = $threat['severity'] ?? 'low';
+        if (isset($bySeverity[$severity])) {
+            $bySeverity[$severity]++;
+        } else {
+            $bySeverity['low']++;
+        }
+    }
+    
     // Ordenar timeline por hora
     ksort($threatTimeline);
     $threatTimeline = array_values($threatTimeline);
@@ -263,6 +291,13 @@ try {
         $stmtEndpoints->execute();
     }
     $topEndpoints = $stmtEndpoints->fetchAll(PDO::FETCH_ASSOC);
+    // Normalizar estrutura para o formato esperado pelo React
+    $topEndpoints = array_map(function($item) {
+        return [
+            'endpoint' => $item['endpoint'] ?? '',
+            'count' => (int)($item['attack_count'] ?? 0)
+        ];
+    }, $topEndpoints);
     
     // Estatísticas por IP (mais agressivos)
     $sqlIPs = "SELECT 
@@ -286,6 +321,28 @@ try {
         $stmtIPs->execute();
     }
     $topIPs = $stmtIPs->fetchAll(PDO::FETCH_ASSOC);
+    // Normalizar estrutura para o formato esperado pelo React
+    $topIPs = array_map(function($item) {
+        return [
+            'ip' => $item['ip_address'] ?? '',
+            'count' => (int)($item['attack_count'] ?? 0)
+        ];
+    }, $topIPs);
+    
+    // Normalizar estrutura das threats para corresponder à interface TypeScript
+    $normalizedThreats = array_map(function($threat) {
+        return [
+            'id' => (int)$threat['id'],
+            'type' => $threat['type'] ?? 'unknown',
+            'severity' => $threat['severity'] ?? 'low',
+            'ip' => $threat['ip_address'] ?? '',
+            'uri' => $threat['full_uri'] ?? $threat['endpoint'] ?? '',
+            'timestamp' => $threat['timestamp'] ?? '',
+            'pattern' => $threat['reason'] ?? null,
+            'user_agent' => $threat['user_agent'] ?? null,
+            'country_code' => $threat['country'] ?? null
+        ];
+    }, $threats);
     
     ob_clean();
     echo json_encode([
@@ -293,10 +350,11 @@ try {
         'timestamp' => time(),
         'timeframe' => $timeframe,
         'data' => [
-            'threats' => $threats,
+            'threats' => $normalizedThreats,
             'stats' => [
                 'total_threats' => count($threats),
                 'by_type' => $threatStats,
+                'by_severity' => $bySeverity,
                 'top_endpoints' => $topEndpoints,
                 'top_ips' => $topIPs
             ],
