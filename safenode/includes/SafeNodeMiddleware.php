@@ -53,6 +53,17 @@ class SafeNodeMiddleware {
         require_once __DIR__ . '/IPBlocker.php';
         require_once __DIR__ . '/Settings.php';
         require_once __DIR__ . '/HumanVerification.php';
+        require_once __DIR__ . '/PerformanceMonitor.php';
+        require_once __DIR__ . '/AlertManager.php';
+        
+        // Inicializar monitor de performance
+        $performanceMonitor = new PerformanceMonitor(self::$db, self::$siteId);
+        $performanceMonitor->start($_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET');
+        
+        // Registrar para salvar performance no final da requisição
+        register_shutdown_function(function() use ($performanceMonitor) {
+            $performanceMonitor->end();
+        });
         
         $ipBlocker = new IPBlocker(self::$db);
         
@@ -70,6 +81,39 @@ class SafeNodeMiddleware {
         // 2. Verificar se IP está bloqueado
         if ($ipBlocker->isBlocked($ipAddress)) {
             self::logHumanVerification($ipAddress, 'blocked', 'ip_blocked');
+            
+            // Verificar se deve criar alerta para IP bloqueado recorrente
+            if (self::$siteId) {
+                try {
+                    $stmt = self::$db->prepare("
+                        SELECT COUNT(*) as block_count 
+                        FROM safenode_human_verification_logs 
+                        WHERE site_id = ? 
+                        AND ip_address = ? 
+                        AND event_type = 'bot_blocked' 
+                        AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)
+                    ");
+                    $stmt->execute([self::$siteId, $ipAddress]);
+                    $result = $stmt->fetch();
+                    $blockCount = (int)($result['block_count'] ?? 0);
+                    
+                    // Alertar se IP bloqueado 5+ vezes na última hora
+                    if ($blockCount >= 5) {
+                        $alertManager = new AlertManager(self::$db);
+                        $alertManager->createAlert(
+                            self::$siteId,
+                            AlertManager::TYPE_SUSPICIOUS_IP,
+                            AlertManager::SEVERITY_HIGH,
+                            "IP bloqueado recorrente",
+                            "IP {$ipAddress} foi bloqueado {$blockCount} vezes na última hora",
+                            ['ip' => $ipAddress, 'attempt_count' => $blockCount]
+                        );
+                    }
+                } catch (PDOException $e) {
+                    // Ignorar erro de alerta
+                }
+            }
+            
             self::blockRequest("IP bloqueado pelo SafeNode", 'ip_blocked');
         }
         
@@ -90,6 +134,20 @@ class SafeNodeMiddleware {
             if (strpos($lowerUri, $hp) === 0) {
                 $ipBlocker->blockIP($ipAddress, "Acesso a rota honeypot ($hp)", 'honeypot', 86400);
                 self::logHumanVerification($ipAddress, 'blocked', 'honeypot');
+                
+                // Criar alerta para acesso a honeypot
+                if (self::$siteId) {
+                    $alertManager = new AlertManager(self::$db);
+                    $alertManager->createAlert(
+                        self::$siteId,
+                        AlertManager::TYPE_CRITICAL_THREAT,
+                        AlertManager::SEVERITY_HIGH,
+                        "Tentativa de acesso a rota protegida",
+                        "IP {$ipAddress} tentou acessar rota honeypot: {$hp}",
+                        ['ip' => $ipAddress, 'endpoint' => $hp, 'type' => 'honeypot']
+                    );
+                }
+                
                 self::blockRequest("Acesso negado por segurança (rota protegida).", 'honeypot');
             }
         }

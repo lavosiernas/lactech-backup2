@@ -1405,6 +1405,21 @@ if ($db) {
                     <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
                     <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
                 </a>
+                
+                <p class="text-xs font-semibold text-gray-600 dark:text-zinc-500 uppercase tracking-wider mb-3 px-3 whitespace-nowrap mt-4 pt-4 border-t border-gray-200 dark:border-white/5">Segurança</p>
+                
+                <a href="<?php echo getSafeNodeUrl('threat-analysis'); ?>" class="nav-item <?php echo $currentPage == 'threat-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Ameaças</span>
+                </a>
+                <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                    <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Comportamento</span>
+                </a>
+                <a href="<?php echo getSafeNodeUrl('security-recommendations'); ?>" class="nav-item <?php echo $currentPage == 'security-recommendations' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                    <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="font-medium whitespace-nowrap">Recomendações</span>
+                </a>
             </div>
         </nav>
         

@@ -1,6 +1,6 @@
 <?php
 /**
- * SafeNode - Ajuda e Suporte
+ * SafeNode - IPs Suspeitos
  */
 
 session_start();
@@ -15,7 +15,7 @@ if (!isset($_SESSION['safenode_logged_in']) || $_SESSION['safenode_logged_in'] !
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/init.php';
 
-$pageTitle = 'Ajuda';
+$pageTitle = 'Alertas';
 $currentSiteId = $_SESSION['view_site_id'] ?? 0;
 $userId = $_SESSION['safenode_user_id'] ?? null;
 $selectedSite = null;
@@ -147,6 +147,12 @@ if ($db && $currentSiteId > 0) {
         :root:not(.dark) .glass .text-gray-900,
         :root:not(.dark) .glass .text-white {
             color: #111827 !important;
+        }
+        
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
         }
         
         .sidebar {
@@ -363,44 +369,7 @@ if ($db && $currentSiteId > 0) {
             opacity: 0.5;
         }
         
-        .upgrade-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 16px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #ffffff 0%, #e5e5e5 100%);
-            color: #000;
-            font-weight: 600;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-        }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255,255,255,0.2);
-        }
-        
-        .btn-primary:hover::before {
-            opacity: 1;
-        }
+        /* Upgrade card e btn-primary já estão definidos acima - este bloco foi removido para evitar duplicação */
         
         /* CSS para x-cloak - esconder elementos antes do Alpine.js carregar */
         [x-cloak] { 
@@ -1072,46 +1041,53 @@ if ($db && $currentSiteId > 0) {
         
         <!-- Navigation -->
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
-            <p class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap">Principal</p>
-            
             <a href="<?php echo getSafeNodeUrl('dashboard'); ?>" class="nav-item <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                 <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="font-medium whitespace-nowrap">Dashboard</span>
             </a>
             <a href="<?php echo getSafeNodeUrl('sites'); ?>" class="nav-item <?php echo $currentPage == 'sites' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                 <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-medium whitespace-nowrap">Gerenciar Sites</span>
+                <span class="font-medium whitespace-nowrap">Sites</span>
             </a>
             <a href="<?php echo getSafeNodeUrl('human-verification'); ?>" class="nav-item <?php echo $currentPage == 'human-verification' ? 'active' : ''; ?>" @click="sidebarOpen = false">
                 <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="font-medium whitespace-nowrap">Verificação Humana</span>
             </a>
+            <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Logs</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
+            </a>
             
-            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
-                <a href="<?php echo getSafeNodeUrl('logs'); ?>" class="nav-item <?php echo $currentPage == 'logs' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Logs</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('suspicious-ips'); ?>" class="nav-item <?php echo $currentPage == 'suspicious-ips' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="alert-octagon" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">IPs Suspeitos</span>
-                </a>
-                
-                <p class="text-xs font-semibold text-gray-600 dark:text-zinc-500 uppercase tracking-wider mb-3 px-3 whitespace-nowrap mt-4 pt-4 border-t border-gray-200 dark:border-white/5">Segurança</p>
-                
-                <a href="<?php echo getSafeNodeUrl('threat-analysis'); ?>" class="nav-item <?php echo $currentPage == 'threat-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Ameaças</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Comportamento</span>
-                </a>
-                <a href="<?php echo getSafeNodeUrl('security-recommendations'); ?>" class="nav-item <?php echo $currentPage == 'security-recommendations' ? 'active' : ''; ?>" @click="sidebarOpen = false">
-                    <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
-                    <span class="font-medium whitespace-nowrap">Recomendações</span>
-                </a>
-            </div>
+            <p class="text-xs font-semibold text-gray-600 dark:text-zinc-500 uppercase tracking-wider mb-3 px-3 whitespace-nowrap mt-4 pt-4 border-t border-gray-200 dark:border-white/5">Segurança</p>
+            
+            <a href="<?php echo getSafeNodeUrl('threat-analysis'); ?>" class="nav-item <?php echo $currentPage == 'threat-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Ameaças</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Comportamento</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-recommendations'); ?>" class="nav-item <?php echo $currentPage == 'security-recommendations' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Recomendações</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('performance'); ?>" class="nav-item <?php echo $currentPage == 'performance' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="gauge" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Performance</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('alerts'); ?>" class="nav-item <?php echo $currentPage == 'alerts' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="bell" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Alertas</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('reports'); ?>" class="nav-item <?php echo $currentPage == 'reports' ? 'active' : ''; ?>" @click="sidebarOpen = false">
+                <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-medium whitespace-nowrap">Relatórios</span>
+            </a>
             
             <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" @click="sidebarOpen = false">
@@ -1120,16 +1096,6 @@ if ($db && $currentSiteId > 0) {
                 </a>
             </div>
         </nav>
-        
-        <!-- Upgrade Card -->
-        <div class="p-4 flex-shrink-0">
-            <div class="upgrade-card">
-                <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-3">Ativar Pro</h3>
-                <button class="w-full btn-primary py-2.5 text-sm">
-                    Upgrade Agora
-                </button>
-            </div>
-        </div>
     </aside>
 
     <script>
@@ -1149,9 +1115,9 @@ if ($db && $currentSiteId > 0) {
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                     <div class="min-w-0 flex-1">
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight break-words">Ajuda e Suporte</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight break-words">Performance</h2>
                         <?php if ($selectedSite): ?>
-                            <p class="text-xs sm:text-sm text-zinc-500 font-mono mt-0.5 break-words"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
+                            <p class="text-xs sm:text-sm text-gray-600 dark:text-zinc-500 font-mono mt-0.5 break-words"><?php echo htmlspecialchars($selectedSite['domain'] ?? ''); ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -1159,162 +1125,10 @@ if ($db && $currentSiteId > 0) {
 
             <!-- Content -->
             <div class="flex-1 overflow-y-auto p-8">
-                <div class="max-w-4xl mx-auto space-y-6">
-                    <!-- Introdução -->
-                    <div class="glass rounded-2xl p-6">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center p-2">
-                                <img src="assets/img/safe-claro.png" alt="SafeNode Logo" class="w-full h-full object-contain dark:hidden">
-                                <img src="assets/img/logos (6).png" alt="SafeNode Logo" class="w-full h-full object-contain hidden dark:block">
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Bem-vindo ao SafeNode</h3>
-                                <p class="text-sm text-gray-600 dark:text-zinc-400">Sistema de segurança web completo</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-700 dark:text-zinc-300 leading-relaxed">
-                            O SafeNode é uma plataforma de segurança web que protege seus sites contra ameaças, 
-                            detecta atividades suspeitas e oferece controle total sobre a segurança da sua aplicação.
-                        </p>
-                    </div>
-
-                    <!-- Guias Rápidos -->
-                    <div class="glass rounded-2xl p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Guias Rápidos</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <a href="dashboard.php" class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-gray-900 dark:text-white"></i>
-                                    <span class="font-semibold text-gray-900 dark:text-white">Dashboard</span>
-                                </div>
-                                <p class="text-xs text-gray-600 dark:text-zinc-400">Visualize estatísticas e métricas de segurança em tempo real</p>
-                            </a>
-                            
-                            <a href="sites.php" class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <i data-lucide="globe" class="w-5 h-5 text-gray-900 dark:text-white"></i>
-                                    <span class="font-semibold text-gray-900 dark:text-white">Gerenciar Sites</span>
-                                </div>
-                                <p class="text-xs text-gray-600 dark:text-zinc-400">Adicione e configure sites para proteção</p>
-                            </a>
-                            
-                            <a href="human-verification.php" class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <i data-lucide="shield-check" class="w-5 h-5 text-gray-900 dark:text-white"></i>
-                                    <span class="font-semibold text-gray-900 dark:text-white">Verificação Humana</span>
-                                </div>
-                                <p class="text-xs text-gray-600 dark:text-zinc-400">Configure o SDK de verificação humana para seus sites</p>
-                            </a>
-                            
-                            <a href="logs.php" class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <i data-lucide="compass" class="w-5 h-5 text-gray-900 dark:text-white"></i>
-                                    <span class="font-semibold text-gray-900 dark:text-white">Explorar Logs</span>
-                                </div>
-                                <p class="text-xs text-gray-600 dark:text-zinc-400">Analise logs de segurança e eventos detectados</p>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Recursos Principais -->
-                    <div class="glass rounded-2xl p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recursos Principais</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                                <i data-lucide="shield" class="w-5 h-5 text-gray-900 dark:text-white mt-0.5"></i>
-                                <div>
-                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Proteção Automática</h4>
-                                    <p class="text-sm text-gray-600 dark:text-zinc-400">Bloqueio automático de IPs suspeitos e detecção de ameaças em tempo real</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                                <i data-lucide="activity" class="w-5 h-5 text-gray-900 dark:text-white mt-0.5"></i>
-                                <div>
-                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Análise de Comportamento</h4>
-                                    <p class="text-sm text-gray-600 dark:text-zinc-400">Sistema inteligente que analisa padrões de comportamento e identifica anomalias</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                                <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-900 dark:text-white mt-0.5"></i>
-                                <div>
-                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Analytics Avançado</h4>
-                                    <p class="text-sm text-gray-600 dark:text-zinc-400">Estatísticas detalhadas e relatórios de segurança</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                                <i data-lucide="cloud" class="w-5 h-5 text-gray-900 dark:text-white mt-0.5"></i>
-                                <div>
-                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Integração Cloudflare</h4>
-                                    <p class="text-sm text-gray-600 dark:text-zinc-400">Funciona standalone ou em conjunto com Cloudflare</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Perguntas Frequentes -->
-                    <div class="glass rounded-2xl p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Perguntas Frequentes</h3>
-                        <div class="space-y-4" x-data="{ openFaq: null }">
-                            <div class="border-b border-gray-200 dark:border-white/10 pb-4 last:border-0 last:pb-0">
-                                <button @click="openFaq = openFaq === 1 ? null : 1" class="w-full flex items-center justify-between text-left">
-                                    <span class="font-semibold text-gray-900 dark:text-white">Como adicionar um site?</span>
-                                    <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 dark:text-zinc-400 transition-transform" :class="{ 'rotate-180': openFaq === 1 }"></i>
-                                </button>
-                                <div x-show="openFaq === 1" class="mt-3 text-sm text-gray-600 dark:text-zinc-400">
-                                    Acesse "Gerenciar Sites" no menu e clique em "Adicionar Site". Informe o domínio e siga as instruções de verificação.
-                                </div>
-                            </div>
-                            
-                            <div class="border-b border-gray-200 dark:border-white/10 pb-4 last:border-0 last:pb-0">
-                                <button @click="openFaq = openFaq === 2 ? null : 2" class="w-full flex items-center justify-between text-left">
-                                    <span class="font-semibold text-gray-900 dark:text-white">Como usar a verificação humana?</span>
-                                    <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 dark:text-zinc-400 transition-transform" :class="{ 'rotate-180': openFaq === 2 }"></i>
-                                </button>
-                                <div x-show="openFaq === 2" class="mt-3 text-sm text-gray-600 dark:text-zinc-400">
-                                    Acesse "Verificação Humana" no menu, gere uma API key e copie o código fornecido. Cole o código no seu site antes do fechamento da tag &lt;/body&gt;.
-                                </div>
-                            </div>
-                            
-                            <div class="border-b border-gray-200 dark:border-white/10 pb-4 last:border-0 last:pb-0">
-                                <button @click="openFaq = openFaq === 3 ? null : 3" class="w-full flex items-center justify-between text-left">
-                                    <span class="font-semibold text-gray-900 dark:text-white">O SafeNode funciona sem Cloudflare?</span>
-                                    <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 dark:text-zinc-400 transition-transform" :class="{ 'rotate-180': openFaq === 3 }"></i>
-                                </button>
-                                <div x-show="openFaq === 3" class="mt-3 text-sm text-gray-600 dark:text-zinc-400">
-                                    Sim! O SafeNode pode funcionar de forma independente ou em conjunto com Cloudflare. Configure conforme sua necessidade.
-                                </div>
-                            </div>
-                            
-                            <div class="border-b border-gray-200 dark:border-white/10 pb-4 last:border-0 last:pb-0">
-                                <button @click="openFaq = openFaq === 4 ? null : 4" class="w-full flex items-center justify-between text-left">
-                                    <span class="font-semibold text-gray-900 dark:text-white">Como visualizar logs de segurança?</span>
-                                    <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 dark:text-zinc-400 transition-transform" :class="{ 'rotate-180': openFaq === 4 }"></i>
-                                </button>
-                                <div x-show="openFaq === 4" class="mt-3 text-sm text-gray-600 dark:text-zinc-400">
-                                    Acesse "Explorar" no menu para ver todos os logs. Use os filtros para encontrar eventos específicos por tipo, IP ou data.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contato -->
-                    <div class="glass rounded-2xl p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Precisa de Ajuda?</h3>
-                        <p class="text-gray-600 dark:text-zinc-400 text-sm mb-4">
-                            Se você não encontrou a resposta que procurava, entre em contato com nosso suporte.
-                        </p>
-                        <div class="flex gap-4">
-                            <a href="mailto:support@safenode.cloud" class="px-4 py-2 bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-sm font-semibold">
-                                <i data-lucide="mail" class="w-4 h-4 inline mr-2"></i>
-                                Email de Suporte
-                            </a>
-                            <a href="dashboard.php" class="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-black rounded-xl hover:bg-gray-800 dark:hover:bg-white/90 transition-colors text-sm font-semibold">
-                                Voltar ao Dashboard
-                            </a>
-                        </div>
+                <div id="alerts-content" class="space-y-6">
+                    <div class="glass rounded-2xl p-12 text-center">
+                        <i data-lucide="loader" class="w-12 h-12 mx-auto mb-4 animate-spin text-gray-500 dark:text-zinc-400"></i>
+                        <p class="text-sm text-gray-700 dark:text-zinc-500">Carregando alertas...</p>
                     </div>
                 </div>
             </div>
@@ -1322,12 +1136,160 @@ if ($db && $currentSiteId > 0) {
     </div>
 
     <script>
+        let alertsData = null;
+
+        async function fetchAlerts() {
+            try {
+                const response = await fetch('api/alerts.php?limit=50');
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar alertas');
+                }
+                
+                const data = await response.json();
+                if (data.success) {
+                    alertsData = data.data;
+                    updateAlertsPage();
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar alertas:', error);
+                document.getElementById('alerts-content').innerHTML = `
+                    <div class="glass rounded-2xl p-8 text-center">
+                        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4 text-red-400"></i>
+                        <p class="text-red-400 font-bold mb-2">Erro ao carregar alertas</p>
+                        <p class="text-gray-600 dark:text-zinc-500 text-sm mb-4">${error.message}</p>
+                        <button onclick="fetchAlerts()" class="px-4 py-2 bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-sm">
+                            Tentar novamente
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        async function markAsRead(alertId) {
+            try {
+                const response = await fetch('api/alerts.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alert_id: alertId })
+                });
+                
+                if (response.ok) {
+                    // Atualizar visualmente
+                    const alertEl = document.querySelector(`[data-alert-id="${alertId}"]`);
+                    if (alertEl) {
+                        alertEl.classList.remove('bg-blue-50', 'dark:bg-blue-950/20');
+                        alertEl.classList.add('opacity-60');
+                    }
+                    // Recarregar alertas
+                    fetchAlerts();
+                }
+            } catch (error) {
+                console.error('Erro ao marcar como lido:', error);
+            }
+        }
+
+        function updateAlertsPage() {
+            if (!alertsData) return;
+            
+            const container = document.getElementById('alerts-content');
+            const alerts = alertsData.alerts || [];
+            const unreadCount = alertsData.unread_count || 0;
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="table-card p-8 text-center">
+                        <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-4 text-green-400"></i>
+                        <p class="text-gray-900 dark:text-white font-bold mb-2">Nenhum alerta</p>
+                        <p class="text-gray-600 dark:text-zinc-500 text-sm">Não há alertas no momento. Você será notificado quando eventos importantes ocorrerem.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+            
+            const severityColors = {
+                critical: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30', label: 'Crítico' },
+                high: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30', label: 'Alto' },
+                medium: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', label: 'Médio' },
+                low: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', label: 'Baixo' }
+            };
+            
+            const typeLabels = {
+                critical_threat: 'Ameaça Crítica',
+                suspicious_ip: 'IP Suspeito',
+                performance_issue: 'Problema de Performance',
+                security_recommendation: 'Recomendação de Segurança'
+            };
+            
+            container.innerHTML = `
+                <div class="glass rounded-2xl p-6 mb-6">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">${alerts.length} Alerta${alerts.length !== 1 ? 's' : ''}</h3>
+                            <p class="text-sm text-gray-600 dark:text-zinc-500 mt-1">${unreadCount} não lido${unreadCount !== 1 ? 's' : ''}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    ${alerts.map(alert => {
+                        const severity = severityColors[alert.severity] || severityColors.medium;
+                        const isUnread = !alert.read;
+                        const date = new Date(alert.created_at);
+                        
+                        return `
+                            <div data-alert-id="${alert.id}" 
+                                 class="glass rounded-xl p-6 ${isUnread ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30' : ''} cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                                 onclick="markAsRead(${alert.id})">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center gap-3 flex-wrap">
+                                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${severity.bg} ${severity.text} border ${severity.border}">
+                                            ${severity.label}
+                                        </span>
+                                        <span class="px-2 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                            ${typeLabels[alert.alert_type] || alert.alert_type}
+                                        </span>
+                                        ${alert.site_domain ? `<span class="text-xs text-gray-600 dark:text-zinc-400">${alert.site_domain}</span>` : ''}
+                                        ${isUnread ? '<span class="px-2 py-0.5 rounded-full text-xs bg-blue-500 text-white font-semibold">Novo</span>' : ''}
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-zinc-500">${date.toLocaleString('pt-BR')}</span>
+                                </div>
+                                
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">${alert.title}</h4>
+                                <p class="text-sm text-gray-600 dark:text-zinc-400 mb-3">${alert.message}</p>
+                                
+                                ${alert.data && alert.data.ip ? `
+                                    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-white/10">
+                                        <p class="text-xs text-gray-600 dark:text-zinc-400">
+                                            <strong>IP:</strong> <code class="font-mono">${alert.data.ip}</code>
+                                            ${alert.data.endpoint ? ` | <strong>Endpoint:</strong> <code class="font-mono">${alert.data.endpoint}</code>` : ''}
+                                        </p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            lucide.createIcons();
+        }
+
+        // Aguardar DOM carregar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fetchAlerts);
+        } else {
+            fetchAlerts();
+        }
+        
+        // Atualizar a cada 30 segundos
+        setInterval(fetchAlerts, 30000);
+        
         SafeNodeTheme.init();
         lucide.createIcons();
     </script>
-    
-    <!-- Security Scripts - Previne download de código -->
-    <script src="includes/security-scripts.js"></script>
 </body>
 </html>
-

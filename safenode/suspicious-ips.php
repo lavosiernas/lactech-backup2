@@ -503,6 +503,58 @@ if ($db && $currentSiteId > 0) {
                       class="font-medium whitespace-nowrap">IPs Suspeitos</span>
             </a>
             
+            <p x-show="!sidebarCollapsed" 
+               x-transition:enter="transition ease-out duration-200" 
+               x-transition:enter-start="opacity-0" 
+               x-transition:enter-end="opacity-100" 
+               x-transition:leave="transition ease-in duration-150" 
+               x-transition:leave-start="opacity-100" 
+               x-transition:leave-end="opacity-0" 
+               class="text-xs font-semibold text-gray-500 dark:text-zinc-600 uppercase tracking-wider mb-3 px-3 whitespace-nowrap mt-4 pt-4 border-t border-gray-200 dark:border-white/5">Segurança</p>
+            
+            <a href="<?php echo getSafeNodeUrl('threat-analysis'); ?>" 
+               class="nav-item <?php echo $currentPage == 'threat-analysis' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Ameaças' : ''">
+                <i data-lucide="shield-alert" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" class="font-medium whitespace-nowrap">Ameaças</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('behavior-analysis'); ?>" 
+               class="nav-item <?php echo $currentPage == 'behavior-analysis' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Comportamento' : ''">
+                <i data-lucide="activity" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" class="font-medium whitespace-nowrap">Comportamento</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('security-recommendations'); ?>" 
+               class="nav-item <?php echo $currentPage == 'security-recommendations' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Recomendações' : ''">
+                <i data-lucide="lightbulb" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" class="font-medium whitespace-nowrap">Recomendações</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('performance'); ?>" 
+               class="nav-item <?php echo $currentPage == 'performance' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Performance' : ''">
+                <i data-lucide="gauge" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" class="font-medium whitespace-nowrap">Performance</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('alerts'); ?>" 
+               class="nav-item <?php echo $currentPage == 'alerts' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Alertas' : ''">
+                <i data-lucide="bell" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" class="font-medium whitespace-nowrap">Alertas</span>
+            </a>
+            <a href="<?php echo getSafeNodeUrl('reports'); ?>" 
+               class="nav-item <?php echo $currentPage == 'reports' ? 'active' : ''; ?>" 
+               :class="sidebarCollapsed ? 'justify-center px-2' : ''" 
+               :title="sidebarCollapsed ? 'Relatórios' : ''">
+                <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
+                <span x-show="!sidebarCollapsed" class="font-medium whitespace-nowrap">Relatórios</span>
+            </a>
+            
             <div class="pt-4 mt-4 border-t border-gray-200 dark:border-white/5">
                 <a href="<?php echo getSafeNodeUrl('help'); ?>" 
                    class="nav-item <?php echo $currentPage == 'help' ? 'active' : ''; ?>" 
