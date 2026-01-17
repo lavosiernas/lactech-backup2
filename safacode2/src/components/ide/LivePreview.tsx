@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Monitor, Tablet, Smartphone, RefreshCw, RotateCcw, Lock, Power, Flashlight, Camera, Moon, Sun, Globe, Code, Phone, MessageSquare, Music, Mail, Calendar, Image, Video, Settings, Map, Heart, Wallet, Cloud, Search, Clock, Home } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Monitor, Tablet, Smartphone, RefreshCw, RotateCcw, Lock, Power, Flashlight, Camera, Moon, Sun, Globe, Code, Phone, MessageSquare, Music, Mail, Calendar, Image, Video, Settings, Map, Heart, Wallet, Cloud, Search, Clock, Home, Maximize2, X } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
 import type { PreviewMode } from '@/types/ide';
 import { getLogoPath } from '@/lib/assets';
 
 export const LivePreview: React.FC = () => {
-  const { previewMode, setPreviewMode, tabs, activeTabId } = useIDEStore();
+  const { previewMode, setPreviewMode, tabs, activeTabId, setIsFloatingPreview } = useIDEStore();
   const [darkMode, setDarkMode] = useState(false);
   const [rotated, setRotated] = useState(false);
   const [isLocked, setIsLocked] = useState(true);
@@ -19,6 +20,14 @@ export const LivePreview: React.FC = () => {
   const [swipeStart, setSwipeStart] = useState<{ y: number; time: number } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [isFloating, setIsFloating] = useState(false);
+  const [floatingPosition, setFloatingPosition] = useState({ x: 100, y: 100 });
+  const [floatingSize, setFloatingSize] = useState({ width: 323, height: 700 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeDirection, setResizeDirection] = useState<'both' | 'horizontal' | 'vertical'>('both');
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   
   const activeTab = tabs.find(t => t.id === activeTabId);
 
@@ -176,6 +185,197 @@ export const LivePreview: React.FC = () => {
     return `${day}, ${dayNum} ${month}`;
   };
 
+  // Handlers para drag and drop do iframe flutuante
+  const handleFloatingDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isFloating || isResizing) return;
+    
+    // Não iniciar drag se o clique estiver na área de resize (últimos 20px da borda direita)
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const target = e.target as HTMLElement;
+    const containerRect = target.closest('[style*="position: fixed"]')?.getBoundingClientRect();
+    if (containerRect && clientX > containerRect.right - 20) {
+      return; // Deixa o resize handle capturar o evento
+    }
+    
+    setIsDragging(true);
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setDragStart({
+      x: clientX - floatingPosition.x,
+      y: clientY - floatingPosition.y
+    });
+    e.preventDefault();
+  };
+
+  const handleFloatingDragMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDragging || !isFloating) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    // Calcular posição relativa ao ponto de início do drag
+    const newX = clientX - dragStart.x;
+    const newY = clientY - dragStart.y;
+    
+    // Permitir movimento livre - sem limitações, pode sair completamente da página
+    // Isso permite mover para outros monitores e qualquer lugar da tela
+    setFloatingPosition({ 
+      x: newX, 
+      y: newY 
+    });
+  };
+
+  const handleFloatingDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Handlers para redimensionar - VERSÃO SIMPLIFICADA
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, direction: 'both' | 'horizontal' | 'vertical' = 'both') => {
+    if (!isFloating) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    setResizeStart({
+      x: clientX,
+      y: clientY,
+      width: floatingSize.width,
+      height: floatingSize.height
+    });
+    setResizeDirection(direction);
+    setIsResizing(true);
+  };
+
+  const handleResizeMove = (e: MouseEvent | TouchEvent) => {
+    if (!isResizing || !isFloating) return;
+    
+    e.preventDefault();
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - resizeStart.x;
+    const deltaY = clientY - resizeStart.y;
+    
+    const minWidth = rotated ? 400 : 250;
+    const minHeight = rotated ? 250 : 400;
+    const maxWidth = window.innerWidth - floatingPosition.x;
+    const maxHeight = window.innerHeight - floatingPosition.y;
+    
+    let newWidth = resizeStart.width;
+    let newHeight = resizeStart.height;
+    
+    if (resizeDirection === 'both' || resizeDirection === 'horizontal') {
+      newWidth = Math.max(minWidth, Math.min(resizeStart.width + deltaX, maxWidth));
+    }
+    
+    if (resizeDirection === 'both' || resizeDirection === 'vertical') {
+      newHeight = Math.max(minHeight, Math.min(resizeStart.height + deltaY, maxHeight));
+    }
+    
+    setFloatingSize({
+      width: newWidth,
+      height: newHeight
+    });
+  };
+
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      const handleMouseMove = (e: MouseEvent) => handleFloatingDragMove(e);
+      const handleTouchMove = (e: TouchEvent) => handleFloatingDragMove(e);
+      const handleMouseUp = () => handleFloatingDragEnd();
+      const handleTouchEnd = () => handleFloatingDragEnd();
+
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchend', handleTouchEnd);
+      
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [isDragging, dragStart.x, dragStart.y, floatingSize.width, floatingSize.height]);
+
+  useEffect(() => {
+    if (!isResizing) return;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      if (!isResizing || !isFloating) return;
+      
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
+      
+      const minWidth = rotated ? 400 : 250;
+      const minHeight = rotated ? 250 : 400;
+      const maxWidth = window.innerWidth - floatingPosition.x;
+      const maxHeight = window.innerHeight - floatingPosition.y;
+      
+      let newWidth = resizeStart.width;
+      let newHeight = resizeStart.height;
+      
+      if (resizeDirection === 'both' || resizeDirection === 'horizontal') {
+        newWidth = Math.max(minWidth, Math.min(resizeStart.width + deltaX, maxWidth));
+      }
+      
+      if (resizeDirection === 'both' || resizeDirection === 'vertical') {
+        newHeight = Math.max(minHeight, Math.min(resizeStart.height + deltaY, maxHeight));
+      }
+      
+      setFloatingSize({ width: newWidth, height: newHeight });
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      if (!isResizing || !isFloating || !e.touches[0]) return;
+      
+      const deltaX = e.touches[0].clientX - resizeStart.x;
+      const deltaY = e.touches[0].clientY - resizeStart.y;
+      
+      const minWidth = rotated ? 400 : 250;
+      const minHeight = rotated ? 250 : 400;
+      const maxWidth = window.innerWidth - floatingPosition.x;
+      const maxHeight = window.innerHeight - floatingPosition.y;
+      
+      let newWidth = resizeStart.width;
+      let newHeight = resizeStart.height;
+      
+      if (resizeDirection === 'both' || resizeDirection === 'horizontal') {
+        newWidth = Math.max(minWidth, Math.min(resizeStart.width + deltaX, maxWidth));
+      }
+      
+      if (resizeDirection === 'both' || resizeDirection === 'vertical') {
+        newHeight = Math.max(minHeight, Math.min(resizeStart.height + deltaY, maxHeight));
+      }
+      
+      setFloatingSize({ width: newWidth, height: newHeight });
+    };
+    
+    const handleMouseUp = () => handleResizeEnd();
+    const handleTouchEnd = () => handleResizeEnd();
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchend', handleTouchEnd);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isResizing, resizeStart, resizeDirection, floatingPosition, rotated, isFloating]);
+
   const previewModes: { mode: PreviewMode; icon: React.ReactNode; label: string }[] = [
     { mode: 'desktop', icon: <Monitor className="w-4 h-4" />, label: 'Desktop' },
     { mode: 'tablet', icon: <Tablet className="w-4 h-4" />, label: 'Tablet' },
@@ -195,6 +395,31 @@ export const LivePreview: React.FC = () => {
 
   const size = getPreviewSize();
   const isMobile = previewMode === 'ios' || previewMode === 'android';
+
+  // Função para abrir janela flutuante como overlay fullscreen
+  const openFloatingWindow = () => {
+    if (!isMobile) return;
+    // Posição inicial centralizada
+    const baseWidth = rotated ? 700 : 323;
+    const baseHeight = rotated ? 323 : 700;
+    // Atualizar todos os estados de uma vez
+    setFloatingSize({ width: baseWidth, height: baseHeight });
+    setFloatingPosition({ 
+      x: (window.innerWidth - baseWidth) / 2, 
+      y: (window.innerHeight - baseHeight) / 2 
+    });
+    // Atualizar estado local e do store simultaneamente
+    setIsFloating(true);
+    setIsFloatingPreview(true);
+  };
+
+  // Fechar janela flutuante
+  const closeFloatingWindow = () => {
+    setIsFloating(false);
+    setIsFloatingPreview(false);
+    // Forçar atualização do estado para garantir que a preview normal apareça
+    setKey(prev => prev + 1);
+  };
 
   // Get preview content from active tab or default
   const getPreviewContent = () => {
@@ -1517,6 +1742,305 @@ ${cssContent}
     </div>
   );
 
+  // Se a janela flutuante estiver aberta, renderizar apenas ela via Portal e retornar null
+  if (isFloating && isMobile) {
+    return createPortal(
+      <div
+        style={{
+          position: 'fixed',
+          left: `${floatingPosition.x}px`,
+          top: `${floatingPosition.y}px`,
+          width: `${floatingSize.width}px`,
+          height: `${floatingSize.height}px`,
+          zIndex: 999999,
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.9)',
+          border: '2px solid rgba(255, 255, 255, 0.1)',
+          background: '#000',
+          cursor: isDragging ? 'grabbing' : (isResizing ? 'nwse-resize' : 'default'),
+          display: 'flex',
+          flexDirection: 'column',
+          pointerEvents: 'auto',
+        }}
+      >
+        {/* Floating Window Header */}
+        <div
+          style={{
+            height: '32px',
+            background: 'rgba(20, 20, 20, 0.95)',
+            backdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 12px',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            flexShrink: 0,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+          }}
+          onMouseDown={(e) => handleFloatingDragStart(e)}
+          onTouchStart={(e) => handleFloatingDragStart(e)}
+        >
+          <div style={{ 
+            fontSize: '11px', 
+            color: '#999',
+            fontFamily: 'system-ui, sans-serif',
+            userSelect: 'none',
+          }}>
+            {previewMode === 'ios' ? 'iPhone Preview' : 'Android Preview'}
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              closeFloatingWindow();
+            }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#999',
+              cursor: 'pointer',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.color = '#fff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#999';
+            }}
+            title="Voltar ao Preview Normal"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Floating Preview Content */}
+        <div style={{ 
+          width: '100%', 
+          height: 'calc(100% - 32px - 60px)',
+          overflow: 'hidden',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#000',
+          flex: 1,
+        }}>
+          {previewMode === 'ios' && (
+            <div style={{ 
+              transform: `scale(${Math.min(floatingSize.width / 430, floatingSize.height / 932)})`,
+              transformOrigin: 'center center',
+            }}>
+              {renderIOSFrame()}
+            </div>
+          )}
+          {previewMode === 'android' && (
+            <div style={{ 
+              transform: `scale(${Math.min(floatingSize.width / 393, floatingSize.height / 852)})`,
+              transformOrigin: 'center center',
+            }}>
+              {renderAndroidFrame()}
+            </div>
+          )}
+        </div>
+
+        {/* Device Controls Menu - Inside floating window */}
+        <div 
+          className="device-controls-menu"
+          style={{
+            height: '60px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            padding: '0 16px',
+            background: 'rgba(20, 20, 20, 0.9)',
+            backdropFilter: 'blur(12px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            flexShrink: 0,
+          }}
+        >
+          <button
+            onClick={() => {
+              setShowHomeScreen(true);
+              setActiveApp(null);
+            }}
+            className="control-btn"
+            title="Home"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: 'none',
+              background: showHomeScreen ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+              color: showHomeScreen ? '#3b82f6' : '#ccc',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Home className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setRotated(!rotated)}
+            className="control-btn"
+            title="Rotate"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: 'none',
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: '#ccc',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setIsLocked(!isLocked)}
+            className="control-btn"
+            title={isLocked ? 'Unlock' : 'Lock'}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: 'none',
+              background: isLocked ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+              color: isLocked ? '#3b82f6' : '#ccc',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Lock className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              setScreenOff(!screenOff);
+              if (screenOff) setIsLocked(true);
+            }}
+            className="control-btn"
+            title={screenOff ? 'Turn On' : 'Turn Off'}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: 'none',
+              background: screenOff ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+              color: screenOff ? '#ef4444' : '#ccc',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Power className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Resize Handle - Canto inferior direito */}
+        <div
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleResizeStart(e, 'both');
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleResizeStart(e, 'both');
+          }}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            width: '24px',
+            height: '24px',
+            cursor: 'nwse-resize',
+            background: 'linear-gradient(135deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.4) 40%, rgba(255, 255, 255, 0.4) 45%, transparent 45%, transparent 60%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.4) 65%, transparent 65%)',
+            zIndex: 10001,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            pointerEvents: 'auto',
+          }}
+          title="Redimensionar"
+        />
+        {/* Resize Handle - Borda direita (para redimensionar largura) */}
+        <div
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleResizeStart(e, 'horizontal');
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleResizeStart(e, 'horizontal');
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: '20px',
+            cursor: 'ew-resize',
+            zIndex: 10001,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            pointerEvents: 'auto',
+            background: 'transparent',
+          }}
+          title="Ajustar largura"
+        />
+        {/* Resize Handle - Borda inferior (para redimensionar altura) */}
+        <div
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleResizeStart(e, 'vertical');
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleResizeStart(e, 'vertical');
+          }}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: '12px',
+            cursor: 'ns-resize',
+            zIndex: 10000,
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            pointerEvents: 'auto',
+          }}
+          title="Ajustar altura"
+        />
+      </div>,
+      document.body
+    );
+  }
+
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: '#000000' }}>
       {/* Preview toolbar */}
@@ -1549,6 +2073,25 @@ ${cssContent}
         </div>
 
         <div className="flex items-center gap-1">
+          {isMobile && (
+            <button
+              onClick={() => {
+                if (isFloating) {
+                  closeFloatingWindow();
+                } else {
+                  openFloatingWindow();
+                }
+              }}
+              className={`p-1.5 rounded transition-colors ${
+                isFloating 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+              title={isFloating ? 'Fechar Janela Flutuante' : 'Abrir em Nova Janela'}
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+          )}
           {previewMode !== 'desktop' && (
             <button
               onClick={() => setRotated(!rotated)}
@@ -1576,6 +2119,7 @@ ${cssContent}
       </div>
 
       {/* Preview frame */}
+      {!(isFloating && isMobile) && (
       <div 
         className="flex-1 flex items-center justify-center p-4 relative mobile-preview-container" 
         style={{ 
@@ -1624,9 +2168,9 @@ ${cssContent}
         {previewMode === 'ios' && renderIOSFrame()}
         {previewMode === 'android' && renderAndroidFrame()}
 
-        {/* Device Controls Menu - Only for mobile */}
-        {isMobile && (
-          <div 
+          {/* Device Controls Menu - Only for mobile */}
+        {isMobile && !isFloating && (
+          <div
             className="device-controls-menu"
             style={{
               position: 'absolute',
@@ -1733,6 +2277,7 @@ ${cssContent}
           </div>
         )}
       </div>
+      )}
 
       {/* Preview status */}
       {previewMode !== 'desktop' && (
@@ -1746,6 +2291,7 @@ ${cssContent}
           {rotated && ' (horizontal)'}
         </div>
       )}
+
     </div>
   );
 };

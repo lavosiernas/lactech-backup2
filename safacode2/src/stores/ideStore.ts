@@ -44,6 +44,8 @@ interface IDEState {
   // Preview
   previewMode: PreviewMode;
   setPreviewMode: (mode: PreviewMode) => void;
+  isFloatingPreview: boolean;
+  setIsFloatingPreview: (isFloating: boolean) => void;
   
   // Git
   gitStatus: GitStatus;
@@ -551,6 +553,8 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   // Preview
   previewMode: 'desktop',
   setPreviewMode: (mode) => set({ previewMode: mode }),
+  isFloatingPreview: false,
+  setIsFloatingPreview: (isFloating) => set({ isFloatingPreview: isFloating }),
   
   // Git
   gitStatus: {

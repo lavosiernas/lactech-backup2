@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAFECODE - Preview Flutuante</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    
+    /* Esconder qualquer barra do navegador que possa aparecer */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    
+    body {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    #floating-preview-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+    }
+    
+    .preview-header {
+      height: 32px;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+    
+    .preview-title {
+      font-size: 11px;
+      color: #999;
+      user-select: none;
+    }
+    
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+      -webkit-app-region: no-drag;
+    }
+    
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    
+    .preview-content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+    
+    .device-controls {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 16px;
+      background: rgba(20, 20, 20, 0.9);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+    
+    .control-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.05);
+      color: #ccc;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .control-btn.active {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+    
+    .control-btn.danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+    
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="floating-preview-container">
+    <div class="preview-header">
+      <div class="preview-title" id="preview-title">Preview Flutuante</div>
+      <button class="close-btn" id="close-btn" title="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="preview-content" id="preview-content">
+      <div style="text-align: center; color: #666;">
+        <p>Carregando preview...</p>
+      </div>
+    </div>
+    
+    <div class="device-controls" id="device-controls" style="display: none;">
+      <!-- Controles serão inseridos via JavaScript -->
+    </div>
+  </div>
+  
+  <script>
+    let previewData = null;
+    
+    // Obter dados da URL
+    function getDataFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        mode: params.get('mode') || 'ios',
+        rotated: params.get('rotated') === 'true',
+        darkMode: params.get('darkMode') === 'true',
+        isLocked: params.get('isLocked') === 'true',
+        screenOff: params.get('screenOff') === 'true',
+        showHomeScreen: params.get('showHomeScreen') === 'true',
+        activeApp: params.get('activeApp') || null,
+        content: decodeURIComponent(params.get('content') || '')
+      };
+    }
+    
+    // Carregar dados iniciais da URL imediatamente
+    (function() {
+      const data = getDataFromURL();
+      if (data.content) {
+        previewData = data;
+        // Aguardar DOM estar pronto
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', updatePreview);
+        } else {
+          setTimeout(updatePreview, 100);
+        }
+      }
+    })();
+    
+    // Receber dados atualizados da janela principal
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'PREVIEW_DATA') {
+        previewData = event.data;
+        updatePreview();
+      } else if (event.data.type === 'UPDATE_PREVIEW') {
+        if (previewData) {
+          previewData.content = event.data.content;
+          previewData.darkMode = event.data.darkMode;
+          updatePreview();
+        }
+      }
+    });
+    
+    // Solicitar dados iniciais se não vieram da URL
+    if (window.opener && !previewData) {
+      window.opener.postMessage({ type: 'REQUEST_PREVIEW_DATA' }, '*');
+    }
+    
+    function updatePreview() {
+      if (!previewData) return;
+      
+      const contentDiv = document.getElementById('preview-content');
+      const titleDiv = document.getElementById('preview-title');
+      const controlsDiv = document.getElementById('device-controls');
+      
+      titleDiv.textContent = previewData.mode === 'ios' ? 'iPhone Preview' : 'Android Preview';
+      
+      // Renderizar o frame do dispositivo diretamente (não iframe)
+      contentDiv.innerHTML = '';
+      
+      // Criar container para o frame
+      const frameContainer = document.createElement('div');
+      frameContainer.style.width = '100%';
+      frameContainer.style.height = '100%';
+      frameContainer.style.display = 'flex';
+      frameContainer.style.alignItems = 'center';
+      frameContainer.style.justifyContent = 'center';
+      frameContainer.style.background = '#000';
+      frameContainer.style.overflow = 'hidden';
+      
+      // Criar iframe com o conteúdo do preview
+      const iframe = document.createElement('iframe');
+      iframe.srcDoc = previewData.content;
+      iframe.sandbox = 'allow-scripts';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      
+      frameContainer.appendChild(iframe);
+      contentDiv.appendChild(frameContainer);
+      
+      // Mostrar controles se for mobile
+      if (previewData.mode === 'ios' || previewData.mode === 'android') {
+        controlsDiv.style.display = 'flex';
+        renderControls();
+      } else {
+        controlsDiv.style.display = 'none';
+      }
+    }
+    
+    function renderControls() {
+      const controlsDiv = document.getElementById('device-controls');
+      controlsDiv.innerHTML = `
+        <button class="control-btn" id="home-btn" title="Home">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="rotate-btn" title="Rotacionar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="lock-btn" title="Bloquear">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="power-btn" title="Ligar/Desligar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+            <line x1="12" y1="2" x2="12" y2="12"/>
+          </svg>
+        </button>
+      `;
+      
+      // Adicionar event listeners
+      document.getElementById('home-btn').addEventListener('click', () => {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'CONTROL_ACTION', action: 'home' }, '*');
+        }
+      });
+      
+      document.getElementById('rotate-btn').addEventListener('click', () => {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'CONTROL_ACTION', action: 'rotate' }, '*');
+        }
+      });
+      
+      document.getElementById('lock-btn').addEventListener('click', () => {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'CONTROL_ACTION', action: 'lock' }, '*');
+        }
+      });
+      
+      document.getElementById('power-btn').addEventListener('click', () => {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'CONTROL_ACTION', action: 'power' }, '*');
+        }
+      });
+    }
+    
+    // Fechar janela
+    document.getElementById('close-btn').addEventListener('click', () => {
+      if (window.opener) {
+        window.opener.postMessage({ type: 'CLOSE_FLOATING' }, '*');
+      }
+      window.close();
+    });
+    
+    // Solicitar dados ao carregar
+    window.addEventListener('load', () => {
+      if (window.opener) {
+        window.opener.postMessage({ type: 'REQUEST_PREVIEW_DATA' }, '*');
+      }
+    });
+  </script>
+</body>
+</html>
+

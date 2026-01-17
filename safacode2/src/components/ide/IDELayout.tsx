@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Sidebar } from './Sidebar';
 import { MenuBar } from './MenuBar';
 import { EditorTabs } from './EditorTabs';
@@ -13,10 +13,16 @@ import { AchievementModal } from './AchievementModal';
 import { useIDEStore } from '@/stores/ideStore';
 
 export const IDELayout: React.FC = () => {
+  const [previewWidth, setPreviewWidth] = useState(480);
+  const [isResizing, setIsResizing] = useState(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const resizeStartXRef = useRef(0);
+  const resizeStartWidthRef = useRef(480);
   const { 
     sidebarOpen, 
     terminalOpen, 
-    previewOpen, 
+    previewOpen,
+    isFloatingPreview,
     showWelcome,
     toggleSidebar,
     toggleTerminal,
@@ -119,6 +125,49 @@ export const IDELayout: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar, toggleTerminal, togglePreview, toggleCommandPalette, toggleFindReplace, activeTabId, tabs, saveTab, closeTab, createFile, setSidebarPanel, addTerminal, terminals, addTerminalLine]);
 
+  // Lógica de redimensionamento do painel de preview
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      
+      const deltaX = resizeStartXRef.current - e.clientX;
+      const newWidth = resizeStartWidthRef.current + deltaX;
+      const minWidth = 300;
+      const maxWidth = window.innerWidth * 0.8; // Máximo de 80% da largura da tela
+      
+      const finalWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+      setPreviewWidth(finalWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing]);
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    resizeStartXRef.current = e.clientX;
+    resizeStartWidthRef.current = previewWidth;
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Menu bar */}
@@ -144,14 +193,27 @@ export const IDELayout: React.FC = () => {
             </div>
 
             {/* Preview panel */}
-            {previewOpen && (
+            {previewOpen && !isFloatingPreview && (
               <>
-                <div className="w-px bg-panel-border hover:bg-primary/40 cursor-col-resize transition-colors" />
-                <div className="w-[480px] flex-shrink-0">
+                <div 
+                  className="w-px bg-panel-border hover:bg-primary/40 cursor-col-resize transition-colors"
+                  onMouseDown={handleResizeStart}
+                  style={{
+                    position: 'relative',
+                    zIndex: 10,
+                  }}
+                />
+                <div 
+                  ref={previewContainerRef}
+                  className="flex-shrink-0"
+                  style={{ width: `${previewWidth}px`, transition: isResizing ? 'none' : 'width 0.2s ease' }}
+                >
                   <LivePreview />
                 </div>
               </>
             )}
+            {/* Renderizar LivePreview mesmo quando flutuante para manter o Portal */}
+            {previewOpen && isFloatingPreview && <LivePreview />}
           </div>
 
           {/* Terminal */}
