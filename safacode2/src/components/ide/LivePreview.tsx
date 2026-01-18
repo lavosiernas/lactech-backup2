@@ -13,7 +13,8 @@ export const LivePreview: React.FC = () => {
   const [screenOff, setScreenOff] = useState(false);
   const [showHomeScreen, setShowHomeScreen] = useState(true);
   const [activeApp, setActiveApp] = useState<string | null>(null);
-  const [browserUrl, setBrowserUrl] = useState('https://www.google.com');
+  const [browserUrl, setBrowserUrl] = useState('about:blank');
+  const [iframeError, setIframeError] = useState(false);
   const [key, setKey] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -305,6 +306,41 @@ export const LivePreview: React.FC = () => {
     }
   }, [isDragging, dragStart.x, dragStart.y, floatingSize.width, floatingSize.height]);
 
+  const previewModes: { mode: PreviewMode; icon: React.ReactNode; label: string }[] = [
+    { mode: 'desktop', icon: <Monitor className="w-4 h-4" />, label: 'Desktop' },
+    { mode: 'tablet', icon: <Tablet className="w-4 h-4" />, label: 'Tablet' },
+    { mode: 'ios', icon: <Smartphone className="w-4 h-4" />, label: 'iOS' },
+    { mode: 'android', icon: <Smartphone className="w-4 h-4" />, label: 'Android' },
+  ];
+
+  const getPreviewSize = () => {
+    const sizes = {
+      desktop: { width: '100%', height: '100%' },
+      tablet: rotated ? { width: '1024px', height: '768px' } : { width: '768px', height: '1024px' },
+      ios: rotated ? { width: '844px', height: '390px' } : { width: '390px', height: '844px' },
+      android: rotated ? { width: '844px', height: '390px' } : { width: '390px', height: '844px' },
+    };
+    return sizes[previewMode];
+  };
+
+  const size = getPreviewSize();
+  const isMobile = previewMode === 'ios' || previewMode === 'android';
+
+  // Detectar erros de X-Frame-Options
+  useEffect(() => {
+    if (!isFloating && !isMobile) return;
+    
+    const handleMessage = (event: MessageEvent) => {
+      // Alguns sites podem enviar mensagens quando bloqueados
+      if (event.data && typeof event.data === 'string' && event.data.includes('X-Frame-Options')) {
+        setIframeError(true);
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isFloating, isMobile]);
+
   useEffect(() => {
     if (!isResizing) return;
     
@@ -376,26 +412,6 @@ export const LivePreview: React.FC = () => {
     };
   }, [isResizing, resizeStart, resizeDirection, floatingPosition, rotated, isFloating]);
 
-  const previewModes: { mode: PreviewMode; icon: React.ReactNode; label: string }[] = [
-    { mode: 'desktop', icon: <Monitor className="w-4 h-4" />, label: 'Desktop' },
-    { mode: 'tablet', icon: <Tablet className="w-4 h-4" />, label: 'Tablet' },
-    { mode: 'ios', icon: <Smartphone className="w-4 h-4" />, label: 'iOS' },
-    { mode: 'android', icon: <Smartphone className="w-4 h-4" />, label: 'Android' },
-  ];
-
-  const getPreviewSize = () => {
-    const sizes = {
-      desktop: { width: '100%', height: '100%' },
-      tablet: rotated ? { width: '1024px', height: '768px' } : { width: '768px', height: '1024px' },
-      ios: rotated ? { width: '844px', height: '390px' } : { width: '390px', height: '844px' },
-      android: rotated ? { width: '844px', height: '390px' } : { width: '390px', height: '844px' },
-    };
-    return sizes[previewMode];
-  };
-
-  const size = getPreviewSize();
-  const isMobile = previewMode === 'ios' || previewMode === 'android';
-
   // Função para abrir janela flutuante como overlay fullscreen
   const openFloatingWindow = () => {
     if (!isMobile) return;
@@ -428,7 +444,7 @@ export const LivePreview: React.FC = () => {
         return activeTab.content;
       }
       if (activeTab.language === 'typescript' || activeTab.language === 'javascript') {
-        const bgColor = darkMode ? '#0f172a' : '#ffffff';
+        const bgColor = darkMode ? '#000000' : '#ffffff';
         const textColor = darkMode ? '#f8fafc' : '#0f172a';
         const codePreview = activeTab.content.substring(0, 500).replace(/`/g, '\\`').replace(/\$/g, '\\$');
         return `
@@ -476,40 +492,66 @@ ${cssContent}
       }
     }
     
+    const bgColor = darkMode ? '#000000' : '#ffffff';
+    const textColor = darkMode ? '#f8fafc' : '#0f172a';
+    const borderColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+    const borderColorLight = darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+    const borderColorDark = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+    const inputBg = darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+    const inputBorder = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+    const featureBg = darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
+    const featureBgHover = darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+    const btnBg = darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)';
+    const btnBgHover = darkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.15)';
+    const btnColor = darkMode ? '#60a5fa' : '#3b82f6';
+    const modalBg = darkMode ? '#000000' : '#ffffff';
+    const modalText = darkMode ? '#cbd5e1' : '#475569';
+    const modalTitle = darkMode ? '#f8fafc' : '#0f172a';
+    const modalSubtext = darkMode ? '#64748b' : '#94a3b8';
+    const sectionTitle = darkMode ? '#e2e8f0' : '#0f172a';
+    const mutedColor = darkMode ? '#94a3b8' : '#64748b';
+    
     return `
     <!DOCTYPE html>
-    <html style="background: ${darkMode ? '#0f172a' : '#ffffff'}; color: ${darkMode ? '#f8fafc' : '#0f172a'};">
+    <html style="background: ${bgColor}; color: ${textColor};">
     <head>
+      <meta charset="UTF-8">
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
           min-height: 100vh;
           display: flex;
           flex-direction: column;
+          background: ${darkMode ? '#000000' : '#ffffff'};
+          color: ${darkMode ? '#f8fafc' : '#0f172a'};
         }
         .header {
-          padding: 1rem 2rem;
+          padding: 1.5rem 2rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+          border-bottom: 1px solid ${borderColor};
         }
         .header h1 { 
-          font-size: 1.25rem; 
-          font-weight: 600;
-          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          font-size: 1rem; 
+          font-weight: 500;
+          color: ${textColor};
+          letter-spacing: 0.5px;
         }
         .btn {
           padding: 0.5rem 1rem;
-          border-radius: 0.375rem;
+          border-radius: 0.25rem;
           border: none;
-          background: #3b82f6;
-          color: white;
+          background: transparent;
+          color: ${mutedColor};
           cursor: pointer;
-          font-weight: 500;
+          font-weight: 400;
+          font-size: 0.875rem;
+          transition: color 0.2s ease;
+        }
+        .btn:hover {
+          color: ${textColor};
         }
         main {
           flex: 1;
@@ -518,28 +560,201 @@ ${cssContent}
           align-items: center;
           justify-content: center;
           padding: 2rem;
+        }
+        .welcome-content {
           text-align: center;
         }
         main h2 {
           font-size: 2rem;
-          font-weight: 700;
-          margin-bottom: 1rem;
+          font-weight: 400;
+          margin-bottom: 0.75rem;
+          color: ${textColor};
+          letter-spacing: -0.5px;
         }
         main p {
-          color: ${darkMode ? '#94a3b8' : '#64748b'};
-          max-width: 400px;
+          color: ${mutedColor};
+          font-size: 0.9375rem;
+          line-height: 1.6;
+          font-weight: 300;
+        }
+        .modal-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+          z-index: 1000;
+          align-items: center;
+          justify-content: center;
+        }
+        .modal-overlay.active {
+          display: flex;
+          animation: fadeIn 0.2s ease;
+        }
+        .modal {
+          background: ${modalBg};
+          border-radius: 0.25rem;
+          padding: 2rem;
+          max-width: 420px;
+          width: 90%;
+          max-height: 80vh;
+          overflow-y: auto;
+          box-shadow: ${darkMode ? '0 20px 60px rgba(0, 0, 0, 0.5)' : '0 20px 60px rgba(0, 0, 0, 0.15)'};
+          animation: slideUp 0.2s ease;
+          border: 1px solid ${borderColor};
+        }
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+        .modal-title {
+          font-size: 1rem;
+          font-weight: 500;
+          color: ${modalTitle};
+        }
+        .modal-close {
+          background: none;
+          border: none;
+          font-size: 1.25rem;
+          cursor: pointer;
+          color: ${mutedColor};
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: color 0.2s ease;
+        }
+        .modal-close:hover {
+          color: ${textColor};
+        }
+        .modal-content {
+          color: ${modalText};
+          line-height: 1.6;
+        }
+        .settings-section {
+          margin-bottom: 1.5rem;
+          padding-bottom: 1.5rem;
+          border-bottom: 1px solid ${borderColor};
+        }
+        .settings-section:last-child {
+          border-bottom: none;
+        }
+        .settings-section h3 {
+          font-size: 0.8125rem;
+          font-weight: 500;
+          margin-bottom: 1rem;
+          color: ${sectionTitle};
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .setting-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.875rem;
+        }
+        .setting-label {
+          color: ${modalText};
+          font-size: 0.875rem;
+          font-weight: 300;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       </style>
     </head>
     <body>
       <header class="header">
         <h1>SAFECODE</h1>
-        <button class="btn">Settings</button>
+        <button class="btn" onclick="openSettings()">Settings</button>
       </header>
       <main>
-        <h2>Welcome to SAFECODE</h2>
-        <p>Your modern code editor. Start building amazing projects with real-time preview.</p>
+        <div class="welcome-content">
+          <h2>Welcome to SAFECODE</h2>
+          <p>Start building your next project</p>
+        </div>
       </main>
+      
+      <div class="modal-overlay" id="settingsModal" onclick="closeSettingsOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h3 class="modal-title">Settings</h3>
+            <button class="modal-close" onclick="closeSettings()">×</button>
+          </div>
+          <div class="modal-content">
+            <div class="settings-section">
+              <h3>Editor</h3>
+              <div class="setting-item">
+                <span class="setting-label">Font Size</span>
+                <input type="number" value="14" min="10" max="30" style="width: 80px; padding: 0.25rem 0.5rem; border-radius: 0.375rem; border: 1px solid ${inputBorder}; background: ${inputBg}; color: ${textColor};">
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Tab Size</span>
+                <select style="width: 80px; padding: 0.25rem 0.5rem; border-radius: 0.375rem; border: 1px solid ${inputBorder}; background: ${inputBg}; color: ${textColor};">
+                  <option value="2">2</option>
+                  <option value="4">4</option>
+                  <option value="8">8</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <span class="setting-label">Word Wrap</span>
+                <label style="cursor: pointer;">
+                  <input type="checkbox" checked style="margin-left: 0.5rem;">
+                </label>
+              </div>
+            </div>
+            <div class="settings-section">
+              <h3>Files</h3>
+              <div class="setting-item">
+                <span class="setting-label">Auto Save</span>
+                <label style="cursor: pointer;">
+                  <input type="checkbox" style="margin-left: 0.5rem;">
+                </label>
+              </div>
+            </div>
+            <div class="settings-section">
+              <h3>About</h3>
+              <p style="font-size: 0.8125rem; color: ${modalSubtext}; font-weight: 300;">SAFECODE v1.0.0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <script>
+        function openSettings() {
+          document.getElementById('settingsModal').classList.add('active');
+        }
+        function closeSettings() {
+          document.getElementById('settingsModal').classList.remove('active');
+        }
+        function closeSettingsOnOverlay(event) {
+          if (event.target.id === 'settingsModal') {
+            closeSettings();
+          }
+        }
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            closeSettings();
+          }
+        });
+      </script>
     </body>
     </html>
   `;
@@ -1067,22 +1282,24 @@ ${cssContent}
 
         {/* Content iframe - Only show when SAFECODE app is active */}
         {!isLocked && !screenOff && !showHomeScreen && activeApp === 'safecode' && (
-          <iframe
-            key={key}
-            srcDoc={getPreviewContent()}
-            className="w-full h-full border-0 hide-scrollbar"
-            title="Preview"
-            sandbox="allow-scripts"
-            style={{
-              width: '100%',
-              height: 'calc(100% - 54px)',
-              border: 'none',
-              marginTop: '54px',
-              animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          />
+            <iframe
+              key={key}
+              srcDoc={getPreviewContent()}
+              className="w-full h-full border-0 hide-scrollbar"
+              title="Preview"
+              sandbox="allow-scripts"
+              scrolling="no"
+              style={{
+                width: '100%',
+                height: 'calc(100% - 54px)',
+                border: 'none',
+                marginTop: '54px',
+                animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                overflow: 'hidden',
+              }}
+            />
         )}
 
         {/* Browser for Safari/Chrome - Functional */}
@@ -1093,7 +1310,7 @@ ${cssContent}
             left: 0,
             width: '100%',
             height: '100%',
-            background: '#fff',
+            background: darkMode ? '#000000' : '#fff',
             zIndex: 30,
             paddingTop: '54px',
             display: 'flex',
@@ -1106,8 +1323,8 @@ ${cssContent}
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '0 12px',
-              background: '#f5f5f5',
-              borderBottom: '1px solid #e0e0e0',
+              background: darkMode ? '#1a1a1a' : '#f5f5f5',
+              borderBottom: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e0e0e0',
               gap: '8px',
             }}>
               <button
@@ -1123,6 +1340,7 @@ ${cssContent}
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  color: darkMode ? '#fff' : '#000',
                 }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1132,14 +1350,14 @@ ${cssContent}
               <div style={{
                 flex: 1,
                 height: '32px',
-                background: '#fff',
+                background: darkMode ? '#2a2a2a' : '#fff',
                 borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 padding: '0 12px',
                 fontSize: '13px',
-                color: '#333',
-                border: '1px solid #e0e0e0',
+                color: darkMode ? '#fff' : '#333',
+                border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e0e0e0',
                 gap: '8px',
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
@@ -1158,10 +1376,11 @@ ${cssContent}
                         if (url.includes('.') && !url.includes(' ')) {
                           finalUrl = 'https://' + url;
                         } else {
-                          finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+                          finalUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
                         }
                       }
                       setBrowserUrl(finalUrl);
+                      setIframeError(false);
                       setKey(k => k + 1);
                     }
                   }}
@@ -1171,7 +1390,7 @@ ${cssContent}
                     outline: 'none',
                     background: 'transparent',
                     fontSize: '13px',
-                    color: '#333',
+                    color: darkMode ? '#fff' : '#333',
                   }}
                   placeholder="Search or enter website name"
                 />
@@ -1183,10 +1402,11 @@ ${cssContent}
                     if (browserUrl.includes('.') && !browserUrl.includes(' ')) {
                       finalUrl = 'https://' + browserUrl;
                     } else {
-                      finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(browserUrl);
+                      finalUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(browserUrl);
                     }
                   }
                   setBrowserUrl(finalUrl);
+                  setIframeError(false);
                   setKey(k => k + 1);
                 }}
                 style={{
@@ -1197,6 +1417,7 @@ ${cssContent}
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  color: darkMode ? '#fff' : '#000',
                 }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1204,20 +1425,110 @@ ${cssContent}
                 </svg>
               </button>
             </div>
-            <iframe
-              key={`browser-${activeApp}-${key}`}
-              src={browserUrl}
-              className="w-full flex-1 border-0 hide-scrollbar"
-              title={activeApp === 'safari' ? 'Safari Browser' : 'Chrome Browser'}
-              style={{
-                width: '100%',
+            {iframeError ? (
+              <div style={{
                 flex: 1,
-                border: 'none',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-              }}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
-            />
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '2rem',
+                textAlign: 'center',
+                color: darkMode ? '#94a3b8' : '#64748b',
+              }}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={darkMode ? '#64748b' : '#94a3b8'} strokeWidth="1.5" style={{ marginBottom: '1rem' }}>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.5rem', color: darkMode ? '#e2e8f0' : '#1e293b' }}>
+                  Site não pode ser exibido em iframe
+                </h3>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  Este site bloqueia a exibição em frames por motivos de segurança.
+                </p>
+                <button
+                  onClick={() => {
+                    setBrowserUrl('about:blank');
+                    setIframeError(false);
+                    setKey(k => k + 1);
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.25rem',
+                    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+                    background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                    color: darkMode ? '#e2e8f0' : '#1e293b',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Voltar
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                flex: 1,
+                position: 'relative',
+                overflow: 'hidden',
+                width: '100%',
+              }}>
+                <iframe
+                  key={`browser-${activeApp}-${key}`}
+                  src={browserUrl}
+                  className="w-full h-full border-0 hide-scrollbar"
+                  title={activeApp === 'safari' ? 'Safari Browser' : 'Chrome Browser'}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: 'calc(100% + 17px)',
+                    height: '100%',
+                    border: 'none',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation"
+                onLoad={(e) => {
+                  setIframeError(false);
+                  try {
+                    const iframe = e.target as HTMLIFrameElement;
+                    // Tentar injetar CSS para esconder scrollbar dentro do iframe
+                    try {
+                      if (iframe.contentDocument) {
+                        const style = iframe.contentDocument.createElement('style');
+                        style.textContent = `
+                          * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+                          *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+                        `;
+                        iframe.contentDocument.head.appendChild(style);
+                      }
+                    } catch (cssErr) {
+                      // Não é possível injetar CSS em iframes cross-origin, ignorar
+                    }
+                    // Em desenvolvimento HTTP, alguns sites podem ter problemas
+                    const isLocalhost = window.location.protocol === 'http:';
+                    if (isLocalhost && iframe.contentDocument === null) {
+                      // Pode ser problema de CORS ou política de segurança em HTTP
+                      console.warn('Iframe pode ter problemas de segurança em HTTP/localhost');
+                    }
+                  } catch (err) {
+                    // Erros de CORS são esperados em HTTP para alguns sites
+                    const isLocalhost = window.location.protocol === 'http:';
+                    if (!isLocalhost) {
+                      setIframeError(true);
+                    }
+                  }
+                }}
+                onError={() => {
+                  // Só mostrar erro se não for localhost (HTTP)
+                  const isLocalhost = window.location.protocol === 'http:';
+                  if (!isLocalhost) {
+                    setIframeError(true);
+                  }
+                }}
+              />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1576,6 +1887,7 @@ ${cssContent}
             className="w-full h-full border-0 hide-scrollbar"
             title="Preview"
             sandbox="allow-scripts"
+            scrolling="no"
             style={{
               width: '100%',
               height: 'calc(100% - 28px)',
@@ -1583,6 +1895,7 @@ ${cssContent}
               marginTop: '28px',
               animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               scrollbarWidth: 'none',
+              overflow: 'hidden',
               msOverflowStyle: 'none',
             }}
           />
@@ -1596,7 +1909,7 @@ ${cssContent}
             left: 0,
             width: '100%',
             height: '100%',
-            background: '#fff',
+            background: darkMode ? '#000000' : '#fff',
             zIndex: 30,
             paddingTop: '28px',
             display: 'flex',
@@ -1609,8 +1922,8 @@ ${cssContent}
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '0 12px',
-              background: '#f5f5f5',
-              borderBottom: '1px solid #e0e0e0',
+              background: darkMode ? '#1a1a1a' : '#f5f5f5',
+              borderBottom: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e0e0e0',
               gap: '8px',
             }}>
               <button
@@ -1626,6 +1939,7 @@ ${cssContent}
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  color: darkMode ? '#fff' : '#000',
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1635,15 +1949,15 @@ ${cssContent}
               <div style={{
                 flex: 1,
                 height: '36px',
-                background: '#fff',
+                background: darkMode ? '#2a2a2a' : '#fff',
                 borderRadius: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 padding: '0 16px',
                 fontSize: '13px',
-                color: '#333',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                border: '1px solid #e0e0e0',
+                color: darkMode ? '#fff' : '#333',
+                boxShadow: darkMode ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.1)',
+                border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e0e0e0',
                 gap: '8px',
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.5 }}>
@@ -1662,10 +1976,11 @@ ${cssContent}
                         if (url.includes('.') && !url.includes(' ')) {
                           finalUrl = 'https://' + url;
                         } else {
-                          finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+                          finalUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
                         }
                       }
                       setBrowserUrl(finalUrl);
+                      setIframeError(false);
                       setKey(k => k + 1);
                     }
                   }}
@@ -1675,7 +1990,7 @@ ${cssContent}
                     outline: 'none',
                     background: 'transparent',
                     fontSize: '13px',
-                    color: '#333',
+                    color: darkMode ? '#fff' : '#333',
                   }}
                   placeholder="Search Google or type URL"
                 />
@@ -1687,10 +2002,11 @@ ${cssContent}
                     if (browserUrl.includes('.') && !browserUrl.includes(' ')) {
                       finalUrl = 'https://' + browserUrl;
                     } else {
-                      finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(browserUrl);
+                      finalUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(browserUrl);
                     }
                   }
                   setBrowserUrl(finalUrl);
+                  setIframeError(false);
                   setKey(k => k + 1);
                 }}
                 style={{
@@ -1701,6 +2017,7 @@ ${cssContent}
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  color: darkMode ? '#fff' : '#000',
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1708,20 +2025,91 @@ ${cssContent}
                 </svg>
               </button>
             </div>
-            <iframe
-              key={`browser-chrome-${key}`}
-              src={browserUrl}
-              className="w-full flex-1 border-0 hide-scrollbar"
-              title="Chrome Browser"
-              style={{
-                width: '100%',
+            {iframeError ? (
+              <div style={{
                 flex: 1,
-                border: 'none',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-              }}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
-            />
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '2rem',
+                textAlign: 'center',
+                color: darkMode ? '#94a3b8' : '#64748b',
+              }}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={darkMode ? '#64748b' : '#94a3b8'} strokeWidth="1.5" style={{ marginBottom: '1rem' }}>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.5rem', color: darkMode ? '#e2e8f0' : '#1e293b' }}>
+                  Site não pode ser exibido em iframe
+                </h3>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  Este site bloqueia a exibição em frames por motivos de segurança.
+                </p>
+                <button
+                  onClick={() => {
+                    setBrowserUrl('about:blank');
+                    setIframeError(false);
+                    setKey(k => k + 1);
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.25rem',
+                    border: `1px solid ${darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+                    background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                    color: darkMode ? '#e2e8f0' : '#1e293b',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Voltar
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                flex: 1,
+                position: 'relative',
+                overflow: 'hidden',
+                width: '100%',
+              }}>
+                <iframe
+                  key={`browser-chrome-${key}`}
+                  src={browserUrl}
+                  className="w-full h-full border-0 hide-scrollbar"
+                  title="Chrome Browser"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: 'calc(100% + 17px)',
+                    height: '100%',
+                    border: 'none',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  }}
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation-by-user-activation"
+                onLoad={(e) => {
+                  try {
+                    const iframe = e.target as HTMLIFrameElement;
+                    if (iframe.contentWindow?.location.href === 'about:blank' || !iframe.contentDocument) {
+                      setTimeout(() => {
+                        try {
+                          iframe.contentWindow?.location.href;
+                        } catch (err) {
+                          setIframeError(true);
+                        }
+                      }, 1000);
+                    } else {
+                      setIframeError(false);
+                    }
+                  } catch (err) {
+                    setIframeError(true);
+                  }
+                }}
+                onError={() => setIframeError(true)}
+              />
+              </div>
+            )}
           </div>
         )}
 

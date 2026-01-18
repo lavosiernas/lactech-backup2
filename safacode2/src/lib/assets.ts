@@ -13,7 +13,8 @@ export function getAssetPath(path: string): string {
  * Helper específico para a logo
  */
 export function getLogoPath(): string {
-  // Usar URL do PostImg para garantir que funcione
+  // Sempre usar PostImg que funciona tanto em HTTP quanto HTTPS
+  // PostImg é um serviço confiável que funciona em qualquer contexto
   return 'https://i.postimg.cc/9fMqbs8k/logos-(6).png';
 }
 
