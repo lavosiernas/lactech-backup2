@@ -17,6 +17,8 @@ interface AuthState {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: () => void;
+  loginWithGitHub: () => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
 }
@@ -34,13 +36,20 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         try {
-          const response = await fetch(`${API_BASE}/auth.php?action=login`, {
+          const url = `${API_BASE}/auth.php?action=login`;
+          console.log('Login URL:', url);
+          
+          const response = await fetch(url, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, password }),
           });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
 
           const data = await response.json();
 
@@ -58,7 +67,11 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           set({ isLoading: false });
-          return { success: false, error: 'Erro de conexão. Verifique se o servidor está rodando.' };
+          const errorMessage = error instanceof Error 
+            ? `Erro de conexão: ${error.message}. Verifique se o servidor está rodando em ${API_BASE}`
+            : 'Erro de conexão. Verifique se o servidor está rodando.';
+          console.error('Login error:', error);
+          return { success: false, error: errorMessage };
         }
       },
 
@@ -91,6 +104,14 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
           return { success: false, error: 'Erro de conexão. Verifique se o servidor está rodando.' };
         }
+      },
+
+      loginWithGoogle: () => {
+        window.location.href = `${API_BASE}/oauth.php?action=google`;
+      },
+
+      loginWithGitHub: () => {
+        window.location.href = `${API_BASE}/oauth.php?action=github`;
       },
 
       logout: () => {

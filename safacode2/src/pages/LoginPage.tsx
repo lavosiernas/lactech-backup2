@@ -10,7 +10,7 @@ import { getLogoPath } from '@/lib/assets';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, register, isLoading, isAuthenticated } = useAuthStore();
+  const { login, register, isLoading, isAuthenticated, loginWithGoogle, loginWithGitHub } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,6 +18,9 @@ export default function LoginPage() {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [newsletter, setNewsletter] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -33,6 +36,10 @@ export default function LoginPage() {
     setError('');
 
     if (isRegisterMode) {
+      if (!acceptedTerms) {
+        setError('Você deve aceitar os Termos de Serviço');
+        return;
+      }
       if (password !== confirmPassword) {
         setError('As senhas não coincidem');
         return;
@@ -56,15 +63,25 @@ export default function LoginPage() {
 
   return (
     <div 
-      className="fixed inset-0 flex"
+      className="fixed inset-0 flex flex-col md:flex-row"
       style={{ backgroundColor: '#000000' }}
     >
+      {/* Header Mobile - Logo e Nome */}
+      <div className="md:hidden flex items-center justify-center gap-2 p-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+        <img 
+          src={getLogoPath()}
+          alt="SAFECODE" 
+          className="w-7 h-7 object-contain"
+        />
+        <span className="text-lg font-semibold" style={{ color: '#ffffff' }}>SafeCode IDE</span>
+      </div>
+
       {/* Painel Esquerdo - Branding */}
       <div 
-        className="relative flex flex-col justify-between p-10"
+        className="hidden md:flex relative flex-col justify-between p-6 lg:p-10"
         style={{
           width: '35%',
-          background: 'linear-gradient(180deg, #1e3a8a 0%, #000000 100%)'
+          backgroundColor: '#000000'
         }}
       >
         {/* Vídeo de fundo */}
@@ -73,28 +90,27 @@ export default function LoginPage() {
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
-          style={{ mixBlendMode: 'overlay' }}
+          className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="/cristao.mp4" type="video/mp4" />
+          <source src="cristao.mp4" type="video/mp4" />
         </video>
 
         {/* Logo e texto no canto inferior */}
-        <div className="relative z-10 mt-auto space-y-6">
+        <div className="relative z-10 mt-auto space-y-4 lg:space-y-6">
           <div className="flex items-center gap-2">
             <img 
               src={getLogoPath()}
               alt="SAFECODE" 
-              className="w-8 h-8 object-contain"
+              className="w-7 h-7 lg:w-8 lg:h-8 object-contain"
             />
-            <span className="text-xl font-semibold" style={{ color: '#ffffff' }}>SafeCode IDE</span>
+            <span className="text-lg lg:text-xl font-semibold" style={{ color: '#ffffff' }}>SafeCode IDE</span>
           </div>
           
-          <div className="space-y-3">
-            <h2 className="text-3xl font-bold" style={{ color: '#ffffff' }}>
+          <div className="space-y-2 lg:space-y-3">
+            <h2 className="text-2xl lg:text-3xl font-bold" style={{ color: '#ffffff' }}>
               {isRegisterMode ? 'Build. Collaborate. Innovate.' : 'Back to your space.'}
             </h2>
-            <p className="text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>
+            <p className="text-sm lg:text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>
               {isRegisterMode 
                 ? 'Empower your team with tools that make collaboration seamless, creative, and inspiring.'
                 : 'Access your projects, manage your workspace, and keep building together with your team.'}
@@ -105,16 +121,16 @@ export default function LoginPage() {
 
       {/* Painel Direito - Formulário */}
       <div 
-        className="flex-1 flex items-center justify-center p-10 overflow-y-auto"
+        className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-10 overflow-y-auto"
         style={{ backgroundColor: '#000000' }}
       >
-        <div className="max-w-md w-full space-y-6">
+        <div className="max-w-md w-full space-y-3 sm:space-y-4">
           {/* Header */}
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold" style={{ color: '#ffffff' }}>
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: '#ffffff' }}>
               {isRegisterMode ? "Let's Get You Onboard!" : 'Welcome Back!'}
             </h1>
-            <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
+            <p className="text-xs sm:text-sm" style={{ color: '#94a3b8' }}>
               {isRegisterMode
                 ? 'Join SafeCode IDE and start collaborating — create smarter, work faster, and grow together.'
                 : 'Continue your journey — sign in to reconnect, collaborate, and pick up where you left off.'}
@@ -125,6 +141,7 @@ export default function LoginPage() {
           <div className="grid grid-cols-2 gap-3">
             <Button
               type="button"
+              onClick={loginWithGoogle}
               variant="outline"
               className="w-full h-11 rounded-lg transition-all hover:bg-[#111111] flex items-center justify-center gap-2"
               style={{
@@ -155,6 +172,7 @@ export default function LoginPage() {
             </Button>
             <Button
               type="button"
+              onClick={loginWithGitHub}
               variant="outline"
               className="w-full h-11 rounded-lg transition-all hover:bg-[#111111] flex items-center justify-center gap-2"
               style={{
@@ -182,9 +200,9 @@ export default function LoginPage() {
           </div>
 
           {/* Formulário */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {isRegisterMode && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-xs font-medium" style={{ color: '#cbd5e1' }}>
                     First Name
@@ -196,7 +214,7 @@ export default function LoginPage() {
                     onChange={(e) => setName(e.target.value)}
                     required
                     placeholder="e.g. Michelle"
-                    className="rounded-lg h-11 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+                    className="rounded-lg h-10 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all text-sm"
                     style={{ 
                       backgroundColor: '#111111', 
                       borderColor: 'rgba(255,255,255,0.1)',
@@ -214,7 +232,7 @@ export default function LoginPage() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="e.g. Smith"
-                    className="rounded-lg h-11 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+                    className="rounded-lg h-10 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all text-sm"
                     style={{ 
                       backgroundColor: '#111111', 
                       borderColor: 'rgba(255,255,255,0.1)',
@@ -222,6 +240,27 @@ export default function LoginPage() {
                     }}
                   />
                 </div>
+              </div>
+            )}
+
+            {isRegisterMode && (
+              <div className="space-y-2">
+                  <Label htmlFor="username" className="text-xs font-medium" style={{ color: '#cbd5e1' }}>
+                  Username <span className="text-xs" style={{ color: '#64748b' }}>(optional)</span>
+                </Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. michelle_dev"
+                  className="rounded-lg h-10 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all text-sm"
+                  style={{ 
+                    backgroundColor: '#111111', 
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    color: '#ffffff'
+                  }}
+                />
               </div>
             )}
 
@@ -236,7 +275,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder={isRegisterMode ? "e.g. michelle.smith@email.com" : "e.g. michellesmith@mail.com"}
-                className="rounded-lg h-11 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all"
+                className="rounded-lg h-10 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all text-sm"
                 style={{ 
                   backgroundColor: '#111111', 
                   borderColor: 'rgba(255,255,255,0.1)',
@@ -258,7 +297,7 @@ export default function LoginPage() {
                   required
                   placeholder="Enter your password"
                   minLength={isRegisterMode ? 8 : undefined}
-                  className="rounded-lg h-11 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all pr-11"
+                  className="rounded-lg h-10 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all pr-11 text-sm"
                   style={{ 
                     backgroundColor: '#111111', 
                     borderColor: 'rgba(255,255,255,0.1)',
@@ -295,7 +334,7 @@ export default function LoginPage() {
                     required
                     placeholder="Enter your confirm password"
                     minLength={8}
-                    className="rounded-lg h-11 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all pr-11"
+                    className="rounded-lg h-10 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition-all pr-11 text-sm"
                     style={{ 
                       backgroundColor: '#111111', 
                       borderColor: 'rgba(255,255,255,0.1)',
@@ -346,6 +385,75 @@ export default function LoginPage() {
               </div>
             )}
 
+            {isRegisterMode && (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      required
+                      className="sr-only peer"
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="relative w-5 h-5 rounded border-2 cursor-pointer transition-all
+                        peer-checked:bg-[#3b82f6] peer-checked:border-[#3b82f6]
+                        hover:border-[#3b82f6] hover:opacity-80
+                        bg-[#111111] border-[rgba(255,255,255,0.2)]"
+                    >
+                      <svg
+                        className="absolute inset-0 w-full h-full text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </label>
+                  </div>
+                  <Label htmlFor="terms" className="text-xs sm:text-sm cursor-pointer select-none hover:opacity-80 transition-opacity" style={{ color: '#94a3b8' }}>
+                    I accept the <a href="/safecode/lp/terms.html" target="_blank" className="underline hover:opacity-80" style={{ color: '#60a5fa' }} onClick={(e) => e.stopPropagation()}>Terms of Service</a>
+                  </Label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      id="newsletter"
+                      checked={newsletter}
+                      onChange={(e) => setNewsletter(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <label
+                      htmlFor="newsletter"
+                      className="relative w-5 h-5 rounded border-2 cursor-pointer transition-all
+                        peer-checked:bg-[#3b82f6] peer-checked:border-[#3b82f6]
+                        hover:border-[#3b82f6] hover:opacity-80
+                        bg-[#111111] border-[rgba(255,255,255,0.2)]"
+                    >
+                      <svg
+                        className="absolute inset-0 w-full h-full text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </label>
+                  </div>
+                  <Label htmlFor="newsletter" className="text-xs sm:text-sm cursor-pointer select-none hover:opacity-80 transition-opacity" style={{ color: '#94a3b8' }}>
+                    Subscribe to newsletter <span className="text-xs" style={{ color: '#64748b' }}>(optional)</span>
+                  </Label>
+                </div>
+              </>
+            )}
+
             {error && (
               <Alert 
                 variant="destructive" 
@@ -363,7 +471,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 font-medium text-base rounded-lg transition-all hover:opacity-90 active:scale-[0.98]"
+              className="w-full h-11 font-medium text-sm rounded-lg transition-all hover:opacity-90 active:scale-[0.98]"
               disabled={isLoading}
               style={{ 
                 backgroundColor: '#ffffff',
@@ -391,6 +499,9 @@ export default function LoginPage() {
                     setError('');
                     setPassword('');
                     setConfirmPassword('');
+                    setUsername('');
+                    setAcceptedTerms(false);
+                    setNewsletter(false);
                   }}
                   className="font-medium hover:underline transition-all"
                   style={{ color: '#ffffff' }}

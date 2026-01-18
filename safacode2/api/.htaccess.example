@@ -1,0 +1,22 @@
+# SafeCode IDE - API Configuration
+# Renomeie este arquivo para .htaccess e configure as credenciais
+
+# Permite acesso CORS e processamento PHP
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Processar arquivos PHP
+<FilesMatch "\.php$">
+    SetHandler application/x-httpd-php
+</FilesMatch>
+
+# Variáveis de ambiente OAuth (recomendado para produção)
+# Descomente e configure com suas credenciais:
+# SetEnv GITHUB_CLIENT_ID "Ov23li5aH4Ep6CFMq5Kn"
+# SetEnv GITHUB_CLIENT_SECRET "4f1efa1a8a9734b07c2f9072d410bd695fbffe9f"
+# SetEnv GOOGLE_CLIENT_ID "seu-google-client-id"
+# SetEnv GOOGLE_CLIENT_SECRET "seu-google-client-secret"
+

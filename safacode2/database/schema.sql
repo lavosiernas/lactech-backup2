@@ -8,15 +8,18 @@ USE safecode;
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NULL,
     name VARCHAR(255) NOT NULL,
     avatar_url VARCHAR(500) NULL,
+    provider VARCHAR(50) NULL COMMENT 'google, github, email',
+    provider_id VARCHAR(255) NULL COMMENT 'ID do usuário no provider',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL,
     INDEX idx_email (email),
-    INDEX idx_active (is_active)
+    INDEX idx_active (is_active),
+    INDEX idx_provider (provider, provider_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabela de sessões (opcional, para controle de sessões)

@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useAuthStore } from "@/stores/authStore";
 import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
+import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
 import AchievementPage from "./pages/AchievementPage";
 
@@ -32,6 +33,7 @@ const AppContent = () => {
     >
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route
           path="/"
           element={
