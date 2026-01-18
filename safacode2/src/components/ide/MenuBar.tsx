@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Play, 
   LayoutPanelLeft,
   LayoutPanelTop,
-  Eye
+  Eye,
+  LogOut,
+  User
 } from 'lucide-react';
 import { useIDEStore } from '@/stores/ideStore';
+import { useAuthStore } from '@/stores/authStore';
 import { getLogoPath } from '@/lib/assets';
 import { useToast } from '@/components/ui/use-toast';
 import { useFilePicker } from './FilePicker';
@@ -190,6 +194,8 @@ const buildFileTreeFromFiles = async (files: File[]): Promise<FileNode[]> => {
 };
 
 export const MenuBar: React.FC = () => {
+  const navigate = useNavigate();
+  const { logout, user } = useAuthStore();
   const { 
     toggleSidebar, 
     toggleTerminal, 
@@ -567,6 +573,43 @@ export const MenuBar: React.FC = () => {
       ))}
 
       <div className="flex-1" />
+
+      {/* User Menu */}
+      {user && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5">
+              <User className="w-3 h-3" />
+              <span>{user.name}</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            className="border-panel-border min-w-48" 
+            style={{ backgroundColor: '#000000' }}
+            side="bottom"
+            align="end"
+          >
+            <div className="px-2 py-1.5 border-b border-panel-border">
+              <p className="text-xs font-medium text-foreground">{user.name}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+            </div>
+            <DropdownMenuItem 
+              className="cursor-pointer text-destructive focus:text-destructive"
+              onClick={() => {
+                logout();
+                navigate('/login');
+                toast({
+                  title: 'Logout realizado',
+                  description: 'Você foi desconectado com sucesso',
+                });
+              }}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       {/* Dialogs */}
       <NewFileDialog

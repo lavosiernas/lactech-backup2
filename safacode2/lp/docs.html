@@ -1,343 +1,1598 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SafeCode Documentation | Complete Guide</title>
+    <title>SafeCode Docs | Modern Web IDE</title>
+    <meta name="description" content="SafeCode - A modern, web-based IDE built with React, TypeScript, and Vite.">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/9fMqbs8k/logos-(6).png">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="docs.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
-</head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        :root {
+            --bg: #09090b;
+            --bg-card: #18181b;
+            --bg-hover: #27272a;
+            --border: #27272a;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --green: #22c55e;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(9, 9, 11, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            height: 60px;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .logo img {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+        }
+
+        .logo-tag {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-hover);
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 60px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            position: fixed;
+            top: 60px;
+            left: max(0px, calc((100vw - 1200px) / 2));
+            bottom: 0;
+            padding: 24px 16px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 0;
+        }
+
+        .nav-group {
+            margin-bottom: 24px;
+        }
+
+        .nav-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-hover);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--bg-card);
+            color: var(--text);
+        }
+
+        .nav-link svg {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+        }
+
+        .nav-link.active svg,
+        .nav-link:hover svg {
+            opacity: 1;
+        }
+
+        /* Main */
+        .main {
+            flex: 1;
+            margin-left: 240px;
+            padding: 48px 64px 100px;
+            max-width: calc(100% - 240px);
+        }
+
+        .section {
+            max-width: 720px;
+            margin-bottom: 80px;
+            scroll-margin-top: 80px;
+        }
+
+        /* Hero */
+        .hero {
+            padding-bottom: 48px;
+            margin-bottom: 48px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--green);
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 560px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .hero-btn-primary {
+            background: linear-gradient(135deg, #fff 0%, #e4e4e7 100%);
+            color: var(--bg);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+        }
+
+        .hero-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255,255,255,0.15);
+        }
+
+        .hero-btn-secondary {
+            background: rgba(39,39,42,0.8);
+            color: var(--text);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--text-muted);
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 32px 0;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 24px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .stat:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 28px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .card {
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .card:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bg-hover) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon svg {
+            width: 22px;
+            height: 22px;
+            color: var(--text);
+        }
+
+        .card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Code */
+        .code-block {
+            background: linear-gradient(180deg, rgba(24,24,27,1) 0%, rgba(9,9,11,1) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.4);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-lang {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .code-copy {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .code-copy:hover {
+            background: var(--bg-hover);
+            color: var(--text);
+        }
+
+        .code-copy svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .code-block pre {
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .code-block .comment {
+            color: var(--text-muted);
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 16px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        li {
+            position: relative;
+            padding: 8px 0 8px 24px;
+            color: var(--text-secondary);
+        }
+
+        ul li::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 16px;
+            width: 5px;
+            height: 5px;
+            background: var(--text-muted);
+            border-radius: 50%;
+        }
+
+        ol {
+            counter-reset: list;
+        }
+
+        ol li {
+            counter-increment: list;
+        }
+
+        ol li::before {
+            content: counter(list);
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-card);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        li strong {
+            color: var(--text);
+        }
+
+        /* KBD */
+        kbd {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 7px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+            box-shadow: 0 1px 0 var(--border);
+        }
+
+        /* Alert */
+        .alert {
+            display: flex;
+            gap: 16px;
+            padding: 20px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin: 24px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+
+        .alert.info::before {
+            background: var(--accent);
+        }
+
+        .alert.success::before {
+            background: var(--green);
+        }
+
+        .alert.warning::before {
+            background: #eab308;
+        }
+
+        .alert svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .alert.info svg {
+            color: var(--accent);
+        }
+
+        .alert.success svg {
+            color: var(--green);
+        }
+
+        .alert.warning svg {
+            color: #eab308;
+        }
+
+        .alert strong {
+            display: block;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .alert p {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* Steps */
+        .steps {
+            margin: 24px 0;
+        }
+
+        .step {
+            display: flex;
+            gap: 16px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .step-content p {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        td {
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        tr:hover td {
+            background: var(--bg-card);
+        }
+
+        /* Themes */
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .theme-item {
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .theme-item:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .theme-item.dark {
+            background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%);
+        }
+
+        .theme-item.darker {
+            background: linear-gradient(180deg, #050505 0%, #000 100%);
+        }
+
+        .theme-item.light {
+            background: linear-gradient(180deg, #fff 0%, #f4f4f5 100%);
+        }
+
+        .theme-preview {
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+        }
+
+        .theme-item.darker .theme-preview {
+            background: #000;
+            border: 1px solid #222;
+        }
+
+        .theme-item.dark .theme-preview {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+        }
+
+        .theme-item.light .theme-preview {
+            background: #fff;
+            border: 1px solid #e4e4e7;
+        }
+
+        .theme-preview-line {
+            height: 8px;
+            border-radius: 4px;
+            flex: 1;
+        }
+
+        .theme-item.darker .theme-preview-line:nth-child(1) { background: #333; }
+        .theme-item.darker .theme-preview-line:nth-child(2) { background: #444; width: 60%; }
+        .theme-item.darker .theme-preview-line:nth-child(3) { background: #555; width: 40%; }
+
+        .theme-item.dark .theme-preview-line:nth-child(1) { background: #3f3f46; }
+        .theme-item.dark .theme-preview-line:nth-child(2) { background: #52525b; width: 60%; }
+        .theme-item.dark .theme-preview-line:nth-child(3) { background: #71717a; width: 40%; }
+
+        .theme-item.light .theme-preview-line:nth-child(1) { background: #d4d4d8; }
+        .theme-item.light .theme-preview-line:nth-child(2) { background: #a1a1aa; width: 60%; }
+        .theme-item.light .theme-preview-line:nth-child(3) { background: #71717a; width: 40%; }
+
+        .theme-item h5 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .theme-item.light h5,
+        .theme-item.light span {
+            color: #18181b;
+        }
+
+        .theme-item span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 24px;
+            margin-left: 240px;
+        }
+
+        .footer-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .footer-links a:hover {
+            color: var(--text);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+                max-width: 100%;
+                padding: 32px 24px 80px;
+            }
+
+            .footer {
+                margin-left: 0;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .themes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .header-actions span {
+                display: none;
+            }
+        }
+
+        /* Icons SVG inline */
+        .icon {
+            display: inline-flex;
+        }
+
+        /* Subtle glow on hero */
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hero {
+            position: relative;
+        }
+
+        /* Smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">
-                <img src="https://i.postimg.cc/9fMqbs8k/logos-(6).png" alt="SafeCode Logo">
-                <span data-i18n="nav.title">SafeCode Docs</span>
-            </div>
-            <div class="nav-links">
-                <a href="index.html" data-i18n="nav.home">Home</a>
-                <div class="language-selector">
-                    <button id="langToggle" class="lang-btn" title="Switch Language">
-                        <i data-lucide="languages" class="w-4 h-4"></i>
-                        <span id="langText">EN</span>
-                    </button>
-                </div>
-                <a href="https://github.com/safenode/safecode" target="_blank" class="btn-github">
-                    <i data-lucide="github" class="w-4 h-4"></i> <span data-i18n="nav.github">GitHub</span>
+    <header class="header">
+        <div class="header-inner">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/9fMqbs8k/logos-(6).png" alt="SafeCode">
+                <span data-i18n="logo">SafeCode</span>
+                <span class="logo-tag">Docs</span>
+            </a>
+            <div class="header-actions">
+                <a href="index.html" class="btn btn-ghost" data-i18n="nav.home">Home</a>
+                <button class="btn btn-ghost" id="langBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span id="langText">EN</span>
+                </button>
+                <a href="https://github.com/safenode/safecode" target="_blank" class="btn btn-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span>GitHub</span>
                 </a>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="docs-layout">
+    <div class="layout">
         <aside class="sidebar">
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <h3 data-i18n="nav.gettingStarted">Getting Started</h3>
-                    <a href="#introduction" class="active" data-i18n="nav.introduction">Introduction</a>
-                    <a href="#installation" data-i18n="nav.installation">Installation</a>
-                    <a href="#quick-start" data-i18n="nav.quickStart">Quick Start</a>
+            <nav>
+                <div class="nav-group">
+                    <div class="nav-group-title" data-i18n="sidebar.start">Getting Started</div>
+                    <a href="#introduction" class="nav-link active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        <span data-i18n="nav.intro">Introduction</span>
+                    </a>
+                    <a href="#installation" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span data-i18n="nav.install">Installation</span>
+                    </a>
+                    <a href="#quick-start" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        <span data-i18n="nav.quick">Quick Start</span>
+                    </a>
                 </div>
-                <div class="nav-section">
-                    <h3 data-i18n="nav.features">Features</h3>
-                    <a href="#editor" data-i18n="nav.editor">Editor</a>
-                    <a href="#terminal" data-i18n="nav.terminal">Terminal</a>
-                    <a href="#git" data-i18n="nav.git">Git Integration</a>
-                    <a href="#live-preview" data-i18n="nav.livePreview">Live Preview</a>
+                <div class="nav-group">
+                    <div class="nav-group-title" data-i18n="sidebar.features">Features</div>
+                    <a href="#editor" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        <span data-i18n="nav.editor">Editor</span>
+                    </a>
+                    <a href="#terminal" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                        <span data-i18n="nav.terminal">Terminal</span>
+                    </a>
+                    <a href="#git" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                        <span data-i18n="nav.git">Git</span>
+                    </a>
+                    <a href="#preview" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        <span data-i18n="nav.preview">Live Preview</span>
+                    </a>
                 </div>
-                <div class="nav-section">
-                    <h3 data-i18n="nav.configuration">Configuration</h3>
-                    <a href="#settings" data-i18n="nav.settings">Settings</a>
-                    <a href="#themes" data-i18n="nav.themes">Themes</a>
-                    <a href="#shortcuts" data-i18n="nav.shortcuts">Keyboard Shortcuts</a>
+                <div class="nav-group">
+                    <div class="nav-group-title" data-i18n="sidebar.config">Configuration</div>
+                    <a href="#settings" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <span data-i18n="nav.settings">Settings</span>
+                    </a>
+                    <a href="#themes" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"/></svg>
+                        <span data-i18n="nav.themes">Themes</span>
+                    </a>
+                    <a href="#shortcuts" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M8 12h.001M12 12h.001M16 12h.001M7 16h10"/></svg>
+                        <span data-i18n="nav.shortcuts">Shortcuts</span>
+                    </a>
                 </div>
-                <div class="nav-section">
-                    <h3 data-i18n="nav.development">Development</h3>
-                    <a href="#contributing" data-i18n="nav.contributing">Contributing</a>
+                <div class="nav-group">
+                    <div class="nav-group-title" data-i18n="sidebar.community">Community</div>
+                    <a href="#contributing" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <span data-i18n="nav.contrib">Contributing</span>
+                    </a>
+                    <a href="#support" class="nav-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="14.83" y1="9.17" x2="18.36" y2="5.64"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>
+                        <span data-i18n="nav.support">Support</span>
+                    </a>
                 </div>
             </nav>
         </aside>
 
-        <main class="docs-content">
-            <section id="introduction">
-                <h1 data-i18n="intro.title">Introduction</h1>
-                <p data-i18n="intro.description">SafeCode is a modern, web-based IDE built with React, TypeScript, and Vite. With a minimalist design philosophy and powerful features, it provides everything you need for modern web and mobile development without the bloat.</p>
-
-                <div class="info-box">
-                    <i data-lucide="info"></i>
-                    <div>
-                        <strong data-i18n="intro.version">Version 2.0.0</strong>
-                        <p data-i18n="intro.versionNote">This documentation covers SafeCode version 2.0.0 and above.</p>
+        <main class="main">
+            <section id="introduction" class="section">
+                <div class="hero">
+                    <div class="hero-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <span data-i18n="hero.badge">Version 2.0 Available</span>
+                    </div>
+                    <h1 data-i18n="hero.title">Build faster with SafeCode</h1>
+                    <p data-i18n="hero.desc">A modern, web-based IDE built with React, TypeScript, and Vite. Minimalist design, powerful features, and everything you need for modern development.</p>
+                    <div class="hero-buttons">
+                        <a href="#quick-start" class="hero-btn hero-btn-primary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <span data-i18n="hero.start">Get Started</span>
+                        </a>
+                        <a href="https://github.com/safenode/safecode" target="_blank" class="hero-btn hero-btn-secondary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            <span data-i18n="hero.github">View on GitHub</span>
+                        </a>
                     </div>
                 </div>
 
-                <h2 data-i18n="intro.whyTitle">Why SafeCode?</h2>
-                <ul>
-                    <li><strong data-i18n="intro.minimalist">Minimalist Design</strong> - <span data-i18n="intro.minimalistDesc">Clean, distraction-free interface that puts your code first</span></li>
-                    <li><strong data-i18n="intro.modern">Modern Stack</strong> - <span data-i18n="intro.modernDesc">Built with React, TypeScript, and Vite for fast, responsive editing</span></li>
-                    <li><strong data-i18n="intro.monaco">Monaco Editor</strong> - <span data-i18n="intro.monacoDesc">Industry-standard editor with IntelliSense and syntax highlighting</span></li>
-                    <li><strong data-i18n="intro.livePreview">Live Preview</strong> - <span data-i18n="intro.livePreviewDesc">Real-time preview with iOS and Android device simulation</span></li>
-                    <li><strong data-i18n="intro.webBased">Web-Based</strong> - <span data-i18n="intro.webBasedDesc">Runs entirely in the browser, no installation required</span></li>
-                </ul>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">100+</div>
+                        <div class="stat-label" data-i18n="stat.lang">Languages</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">50ms</div>
+                        <div class="stat-label" data-i18n="stat.start">Startup</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">MIT</div>
+                        <div class="stat-label" data-i18n="stat.license">License</div>
+                    </div>
+                </div>
+
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span data-i18n="why.title">Why SafeCode?</span>
+                </h2>
+
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        </div>
+                        <h4 data-i18n="why.min">Minimalist Design</h4>
+                        <p data-i18n="why.minDesc">Clean interface that puts your code first. No distractions, just productivity.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                        </div>
+                        <h4 data-i18n="why.stack">Modern Stack</h4>
+                        <p data-i18n="why.stackDesc">Built with React, TypeScript, and Vite for fast performance.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        </div>
+                        <h4 data-i18n="why.monaco">Monaco Editor</h4>
+                        <p data-i18n="why.monacoDesc">Same editor as VS Code with IntelliSense and syntax highlighting.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        </div>
+                        <h4 data-i18n="why.live">Live Preview</h4>
+                        <p data-i18n="why.liveDesc">Real-time preview with iOS and Android device simulation.</p>
+                    </div>
+                </div>
+
+                <div class="alert success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <div>
+                        <strong data-i18n="alert.web">100% Web-Based</strong>
+                        <p data-i18n="alert.webDesc">Runs entirely in the browser. Access from any device, anywhere.</p>
+                    </div>
+                </div>
             </section>
 
-            <section id="installation">
+            <section id="installation" class="section">
                 <h1 data-i18n="install.title">Installation</h1>
-                <p data-i18n="install.description">SafeCode runs entirely in the browser. Simply clone the repository and start the development server.</p>
+                <p data-i18n="install.desc">Clone the repository and start the development server.</p>
 
-                <h2 data-i18n="install.cloneTitle">Clone Repository</h2>
-                <div class="code-block">
-                    <code>git clone https://github.com/safenode/safecode.git
-cd safecode/safecode</code>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <h4 data-i18n="install.clone">Clone Repository</h4>
+                            <p data-i18n="install.cloneDesc">Clone SafeCode to your machine.</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Terminal</span>
+                                    <button class="code-copy" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code>git clone https://github.com/safenode/safecode.git
+cd safecode/safecode</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <h4 data-i18n="install.deps">Install Dependencies</h4>
+                            <p data-i18n="install.depsDesc">Install all required packages.</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Terminal</span>
+                                    <button class="code-copy" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code>npm install</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <h4 data-i18n="install.run">Start Server</h4>
+                            <p data-i18n="install.runDesc">Launch the development server.</p>
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Terminal</span>
+                                    <button class="code-copy" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code>npm run dev</code></pre>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <h2 data-i18n="install.installTitle">Install Dependencies</h2>
-                <div class="code-block">
-                    <code>npm install</code>
-                </div>
-
-                <h2 data-i18n="install.runTitle">Run Development Server</h2>
-                <div class="code-block">
-                    <code>npm run dev</code>
-                </div>
-
-                <h2 data-i18n="install.requirements">Requirements</h2>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span data-i18n="install.req">Requirements</span>
+                </h2>
                 <ul>
-                    <li data-i18n="install.nodejs">Node.js 18 or higher</li>
-                    <li data-i18n="install.npm">npm or yarn</li>
-                    <li data-i18n="install.git">Git (for version control features)</li>
+                    <li><strong>Node.js</strong> &mdash; <span data-i18n="install.node">Version 18+</span></li>
+                    <li><strong>npm</strong> &mdash; <span data-i18n="install.npm">or yarn</span></li>
+                    <li><strong>Git</strong> &mdash; <span data-i18n="install.git">For version control</span></li>
+                    <li><strong data-i18n="install.browser">Modern Browser</strong> &mdash; <span data-i18n="install.browserDesc">Chrome, Firefox, Safari, Edge</span></li>
+                </ul>
+            </section>
+
+            <section id="quick-start" class="section">
+                <h1 data-i18n="quick.title">Quick Start</h1>
+                <p data-i18n="quick.desc">Get running in under 5 minutes.</p>
+
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+                    <span data-i18n="quick.launch">Launch SafeCode</span>
+                </h2>
+                <p data-i18n="quick.launchDesc">After starting the server, open your browser:</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">URL</span>
+                        <button class="code-copy" onclick="copyCode(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <pre><code>http://localhost:8080</code></pre>
+                </div>
+
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span data-i18n="quick.open">Open a Project</span>
+                </h2>
+                <ul>
+                    <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> &mdash; <span data-i18n="quick.folder">Open folder</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>N</kbd> &mdash; <span data-i18n="quick.new">New file</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>O</kbd> &mdash; <span data-i18n="quick.file">Open file</span></li>
                 </ul>
 
-                <div class="info-box warning">
-                    <i data-lucide="alert-triangle"></i>
+                <div class="alert info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                     <div>
-                        <strong data-i18n="install.note">Note</strong>
-                        <p data-i18n="install.noteDesc">Make sure you have Node.js installed before running the installation commands.</p>
+                        <strong data-i18n="quick.tip">Pro Tip</strong>
+                        <p data-i18n="quick.tipDesc">Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> to open the command palette.</p>
                     </div>
                 </div>
             </section>
 
-            <section id="quick-start">
-                <h1 data-i18n="quick.title">Quick Start</h1>
-                <p data-i18n="quick.description">Get up and running with SafeCode in minutes.</p>
+            <section id="editor" class="section">
+                <h1 data-i18n="editor.title">Editor</h1>
+                <p data-i18n="editor.desc">Powered by Monaco, the same editor that powers VS Code.</p>
 
-                <h2 data-i18n="quick.launchTitle">1. Launch SafeCode</h2>
-                <p data-i18n="quick.launchDesc">After starting the development server, open your browser and navigate to:</p>
-                <div class="code-block">
-                    <code>http://localhost:8080</code>
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+                        </div>
+                        <h4 data-i18n="editor.intel">IntelliSense</h4>
+                        <p data-i18n="editor.intelDesc">Smart completions with context-aware suggestions.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+                        </div>
+                        <h4 data-i18n="editor.syntax">Syntax Highlighting</h4>
+                        <p data-i18n="editor.syntaxDesc">Beautiful highlighting for 100+ languages.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                        </div>
+                        <h4 data-i18n="editor.multi">Multi-cursor</h4>
+                        <p data-i18n="editor.multiDesc">Edit multiple locations at once.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                        <h4 data-i18n="editor.find">Find & Replace</h4>
+                        <p data-i18n="editor.findDesc">Powerful search with regex support.</p>
+                    </div>
                 </div>
 
-                <h2 data-i18n="quick.openTitle">2. Open a Project</h2>
-                <p data-i18n="quick.openDesc">Open a folder or create a new file:</p>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+                    <span data-i18n="editor.split">Split View</span>
+                </h2>
                 <ul>
-                    <li><kbd>Ctrl+Shift+O</kbd> - <span data-i18n="quick.openFolder">Open folder</span></li>
-                    <li><kbd>Ctrl+N</kbd> - <span data-i18n="quick.newFile">New file</span></li>
-                </ul>
-
-                <h2 data-i18n="quick.codeTitle">3. Start Coding</h2>
-                <p data-i18n="quick.codeDesc">SafeCode provides IntelliSense, syntax highlighting, and code completion out of the box for 100+ languages.</p>
-            </section>
-
-            <section id="editor">
-                <h1 data-i18n="editor.title">Editor</h1>
-                <p data-i18n="editor.description">The SafeCode editor is powered by Monaco, the same editor that powers VS Code.</p>
-
-                <h2 data-i18n="editor.features">Features</h2>
-                <ul>
-                    <li><strong data-i18n="editor.intellisense">IntelliSense</strong> - <span data-i18n="editor.intellisenseDesc">Intelligent code completion</span></li>
-                    <li><strong data-i18n="editor.syntax">Syntax Highlighting</strong> - <span data-i18n="editor.syntaxDesc">Support for 100+ languages</span></li>
-                    <li><strong data-i18n="editor.multicursor">Multi-cursor Editing</strong> - <span data-i18n="editor.multicursorDesc">Edit multiple locations simultaneously</span></li>
-                    <li><strong data-i18n="editor.folding">Code Folding</strong> - <span data-i18n="editor.foldingDesc">Collapse code blocks for better readability</span></li>
-                    <li><strong data-i18n="editor.find">Find and Replace</strong> - <span data-i18n="editor.findDesc">Powerful search with regex support</span></li>
-                </ul>
-
-                <h2 data-i18n="editor.splitTitle">Split View</h2>
-                <p data-i18n="editor.splitDesc">Work with multiple files side by side:</p>
-                <ul>
-                    <li><kbd>Ctrl+\\</kbd> - <span data-i18n="editor.splitVertical">Split editor vertically</span></li>
-                    <li><kbd>Ctrl+K Ctrl+\\</kbd> - <span data-i18n="editor.splitHorizontal">Split editor horizontally</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>\</kbd> &mdash; <span data-i18n="editor.splitV">Split vertically</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>K</kbd> <kbd>Ctrl</kbd> + <kbd>\</kbd> &mdash; <span data-i18n="editor.splitH">Split horizontally</span></li>
                 </ul>
             </section>
 
-            <section id="terminal">
+            <section id="terminal" class="section">
                 <h1 data-i18n="terminal.title">Terminal</h1>
-                <p data-i18n="terminal.description">SafeCode includes an integrated terminal powered by xterm.js.</p>
+                <p data-i18n="terminal.desc">Integrated terminal powered by xterm.js.</p>
 
-                <h2 data-i18n="terminal.opening">Opening the Terminal</h2>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    <span data-i18n="terminal.shortcuts">Shortcuts</span>
+                </h2>
                 <ul>
-                    <li><kbd>Ctrl+`</kbd> - <span data-i18n="terminal.toggle">Toggle terminal</span></li>
-                    <li><kbd>Ctrl+Shift+`</kbd> - <span data-i18n="terminal.new">Create new terminal</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>`</kbd> &mdash; <span data-i18n="terminal.toggle">Toggle terminal</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>`</kbd> &mdash; <span data-i18n="terminal.new">New terminal</span></li>
                 </ul>
 
-                <h2 data-i18n="terminal.features">Features</h2>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span data-i18n="terminal.features">Features</span>
+                </h2>
                 <ul>
-                    <li data-i18n="terminal.multiple">Multiple terminal instances</li>
-                    <li data-i18n="terminal.split">Split terminal view</li>
-                    <li data-i18n="terminal.custom">Custom shell integration</li>
-                    <li data-i18n="terminal.theme">Monochrome theme matching the editor</li>
+                    <li><strong data-i18n="terminal.mult">Multiple Instances</strong> &mdash; <span data-i18n="terminal.multDesc">Run several terminals</span></li>
+                    <li><strong data-i18n="terminal.splitT">Split Terminal</strong> &mdash; <span data-i18n="terminal.splitTDesc">Divide into panes</span></li>
+                    <li><strong data-i18n="terminal.shell">Shell Integration</strong> &mdash; <span data-i18n="terminal.shellDesc">Bash, zsh, PowerShell</span></li>
+                    <li><strong data-i18n="terminal.theme">Theme Sync</strong> &mdash; <span data-i18n="terminal.themeDesc">Matches editor theme</span></li>
                 </ul>
             </section>
 
-            <section id="git">
+            <section id="git" class="section">
                 <h1 data-i18n="git.title">Git Integration</h1>
-                <p data-i18n="git.description">SafeCode provides built-in Git support for version control.</p>
+                <p data-i18n="git.desc">Built-in version control for seamless collaboration.</p>
 
-                <h2 data-i18n="git.features">Features</h2>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                    <span data-i18n="git.features">Features</span>
+                </h2>
                 <ul>
-                    <li><strong data-i18n="git.visual">Visual Diff</strong> - <span data-i18n="git.visualDesc">See changes inline in the editor</span></li>
-                    <li><strong data-i18n="git.commit">Commit Management</strong> - <span data-i18n="git.commitDesc">Stage and commit changes</span></li>
-                    <li><strong data-i18n="git.branch">Branch Management</strong> - <span data-i18n="git.branchDesc">Create, switch, and merge branches</span></li>
-                    <li><strong data-i18n="git.clone">Clone Repository</strong> - <span data-i18n="git.cloneDesc">Clone repositories directly from the IDE</span></li>
+                    <li><strong data-i18n="git.diff">Visual Diff</strong> &mdash; <span data-i18n="git.diffDesc">See changes inline</span></li>
+                    <li><strong data-i18n="git.commit">Commit</strong> &mdash; <span data-i18n="git.commitDesc">Stage and commit with UI</span></li>
+                    <li><strong data-i18n="git.branch">Branches</strong> &mdash; <span data-i18n="git.branchDesc">Create, switch, merge</span></li>
+                    <li><strong data-i18n="git.clone">Clone</strong> &mdash; <span data-i18n="git.cloneDesc">Clone repos directly</span></li>
                 </ul>
 
-                <h2 data-i18n="git.common">Common Operations</h2>
                 <div class="code-block">
-                    <code># Stage all changes
+                    <div class="code-header">
+                        <span class="code-lang">Git</span>
+                        <button class="code-copy" onclick="copyCode(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <pre><code><span class="comment"># Stage all changes</span>
 git add .
 
-# Commit with message
+<span class="comment"># Commit with message</span>
 git commit -m "Your message"
 
-# Push to remote
-git push origin main</code>
+<span class="comment"># Push to remote</span>
+git push origin main</code></pre>
                 </div>
             </section>
 
-            <section id="live-preview">
+            <section id="preview" class="section">
                 <h1 data-i18n="preview.title">Live Preview</h1>
-                <p data-i18n="preview.description">SafeCode features an advanced live preview system with iOS and Android device simulation.</p>
+                <p data-i18n="preview.desc">Real-time preview with device simulation.</p>
 
-                <h2 data-i18n="preview.features">Features</h2>
-                <ul>
-                    <li><strong data-i18n="preview.devices">Device Simulation</strong> - <span data-i18n="preview.devicesDesc">Preview your code on iOS and Android devices with realistic lock screens and home screens</span></li>
-                    <li><strong data-i18n="preview.realtime">Real-time Updates</strong> - <span data-i18n="preview.realtimeDesc">See your changes instantly as you code</span></li>
-                    <li><strong data-i18n="preview.browsers">Browser Integration</strong> - <span data-i18n="preview.browsersDesc">Test with Safari (iOS) and Chrome (Android) browsers</span></li>
-                    <li><strong data-i18n="preview.controls">Device Controls</strong> - <span data-i18n="preview.controlsDesc">Rotate, lock, power, and navigate between screens</span></li>
-                    <li><strong data-i18n="preview.modes">Multiple Modes</strong> - <span data-i18n="preview.modesDesc">Desktop, tablet, and mobile preview modes</span></li>
-                </ul>
-
-                <h2 data-i18n="preview.usage">Usage</h2>
-                <p data-i18n="preview.usageDesc">Open the Live Preview panel and select your preferred device mode. The preview updates automatically as you edit your code.</p>
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        </div>
+                        <h4 data-i18n="preview.device">Device Simulation</h4>
+                        <p data-i18n="preview.deviceDesc">Preview on iOS and Android devices.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        </div>
+                        <h4 data-i18n="preview.realtime">Real-time Updates</h4>
+                        <p data-i18n="preview.realtimeDesc">See changes as you code.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        </div>
+                        <h4 data-i18n="preview.browser">Browser Integration</h4>
+                        <p data-i18n="preview.browserDesc">Test with Safari and Chrome.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                        </div>
+                        <h4 data-i18n="preview.controls">Device Controls</h4>
+                        <p data-i18n="preview.controlsDesc">Rotate and navigate screens.</p>
+                    </div>
+                </div>
             </section>
 
-            <section id="settings">
+            <section id="settings" class="section">
                 <h1 data-i18n="settings.title">Settings</h1>
-                <p data-i18n="settings.description">Customize SafeCode to match your workflow.</p>
+                <p data-i18n="settings.desc">Customize SafeCode to your workflow.</p>
 
-                <h2 data-i18n="settings.accessing">Accessing Settings</h2>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                    <span data-i18n="settings.access">Access Settings</span>
+                </h2>
                 <ul>
-                    <li><kbd>Ctrl+,</kbd> - <span data-i18n="settings.open">Open settings</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>,</kbd> &mdash; <span data-i18n="settings.open">Open settings</span></li>
+                    <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> &mdash; <span data-i18n="settings.cmd">Type "settings"</span></li>
                 </ul>
 
-                <h2 data-i18n="settings.common">Common Settings</h2>
                 <div class="code-block">
-                    <code>{
+                    <div class="code-header">
+                        <span class="code-lang">JSON</span>
+                        <button class="code-copy" onclick="copyCode(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <pre><code>{
   "editor.fontSize": 14,
   "editor.tabSize": 2,
   "editor.wordWrap": "on",
-  "theme": "monochrome-true-dark",
-  "terminal.shell": "powershell"
-}</code>
+  "editor.minimap.enabled": true,
+  "theme": "monochrome-true-dark"
+}</code></pre>
                 </div>
             </section>
 
-            <section id="themes">
+            <section id="themes" class="section">
                 <h1 data-i18n="themes.title">Themes</h1>
-                <p data-i18n="themes.description">SafeCode comes with a carefully crafted monochrome theme system.</p>
+                <p data-i18n="themes.desc">Monochrome theme system for focused coding.</p>
 
-                <h2 data-i18n="themes.available">Available Themes</h2>
-                <ul>
-                    <li><strong data-i18n="themes.trueDark">Monochrome True Dark</strong> - <span data-i18n="themes.trueDarkDesc">Pure black background</span></li>
-                    <li><strong data-i18n="themes.dark">Monochrome Dark</strong> - <span data-i18n="themes.darkDesc">Dark gray background</span></li>
-                    <li><strong data-i18n="themes.light">Monochrome Light</strong> - <span data-i18n="themes.lightDesc">Light theme variant</span></li>
-                </ul>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"/></svg>
+                    <span data-i18n="themes.available">Available Themes</span>
+                </h2>
 
-                <h2 data-i18n="themes.changing">Changing Themes</h2>
-                <p data-i18n="themes.changingDesc">Change themes from the command palette:</p>
-                <ul>
-                    <li><kbd>Ctrl+Shift+P</kbd> - <span data-i18n="themes.palette">Open command palette</span></li>
-                    <li data-i18n="themes.select">Type "theme" and select your preferred theme</li>
-                </ul>
-            </section>
+                <div class="themes-grid">
+                    <div class="theme-item darker">
+                        <div class="theme-preview">
+                            <div class="theme-preview-line"></div>
+                            <div class="theme-preview-line"></div>
+                            <div class="theme-preview-line"></div>
+                        </div>
+                        <h5 data-i18n="themes.true">True Dark</h5>
+                        <span data-i18n="themes.trueDesc">Pure black</span>
+                    </div>
+                    <div class="theme-item dark">
+                        <div class="theme-preview">
+                            <div class="theme-preview-line"></div>
+                            <div class="theme-preview-line"></div>
+                            <div class="theme-preview-line"></div>
+                        </div>
+                        <h5 data-i18n="themes.mono">Monochrome Dark</h5>
+                        <span data-i18n="themes.monoDesc">Dark gray</span>
+                    </div>
+                    <div class="theme-item light">
+                        <div class="theme-preview">
+                            <div class="theme-preview-line"></div>
+                            <div class="theme-preview-line"></div>
+                            <div class="theme-preview-line"></div>
+                        </div>
+                        <h5 data-i18n="themes.light">Monochrome Light</h5>
+                        <span data-i18n="themes.lightDesc">Light theme</span>
+                    </div>
+                </div>
 
-            <section id="shortcuts">
-                <h1 data-i18n="shortcuts.title">Keyboard Shortcuts</h1>
-                <p data-i18n="shortcuts.description">Master SafeCode with these essential keyboard shortcuts.</p>
-
-                <h2 data-i18n="shortcuts.general">General</h2>
-                <table>
-                    <tr>
-                        <td><kbd>Ctrl+Shift+P</kbd></td>
-                        <td data-i18n="shortcuts.palette">Command palette</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl+P</kbd></td>
-                        <td data-i18n="shortcuts.quickOpen">Quick file open</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl+,</kbd></td>
-                        <td data-i18n="shortcuts.settings">Settings</td>
-                    </tr>
-                </table>
-
-                <h2 data-i18n="shortcuts.editor">Editor</h2>
-                <table>
-                    <tr>
-                        <td><kbd>Ctrl+S</kbd></td>
-                        <td data-i18n="shortcuts.save">Save file</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl+F</kbd></td>
-                        <td data-i18n="shortcuts.find">Find</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl+H</kbd></td>
-                        <td data-i18n="shortcuts.replace">Find and replace</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl+/</kbd></td>
-                        <td data-i18n="shortcuts.comment">Toggle comment</td>
-                    </tr>
-                </table>
-            </section>
-
-            <section id="contributing">
-                <h1 data-i18n="contrib.title">Contributing</h1>
-                <p data-i18n="contrib.description">SafeCode is open source and welcomes contributions!</p>
-
-                <h2 data-i18n="contrib.gettingStarted">Getting Started</h2>
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    <span data-i18n="themes.change">Change Theme</span>
+                </h2>
                 <ol>
-                    <li data-i18n="contrib.fork">Fork the repository on GitHub</li>
-                    <li data-i18n="contrib.clone">Clone your fork locally</li>
-                    <li data-i18n="contrib.branch">Create a new branch for your feature</li>
-                    <li data-i18n="contrib.changes">Make your changes</li>
-                    <li data-i18n="contrib.pr">Submit a pull request</li>
+                    <li><span data-i18n="themes.s1">Press</span> <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></li>
+                    <li data-i18n="themes.s2">Type "theme" and select</li>
+                    <li data-i18n="themes.s3">Press Enter to apply</li>
+                </ol>
+            </section>
+
+            <section id="shortcuts" class="section">
+                <h1 data-i18n="shortcuts.title">Keyboard Shortcuts</h1>
+                <p data-i18n="shortcuts.desc">Essential shortcuts to boost productivity.</p>
+
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+                    <span data-i18n="shortcuts.general">General</span>
+                </h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="shortcuts.shortcut">Shortcut</th>
+                                <th data-i18n="shortcuts.action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></td>
+                                <td data-i18n="shortcuts.palette">Command palette</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>P</kbd></td>
+                                <td data-i18n="shortcuts.quick">Quick file open</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>,</kbd></td>
+                                <td data-i18n="shortcuts.settings">Settings</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>`</kbd></td>
+                                <td data-i18n="shortcuts.term">Toggle terminal</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    <span data-i18n="shortcuts.edit">Editing</span>
+                </h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="shortcuts.shortcut">Shortcut</th>
+                                <th data-i18n="shortcuts.action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+                                <td data-i18n="shortcuts.save">Save</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>F</kbd></td>
+                                <td data-i18n="shortcuts.find">Find</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>H</kbd></td>
+                                <td data-i18n="shortcuts.replace">Replace</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>/</kbd></td>
+                                <td data-i18n="shortcuts.comment">Toggle comment</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+                                <td data-i18n="shortcuts.select">Select next</td>
+                            </tr>
+                            <tr>
+                                <td><kbd>Alt</kbd> + <kbd>Up/Down</kbd></td>
+                                <td data-i18n="shortcuts.move">Move line</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="contributing" class="section">
+                <h1 data-i18n="contrib.title">Contributing</h1>
+                <p data-i18n="contrib.desc">SafeCode is open source and welcomes contributions!</p>
+
+                <h2>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg>
+                    <span data-i18n="contrib.steps">Getting Started</span>
+                </h2>
+                <ol>
+                    <li><strong data-i18n="contrib.fork">Fork</strong> &mdash; <span data-i18n="contrib.forkDesc">Fork on GitHub</span></li>
+                    <li><strong data-i18n="contrib.clone">Clone</strong> &mdash; <span data-i18n="contrib.cloneDesc">Clone locally</span></li>
+                    <li><strong data-i18n="contrib.branch">Branch</strong> &mdash; <span data-i18n="contrib.branchDesc">Create feature branch</span></li>
+                    <li><strong data-i18n="contrib.code">Code</strong> &mdash; <span data-i18n="contrib.codeDesc">Make changes</span></li>
+                    <li><strong data-i18n="contrib.pr">Submit</strong> &mdash; <span data-i18n="contrib.prDesc">Open pull request</span></li>
                 </ol>
 
-                <h2 data-i18n="contrib.setup">Development Setup</h2>
                 <div class="code-block">
-                    <code># Clone the repository
-git clone https://github.com/safenode/safecode.git
-
-# Install dependencies
+                    <div class="code-header">
+                        <span class="code-lang">Terminal</span>
+                        <button class="code-copy" onclick="copyCode(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <pre><code><span class="comment"># Clone your fork</span>
+git clone https://github.com/YOUR_USERNAME/safecode.git
 cd safecode/safecode
 npm install
-
-# Run in development mode
-npm run dev</code>
+npm run dev</code></pre>
                 </div>
 
-                <div class="info-box">
-                    <i data-lucide="heart"></i>
+                <div class="alert success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     <div>
                         <strong data-i18n="contrib.thanks">Thank You!</strong>
-                        <p data-i18n="contrib.thanksDesc">Every contribution, no matter how small, helps make SafeCode better for everyone.</p>
+                        <p data-i18n="contrib.thanksDesc">Every contribution helps make SafeCode better.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="support" class="section">
+                <h1 data-i18n="support.title">Support</h1>
+                <p data-i18n="support.desc">Need help? We're here for you.</p>
+
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </div>
+                        <h4 data-i18n="support.issues">GitHub Issues</h4>
+                        <p data-i18n="support.issuesDesc">Report bugs or request features.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <h4 data-i18n="support.discuss">Discussions</h4>
+                        <p data-i18n="support.discussDesc">Join the community.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        </div>
+                        <h4 data-i18n="support.docs">Documentation</h4>
+                        <p data-i18n="support.docsDesc">Read the full docs.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </div>
+                        <h4 data-i18n="support.email">Email</h4>
+                        <p data-i18n="support.emailDesc">Contact us directly.</p>
                     </div>
                 </div>
             </section>
@@ -345,415 +1600,164 @@ npm run dev</code>
     </div>
 
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <p>&copy; 2026 SafeNode Group. <span data-i18n="footer.licensed">Licensed under MIT</span>.</p>
-                <div class="footer-links">
-                    <a href="index.html" data-i18n="footer.home">Home</a>
-                    <a href="https://github.com/safenode/safecode" data-i18n="footer.github">GitHub</a>
-                    <a href="#" data-i18n="footer.privacy">Privacy</a>
-                </div>
+        <div class="footer-inner">
+            <p>&copy; 2026 SafeNode Group. <span data-i18n="footer.mit">MIT License</span></p>
+            <div class="footer-links">
+                <a href="index.html" data-i18n="footer.home">Home</a>
+                <a href="https://github.com/safenode/safecode" data-i18n="footer.github">GitHub</a>
+                <a href="#" data-i18n="footer.privacy">Privacy</a>
             </div>
         </div>
     </footer>
 
     <script>
-        lucide.createIcons();
+        // Copy code
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code);
+            const span = btn.querySelector('span');
+            span.textContent = 'Copied!';
+            setTimeout(() => span.textContent = 'Copy', 2000);
+        }
 
-        // Translation system
+        // Language toggle
         const translations = {
             en: {
-                'nav.title': 'SafeCode Docs',
+                'logo': 'SafeCode',
                 'nav.home': 'Home',
-                'nav.github': 'GitHub',
-                'nav.gettingStarted': 'Getting Started',
-                'nav.introduction': 'Introduction',
-                'nav.installation': 'Installation',
-                'nav.quickStart': 'Quick Start',
-                'nav.features': 'Features',
+                'sidebar.start': 'Getting Started',
+                'nav.intro': 'Introduction',
+                'nav.install': 'Installation',
+                'nav.quick': 'Quick Start',
+                'sidebar.features': 'Features',
                 'nav.editor': 'Editor',
                 'nav.terminal': 'Terminal',
-                'nav.git': 'Git Integration',
-                'nav.livePreview': 'Live Preview',
-                'nav.configuration': 'Configuration',
+                'nav.git': 'Git',
+                'nav.preview': 'Live Preview',
+                'sidebar.config': 'Configuration',
                 'nav.settings': 'Settings',
                 'nav.themes': 'Themes',
-                'nav.shortcuts': 'Keyboard Shortcuts',
-                'nav.development': 'Development',
-                'nav.contributing': 'Contributing',
-                'intro.title': 'Introduction',
-                'intro.description': 'SafeCode is a modern, web-based IDE built with React, TypeScript, and Vite. With a minimalist design philosophy and powerful features, it provides everything you need for modern web and mobile development without the bloat.',
-                'intro.version': 'Version 2.0.0',
-                'intro.versionNote': 'This documentation covers SafeCode version 2.0.0 and above.',
-                'intro.whyTitle': 'Why SafeCode?',
-                'intro.minimalist': 'Minimalist Design',
-                'intro.minimalistDesc': 'Clean, distraction-free interface that puts your code first',
-                'intro.modern': 'Modern Stack',
-                'intro.modernDesc': 'Built with React, TypeScript, and Vite for fast, responsive editing',
-                'intro.monaco': 'Monaco Editor',
-                'intro.monacoDesc': 'Industry-standard editor with IntelliSense and syntax highlighting',
-                'intro.livePreview': 'Live Preview',
-                'intro.livePreviewDesc': 'Real-time preview with iOS and Android device simulation',
-                'intro.webBased': 'Web-Based',
-                'intro.webBasedDesc': 'Runs entirely in the browser, no installation required',
-                'install.title': 'Installation',
-                'install.description': 'SafeCode runs entirely in the browser. Simply clone the repository and start the development server.',
-                'install.cloneTitle': 'Clone Repository',
-                'install.installTitle': 'Install Dependencies',
-                'install.runTitle': 'Run Development Server',
-                'install.requirements': 'Requirements',
-                'install.nodejs': 'Node.js 18 or higher',
-                'install.npm': 'npm or yarn',
-                'install.git': 'Git (for version control features)',
-                'install.note': 'Note',
-                'install.noteDesc': 'Make sure you have Node.js installed before running the installation commands.',
-                'quick.title': 'Quick Start',
-                'quick.description': 'Get up and running with SafeCode in minutes.',
-                'quick.launchTitle': '1. Launch SafeCode',
-                'quick.launchDesc': 'After starting the development server, open your browser and navigate to:',
-                'quick.openTitle': '2. Open a Project',
-                'quick.openDesc': 'Open a folder or create a new file:',
-                'quick.openFolder': 'Open folder',
-                'quick.newFile': 'New file',
-                'quick.codeTitle': '3. Start Coding',
-                'quick.codeDesc': 'SafeCode provides IntelliSense, syntax highlighting, and code completion out of the box for 100+ languages.',
-                'editor.title': 'Editor',
-                'editor.description': 'The SafeCode editor is powered by Monaco, the same editor that powers VS Code.',
-                'editor.features': 'Features',
-                'editor.intellisense': 'IntelliSense',
-                'editor.intellisenseDesc': 'Intelligent code completion',
-                'editor.syntax': 'Syntax Highlighting',
-                'editor.syntaxDesc': 'Support for 100+ languages',
-                'editor.multicursor': 'Multi-cursor Editing',
-                'editor.multicursorDesc': 'Edit multiple locations simultaneously',
-                'editor.folding': 'Code Folding',
-                'editor.foldingDesc': 'Collapse code blocks for better readability',
-                'editor.find': 'Find and Replace',
-                'editor.findDesc': 'Powerful search with regex support',
-                'editor.splitTitle': 'Split View',
-                'editor.splitDesc': 'Work with multiple files side by side:',
-                'editor.splitVertical': 'Split editor vertically',
-                'editor.splitHorizontal': 'Split editor horizontally',
-                'terminal.title': 'Terminal',
-                'terminal.description': 'SafeCode includes an integrated terminal powered by xterm.js.',
-                'terminal.opening': 'Opening the Terminal',
-                'terminal.toggle': 'Toggle terminal',
-                'terminal.new': 'Create new terminal',
-                'terminal.features': 'Features',
-                'terminal.multiple': 'Multiple terminal instances',
-                'terminal.split': 'Split terminal view',
-                'terminal.custom': 'Custom shell integration',
-                'terminal.theme': 'Monochrome theme matching the editor',
-                'git.title': 'Git Integration',
-                'git.description': 'SafeCode provides built-in Git support for version control.',
-                'git.features': 'Features',
-                'git.visual': 'Visual Diff',
-                'git.visualDesc': 'See changes inline in the editor',
-                'git.commit': 'Commit Management',
-                'git.commitDesc': 'Stage and commit changes',
-                'git.branch': 'Branch Management',
-                'git.branchDesc': 'Create, switch, and merge branches',
-                'git.clone': 'Clone Repository',
-                'git.cloneDesc': 'Clone repositories directly from the IDE',
-                'git.common': 'Common Operations',
-                'preview.title': 'Live Preview',
-                'preview.description': 'SafeCode features an advanced live preview system with iOS and Android device simulation.',
-                'preview.features': 'Features',
-                'preview.devices': 'Device Simulation',
-                'preview.devicesDesc': 'Preview your code on iOS and Android devices with realistic lock screens and home screens',
-                'preview.realtime': 'Real-time Updates',
-                'preview.realtimeDesc': 'See your changes instantly as you code',
-                'preview.browsers': 'Browser Integration',
-                'preview.browsersDesc': 'Test with Safari (iOS) and Chrome (Android) browsers',
-                'preview.controls': 'Device Controls',
-                'preview.controlsDesc': 'Rotate, lock, power, and navigate between screens',
-                'preview.modes': 'Multiple Modes',
-                'preview.modesDesc': 'Desktop, tablet, and mobile preview modes',
-                'preview.usage': 'Usage',
-                'preview.usageDesc': 'Open the Live Preview panel and select your preferred device mode. The preview updates automatically as you edit your code.',
-                'settings.title': 'Settings',
-                'settings.description': 'Customize SafeCode to match your workflow.',
-                'settings.accessing': 'Accessing Settings',
-                'settings.open': 'Open settings',
-                'settings.common': 'Common Settings',
-                'themes.title': 'Themes',
-                'themes.description': 'SafeCode comes with a carefully crafted monochrome theme system.',
-                'themes.available': 'Available Themes',
-                'themes.trueDark': 'Monochrome True Dark',
-                'themes.trueDarkDesc': 'Pure black background',
-                'themes.dark': 'Monochrome Dark',
-                'themes.darkDesc': 'Dark gray background',
-                'themes.light': 'Monochrome Light',
-                'themes.lightDesc': 'Light theme variant',
-                'themes.changing': 'Changing Themes',
-                'themes.changingDesc': 'Change themes from the command palette:',
-                'themes.palette': 'Open command palette',
-                'themes.select': 'Type "theme" and select your preferred theme',
-                'shortcuts.title': 'Keyboard Shortcuts',
-                'shortcuts.description': 'Master SafeCode with these essential keyboard shortcuts.',
-                'shortcuts.general': 'General',
-                'shortcuts.palette': 'Command palette',
-                'shortcuts.quickOpen': 'Quick file open',
-                'shortcuts.settings': 'Settings',
-                'shortcuts.editor': 'Editor',
-                'shortcuts.save': 'Save file',
-                'shortcuts.find': 'Find',
-                'shortcuts.replace': 'Find and replace',
-                'shortcuts.comment': 'Toggle comment',
-                'contrib.title': 'Contributing',
-                'contrib.description': 'SafeCode is open source and welcomes contributions!',
-                'contrib.gettingStarted': 'Getting Started',
-                'contrib.fork': 'Fork the repository on GitHub',
-                'contrib.clone': 'Clone your fork locally',
-                'contrib.branch': 'Create a new branch for your feature',
-                'contrib.changes': 'Make your changes',
-                'contrib.pr': 'Submit a pull request',
-                'contrib.setup': 'Development Setup',
-                'contrib.thanks': 'Thank You!',
-                'contrib.thanksDesc': 'Every contribution, no matter how small, helps make SafeCode better for everyone.',
-                'footer.licensed': 'Licensed under MIT',
+                'nav.shortcuts': 'Shortcuts',
+                'sidebar.community': 'Community',
+                'nav.contrib': 'Contributing',
+                'nav.support': 'Support',
+                'hero.badge': 'Version 2.0 Available',
+                'hero.title': 'Build faster with SafeCode',
+                'hero.desc': 'A modern, web-based IDE built with React, TypeScript, and Vite. Minimalist design, powerful features, and everything you need for modern development.',
+                'hero.start': 'Get Started',
+                'hero.github': 'View on GitHub',
+                'stat.lang': 'Languages',
+                'stat.start': 'Startup',
+                'stat.license': 'License',
+                'why.title': 'Why SafeCode?',
+                'why.min': 'Minimalist Design',
+                'why.minDesc': 'Clean interface that puts your code first. No distractions, just productivity.',
+                'why.stack': 'Modern Stack',
+                'why.stackDesc': 'Built with React, TypeScript, and Vite for fast performance.',
+                'why.monaco': 'Monaco Editor',
+                'why.monacoDesc': 'Same editor as VS Code with IntelliSense and syntax highlighting.',
+                'why.live': 'Live Preview',
+                'why.liveDesc': 'Real-time preview with iOS and Android device simulation.',
+                'alert.web': '100% Web-Based',
+                'alert.webDesc': 'Runs entirely in the browser. Access from any device, anywhere.',
+                'footer.mit': 'MIT License',
                 'footer.home': 'Home',
                 'footer.github': 'GitHub',
                 'footer.privacy': 'Privacy'
             },
             pt: {
-                'nav.title': 'Documentação SafeCode',
-                'nav.home': 'Início',
-                'nav.github': 'GitHub',
-                'nav.gettingStarted': 'Começando',
-                'nav.introduction': 'Introdução',
-                'nav.installation': 'Instalação',
-                'nav.quickStart': 'Início Rápido',
-                'nav.features': 'Recursos',
+                'logo': 'SafeCode',
+                'nav.home': 'Inicio',
+                'sidebar.start': 'Comecando',
+                'nav.intro': 'Introducao',
+                'nav.install': 'Instalacao',
+                'nav.quick': 'Inicio Rapido',
+                'sidebar.features': 'Recursos',
                 'nav.editor': 'Editor',
                 'nav.terminal': 'Terminal',
-                'nav.git': 'Integração Git',
-                'nav.livePreview': 'Visualização ao Vivo',
-                'nav.configuration': 'Configuração',
-                'nav.settings': 'Configurações',
+                'nav.git': 'Git',
+                'nav.preview': 'Preview',
+                'sidebar.config': 'Configuracao',
+                'nav.settings': 'Configuracoes',
                 'nav.themes': 'Temas',
-                'nav.shortcuts': 'Atalhos de Teclado',
-                'nav.development': 'Desenvolvimento',
-                'nav.contributing': 'Contribuindo',
-                'intro.title': 'Introdução',
-                'intro.description': 'SafeCode é uma IDE moderna baseada na web, construída com React, TypeScript e Vite. Com uma filosofia de design minimalista e recursos poderosos, fornece tudo que você precisa para desenvolvimento web e mobile moderno sem bloat.',
-                'intro.version': 'Versão 2.0.0',
-                'intro.versionNote': 'Esta documentação cobre SafeCode versão 2.0.0 e acima.',
-                'intro.whyTitle': 'Por que SafeCode?',
-                'intro.minimalist': 'Design Minimalista',
-                'intro.minimalistDesc': 'Interface limpa e sem distrações que coloca seu código em primeiro lugar',
-                'intro.modern': 'Stack Moderna',
-                'intro.modernDesc': 'Construído com React, TypeScript e Vite para edição rápida e responsiva',
-                'intro.monaco': 'Editor Monaco',
-                'intro.monacoDesc': 'Editor padrão da indústria com IntelliSense e destaque de sintaxe',
-                'intro.livePreview': 'Visualização ao Vivo',
-                'intro.livePreviewDesc': 'Visualização em tempo real com simulação de dispositivos iOS e Android',
-                'intro.webBased': 'Baseado na Web',
-                'intro.webBasedDesc': 'Executa inteiramente no navegador, sem necessidade de instalação',
-                'install.title': 'Instalação',
-                'install.description': 'SafeCode executa inteiramente no navegador. Simplesmente clone o repositório e inicie o servidor de desenvolvimento.',
-                'install.cloneTitle': 'Clonar Repositório',
-                'install.installTitle': 'Instalar Dependências',
-                'install.runTitle': 'Executar Servidor de Desenvolvimento',
-                'install.requirements': 'Requisitos',
-                'install.nodejs': 'Node.js 18 ou superior',
-                'install.npm': 'npm ou yarn',
-                'install.git': 'Git (para recursos de controle de versão)',
-                'install.note': 'Nota',
-                'install.noteDesc': 'Certifique-se de ter o Node.js instalado antes de executar os comandos de instalação.',
-                'quick.title': 'Início Rápido',
-                'quick.description': 'Comece a usar o SafeCode em minutos.',
-                'quick.launchTitle': '1. Iniciar SafeCode',
-                'quick.launchDesc': 'Após iniciar o servidor de desenvolvimento, abra seu navegador e navegue para:',
-                'quick.openTitle': '2. Abrir um Projeto',
-                'quick.openDesc': 'Abra uma pasta ou crie um novo arquivo:',
-                'quick.openFolder': 'Abrir pasta',
-                'quick.newFile': 'Novo arquivo',
-                'quick.codeTitle': '3. Começar a Programar',
-                'quick.codeDesc': 'SafeCode fornece IntelliSense, destaque de sintaxe e conclusão de código prontos para uso para mais de 100 idiomas.',
-                'editor.title': 'Editor',
-                'editor.description': 'O editor SafeCode é alimentado pelo Monaco, o mesmo editor que alimenta o VS Code.',
-                'editor.features': 'Recursos',
-                'editor.intellisense': 'IntelliSense',
-                'editor.intellisenseDesc': 'Conclusão inteligente de código',
-                'editor.syntax': 'Destaque de Sintaxe',
-                'editor.syntaxDesc': 'Suporte para mais de 100 idiomas',
-                'editor.multicursor': 'Edição Multi-cursor',
-                'editor.multicursorDesc': 'Edite vários locais simultaneamente',
-                'editor.folding': 'Dobramento de Código',
-                'editor.foldingDesc': 'Recolha blocos de código para melhor legibilidade',
-                'editor.find': 'Localizar e Substituir',
-                'editor.findDesc': 'Busca poderosa com suporte a regex',
-                'editor.splitTitle': 'Visualização Dividida',
-                'editor.splitDesc': 'Trabalhe com vários arquivos lado a lado:',
-                'editor.splitVertical': 'Dividir editor verticalmente',
-                'editor.splitHorizontal': 'Dividir editor horizontalmente',
-                'terminal.title': 'Terminal',
-                'terminal.description': 'SafeCode inclui um terminal integrado alimentado por xterm.js.',
-                'terminal.opening': 'Abrindo o Terminal',
-                'terminal.toggle': 'Alternar terminal',
-                'terminal.new': 'Criar novo terminal',
-                'terminal.features': 'Recursos',
-                'terminal.multiple': 'Múltiplas instâncias de terminal',
-                'terminal.split': 'Visualização dividida do terminal',
-                'terminal.custom': 'Integração de shell personalizada',
-                'terminal.theme': 'Tema monocromático correspondente ao editor',
-                'git.title': 'Integração Git',
-                'git.description': 'SafeCode fornece suporte Git integrado para controle de versão.',
-                'git.features': 'Recursos',
-                'git.visual': 'Diff Visual',
-                'git.visualDesc': 'Veja as alterações inline no editor',
-                'git.commit': 'Gerenciamento de Commit',
-                'git.commitDesc': 'Preparar e fazer commit de alterações',
-                'git.branch': 'Gerenciamento de Branch',
-                'git.branchDesc': 'Criar, alternar e mesclar branches',
-                'git.clone': 'Clonar Repositório',
-                'git.cloneDesc': 'Clone repositórios diretamente da IDE',
-                'git.common': 'Operações Comuns',
-                'preview.title': 'Visualização ao Vivo',
-                'preview.description': 'SafeCode apresenta um sistema avançado de visualização ao vivo com simulação de dispositivos iOS e Android.',
-                'preview.features': 'Recursos',
-                'preview.devices': 'Simulação de Dispositivos',
-                'preview.devicesDesc': 'Visualize seu código em dispositivos iOS e Android com telas de bloqueio e home screens realistas',
-                'preview.realtime': 'Atualizações em Tempo Real',
-                'preview.realtimeDesc': 'Veja suas alterações instantaneamente enquanto programa',
-                'preview.browsers': 'Integração de Navegadores',
-                'preview.browsersDesc': 'Teste com navegadores Safari (iOS) e Chrome (Android)',
-                'preview.controls': 'Controles do Dispositivo',
-                'preview.controlsDesc': 'Girar, bloquear, ligar/desligar e navegar entre telas',
-                'preview.modes': 'Múltiplos Modos',
-                'preview.modesDesc': 'Modos de visualização desktop, tablet e mobile',
-                'preview.usage': 'Uso',
-                'preview.usageDesc': 'Abra o painel de Visualização ao Vivo e selecione seu modo de dispositivo preferido. A visualização é atualizada automaticamente conforme você edita seu código.',
-                'settings.title': 'Configurações',
-                'settings.description': 'Personalize o SafeCode para corresponder ao seu fluxo de trabalho.',
-                'settings.accessing': 'Acessando Configurações',
-                'settings.open': 'Abrir configurações',
-                'settings.common': 'Configurações Comuns',
-                'themes.title': 'Temas',
-                'themes.description': 'SafeCode vem com um sistema de tema monocromático cuidadosamente elaborado.',
-                'themes.available': 'Temas Disponíveis',
-                'themes.trueDark': 'Monocromático True Dark',
-                'themes.trueDarkDesc': 'Fundo preto puro',
-                'themes.dark': 'Monocromático Dark',
-                'themes.darkDesc': 'Fundo cinza escuro',
-                'themes.light': 'Monocromático Light',
-                'themes.lightDesc': 'Variante de tema claro',
-                'themes.changing': 'Alterando Temas',
-                'themes.changingDesc': 'Altere os temas da paleta de comandos:',
-                'themes.palette': 'Abrir paleta de comandos',
-                'themes.select': 'Digite "theme" e selecione seu tema preferido',
-                'shortcuts.title': 'Atalhos de Teclado',
-                'shortcuts.description': 'Domine o SafeCode com estes atalhos de teclado essenciais.',
-                'shortcuts.general': 'Geral',
-                'shortcuts.palette': 'Paleta de comandos',
-                'shortcuts.quickOpen': 'Abertura rápida de arquivo',
-                'shortcuts.settings': 'Configurações',
-                'shortcuts.editor': 'Editor',
-                'shortcuts.save': 'Salvar arquivo',
-                'shortcuts.find': 'Localizar',
-                'shortcuts.replace': 'Localizar e substituir',
-                'shortcuts.comment': 'Alternar comentário',
-                'contrib.title': 'Contribuindo',
-                'contrib.description': 'SafeCode é open source e recebe contribuições!',
-                'contrib.gettingStarted': 'Começando',
-                'contrib.fork': 'Faça um fork do repositório no GitHub',
-                'contrib.clone': 'Clone seu fork localmente',
-                'contrib.branch': 'Crie uma nova branch para sua funcionalidade',
-                'contrib.changes': 'Faça suas alterações',
-                'contrib.pr': 'Envie uma pull request',
-                'contrib.setup': 'Configuração de Desenvolvimento',
-                'contrib.thanks': 'Obrigado!',
-                'contrib.thanksDesc': 'Toda contribuição, por menor que seja, ajuda a tornar o SafeCode melhor para todos.',
-                'footer.licensed': 'Licenciado sob MIT',
-                'footer.home': 'Início',
+                'nav.shortcuts': 'Atalhos',
+                'sidebar.community': 'Comunidade',
+                'nav.contrib': 'Contribuir',
+                'nav.support': 'Suporte',
+                'hero.badge': 'Versao 2.0 Disponivel',
+                'hero.title': 'Desenvolva mais rapido com SafeCode',
+                'hero.desc': 'Uma IDE moderna baseada na web, construida com React, TypeScript e Vite. Design minimalista, recursos poderosos e tudo que voce precisa.',
+                'hero.start': 'Comecar',
+                'hero.github': 'Ver no GitHub',
+                'stat.lang': 'Linguagens',
+                'stat.start': 'Inicializacao',
+                'stat.license': 'Licenca',
+                'why.title': 'Por que SafeCode?',
+                'why.min': 'Design Minimalista',
+                'why.minDesc': 'Interface limpa que prioriza seu codigo. Sem distracoes, so produtividade.',
+                'why.stack': 'Stack Moderna',
+                'why.stackDesc': 'Construido com React, TypeScript e Vite para performance rapida.',
+                'why.monaco': 'Editor Monaco',
+                'why.monacoDesc': 'Mesmo editor do VS Code com IntelliSense e syntax highlighting.',
+                'why.live': 'Preview ao Vivo',
+                'why.liveDesc': 'Preview em tempo real com simulacao de dispositivos iOS e Android.',
+                'alert.web': '100% Baseado na Web',
+                'alert.webDesc': 'Executa inteiramente no navegador. Acesse de qualquer dispositivo.',
+                'footer.mit': 'Licenca MIT',
+                'footer.home': 'Inicio',
                 'footer.github': 'GitHub',
                 'footer.privacy': 'Privacidade'
             }
         };
 
-        let currentLang = localStorage.getItem('docs-lang') || 'en';
+        let lang = localStorage.getItem('lang') || 'en';
 
-        function translate(key) {
-            return translations[currentLang][key] || translations.en[key] || key;
-        }
-
-        function updateLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('docs-lang', lang);
-            document.documentElement.lang = lang;
-            
+        function setLang(l) {
+            lang = l;
+            localStorage.setItem('lang', l);
+            document.getElementById('langText').textContent = l.toUpperCase();
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                const translation = translate(key);
-                
-                // Save icons if they exist
-                const icons = Array.from(el.querySelectorAll('i[data-lucide]'));
-                const iconData = icons.map(icon => ({
-                    name: icon.getAttribute('data-lucide'),
-                    classes: icon.className
-                }));
-                
-                // Update text content
-                el.textContent = translation;
-                
-                // Restore icons
-                iconData.forEach(iconInfo => {
-                    const icon = document.createElement('i');
-                    icon.setAttribute('data-lucide', iconInfo.name);
-                    icon.className = iconInfo.classes;
-                    el.appendChild(icon);
-                });
-            });
-
-            document.getElementById('langText').textContent = lang === 'pt' ? 'PT' : 'EN';
-            lucide.createIcons();
-        }
-
-        document.getElementById('langToggle').addEventListener('click', () => {
-            const newLang = currentLang === 'en' ? 'pt' : 'en';
-            updateLanguage(newLang);
-        });
-
-        // Initialize language
-        updateLanguage(currentLang);
-
-        // Smooth scroll for sidebar links
-        document.querySelectorAll('.sidebar-nav a').forEach(link => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-
-                // Update active state
-                document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-
-                // Smooth scroll to section
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (translations[l][key]) {
+                    el.textContent = translations[l][key];
                 }
             });
+        }
+
+        document.getElementById('langBtn').addEventListener('click', () => {
+            setLang(lang === 'en' ? 'pt' : 'en');
         });
 
-        // Update active link on scroll
-        const sections = document.querySelectorAll('section[id]');
+        setLang(lang);
+
+        // Active nav link
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
         window.addEventListener('scroll', () => {
             let current = '';
             sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (window.scrollY >= sectionTop - 100) {
+                if (window.scrollY >= section.offsetTop - 100) {
                     current = section.getAttribute('id');
                 }
             });
-
-            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            navLinks.forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('href') === `#${current}`) {
+                if (link.getAttribute('href') === '#' + current) {
                     link.classList.add('active');
                 }
             });
         });
     </script>
 </body>
-
 </html>
